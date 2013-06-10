@@ -77,19 +77,10 @@
     ./#address-cells 3
     ./#size-cells 2
     ./ranges nm0,0,0,0x90000000 0x90000000 0x10000
-#/phb@0x90000000/ide@0
-#    ./reg 1 0
+
 /phb@0x90000000/com@0 
     ./ > 0 2 /iobus/opic
 	
 /nvram@0xf4008000
 	./reg 0xf4008000 0x8008
 
-/eeprom@0xfff00000/reg 0xfff00000 0x80000'
-/eeprom@0xfff00000/nr-sectors 8'
-/eeprom@0xfff00000/sector-size 0x10000'
-/eeprom@0xfff00000/byte-write-delay 1000'
-/eeprom@0xfff00000/sector-start-delay 100'
-/eeprom@0xfff00000/erase-delay 1000'
-/eeprom@0xfff00000/manufacture-code 0x01'
-/eeprom@0xfff00000/device-code 0xa4'

@@ -12,7 +12,6 @@ static sos_sem sem;
 
 static void my_initial_thread(void) __attribute__((section(".user_text")));
 static void my_other_thread(void) __attribute__((section(".user_text")));
-int xxx_sam_xxx __attribute__((section(".user_data")));
 
 int kmain(void)
 {       
