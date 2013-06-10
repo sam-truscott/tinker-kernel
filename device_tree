@@ -1,0 +1,95 @@
+/#address-cells 0x1
+
+#device te cpu
+/cpus/cpu@0
+	./cpu-nr 0
+
+#setup the initial MSR
+/openprom/init/register/msr 0x3000
+/openprom/options/env "oea"
+/openprom/options/oea-interrupt-prefix 0x0
+/openprom/options/oea-memory-size 0x8000000
+/openprom/options/alignment 2 # strict
+
+#ensure we're in real mode
+/options/real-mode? true
+
+# Set up the initial stack pointer
+# /openprom/init/register/sp 0x51722
+
+# define the stack type
+/openprom/init/stack/stack-type "chirp"
+# /openprom/init/stack/stack-type "ppc-elf"
+
+# print out the device tree once it's loaded
+/openprom/trace
+/openprom/trace/print-device-tree 0x1
+
+/openprom/options/model "603e"
+
+/openprom/options/smp 0x1
+
+/chosen
+#/chosen/stdin */openprom/pal
+#/chosen/stdout !/chosen/stdin
+#/chosen/stdout */openprom/pal
+/chosen/memory */memory
+
+#
+# I/O Bus
+#
+/iobus@0x80000000
+        ./name psim-iobus
+        ./reg 0x80000000 0x20000000
+
+#
+# OpenPIC
+# hz == 10 ^3/ms, us = 10^6/ms
+# 1Hz		= 1s
+# 10Hz		= 100ms
+# 100Hz 	= 10ms
+# 1000Hz 	= 1ms
+# 10000Hz 	= 100us
+# 100000Hz	= 10us
+# 1000000Hz = 1us
+/iobus@0x80000000/opic@0x80000000
+        ./name         interrupt-controller
+        ./device_type  open-pic
+        ./compatible   psim,open-pic
+        ./reg 0x80000000 0x40000
+        ./timer-frequency 1
+        ./interrupt-ranges 0 256
+
+# map the interrupt controller to the cpu external interrupt
+/iobus/opic > intr0 int /cpus/cpu@0x0
+
+/iobus@0xf40002F8
+	./name psim-iobus2
+    ./reg 0xf40002F8 0x108
+/iobus@0xf40002F8/com@0xf40002F8
+	./reg 0xf40002F8 8
+	./ > 0 2 /iobus/opic
+/iobus@0xf40003F8/com@0xf40003F8
+	./reg 0xf40003F8 8
+	./ > 0 3 /iobus/opic
+	
+/phb@0x90000000
+    ./#address-cells 3
+    ./#size-cells 2
+    ./ranges nm0,0,0,0x90000000 0x90000000 0x10000
+#/phb@0x90000000/ide@0
+#    ./reg 1 0
+/phb@0x90000000/com@0 
+    ./ > 0 2 /iobus/opic
+	
+/nvram@0xf4008000
+	./reg 0xf4008000 0x8008
+
+/eeprom@0xfff00000/reg 0xfff00000 0x80000'
+/eeprom@0xfff00000/nr-sectors 8'
+/eeprom@0xfff00000/sector-size 0x10000'
+/eeprom@0xfff00000/byte-write-delay 1000'
+/eeprom@0xfff00000/sector-start-delay 100'
+/eeprom@0xfff00000/erase-delay 1000'
+/eeprom@0xfff00000/manufacture-code 0x01'
+/eeprom@0xfff00000/device-code 0xa4'

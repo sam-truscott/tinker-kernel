@@ -1,0 +1,453 @@
+/*************************************************************************
+ *
+ * SOS 2 Source Code
+ * __________________
+ *
+ *  [2009] - [2011] Samuel Steven Truscott
+ *  All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains
+ * the property of Samuel Truscott and suppliers, if any.
+ * The intellectual and technical concepts contained herein
+ * are proprietary to Samuel Truscott and its suppliers and
+ * may be covered by UK and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Samuel Truscott.
+ */
+
+#include "uart16550.h"
+
+#include "sos3_api.h"
+
+#define LSR_DR 0x01
+#define LSR_OV_ERR 0x02
+#define LSR_PA_ERR 0x04
+#define LSR_FR_ERR 0x08
+#define LSR_BI_ERR 0x10
+#define LSR_TH_ERR 0x20
+#define LSR_TE_ERR 0x40
+#define LSR_RF_ERR 0x80
+
+#define MSR_DEL_CTS 0x01
+#define MSR_DEL_DSR 0x02
+#define MSR_TEI 0x04
+#define MSR_DEL_DCD 0x08
+#define MSR_CTS 0x10
+#define MSR_DSR 0x20
+#define MSR_RI 0x40
+#define MSR_DCD 0x80
+
+typedef struct
+{
+	bool data_ready;
+	bool overrun_error;
+	bool parity_error;
+	bool framing_error;
+	bool break_interrupt;
+	bool tx_holding_register;
+	bool tx_empty;
+	bool rx_fifo_error;
+} uart_16550_line_status_t;
+
+typedef struct
+{
+	bool delta_clear_to_send;
+	bool delta_data_set_ready;
+	bool trailing_edge_indicator;
+	bool delta_data_carrier_detect;
+	bool clear_to_send;
+	bool data_set_ready;
+	bool ring_indicator;
+	bool data_carrier_detect;
+} uart_16550_modem_status_t;
+
+/* Interrupt causes */
+#define INT_RECV_LINE_STATUS 6
+#define INT_RECV_DATA_AVAIL 4
+#define INT_CHAR_TIMEOUT 12
+#define INT_TRAN_EMPTY 2
+#define INT_STATUS 0
+
+/* register structure */
+#pragma pack(push,1)
+typedef struct
+{
+	uint8_t reg0_tx_rx_ls;
+	uint8_t reg1_ier_ms;
+	uint8_t reg2_iir;
+	uint8_t reg3_lcr;
+	uint8_t reg4_mcr;
+	uint8_t reg5_lsr;
+	uint8_t reg6_msr;
+	uint8_t reg7_scratch;
+} uart_16550_device_map_t;
+#pragma pack(pop)
+
+static error_t uart16550_initialise(void * usr_data, void * param, const uint32_t param_size);
+
+static error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val);
+
+static error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val);
+
+static error_t uart16650_write_buffer(void * usr_data, const uint32_t dst, void * src, const uint32_t src_size);
+
+static error_t uart16550_read_buffer(void * usr_data, const uint32_t src, void * dst, const uint32_t dst_size);
+
+static error_t uart16550_isr(void * usr_data, uint32_t vector);
+
+static const __kernel_device_t UART16550_DEVICE_INFO =
+{
+		{1,0,0,0, {"uart16550\0"}},
+		uart16550_initialise,
+		NULL,
+		uart16550_write_register,
+		uart16550_read_register,
+		uart16650_write_buffer,
+		uart16550_read_buffer,
+		uart16550_isr,
+		NULL
+};
+
+static void __serial_process_lsr(
+		uart_16550_line_status_t * info,
+		uint8_t val);
+
+static void __serial_process_msr(
+		uart_16550_modem_status_t *info,
+		uint8_t val);
+
+void uart16550_get_device(void * base_address, __kernel_device_t * device)
+{
+	__kernel_device_t new_device = UART16550_DEVICE_INFO;
+
+	new_device.user_data = base_address;
+
+	if ( device )
+	{
+		*device = new_device;
+	}
+}
+
+error_t uart16550_initialise(void * usr_data, void * param, const uint32_t param_size)
+{
+	error_t ret = NO_ERROR;
+	volatile uart_16550_device_map_t *raw_com_port = NULL;
+
+	raw_com_port = (uart_16550_device_map_t*)usr_data;
+
+	/* check the device exists - params should be empty*/
+	if ( raw_com_port == NULL || param || param_size)
+	{
+		ret = DEVICE_USER_DATA_INVALID;
+	}
+	else
+	{
+		/* set DLAB bit in LCR */
+		raw_com_port->reg3_lcr = 0x80;
+
+		/* set the low byte for 192,000 baud */
+		raw_com_port->reg0_tx_rx_ls = 0x06;
+		raw_com_port->reg1_ier_ms = 0x00;
+
+		/* no parity, 8bits, 1 stop bit */
+		raw_com_port->reg3_lcr = 0x03;
+
+		/* set up the FCR */
+		raw_com_port->reg2_iir = 0xC7;
+
+		raw_com_port->reg4_mcr = 0x03;
+
+
+		/* set up the interrupts */
+		/* FOR SIMULATOR USE 0x0E coz READ IS BLOCKING */
+		/* RXTX empty -> raw_com_port->reg1 = 0x0E;*/
+		/* TX empty -> raw_com_port->reg1 = 0x0E;*/
+		raw_com_port->reg1_ier_ms = 0x0C;
+	}
+
+	return ret;
+}
+
+error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val)
+{
+	error_t ret = NO_ERROR;
+	volatile uart_16550_device_map_t *raw_com_port = NULL;
+
+	raw_com_port = (uart_16550_device_map_t*)usr_data;
+
+	/* check the device exists */
+	if ( raw_com_port == NULL)
+	{
+		ret = DEVICE_USER_DATA_INVALID;
+	}
+	else
+	{
+		uint8_t* dst = (uint8_t*)val + 3;
+		switch(id)
+		{
+			case REG_0_RX_TX_LS:
+				*dst = raw_com_port->reg0_tx_rx_ls;
+				break;
+			case REG_1_ISR_MS:
+				*dst = raw_com_port->reg1_ier_ms;
+				break;
+			case REG_2_IIR:
+				*dst = raw_com_port->reg2_iir;
+				break;
+			case REG_3_LCR:
+				*dst = raw_com_port->reg3_lcr;
+				break;
+			case REG_4_MCR:
+				*dst = raw_com_port->reg4_mcr;
+				break;
+			case REG_5_LSR:
+				*dst = raw_com_port->reg5_lsr;
+				break;
+			case REG_6_MSR:
+				*dst = raw_com_port->reg6_msr;
+				break;
+			case REG_7_SCRATCH:
+				*dst = raw_com_port->reg7_scratch;
+				break;
+			default:
+				ret = DEVICE_REGISTER_INVALID;
+				break;
+		}
+	}
+
+	return ret;
+}
+
+error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val)
+{
+	error_t ret = NO_ERROR;
+	volatile uart_16550_device_map_t *raw_com_port = NULL;
+
+	raw_com_port = (uart_16550_device_map_t*)usr_data;
+
+	/* check the device exists */
+	if ( raw_com_port == NULL)
+	{
+		ret = DEVICE_USER_DATA_INVALID;
+	}
+	else
+	{
+		const uint8_t sval = (uint8_t)val;
+		switch(id)
+		{
+			case REG_0_RX_TX_LS:
+				raw_com_port->reg0_tx_rx_ls = sval;
+				break;
+			case REG_1_ISR_MS:
+				raw_com_port->reg1_ier_ms = sval;
+				break;
+			case REG_2_IIR:
+				raw_com_port->reg2_iir = sval;
+				break;
+			case REG_3_LCR:
+				raw_com_port->reg3_lcr = sval;
+				break;
+			case REG_4_MCR:
+				raw_com_port->reg4_mcr = sval;
+				break;
+			case REG_5_LSR:
+				raw_com_port->reg5_lsr = sval;
+				break;
+			case REG_6_MSR:
+				raw_com_port->reg6_msr = sval;
+				break;
+			case REG_7_SCRATCH:
+				raw_com_port->reg7_scratch = sval;
+				break;
+			default:
+				ret = DEVICE_REGISTER_INVALID;
+				break;
+		}
+	}
+
+	return ret;
+}
+
+error_t uart16650_write_buffer(
+		void * usr_data,
+		const uint32_t dst,
+		void * src,
+		const uint32_t src_size)
+{
+	error_t retval = NO_ERROR;
+	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uint32_t counter;
+
+	/* check that we're intending to read
+	 * from the FIFO */
+	if ( dst != 0 )
+	{
+		retval = DEVICE_WRITE_BAD_ADDRESS;
+	}
+
+	raw_com_port = (uart_16550_device_map_t*)usr_data;
+
+	/* check the device exists */
+	if ( raw_com_port == NULL)
+	{
+		retval = DEVICE_USER_DATA_INVALID;
+	}
+
+	if ( retval == NO_ERROR )
+	{
+		for( counter=0 ; counter < src_size ; counter++ )
+		{
+			while ( ( raw_com_port->reg6_msr & 0x10) != 0x00 )
+			{
+			}
+
+			raw_com_port->reg0_tx_rx_ls = (((uint8_t*)src) + counter)[0];
+			raw_com_port->reg4_mcr = 3;
+			while( (raw_com_port->reg5_lsr & 0x40) != 0x40)
+			{
+			}
+			raw_com_port->reg4_mcr = 1;
+		}
+	}
+
+	return retval;
+}
+
+error_t uart16550_read_buffer(
+		void * usr_data,
+		const uint32_t src,
+		void * dst,
+		const uint32_t dst_size)
+{
+	error_t retval = NO_ERROR;
+	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uint32_t counter;
+
+	/* check that we're intending to read
+	 * from the FIFO */
+	if ( src != 0 )
+	{
+		retval = DEVICE_READ_BAD_ADDRESS;
+	}
+
+	raw_com_port = (uart_16550_device_map_t*)usr_data;
+
+	/* check the device exists */
+	if ( raw_com_port == NULL)
+	{
+		retval = DEVICE_USER_DATA_INVALID;
+	}
+
+	if ( retval == NO_ERROR )
+	{
+		for( counter=0 ; counter < dst_size ; counter++ )
+		{
+			uint8_t raw_input = 0;
+
+			/* this code extract waits for data on the
+			 * com port and stores it */
+			while( (raw_com_port->reg5_lsr & LSR_DR) != LSR_DR)
+			{
+			}
+
+			/* read the actual data */
+			while ( (raw_input = raw_com_port->reg0_tx_rx_ls) == 0 )
+			{
+			}
+
+			*(((uint8_t*)dst) + counter) = raw_input;
+		}
+	}
+
+	return retval;
+}
+
+error_t uart16550_isr(void * usr_data, uint32_t vector)
+{
+	error_t retval = NO_ERROR;
+	volatile uart_16550_device_map_t *raw_com_port = NULL;
+
+	raw_com_port = (uart_16550_device_map_t*)usr_data;
+
+	/* check the device exists */
+	if ( raw_com_port == NULL && vector)
+	{
+		retval = DEVICE_USER_DATA_INVALID;
+	}
+	else
+	{
+		uint8_t ir_iden = 0;
+		ir_iden = raw_com_port->reg2_iir;
+
+		/* interrupt is pending, get the id */
+		if  ( (ir_iden & 0x01) == 0x00)
+		{
+			if ( (ir_iden & INT_RECV_LINE_STATUS) == INT_RECV_LINE_STATUS)
+			{
+				/* Read the line status register */
+				uart_16550_line_status_t lsr;
+				__serial_process_lsr(&lsr,raw_com_port->reg5_lsr);
+			}
+			else if ( (ir_iden & INT_RECV_DATA_AVAIL) == INT_RECV_DATA_AVAIL)
+			{
+				/* TODO UINT8 new_data = raw_com_port->reg0_tx_rx_ls; */
+			}
+			else if ( (ir_iden & INT_CHAR_TIMEOUT) == INT_CHAR_TIMEOUT)
+			{
+				/* Read the RX buffer */
+			}
+			else if ( (ir_iden & INT_TRAN_EMPTY) == INT_TRAN_EMPTY)
+			{
+				/* Read the IIR ( already done ) and/or write more data */
+			}
+			else if ( (ir_iden & INT_STATUS) == INT_STATUS)
+			{
+				/* Read Modem status register */
+				uart_16550_modem_status_t msr;
+				__serial_process_msr(&msr,raw_com_port->reg6_msr);
+			}
+			else
+			{
+				retval = UNKNOWN_INTERRUPT_CAUSE;
+			}
+		}
+	}
+
+	return retval;
+}
+
+void __serial_process_lsr(
+		uart_16550_line_status_t * lsr,
+		uint8_t val)
+{
+	if ( lsr )
+	{
+		lsr->data_ready = ((val & LSR_DR) == LSR_DR);
+		lsr->overrun_error = ((val & LSR_OV_ERR) == LSR_OV_ERR);
+		lsr->parity_error = ((val & LSR_PA_ERR)  == LSR_PA_ERR);
+		lsr->framing_error = ((val & LSR_FR_ERR) == LSR_FR_ERR);
+		lsr->break_interrupt = ((val & LSR_BI_ERR) == LSR_BI_ERR);
+		lsr->tx_holding_register = ((val & LSR_TH_ERR) == LSR_TH_ERR);
+		lsr->tx_empty = ((val & LSR_TE_ERR) == LSR_TE_ERR);
+		lsr->rx_fifo_error = ((val & LSR_RF_ERR) == LSR_RF_ERR);
+	}
+}
+
+void __serial_process_msr(
+		uart_16550_modem_status_t *info,
+		uint8_t val)
+{
+	if ( info )
+	{
+		info->delta_clear_to_send = ((val & MSR_DEL_CTS) == MSR_DEL_CTS);
+		info->delta_data_set_ready = ((val & MSR_DEL_DSR) == MSR_DEL_DSR);
+		info->trailing_edge_indicator = ((val & MSR_TEI) == MSR_TEI);
+		info->delta_data_carrier_detect = ((val & MSR_DEL_DCD) == MSR_DEL_DCD);
+		info->clear_to_send = ((val & MSR_CTS) == MSR_CTS);
+		info->data_set_ready = ((val & MSR_DSR) == MSR_DSR);
+		info->ring_indicator = ((val & MSR_RI) == MSR_RI);
+		info->data_carrier_detect = ((val & MSR_DCD) == MSR_DCD);
+	}
+}
