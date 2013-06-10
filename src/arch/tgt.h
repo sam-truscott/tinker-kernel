@@ -59,4 +59,7 @@ void __tgt_acquire_lock(__spinlock_t * lock);
 
 void __tgt_release_lock(__spinlock_t * lock);
 
+#if defined(__POWERPC)
+#include "arch/ppc32/powerpc_io.h"
+#endif
 #endif /* TGT_H_ */

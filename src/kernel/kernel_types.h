@@ -346,7 +346,7 @@ typedef struct __scheduler
  * ========================================
  */
 
-#define __MAX_DEVICE_NAME_LEN 255
+struct __kernel_device;
 
 typedef struct __kernel_device_info
 {
@@ -354,10 +354,12 @@ typedef struct __kernel_device_info
 	uint8_t	minor_version;
 	uint8_t	revision;
 	uint32_t	build;
-	char	friendly_name[__MAX_DEVICE_NAME_LEN + 1];
 }__kernel_device_info_t;
 
-typedef error_t (__kernel_device_initialise)(void * usr_data, void * param, const uint32_t param_size);
+typedef error_t (__kernel_device_initialise)(
+		struct __kernel_device * device_info,
+		void * param,
+		const uint32_t param_size);
 
 typedef error_t (__kernel_device_control)(void * usr_data, uint32_t code);
 

@@ -20,6 +20,8 @@
 #include "uart16550.h"
 
 #include "sos3_api.h"
+#include "arch/tgt.h"
+#include "kernel/utils/util_memcpy.h"
 
 #define LSR_DR 0x01
 #define LSR_OV_ERR 0x02
@@ -85,7 +87,10 @@ typedef struct
 } uart_16550_device_map_t;
 #pragma pack(pop)
 
-static error_t uart16550_initialise(void * usr_data, void * param, const uint32_t param_size);
+static error_t uart16550_initialise(
+		__kernel_device_t * device_info,
+		void * param,
+		const uint32_t param_size);
 
 static error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val);
 
@@ -99,15 +104,18 @@ static error_t uart16550_isr(void * usr_data, uint32_t vector);
 
 static const __kernel_device_t UART16550_DEVICE_INFO =
 {
-		{1,0,0,0, {"uart16550\0"}},
-		uart16550_initialise,
-		NULL,
-		uart16550_write_register,
-		uart16550_read_register,
-		uart16650_write_buffer,
-		uart16550_read_buffer,
-		uart16550_isr,
-		NULL
+		.info = {
+				.major_version = 1,
+				.minor_version = 0,
+				.revision = 0,
+				.build = 0
+		},
+		.initialise = uart16550_initialise,
+		.write_register = uart16550_write_register,
+		.read_register = uart16550_read_register,
+		.write_buffer = uart16650_write_buffer,
+		.read_buffer = uart16550_read_buffer,
+		.isr = uart16550_isr,
 };
 
 static void __serial_process_lsr(
@@ -120,22 +128,29 @@ static void __serial_process_msr(
 
 void uart16550_get_device(void * base_address, __kernel_device_t * device)
 {
-	__kernel_device_t new_device = UART16550_DEVICE_INFO;
+	__kernel_device_t new_device;
+	__util_memcpy(
+			&new_device,
+			&UART16550_DEVICE_INFO,
+			sizeof(UART16550_DEVICE_INFO));
 
 	new_device.user_data = base_address;
 
-	if ( device )
+	if (device)
 	{
 		*device = new_device;
 	}
 }
 
-error_t uart16550_initialise(void * usr_data, void * param, const uint32_t param_size)
+error_t uart16550_initialise(
+		__kernel_device_t * device_info,
+		void * param,
+		const uint32_t param_size)
 {
 	error_t ret = NO_ERROR;
-	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uart_16550_device_map_t *raw_com_port = NULL;
 
-	raw_com_port = (uart_16550_device_map_t*)usr_data;
+	raw_com_port = (uart_16550_device_map_t*)device_info->user_data;
 
 	/* check the device exists - params should be empty*/
 	if ( raw_com_port == NULL || param || param_size)
@@ -145,26 +160,25 @@ error_t uart16550_initialise(void * usr_data, void * param, const uint32_t param
 	else
 	{
 		/* set DLAB bit in LCR */
-		raw_com_port->reg3_lcr = 0x80;
+		__out_u8(&raw_com_port->reg3_lcr, 0x80u);
 
 		/* set the low byte for 192,000 baud */
-		raw_com_port->reg0_tx_rx_ls = 0x06;
-		raw_com_port->reg1_ier_ms = 0x00;
+		__out_u8(&raw_com_port->reg0_tx_rx_ls, 0x06u);
+		__out_u8(&raw_com_port->reg1_ier_ms, 0x00u);
 
 		/* no parity, 8bits, 1 stop bit */
-		raw_com_port->reg3_lcr = 0x03;
+		__out_u8(&raw_com_port->reg3_lcr, 0x03u);
 
 		/* set up the FCR */
-		raw_com_port->reg2_iir = 0xC7;
-
-		raw_com_port->reg4_mcr = 0x03;
+		__out_u8(&raw_com_port->reg2_iir, 0xC7u);
+		__out_u8(&raw_com_port->reg4_mcr, 0x03u);
 
 
 		/* set up the interrupts */
 		/* FOR SIMULATOR USE 0x0E coz READ IS BLOCKING */
 		/* RXTX empty -> raw_com_port->reg1 = 0x0E;*/
 		/* TX empty -> raw_com_port->reg1 = 0x0E;*/
-		raw_com_port->reg1_ier_ms = 0x0C;
+		__out_u8(&raw_com_port->reg1_ier_ms, 0x0Cu);
 	}
 
 	return ret;
@@ -173,7 +187,7 @@ error_t uart16550_initialise(void * usr_data, void * param, const uint32_t param
 error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val)
 {
 	error_t ret = NO_ERROR;
-	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uart_16550_device_map_t *raw_com_port = NULL;
 
 	raw_com_port = (uart_16550_device_map_t*)usr_data;
 
@@ -188,28 +202,28 @@ error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val)
 		switch(id)
 		{
 			case REG_0_RX_TX_LS:
-				*dst = raw_com_port->reg0_tx_rx_ls;
+				*dst = __in_u8(&raw_com_port->reg0_tx_rx_ls);
 				break;
 			case REG_1_ISR_MS:
-				*dst = raw_com_port->reg1_ier_ms;
+				*dst = __in_u8(&raw_com_port->reg1_ier_ms);
 				break;
 			case REG_2_IIR:
-				*dst = raw_com_port->reg2_iir;
+				*dst = __in_u8(&raw_com_port->reg2_iir);
 				break;
 			case REG_3_LCR:
-				*dst = raw_com_port->reg3_lcr;
+				*dst = __in_u8(&raw_com_port->reg3_lcr);
 				break;
 			case REG_4_MCR:
-				*dst = raw_com_port->reg4_mcr;
+				*dst = __in_u8(&raw_com_port->reg4_mcr);
 				break;
 			case REG_5_LSR:
-				*dst = raw_com_port->reg5_lsr;
+				*dst = __in_u8(&raw_com_port->reg5_lsr);
 				break;
 			case REG_6_MSR:
-				*dst = raw_com_port->reg6_msr;
+				*dst = __in_u8(&raw_com_port->reg6_msr);
 				break;
 			case REG_7_SCRATCH:
-				*dst = raw_com_port->reg7_scratch;
+				*dst = __in_u8(&raw_com_port->reg7_scratch);
 				break;
 			default:
 				ret = DEVICE_REGISTER_INVALID;
@@ -223,7 +237,7 @@ error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val)
 error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val)
 {
 	error_t ret = NO_ERROR;
-	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uart_16550_device_map_t *raw_com_port = NULL;
 
 	raw_com_port = (uart_16550_device_map_t*)usr_data;
 
@@ -238,28 +252,28 @@ error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val)
 		switch(id)
 		{
 			case REG_0_RX_TX_LS:
-				raw_com_port->reg0_tx_rx_ls = sval;
+				__out_u8(&raw_com_port->reg0_tx_rx_ls, sval);
 				break;
 			case REG_1_ISR_MS:
-				raw_com_port->reg1_ier_ms = sval;
+				__out_u8(&raw_com_port->reg1_ier_ms, sval);
 				break;
 			case REG_2_IIR:
-				raw_com_port->reg2_iir = sval;
+				__out_u8(&raw_com_port->reg2_iir, sval);
 				break;
 			case REG_3_LCR:
-				raw_com_port->reg3_lcr = sval;
+				__out_u8(&raw_com_port->reg3_lcr, sval);
 				break;
 			case REG_4_MCR:
-				raw_com_port->reg4_mcr = sval;
+				__out_u8(&raw_com_port->reg4_mcr, sval);
 				break;
 			case REG_5_LSR:
-				raw_com_port->reg5_lsr = sval;
+				__out_u8(&raw_com_port->reg5_lsr, sval);
 				break;
 			case REG_6_MSR:
-				raw_com_port->reg6_msr = sval;
+				__out_u8(&raw_com_port->reg6_msr, sval);
 				break;
 			case REG_7_SCRATCH:
-				raw_com_port->reg7_scratch = sval;
+				__out_u8(&raw_com_port->reg7_scratch, sval);
 				break;
 			default:
 				ret = DEVICE_REGISTER_INVALID;
@@ -277,7 +291,7 @@ error_t uart16650_write_buffer(
 		const uint32_t src_size)
 {
 	error_t retval = NO_ERROR;
-	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uart_16550_device_map_t *raw_com_port = NULL;
 	uint32_t counter;
 
 	/* check that we're intending to read
@@ -299,16 +313,16 @@ error_t uart16650_write_buffer(
 	{
 		for( counter=0 ; counter < src_size ; counter++ )
 		{
-			while ( ( raw_com_port->reg6_msr & 0x10) != 0x00 )
+			while ( (__in_u8(&raw_com_port->reg6_msr) & 0x10) != 0x00 )
 			{
 			}
 
-			raw_com_port->reg0_tx_rx_ls = (((uint8_t*)src) + counter)[0];
-			raw_com_port->reg4_mcr = 3;
-			while( (raw_com_port->reg5_lsr & 0x40) != 0x40)
+			__out_u8(&raw_com_port->reg0_tx_rx_ls, (((uint8_t*)src) + counter)[0]);
+			__out_u8(&raw_com_port->reg4_mcr, 3);
+			while ( (__in_u8(&raw_com_port->reg5_lsr) & 0x40) != 0x40 )
 			{
 			}
-			raw_com_port->reg4_mcr = 1;
+			__out_u8(&raw_com_port->reg4_mcr, 1);
 		}
 	}
 
@@ -322,7 +336,7 @@ error_t uart16550_read_buffer(
 		const uint32_t dst_size)
 {
 	error_t retval = NO_ERROR;
-	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uart_16550_device_map_t *raw_com_port = NULL;
 	uint32_t counter;
 
 	/* check that we're intending to read
@@ -348,12 +362,12 @@ error_t uart16550_read_buffer(
 
 			/* this code extract waits for data on the
 			 * com port and stores it */
-			while( (raw_com_port->reg5_lsr & LSR_DR) != LSR_DR)
+			while( (__in_u8(&raw_com_port->reg5_lsr) & LSR_DR) != LSR_DR)
 			{
 			}
 
 			/* read the actual data */
-			while ( (raw_input = raw_com_port->reg0_tx_rx_ls) == 0 )
+			while( (raw_input = __in_u8(&raw_com_port->reg0_tx_rx_ls)) == 0)
 			{
 			}
 
@@ -367,7 +381,7 @@ error_t uart16550_read_buffer(
 error_t uart16550_isr(void * usr_data, uint32_t vector)
 {
 	error_t retval = NO_ERROR;
-	volatile uart_16550_device_map_t *raw_com_port = NULL;
+	uart_16550_device_map_t *raw_com_port = NULL;
 
 	raw_com_port = (uart_16550_device_map_t*)usr_data;
 
@@ -379,7 +393,7 @@ error_t uart16550_isr(void * usr_data, uint32_t vector)
 	else
 	{
 		uint8_t ir_iden = 0;
-		ir_iden = raw_com_port->reg2_iir;
+		ir_iden = __in_u8(&raw_com_port->reg2_iir);
 
 		/* interrupt is pending, get the id */
 		if  ( (ir_iden & 0x01) == 0x00)

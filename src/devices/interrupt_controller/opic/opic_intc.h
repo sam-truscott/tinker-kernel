@@ -93,25 +93,35 @@ typedef enum
 	FEATURE_REPORTING_REGISTER = 0x1000
 } opic_misc_reg_t;
 
+typedef struct opic_user_data
+{
+	uint8_t * const base_address;
+} opic_user_data_t;
+
 /**
  * Get the kernel device instance for the base address
  * @param base_address The base address of the device
  * @param device The new device
  */
-void opic_intc_get_device(void * base_address, __kernel_device_t * device);
+void opic_intc_get_device(
+		const opic_user_data_t * const user_data,
+		__kernel_device_t * const device);
 
 /**
  * Acknowledge the interrupt and get the id number
  * @param device_id The device ID to query
  * @return The id on the controller that caused the interrupt
  */
-uint32_t opic_ack(uint32_t device_id);
+uint32_t opic_ack(
+		const __kernel_device_t * const device);
 
 /**
  * Finish processing of the given port interrupt
  * @param device_id The device to write to
  * @param port The port to finish
  */
-void opic_end_isr(uint32_t device_id, uint32_t port);
+void opic_end_isr(
+		const __kernel_device_t * const device,
+		const uint32_t port);
 
 #endif /* OPIC_INTC_H_ */

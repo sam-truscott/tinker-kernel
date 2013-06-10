@@ -83,7 +83,7 @@ void __debug_process_lookup(va_list * arguments, char ** ptr)
 	{
 		case 's':
 			{
-				const char * str = (const char *)va_arg(*arguments, char*);
+				const char * const str = (const char *)va_arg(*arguments, char*);
 				__debug_print_string(str);
 			}
 			break;

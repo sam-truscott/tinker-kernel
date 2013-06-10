@@ -17,7 +17,7 @@
  * from Samuel Truscott.
  */
 
-#include "api\sos3_api.h"
+#include "api/sos3_api.h"
 
 static sos2_sem sem;
 

@@ -19,7 +19,8 @@
 
 #include "opic_intc.h"
 
-#include "kernel/device/device_manager.h"
+#include "arch/tgt.h"
+#include "kernel/utils/util_memcpy.h"
 
 /**
  * Write a value to a register on the device
@@ -48,28 +49,33 @@ static void opic_swap_endianness(uint32_t* var);
 /**
  * Device details
  */
-static const __kernel_device_t UART16550_DEVICE_INFO =
+static const __kernel_device_t OPIC_DEVICE_INFO =
 {
-		{1,0,0,0, {"opic_intc\0"}},
-		NULL,
-		NULL,
-		opic_intc_write_register,
-		opic_intc_read_register,
-		NULL,
-		NULL,
-		NULL,
-		NULL
+		.info = {
+				.major_version = 1,
+				.minor_version = 0,
+				.revision = 0,
+				.build = 0
+		},
+		.write_register = opic_intc_write_register,
+		.read_register = opic_intc_read_register,
 };
 
 /*
  * The procedures below are for the device interface
  */
 
-void opic_intc_get_device(void * base_address, __kernel_device_t * device)
+void opic_intc_get_device(
+		const opic_user_data_t * const user_data,
+		__kernel_device_t * const device)
 {
-	__kernel_device_t new_device = UART16550_DEVICE_INFO;
+	__kernel_device_t new_device;
+	__util_memcpy(
+			&new_device,
+			&OPIC_DEVICE_INFO,
+			sizeof(OPIC_DEVICE_INFO));
 
-	new_device.user_data = base_address;
+	new_device.user_data = (void*)user_data;
 
 	if ( device )
 	{
@@ -121,20 +127,18 @@ static void opic_swap_endianness(uint32_t* var)
 /*
  * The procedures below are for high level functions
  */
-uint32_t opic_ack(uint32_t device_id)
+uint32_t opic_ack(
+		const __kernel_device_t * const device)
 {
-	uint32_t val = 0;
-	__devm_read_register(
-			device_id,
-			OPIC_PROC_BASE + INTERRUPT_ACK_REGISTER_N,
-			&val);
-	return val;
+	return __in_u32((const uint32_t*)(((const opic_user_data_t*)device->user_data)->base_address
+			+(OPIC_PROC_BASE + INTERRUPT_ACK_REGISTER_N)));
 }
 
-void opic_end_isr(uint32_t device_id, uint32_t port)
+void opic_end_isr(
+		const __kernel_device_t * const device,
+		const uint32_t port)
 {
-	__devm_write_register(
-			device_id,
-			OPIC_PROC_BASE + END_OF_INTERRUPT_REGISTER_N,
+	__out_u32(((uint32_t*)((opic_user_data_t*)device->user_data)->base_address
+			+ (OPIC_PROC_BASE + END_OF_INTERRUPT_REGISTER_N)),
 			port);
 }

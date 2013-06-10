@@ -32,7 +32,6 @@
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/scheduler/round_robin/scheduler_rr.h"
 #include "kernel/process/process_manager.h"
-#include "kernel/device/device_manager.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/alarms/alarm_manager.h"
 #include "kernel/utils/util_strlen.h"
@@ -94,24 +93,7 @@ static void __bsp_system_call_request(
  */
 static __kernel_device_t rs232_port_1;
 
-/**
- * The device ID from the device manager for Port 1
- */
-static uint32_t dev_uart16550_port_1_id;
-
-/**
- * The device information for port 2 of the UART 16550
- */
-static __kernel_device_t rs232_port_2;
-
-/**
- * The device ID from the device manager for Port 2
- */
-static uint32_t dev_uart16550_port_2_id;
-
 static __kernel_device_t opic_intc;
-
-static uint32_t opic_intc_id;
 
 static __timer_t ppc32_time_base_timer;
 
@@ -165,10 +147,8 @@ void __bsp_initialise(void)
 	/* Not supported __ppc_isr_attach(__ppc32_vector_floating_point_assist); */
 
 	uart16550_get_device(UART_1_BASE_ADDRESS, &rs232_port_1);
-	uart16550_get_device(UART_2_BASE_ADDRESS, &rs232_port_2);
 
 	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
-	rs232_port_2.write_buffer(UART_2_BASE_ADDRESS,0, "UART 16550 Port 2 Up\n\0", 21);
 
 	/* IBAT0 Setup for RAM */
 	__ppc32_set_ibat0l(
@@ -315,13 +295,9 @@ void __bsp_initialise(void)
 
 void __bsp_setup(void)
 {
-	dev_uart16550_port_1_id = __devm_install_device(&rs232_port_1);
-	dev_uart16550_port_2_id = __devm_install_device(&rs232_port_2);
-	__devm_initialise_device(dev_uart16550_port_1_id, NULL, 0);
-	__devm_initialise_device(dev_uart16550_port_2_id, NULL, 0);
+	rs232_port_1.initialise(&rs232_port_1, NULL, 0);
 
 	opic_intc_get_device((void*)0x80000000, &opic_intc);
-	opic_intc_id = __devm_install_device(&opic_intc);
 
 	/* 1Ghz clock with 64 time-base ticks per clock.
 	 * This doesn't match the PSIM simulation but it doesn't
@@ -378,9 +354,9 @@ static void __bsp_external_interrupt(
 		bool fp_enabled)
 {
 	if ( vector && context && fp_enabled ) {}
-	const uint32_t external_vector = opic_ack(opic_intc_id);
+	const uint32_t external_vector = opic_ack(&opic_intc);
 	__int_handle_external_vector(external_vector);
-	opic_end_isr(opic_intc_id, external_vector);
+	opic_end_isr(&opic_intc, external_vector);
 }
 
 static void __bsp_decrementer_interrupt(

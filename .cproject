@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743" moduleId="org.eclipse.cdt.core.settings" name="Debug">
@@ -32,9 +30,9 @@
 								<option id="gnu.c.compiler.option.warnings.extrawarn.1351521005" name="Extra warnings (-Wextra)" superClass="gnu.c.compiler.option.warnings.extrawarn" value="true" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.warnings.toerrors.121070054" name="Warnings as errors (-Werror)" superClass="gnu.c.compiler.option.warnings.toerrors" value="true" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.warnings.wconversion.1986443594" name="Implicit conversion warnings (-Wconversion)" superClass="gnu.c.compiler.option.warnings.wconversion" value="false" valueType="boolean"/>
-								<option id="gnu.c.compiler.option.misc.other.1038337099" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -std=gnu99" valueType="string"/>
+								<option id="gnu.c.compiler.option.misc.other.1038337099" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -std=gnu99 -fno-builtin" valueType="string"/>
 								<option id="gnu.c.compiler.option.include.paths.702533430" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;C:\cygwin\home\sam\tools\lib\gcc\powerpc-none-eabi\4.7.1\include&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/xtools/powerpc-none-eabi/lib/gcc/powerpc-none-eabi/4.8.1/include/"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/api}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 								</option>
@@ -42,6 +40,7 @@
 								<option id="gnu.c.compiler.option.optimization.flags.194745959" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags" value="-mpowerpc -mno-hard-dfp -mcpu=750 -mtune=750 -mno-altivec -mno-vrsave -m32 -msoft-float -mmultiple -mstring -mno-strict-align -mbig" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.933216957" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__KERNEL_DEBUGGING"/>
+									<listOptionValue builtIn="false" value="__POWERPC"/>
 									<listOptionValue builtIn="false" value="__BUILDING_KERNEL"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.621059128" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>

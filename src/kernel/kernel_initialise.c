@@ -26,7 +26,6 @@
 #include "kernel/scheduler/priority/scheduler_priority.h"
 #include "alarms/alarm_manager.h"
 #include "debug/debug_print.h"
-#include "device/device_manager.h"
 #include "interrupts/interrupt_manager.h"
 #include "memory/memory_manager.h"
 #include "process/process_manager.h"
@@ -133,8 +132,6 @@ void __kernel_initialise(void)
 
 	__kernel_sch_thread->state = thread_system;
 	__kernel_assert("Kernel couldn't start Scheduler Thread", __kernel_sch_thread != NULL);
-
-	__devm_initialise();
 
 	__sch_initialise_scheduler();
 }
