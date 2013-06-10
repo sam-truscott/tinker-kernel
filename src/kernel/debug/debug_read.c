@@ -1,10 +1,11 @@
 /*
- * debug_read.c
  *
- *  Created on: 11 Aug 2011
- *      Author: sam
+ * SOS Source Code
+ * __________________
+ *
+ *  [2009] - [2013] Samuel Steven Truscott
+ *  All Rights Reserved.
  */
-
 #include "debug_read.h"
 
 #include "../../arch/board_support.h"

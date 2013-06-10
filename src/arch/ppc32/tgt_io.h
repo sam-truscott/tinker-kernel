@@ -1,10 +1,11 @@
 /*
- * powerpc_io.h
  *
- *  Created on: 10 Jun 2013
- *      Author: struscott
+ * SOS Source Code
+ * __________________
+ *
+ *  [2009] - [2013] Samuel Steven Truscott
+ *  All Rights Reserved.
  */
-
 #ifndef POWERPC_IO_H_
 #define POWERPC_IO_H_
 

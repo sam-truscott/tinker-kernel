@@ -33,6 +33,7 @@
 								<option id="gnu.c.compiler.option.misc.other.1038337099" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -std=gnu99 -fno-builtin" valueType="string"/>
 								<option id="gnu.c.compiler.option.include.paths.702533430" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/xtools/powerpc-none-eabi/lib/gcc/powerpc-none-eabi/4.8.1/include/"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/arch/ppc32}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/api}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 								</option>

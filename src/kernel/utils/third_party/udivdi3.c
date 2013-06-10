@@ -1,10 +1,11 @@
 /*
- * udivdi3.c
  *
- *  Created on: 20 Jul 2011
- *      Author: other
+ * SOS Source Code
+ * __________________
+ *
+ *  [2009] - [2013] Samuel Steven Truscott
+ *  All Rights Reserved.
  */
-
 extern unsigned long long __udivmoddi4(
 		unsigned long long num,
 		unsigned long long den,

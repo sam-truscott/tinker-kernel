@@ -1,10 +1,11 @@
 /*
- * debug_read.h
  *
- *  Created on: 11 Aug 2011
- *      Author: sam
+ * SOS Source Code
+ * __________________
+ *
+ *  [2009] - [2013] Samuel Steven Truscott
+ *  All Rights Reserved.
  */
-
 #ifndef DEBUG_READ_H_
 #define DEBUG_READ_H_
 

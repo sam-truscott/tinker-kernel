@@ -1,10 +1,11 @@
 /*
- * kshell.c
  *
- *  Created on: 11 Aug 2011
- *      Author: sam
+ * SOS Source Code
+ * __________________
+ *
+ *  [2009] - [2013] Samuel Steven Truscott
+ *  All Rights Reserved.
  */
-
 #include "kshell.h"
 
 #include "sos3_api_types.h"
