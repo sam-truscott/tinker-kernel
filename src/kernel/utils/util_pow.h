@@ -9,7 +9,7 @@
 #ifndef UTIL_POW_H_
 #define UTIL_POW_H_
 
-#include "sos3_api.h"
+#include "sos_api.h"
 
 uint32_t __util_pow(const uint32_t a, const uint32_t b);
 

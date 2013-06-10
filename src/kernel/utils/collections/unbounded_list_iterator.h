@@ -9,7 +9,7 @@
 #ifndef UNBOUNDED_LIST_ITERATOR_H_
 #define UNBOUNDED_LIST_ITERATOR_H_
 
-#include "sos3_api_types.h"
+#include "sos_api_types.h"
 #include "../util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 

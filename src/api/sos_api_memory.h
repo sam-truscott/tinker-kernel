@@ -9,7 +9,7 @@
 #ifndef SOS_API_MEMORY_H_
 #define SOS_API_MEMORY_H_
 
-#include "sos3_api_types.h"
+#include "sos_api_types.h"
 
 void *	sos_memory_malloc(uint32_t size) SOS_API_SUFFIX;
 

@@ -9,7 +9,7 @@
 #ifndef BOARD_SUPPORT_H_
 #define BOARD_SUPPORT_H_
 
-#include "sos3.h"
+#include "sos.h"
 #include "kernel/scheduler/scheduler.h"
 
 /**

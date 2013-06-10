@@ -6,8 +6,8 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "sos3_api_memory.h"
-#include "sos3_api_kernel_interface.h"
+#include "sos_api_memory.h"
+#include "sos_api_kernel_interface.h"
 
 void *	sos_memory_malloc(uint32_t size)
 {

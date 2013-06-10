@@ -8,7 +8,7 @@
  */
 #include "kshell.h"
 
-#include "sos3_api_types.h"
+#include "api/sos_api_types.h"
 #include "kernel/debug/debug_print.h"
 #include "kernel/debug/debug_read.h"
 #include "kernel/process/process_manager.h"

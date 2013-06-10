@@ -9,8 +9,8 @@
 #ifndef SOS_API_SEMAPHORE_H_
 #define SOS_API_SEMAPHORE_H_
 
-#include "sos3_api_types.h"
-#include "sos3_api_errors.h"
+#include "sos_api_types.h"
+#include "sos_api_errors.h"
 
 typedef void* sos_sem;
 

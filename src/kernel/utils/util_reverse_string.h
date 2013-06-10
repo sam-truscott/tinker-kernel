@@ -9,7 +9,7 @@
 #ifndef UTIL_REVERSE_STRING_H_
 #define UTIL_REVERSE_STRING_H_
 
-#include "sos3_api.h"
+#include "sos_api.h"
 
 void __util_reverse_string(const char * src, const uint32_t src_length, char * dst);
 

@@ -9,7 +9,7 @@
 #ifndef HASHED_MAP_ITERATOR_H_
 #define HASHED_MAP_ITERATOR_H_
 
-#include "sos3_api_types.h"
+#include "sos_api_types.h"
 #include "../util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 

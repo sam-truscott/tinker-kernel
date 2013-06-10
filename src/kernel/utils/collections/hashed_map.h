@@ -24,7 +24,7 @@
 #ifndef HASHED_MAP_H_
 #define HASHED_MAP_H_
 
-#include "api/sos3_api_types.h"
+#include "api/sos_api_types.h"
 #include "../hash/basic_hashes.h"
 #include "../util_memset.h"
 

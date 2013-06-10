@@ -8,7 +8,7 @@
  */
 #include "uart16550.h"
 
-#include "sos3_api.h"
+#include "sos_api.h"
 #include "arch/tgt.h"
 #include "kernel/utils/util_memcpy.h"
 #include "tgt_io.h"

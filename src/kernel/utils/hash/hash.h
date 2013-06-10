@@ -9,7 +9,7 @@
 #ifndef HASH_H_
 #define HASH_H_
 
-#include "sos3_api.h"
+#include "sos_api.h"
 
 typedef int32_t(__hash_create_hash)(const void * data, const uint32_t size);
 

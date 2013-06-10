@@ -6,9 +6,9 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "sos3_api_process.h"
-#include "sos3_api.h"
-#include "sos3_api_kernel_interface.h"
+#include "sos_api_process.h"
+#include "sos_api.h"
+#include "sos_api_kernel_interface.h"
 
 /**
  * Create a new Process

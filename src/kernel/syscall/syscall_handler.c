@@ -9,7 +9,7 @@
 #include "syscall_handler.h"
 
 #include "arch/board_support.h"
-#include "sos3_api_kernel_interface.h"
+#include "sos_api_kernel_interface.h"
 #include "kernel/kernel_initialise.h"
 #include "kernel/kernel_main.h"
 #include "arch/tgt.h"

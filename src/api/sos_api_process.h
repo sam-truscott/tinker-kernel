@@ -9,9 +9,9 @@
 #ifndef SOS_API_PROCESS_H_
 #define SOS_API_PROCESS_H_
 
-#include "sos3_api_types.h"
-#include "sos3_api_errors.h"
-#include "sos3_api_kernel_interface.h"
+#include "sos_api_types.h"
+#include "sos_api_errors.h"
+#include "sos_api_kernel_interface.h"
 
 /**
  * The entry point for a new thread

@@ -9,7 +9,7 @@
 #ifndef BOOT_H_
 #define BOOT_H_
 
-#include "sos3.h"
+#include "sos.h"
 
 EXTERN void __kernel_boot(void);
 

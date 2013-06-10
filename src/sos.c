@@ -6,7 +6,7 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "api/sos3_api.h"
+#include "api/sos_api.h"
 
 static sos_sem sem;
 

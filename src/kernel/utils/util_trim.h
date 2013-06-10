@@ -9,7 +9,7 @@
 #ifndef UTIL_TRIM_H_
 #define UTIL_TRIM_H_
 
-#include "sos3_api.h"
+#include "sos_api.h"
 
 void __util_trim(char * string, uint32_t * length);
 

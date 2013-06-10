@@ -9,7 +9,7 @@
 #ifndef SOS_API_KERNEL_INTERFACE_H_
 #define SOS_API_KERNEL_INTERFACE_H_
 
-#include "sos3_api.h"
+#include "sos_api.h"
 
 #define UNUSED_PARAM (uint32_t)0
 

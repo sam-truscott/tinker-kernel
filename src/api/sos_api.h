@@ -9,10 +9,10 @@
 #ifndef SOS_API_H_
 #define SOS_API_H_
 
-#include "sos3_api_types.h"
-#include "sos3_api_errors.h"
-#include "sos3_api_process.h"
-#include "sos3_api_memory.h"
-#include "sos3_api_semaphore.h"
+#include "sos_api_types.h"
+#include "sos_api_errors.h"
+#include "sos_api_process.h"
+#include "sos_api_memory.h"
+#include "sos_api_semaphore.h"
 
 #endif /* SOS_API_H_ */

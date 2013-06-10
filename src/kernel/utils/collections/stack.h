@@ -9,7 +9,7 @@
 #ifndef STACK_H_
 #define STACK_H_
 
-#include "sos3_api_types.h"
+#include "sos_api_types.h"
 #include "../util_memset.h"
 #include "kernel/memory/memory_manager.h"
 #include "unbounded_list.h"

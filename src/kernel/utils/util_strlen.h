@@ -9,7 +9,7 @@
 #ifndef I_STRLEN_H_
 #define I_STRLEN_H_
 
-#include "sos3_api.h"
+#include "sos_api.h"
 
 uint32_t __util_strlen(const char * string, const uint32_t max);
 
