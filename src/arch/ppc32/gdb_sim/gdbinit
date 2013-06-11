@@ -1,8 +1,4 @@
-target sim -e bug -E big -r 134217728 -f device_tree
-# target sim -e bug -E big -t all -r 134217728 -f src\\board\\powerpc32\\powerpc32_isim\\device_tree
-# target sim -e bug -E big -t interrupts -r 134217728 -f device_tree
-# target sim -e bug -E big -t devices -r 134217728 -f device_tree
-# target sim -e bug -E big -r 134217728 -f device_tree
+target sim -e bug -E big -r 134217728 -t devices -f device_tree
 set architecture powerpc:750
 file Debug/sos3
 load

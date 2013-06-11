@@ -1,6 +1,6 @@
 /#address-cells 0x1
 
-#device te cpu
+#device the cpu
 /cpus/cpu@0
 	./cpu-nr 0
 
@@ -14,12 +14,9 @@
 #ensure we're in real mode
 /options/real-mode? true
 
-# Set up the initial stack pointer
-# /openprom/init/register/sp 0x51722
-
 # define the stack type
 /openprom/init/stack/stack-type "chirp"
-# /openprom/init/stack/stack-type "ppc-elf"
+#/openprom/init/stack/stack-type "ppc-elf"
 
 # print out the device tree once it's loaded
 /openprom/trace
@@ -27,7 +24,7 @@
 
 /openprom/options/model "603e"
 
-/openprom/options/smp 0x1
+#/openprom/options/smp 0x1
 
 /chosen
 #/chosen/stdin */openprom/pal
@@ -63,23 +60,12 @@
 # map the interrupt controller to the cpu external interrupt
 /iobus/opic > intr0 int /cpus/cpu@0x0
 
-/iobus@0xf40002F8
+/iobus@0xf4000000
 	./name psim-iobus2
-    ./reg 0xf40002F8 0x108
-/iobus@0xf40002F8/com@0xf40002F8
+    ./reg 0xf4000000 0x400
+/iobus@0xf4000000/com@0xf40002F8
 	./reg 0xf40002F8 8
 	./ > 0 2 /iobus/opic
-/iobus@0xf40003F8/com@0xf40003F8
-	./reg 0xf40003F8 8
-	./ > 0 3 /iobus/opic
-	
-/phb@0x90000000
-    ./#address-cells 3
-    ./#size-cells 2
-    ./ranges nm0,0,0,0x90000000 0x90000000 0x10000
-
-/phb@0x90000000/com@0 
-    ./ > 0 2 /iobus/opic
 	
 /nvram@0xf4008000
 	./reg 0xf4008000 0x8008
