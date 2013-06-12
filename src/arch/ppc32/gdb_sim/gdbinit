@@ -1,4 +1,5 @@
 target sim -e bug -E big -r 134217728 -t devices -f device_tree
-set architecture powerpc:750
+#target sim -e chirp -E big -t devices -f device_tree
+set architecture powerpc:7400
 file Debug/sos3
 load

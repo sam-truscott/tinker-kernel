@@ -7,14 +7,16 @@
 #setup the initial MSR
 /openprom/init/register/msr 0x3000
 /openprom/options/env "oea"
+/openprom/options/os-emul "bug"
 /openprom/options/oea-interrupt-prefix 0x0
-/openprom/options/oea-memory-size 0x8000000
+/openprom/options/oea-memory-size 0x1000
 /openprom/options/alignment 2 # strict
-
-#ensure we're in real mode
-/options/real-mode? true
+/openprom/options/model "604"
+#/openprom/options/smp 0x1
 
 # define the stack type
+#/openprom/init/register/sp 0x3feff0
+#/openprom/init/register/0.pc 0x100
 /openprom/init/stack/stack-type "chirp"
 #/openprom/init/stack/stack-type "ppc-elf"
 
@@ -22,15 +24,16 @@
 /openprom/trace
 /openprom/trace/print-device-tree 0x1
 
-/openprom/options/model "603e"
-
-#/openprom/options/smp 0x1
-
 /chosen
 #/chosen/stdin */openprom/pal
 #/chosen/stdout !/chosen/stdin
 #/chosen/stdout */openprom/pal
+/chosen/stdin */openprom/pal
+/chosen/stdout !/chosen/stdin
 /chosen/memory */memory
+
+/memory@0/reg 0 0x8000000
+/memory@0/available 0x0 0x8000000
 
 #
 # I/O Bus
@@ -63,6 +66,7 @@
 /iobus@0xf4000000
 	./name psim-iobus2
     ./reg 0xf4000000 0x400
+    
 /iobus@0xf4000000/com@0xf40002F8
 	./reg 0xf40002F8 8
 	./ > 0 2 /iobus/opic
