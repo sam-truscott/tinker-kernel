@@ -8,7 +8,7 @@
  */
 #include "api/sos_api.h"
 
-static sos_sem sem;
+static sos_sem sem __attribute__((section(".user_data")));
 
 static void my_initial_thread(void) __attribute__((section(".user_text")));
 static void my_other_thread(void) __attribute__((section(".user_text")));

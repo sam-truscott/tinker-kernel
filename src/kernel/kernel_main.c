@@ -62,11 +62,7 @@ void __kernel_main(void)
 
 	kmain();
 
-#ifndef HAS_CONSOLE
-#define HAS_CONSOLE
-#endif
-
-#if defined ( HAS_CONSOLE )
+#if defined ( __KERNEL_SHELL )
 	__proc_create_thread(
 			idle_thread->parent, /* kernel process */
 			"kshell",

@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 #include "kshell.h"
-
+#if defined(__KERNEL_SHELL)
 #include "api/sos_api_types.h"
 #include "kernel/debug/debug_print.h"
 #include "kernel/debug/debug_read.h"
@@ -283,3 +283,4 @@ static void __kshell_object_table(void)
 
 	process_list_it_t_delete(list);
 }
+#endif /* __KERNEL_SHELL */

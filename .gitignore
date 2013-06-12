@@ -17,3 +17,5 @@
 *.app
 /Debug
 /Release
+/debug_ppc_7400
+/debug_arm_sim
