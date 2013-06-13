@@ -8,6 +8,7 @@
  */
 #include "scheduler_priority.h"
 
+#include "kernel/kernel_assert.h"
 #include "kernel/kernel_initialise.h"
 #include "kernel/kernel_panic.h"
 #include "kernel/process/process_manager.h"
@@ -80,7 +81,6 @@ void __sch_priority_execute(__thread_t ** new_thread)
 	if ( __sch_active_queue )
 	{
 		thread_queue_t_front(__sch_active_queue, &__sch_current_thread);
-		thread_queue_t_pop(__sch_active_queue);
 	}
 
 	/* once we're either back at the start or we've
@@ -88,7 +88,8 @@ void __sch_priority_execute(__thread_t ** new_thread)
 	 * then use it */
 	if ( new_thread && __sch_current_thread )
 	{
-		thread_queue_t_push(__sch_active_queue, __sch_current_thread);
+		const bool reorder_ok = thread_queue_t_reorder_first(__sch_active_queue);
+		__kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		if ( __sch_current_thread->state == thread_ready)
 		{
 			 __sch_current_thread->state = thread_running;

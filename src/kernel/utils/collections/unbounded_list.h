@@ -66,6 +66,8 @@
 	\
 	PREFIX bool LIST_T##_remove_item(LIST_T * list, ITEM_T item); \
 	\
+	PREFIX bool LIST_T##_head_to_tail(LIST_T * list); \
+	\
 	PREFIX bool LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr); \
 	\
 	PREFIX bool LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr); \
@@ -283,7 +285,7 @@
 	{ \
 		bool ret = false; \
 		\
-		if ( list->size ) \
+		if ( list && list->size ) \
 		{ \
 			LIST_T##_element_t * e = list->head; \
 			uint32_t p = 0; \
@@ -299,6 +301,24 @@
 		} \
 		return ret; \
 	} \
+	PREFIX bool LIST_T##_head_to_tail(LIST_T * list) \
+	{ \
+		bool ret = false; \
+		\
+		if (list && list->size > 1) \
+		{ \
+			LIST_T##_element_t * oldHead = list->head; \
+			LIST_T##_element_t * oldTail = list->tail; \
+			list->head = oldHead->next; \
+			oldHead->next = NULL; \
+			oldTail->next = oldHead; \
+			list->tail = oldHead; \
+			ret = true; \
+		} \
+		\
+		return ret; \
+	} \
+	\
 	/**
 	 * Get an entry from the list
 	 */ \
@@ -379,6 +399,7 @@
 		LIST_T##_next_index(NULL); \
 		LIST_T##_remove_item(NULL, NULL); \
 		LIST_T##_insert(NULL, 0, NULL); \
+		LIST_T##_head_to_tail(NULL); \
 	} \
 
 #endif /* UNBOUNDED_LIST_H_ */

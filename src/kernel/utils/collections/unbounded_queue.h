@@ -36,6 +36,8 @@
 	\
 	PREFIX bool QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr); \
 	\
+	PREFIX bool QUEUE_T##_reorder_first(QUEUE_T * queue); \
+	\
 	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * queue); \
 	\
 	PREFIX bool QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item); \
@@ -112,6 +114,17 @@
 		return ok; \
 	} \
 	\
+	PREFIX bool QUEUE_T##_reorder_first(QUEUE_T * queue) \
+	{ \
+		bool ok = false; \
+		if (queue && queue->list) \
+		{ \
+			ok = QUEUE_T##_list_t_head_to_tail(queue->list); \
+		} \
+		\
+		return ok; \
+	} \
+	\
 	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * queue) \
 	{ \
 		uint32_t size = 0; \
@@ -143,6 +156,7 @@
 		QUEUE_T##_front(NULL, NULL); \
 		QUEUE_T##_remove(NULL, NULL); \
 		QUEUE_T##_size(NULL); \
+		QUEUE_T##_reorder_first(NULL); \
 	} \
 
 #endif /* UNBOUNDED_QUEUE_H_ */
