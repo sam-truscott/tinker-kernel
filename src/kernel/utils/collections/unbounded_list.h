@@ -311,15 +311,22 @@
 	{ \
 		bool ret = false; \
 		\
-		if (list && list->size > 1) \
+		if (list) \
 		{ \
-			LIST_T##_element_t * oldHead = list->head; \
-			LIST_T##_element_t * oldTail = list->tail; \
-			list->head = oldHead->next; \
-			oldHead->next = NULL; \
-			oldTail->next = oldHead; \
-			list->tail = oldHead; \
-			ret = true; \
+			if (list->size == 1) \
+			{ \
+				ret = true; \
+			} \
+			else if (list->size > 1) \
+			{ \
+				LIST_T##_element_t * oldHead = list->head; \
+				LIST_T##_element_t * oldTail = list->tail; \
+				list->head = oldHead->next; \
+				oldHead->next = NULL; \
+				oldTail->next = oldHead; \
+				list->tail = oldHead; \
+				ret = true; \
+			} \
 		} \
 		\
 		return ret; \
