@@ -9,6 +9,6 @@
 #ifndef DEBUG_PRINT_H_
 #define DEBUG_PRINT_H_
 
-void __debug_print(const char * msg, ...);
+void __debug_print(const char * const msg, ...);
 
 #endif /* DEBUG_PRINT_H_ */

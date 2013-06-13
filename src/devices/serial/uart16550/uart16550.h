@@ -31,6 +31,8 @@ typedef enum
  * @param base_address The base address of the device
  * @param device The new kernel device
  */
-void uart16550_get_device(void * base_address, __kernel_device_t * device);
+void uart16550_get_device(
+		const void * const base_address,
+		__kernel_device_t * const device);
 
 #endif /* UART16550_H_ */

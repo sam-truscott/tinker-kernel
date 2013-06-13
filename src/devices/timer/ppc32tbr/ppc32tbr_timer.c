@@ -19,9 +19,12 @@ typedef struct
 	__timer_callback * call_back;
 } __ppc_timer_usr_data_t;
 
-static void __ppc_timer_setup(void * usr_data,__time_t timeout, __timer_callback * call_back);
+static void __ppc_timer_setup(
+		const void * const usr_data,
+		const __time_t timeout,
+		__timer_callback * const call_back);
 
-static void __ppc_timer_cancel(void * usr_data);
+static void __ppc_timer_cancel(const void * const usr_data);
 
 void __ppc_get_timer(__process_t * parent, __timer_t * timer)
 {
@@ -61,7 +64,10 @@ void __ppc_check_timer(__timer_t * timer)
 	}
 }
 
-void __ppc_timer_setup(void * usr_data,__time_t timeout, __timer_callback * call_back)
+void __ppc_timer_setup(
+		const void * const usr_data,
+		const __time_t timeout,
+		__timer_callback * const call_back)
 {
 	if ( usr_data && call_back)
 	{
@@ -72,7 +78,7 @@ void __ppc_timer_setup(void * usr_data,__time_t timeout, __timer_callback * call
 	}
 }
 
-void __ppc_timer_cancel(void * usr_data)
+void __ppc_timer_cancel(const void * const usr_data)
 {
 	if ( usr_data )
 	{

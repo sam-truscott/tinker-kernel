@@ -28,7 +28,7 @@ void __debug_print(const char * msg, ...)
 #define MAX_INTEGER_LENGTH 10
 #define MAX_HEX_INTEGER_LENGTH 8
 
-static void __debug_process_lookup(va_list * arguments, char ** ptr);
+static void __debug_process_lookup(va_list * const arguments, const char ** const ptr);
 
 static void __debug_print_char(const char c);
 
@@ -36,13 +36,16 @@ static void __debug_print_string(const char * string);
 
 static void __debug_print_signed(const int32_t);
 
-static void __debug_print_hex(const uint32_t, bool upper_case, uint32_t pad);
+static void __debug_print_hex(
+		const uint32_t,
+		const bool upper_case,
+		const uint32_t pad);
 
-void __debug_print(const char * msg, ...)
+void __debug_print(const char * const msg, ...)
 {
 	/*__tgt_disable_external_interrupts();*/
 	va_list arguments;
-	char * ptr = (char*)msg;
+	const char * ptr = msg;
 
 	va_start (arguments, msg);
 
@@ -64,9 +67,9 @@ void __debug_print(const char * msg, ...)
 	/*__tgt_enable_external_interrupts();*/
 }
 
-void __debug_process_lookup(va_list * arguments, char ** ptr)
+void __debug_process_lookup(va_list * const arguments, const char ** const ptr)
 {
-	char * rptr = *ptr;
+	char * rptr = (char*)(*ptr);
 	rptr++;
 	switch(*rptr)
 	{
@@ -114,7 +117,10 @@ void __debug_print_signed(const int32_t i)
 	__debug_print_string(number);
 }
 
-void __debug_print_hex(const uint32_t i, bool upper_case, uint32_t pad)
+void __debug_print_hex(
+		const uint32_t i,
+		const bool upper_case,
+		const uint32_t pad)
 {
 	char hex_number[MAX_HEX_INTEGER_LENGTH + 1] = {0,0,0,0,0,0,0,0,0};
 	__util_i_to_h(i, hex_number,MAX_HEX_INTEGER_LENGTH);

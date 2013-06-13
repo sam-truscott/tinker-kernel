@@ -9,7 +9,6 @@
 #ifndef COLLECTIONS_H_
 #define COLLECTIONS_H_
 
-#include "bounded_array.h"
 #include "hashed_map.h"
 #include "unbounded_list.h"
 #include "stack.h"

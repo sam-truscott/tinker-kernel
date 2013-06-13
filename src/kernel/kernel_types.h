@@ -141,21 +141,25 @@ typedef struct
 
 typedef void (__timer_callback)(void);
 
-typedef void (__timer_setup)(void * usr_data,__time_t timeout, __timer_callback * call_back);
+typedef void (__timer_setup)(
+		const void * const usr_data,
+		const __time_t timeout,
+		__timer_callback * const call_back);
 
-typedef void (__timer_cancel)(void * usr_data);
+typedef void (__timer_cancel)(
+		const void * const usr_data);
 
 typedef struct
 {
 	__timer_setup *		timer_setup;
 	__timer_cancel *	timer_cancel;
 	void * 				usr_data;
-	uint32_t 				usr_data_size;
+	uint32_t 			usr_data_size;
 } __timer_t;
 
 typedef void(__alarm_call_back)(
-		void * usr_data,
-		uint32_t usr_data_param);
+		const void * const usr_data,
+		const uint32_t usr_data_param);
 
 /*
  * ========================================
@@ -275,7 +279,7 @@ typedef struct __thread_
 	uint32_t			flags;
 	struct __process *	parent;
 	__thread_state_t	state;
-	__object_t *		waiting_on;
+	const __object_t *	waiting_on;
 	__thread_entry * 	entry_point;
 	object_number_t		object_number;
 	/*
@@ -307,14 +311,22 @@ typedef struct __process
  */
 
 typedef void(__sch_initialise_t)(void);
-typedef void(__sch_implementation_t)(__thread_t ** new_thread);
+typedef void(__sch_implementation_t)(
+		__thread_t ** const new_thread);
 typedef __thread_t*(__sch_get_curr_thread_t)(void);
-typedef void(__sch_set_curr_thread_t)(__thread_t* t);
-typedef void(__sch_notify_new_thread_t)(__thread_t * t);
-typedef void(__sch_notify_exit_thread_t)(__thread_t * t);
-typedef void(__sch_notify_pause_thread_t)(__thread_t * t);
-typedef void(__sch_notify_resume_thread_t)(__thread_t * t);
-typedef void(__sch_notify_change_priority_t)(__thread_t * t, priority_t original_priority);
+typedef void(__sch_set_curr_thread_t)(
+		__thread_t * const t);
+typedef void(__sch_notify_new_thread_t)(
+		__thread_t * const t);
+typedef void(__sch_notify_exit_thread_t)(
+		__thread_t * const t);
+typedef void(__sch_notify_pause_thread_t)(
+		__thread_t * const t);
+typedef void(__sch_notify_resume_thread_t)(
+		__thread_t * const t);
+typedef void(__sch_notify_change_priority_t)(
+		__thread_t * const t,
+		const priority_t original_priority);
 
 typedef struct __scheduler
 {
@@ -350,17 +362,32 @@ typedef error_t (__kernel_device_initialise)(
 		void * param,
 		const uint32_t param_size);
 
-typedef error_t (__kernel_device_control)(void * usr_data, uint32_t code);
+typedef error_t (__kernel_device_control)(
+		void * usr_data, uint32_t code);
 
-typedef error_t (__kernel_device_write_register)(void * usr_data, uint32_t id, uint32_t val);
+typedef error_t (__kernel_device_write_register)(
+		const void * const usr_data,
+		const uint32_t id,
+		const uint32_t val);
 
-typedef error_t (__kernel_device_read_register)(void * usr_data, uint32_t id, uint32_t * val);
+typedef error_t (__kernel_device_read_register)(
+		const void * const usr_data, const uint32_t id, uint32_t * const val);
 
-typedef error_t (__kernel_device_write_buffer)(void * usr_data, const uint32_t dst, void * src, const uint32_t src_size);
+typedef error_t (__kernel_device_write_buffer)(
+		const void * const usr_data,
+		const uint32_t dst,
+		const void * const src,
+		const uint32_t src_size);
 
-typedef error_t (__kernel_device_read_buffer)(void * usr_data, const uint32_t src, void * dst, const uint32_t dst_size);
+typedef error_t (__kernel_device_read_buffer)(
+		const void * const usr_data,
+		const uint32_t src,
+		void * const dst,
+		const uint32_t dst_size);
 
-typedef error_t (__kernel_device_isr)(void * usr_data, uint32_t vector);
+typedef error_t (__kernel_device_isr)(
+		const void * const usr_data,
+		const uint32_t vector);
 
 typedef struct __kernel_device
 {
@@ -372,7 +399,7 @@ typedef struct __kernel_device
 	__kernel_device_write_buffer *	write_buffer;
 	__kernel_device_read_buffer *	read_buffer;
 	__kernel_device_isr * 			isr;
-	void * user_data;
+	const void * user_data;
 } __kernel_device_t;
 
 #endif /* KERNEL_TYPES_H_ */

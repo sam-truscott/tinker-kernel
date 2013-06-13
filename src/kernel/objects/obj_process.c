@@ -11,8 +11,8 @@
 #include "object_table.h"
 
 error_t __obj_create_process(
-		__mem_pool_info_t * pool,
-		__object_table_t * table,
+		__mem_pool_info_t * const pool,
+		__object_table_t * const table,
 		const uint32_t process_id,
 		__object_t ** object)
 {

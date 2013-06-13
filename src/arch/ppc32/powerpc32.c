@@ -127,7 +127,7 @@ uint32_t __ppc_get_ns_per_tb_tick(uint64_t clock_hz, uint32_t ticks_per_clock)
 	return ticks_per_ns;
 }
 
-uint32_t __tgt_get_context_stack_pointer(void * context)
+uint32_t __tgt_get_context_stack_pointer(const void * const context)
 {
 	uint32_t sp = 0;
 
@@ -209,7 +209,7 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool fp_enabled)
 	}
 }
 
-void __tgt_disable_thread_interrupts(__thread_t * thread)
+void __tgt_disable_thread_interrupts(__thread_t * const thread)
 {
 	if ( thread && thread->context)
 	{
@@ -283,7 +283,7 @@ static void __ppc_setup_paged_area(
 	}
 }
 
-void __tgt_initialise_process(__process_t * process)
+void __tgt_initialise_process(__process_t * const process)
 {
 	if ( !process->kernel_process )
 	{
@@ -351,7 +351,10 @@ static uint32_t virtual_stack_pointer(__thread_t * thread)
 	return sp;
 }
 
-void __tgt_initialise_context(__thread_t * thread, bool kernel_mode, uint32_t exit_function)
+void __tgt_initialise_context(
+		__thread_t * const thread,
+		const bool kernel_mode,
+		const uint32_t exit_function)
 {
 	if ( thread && thread->context)
 	{
@@ -395,7 +398,9 @@ void __tgt_initialise_context(__thread_t * thread, bool kernel_mode, uint32_t ex
 	}
 }
 
-void __tgt_prepare_context(void * context, __thread_t * thread)
+void __tgt_prepare_context(
+		void * const context,
+		const __thread_t * const thread)
 {
 	__ppc32_ivt_struct_t * vector = (__ppc32_ivt_struct_t*)context;
 	if ( vector && thread )

@@ -26,7 +26,9 @@ HASH_MAP_TYPE_T(object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_SPEC_T(static, object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_BODY_T(static, object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 
-error_t __obj_initialse_table(__process_t * proc, __object_table_t * t)
+error_t __obj_initialse_table(
+		const __process_t * const proc,
+		__object_table_t * const t)
 {
 	error_t ret = NO_ERROR;
 	/* create the hashmap for the object table */
@@ -49,8 +51,8 @@ error_t __obj_initialse_table(__process_t * proc, __object_table_t * t)
 }
 
 error_t __obj_allocate_next_free_object(
-		__mem_pool_info_t * pool,
-		__object_table_t * t,
+		__mem_pool_info_t * const pool,
+		__object_table_t * const t,
 		__object_t ** o)
 {
 	bool id_ok = false;

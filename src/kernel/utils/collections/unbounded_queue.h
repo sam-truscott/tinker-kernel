@@ -14,15 +14,24 @@
 #include "kernel/memory/memory_manager.h"
 #include "unbounded_list.h"
 
-#define UNBOUNDED_QUEUE_SPEC(PREFIX, QUEUE_T, ITEM_T) \
+#define UNBOUNDED_QUEUE_TYPE(QUEUE_T) \
 	\
-	UNBOUNDED_LIST_SPEC(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	typedef struct QUEUE_T QUEUE_T; \
+
+#define UNBOUNDED_QUEUE_INTERNAL_TYPE(QUEUE_T, ITEM_T) \
 	\
-	typedef struct QUEUE_T##_STRUCT \
+	UNBOUNDED_LIST_TYPE(QUEUE_T##_list_t) \
+	UNBOUNDED_LIST_INTERNAL_TYPE(QUEUE_T##_list_t, ITEM_T) \
+	\
+	typedef struct QUEUE_T \
 	{ \
 		QUEUE_T##_list_t * list; \
 		\
-	} QUEUE_T; \
+	} QUEUE_T##_internal; \
+
+#define UNBOUNDED_QUEUE_SPEC(PREFIX, QUEUE_T, ITEM_T) \
+	\
+	UNBOUNDED_LIST_SPEC(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
 	PREFIX void QUEUE_T##_initialise(QUEUE_T * queue, __mem_pool_info_t * pool); \
 	\

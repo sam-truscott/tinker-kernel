@@ -14,19 +14,21 @@
 
 #include "kernel/utils/collections/unbounded_queue.h"
 
+UNBOUNDED_QUEUE_TYPE(thread_obj_queue_t)
+UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_obj_queue_t, __object_t*)
 UNBOUNDED_QUEUE_SPEC(static,thread_obj_queue_t, __object_t*)
 UNBOUNDED_QUEUE_BODY(static,thread_obj_queue_t, __object_t*)
 
 static void __obj_push_semaphore_listener(
-		thread_obj_queue_t * list,
-		__object_t * object);
+		thread_obj_queue_t * const list,
+		__object_t * const object);
 
 static void __obj_notify_semaphore_listener(
-		__object_t * semaphore,
-		thread_obj_queue_t * list);
+		__object_t * const semaphore,
+		thread_obj_queue_t * const list);
 
 error_t __obj_initialise_semaphore(
-		__object_t * object,
+		__object_t * const object,
 		const uint32_t initial_count)
 {
 	error_t result = NO_ERROR;
@@ -52,8 +54,8 @@ error_t __obj_initialise_semaphore(
 }
 
 error_t __obj_create_semaphore(
-		__mem_pool_info_t * pool,
-		__object_table_t * table,
+		__mem_pool_info_t * const pool,
+		__object_table_t * const table,
 		__object_t ** object,
 		const uint32_t initial_count)
 {
@@ -83,8 +85,8 @@ error_t __obj_create_semaphore(
 	return result;
 }
 
-error_t __obj_get_semaphore(__object_t * thread,
-							__object_t * semaphore)
+error_t __obj_get_semaphore(__object_t * const thread,
+							__object_t * const semaphore)
 {
 	error_t result = NO_ERROR;
 
@@ -176,8 +178,8 @@ error_t __obj_get_semaphore(__object_t * thread,
 }
 
 error_t __obj_release_semaphore(
-		__object_t * thread,
-		__object_t * semaphore)
+		__object_t * const thread,
+		__object_t * const semaphore)
 {
 	error_t result = NO_ERROR;
 
@@ -236,8 +238,8 @@ error_t __obj_release_semaphore(
 }
 
 static void __obj_push_semaphore_listener(
-		thread_obj_queue_t * list,
-		__object_t * object)
+		thread_obj_queue_t * const list,
+		__object_t * const object)
 {
 	if ( list && object )
 	{
@@ -246,8 +248,8 @@ static void __obj_push_semaphore_listener(
 }
 
 static void __obj_notify_semaphore_listener(
-		__object_t * semaphore,
-		thread_obj_queue_t * list)
+		__object_t * const semaphore,
+		thread_obj_queue_t * const list)
 {
 	if ( list )
 	{

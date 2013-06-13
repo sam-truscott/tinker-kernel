@@ -11,30 +11,34 @@
 
 #include "../kernel_types.h"
 
-void __sch_initialise(__scheduler_t * impl);
+void __sch_initialise(const __scheduler_t * const impl);
 
 void __sch_initialise_scheduler(void);
 
 void __sch_scheduler(void);
 
-void __sch_notify_new_thread(__thread_t * t);
-void __sch_notify_exit_thread(__thread_t * t);
-void __sch_notify_pause_thread(__thread_t * t);
-void __sch_notify_resume_thread(__thread_t * t);
-void __sch_notify_change_priority(__thread_t * t, priority_t original_priority);
+void __sch_notify_new_thread(__thread_t * const t);
+void __sch_notify_exit_thread(__thread_t * const t);
+void __sch_notify_pause_thread(__thread_t * const t);
+void __sch_notify_resume_thread(__thread_t * const  t);
+void __sch_notify_change_priority(
+		__thread_t * const t,
+		const  priority_t original_priority);
 
 __thread_t * __sch_get_current_thread(void);
 
-void __sch_set_current_thread(__thread_t * thread);
+void __sch_set_current_thread(__thread_t * const thread);
 
 void __sch_prepare_scheduler_context(
-		void * context,
-		uint32_t context_size);
+		void * const context,
+		const uint32_t context_size);
 
 void __sch_save_context(
-		void * context,
-		uint32_t context_size);
+		const void * const context,
+		const uint32_t context_size);
 
-void __sch_terminate_current_thread(void * context, uint32_t context_size);
+void __sch_terminate_current_thread(
+		const void * const context,
+		const uint32_t context_size);
 
 #endif /* SCHEDULER_IMPL_H_ */

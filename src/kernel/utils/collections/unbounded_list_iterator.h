@@ -13,13 +13,19 @@
 #include "../util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
-#define UNBOUNDED_LIST_ITERATOR_SPEC(PREFIX, ITERATOR_T, LIST_T, ITEM_T) \
+#define UNBOUNDED_LIST_ITERATOR_TYPE(ITERATOR_T) \
 	\
-	typedef struct ITERATOR_T##_STRUCT \
+	typedef struct ITERATOR_T ITERATOR_T; \
+
+#define UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(ITERATOR_T, LIST_T, ITEM_T) \
+	\
+	typedef struct ITERATOR_T \
 	{ \
 		LIST_T * list; \
 		LIST_T##_element_t * current; \
-	} ITERATOR_T ; \
+	} ITERATOR_T##__internal ; \
+
+#define UNBOUNDED_LIST_ITERATOR_SPEC(PREFIX, ITERATOR_T, LIST_T, ITEM_T) \
 	\
 	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, LIST_T * list); \
 	\

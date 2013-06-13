@@ -14,14 +14,24 @@
 #include "kernel/memory/memory_manager.h"
 #include "unbounded_list.h"
 
+#define STACK_TYPE(STACK_T) \
+	\
+	typedef struct STACK_T STACK_T; \
+
+#define STACK_INTERNAL_TYPE(STACK_T, ITEM_T) \
+	\
+	UNBOUNDED_LIST_TYPE(STACK_T##_list_t) \
+	UNBOUNDED_LIST_INTERNAL_TYPE(STACK_T##_list_t, ITEM_T) \
+	\
+	typedef struct STACK_T\
+	{ \
+		STACK_T##_list_t * list; \
+	} STACK_T##__internal; \
+	\
+
 #define STACK_SPEC(PREFIX, STACK_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC(PREFIX, STACK_T##_list_t, ITEM_T) \
-	\
-	typedef struct \
-	{ \
-		STACK_T##_list_t * list; \
-	} STACK_T; \
 	\
 	PREFIX void STACK_T##_initialise(STACK_T * stack, __mem_pool_info_t * pool); \
 	\

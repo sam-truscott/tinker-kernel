@@ -22,7 +22,7 @@
  */
 static __scheduler_t __sch_scheduler_implementation;
 
-void __sch_initialise(__scheduler_t * impl)
+void __sch_initialise(const __scheduler_t * const impl)
 {
 	__util_memcpy(&__sch_scheduler_implementation, impl, sizeof(__scheduler_t));
 }
@@ -35,7 +35,7 @@ void __sch_initialise_scheduler(void)
 	}
 }
 
-void __sch_notify_new_thread(__thread_t * t)
+void __sch_notify_new_thread(__thread_t * const t)
 {
 	if ( __sch_scheduler_implementation.new_thread )
 	{
@@ -43,7 +43,7 @@ void __sch_notify_new_thread(__thread_t * t)
 	}
 }
 
-void __sch_notify_exit_thread(__thread_t * t)
+void __sch_notify_exit_thread(__thread_t * const t)
 {
 	if ( __sch_scheduler_implementation.exit_thread )
 	{
@@ -51,7 +51,7 @@ void __sch_notify_exit_thread(__thread_t * t)
 	}
 }
 
-void __sch_notify_pause_thread(__thread_t * t)
+void __sch_notify_pause_thread(__thread_t * const t)
 {
 	if ( __sch_scheduler_implementation.pause_thread )
 	{
@@ -59,7 +59,7 @@ void __sch_notify_pause_thread(__thread_t * t)
 	}
 }
 
-void __sch_notify_resume_thread(__thread_t * t)
+void __sch_notify_resume_thread(__thread_t * const t)
 {
 	if ( __sch_scheduler_implementation.resume_thread )
 	{
@@ -67,7 +67,9 @@ void __sch_notify_resume_thread(__thread_t * t)
 	}
 }
 
-void __sch_notify_change_priority(__thread_t * t, priority_t original_priority)
+void __sch_notify_change_priority(
+		__thread_t * const t,
+		const priority_t original_priority)
 {
 	if ( __sch_scheduler_implementation.change_priority )
 	{
@@ -75,7 +77,9 @@ void __sch_notify_change_priority(__thread_t * t, priority_t original_priority)
 	}
 }
 
-void __sch_terminate_current_thread(void * context, uint32_t context_size)
+void __sch_terminate_current_thread(
+		const void * const context,
+		const uint32_t context_size)
 {
 	__thread_t * thread = __sch_get_current_thread();
 
@@ -119,21 +123,21 @@ __thread_t * __sch_get_current_thread(void)
 	return t;
 }
 
-void __sch_set_current_thread(__thread_t * thread)
+void __sch_set_current_thread(__thread_t * const thread)
 {
 	__sch_scheduler_implementation.set_curr_thread(thread);
 }
 
 void __sch_prepare_scheduler_context(
-		void * context,
-		uint32_t context_size)
+		void * const context,
+		const uint32_t context_size)
 {
 	__util_memcpy(context, __kernel_get_scheduler_thread()->context, context_size);
 }
 
 void __sch_save_context(
-		void * context,
-		uint32_t context_size)
+		const void * const context,
+		const uint32_t context_size)
 {
 	__thread_t * curr_thread = __sch_get_current_thread();
 	if ( curr_thread )

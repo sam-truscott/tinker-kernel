@@ -15,9 +15,13 @@
 #include "kernel/utils/collections/unbounded_queue.h"
 #include "kernel/utils/collections/stack.h"
 
+UNBOUNDED_QUEUE_TYPE(thread_queue_t)
+UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_queue_t, __thread_t*)
 UNBOUNDED_QUEUE_SPEC(static, thread_queue_t, __thread_t*)
 UNBOUNDED_QUEUE_BODY(static, thread_queue_t, __thread_t*)
 
+STACK_TYPE(queue_stack_t)
+STACK_INTERNAL_TYPE(queue_stack_t, thread_queue_t*)
 STACK_SPEC(static, queue_stack_t, thread_queue_t* )
 STACK_BODY(static, queue_stack_t, thread_queue_t* )
 

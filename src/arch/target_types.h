@@ -27,4 +27,10 @@ typedef volatile uint8_t __spinlock_t;
 #define MMU_SEG_COUNT	16
 #define MMU_MAX_SIZE	(MMU_SEG_SIZE * MMU_SEG_COUNT)
 
+#define SWAP_32(V) \
+	(V & 0x000000FF) << 24 | \
+	(V & 0x0000FF00) << 8  | \
+	(V & 0x00FF0000) >> 8  | \
+	(V & 0xFF000000) >> 24
+
 #endif /* TARGET_TYPES_H_ */

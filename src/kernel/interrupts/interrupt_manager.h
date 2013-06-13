@@ -16,11 +16,15 @@
  */
  void __int_initialise(void);
 
- void __int_install_isr(uint32_t vector, __kernel_device_t * device);
+ void __int_install_isr(
+		 const uint32_t vector,
+		 const __kernel_device_t * const device);
 
- void __int_uninstall_isr(uint32_t vector);
+ void __int_uninstall_isr(
+		 const uint32_t vector);
 
- error_t __int_handle_external_vector(uint32_t vector);
+ error_t __int_handle_external_vector(
+		 const uint32_t vector);
 
 /**
  * Interrupt that occurs when a the BSP requests a context
@@ -30,8 +34,8 @@
  * @param context_size The size of the context data
  */
 void __int_context_switch_interrupt(
-		void * context,
-		uint32_t context_size);
+		void * const context,
+		const uint32_t context_size);
 
 /**
  * Interrupt that occurs when the executing program/process/thread
@@ -41,8 +45,8 @@ void __int_context_switch_interrupt(
  * @param context_size The size of the context data
  */
 void __int_fatal_program_error_interrupt(
-		void * context,
-		uint32_t context_size);
+		void * const context,
+		const uint32_t context_size);
 
 /**
  * Interrupt that occurs when the executing program/process/thread
@@ -52,7 +56,7 @@ void __int_fatal_program_error_interrupt(
  * @param context_size The size of the context data
  */
 void __int_syscall_request_interrupt(
-		void * context,
-		uint32_t context_size);
+		void * const context,
+		const uint32_t context_size);
 
 #endif /* INTERRUPT_MANAGER_H_ */

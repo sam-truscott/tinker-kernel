@@ -22,17 +22,22 @@ void __tgt_enable_external_interrupts(void);
 
 void __tgt_disable_external_interrupts(void);
 
-void __tgt_disable_thread_interrupts(__thread_t * thread);
+void __tgt_disable_thread_interrupts(__thread_t * const thread);
 
-void __tgt_initialise_process(__process_t * process);
+void __tgt_initialise_process(__process_t * const process);
 
-void __tgt_initialise_context(__thread_t * thread, bool kernel_mode, uint32_t exit_function);
+void __tgt_initialise_context(
+		__thread_t * const thread,
+		const bool kernel_mode,
+		const uint32_t exit_function);
 
-void __tgt_prepare_context(void * context, __thread_t * thread);
+void __tgt_prepare_context(
+		void * const context,
+		const __thread_t * const thread);
 
 uint32_t __tgt_get_stack_pointer(void);
 
-uint32_t __tgt_get_context_stack_pointer(void * context);
+uint32_t __tgt_get_context_stack_pointer(const void * const context);
 
 /*
  * Syscall TODO remove

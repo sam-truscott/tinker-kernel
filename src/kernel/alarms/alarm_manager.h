@@ -13,7 +13,7 @@
 
 void __alarm_initialse(void);
 
-void __alarm_set_timer(__timer_t * timer);
+void __alarm_set_timer(__timer_t * const timer);
 
 /**
  * Setup an alarm for a thread to a given call back
@@ -25,18 +25,18 @@ void __alarm_set_timer(__timer_t * timer);
  * @return Errors
  */
 error_t __alarm_set_alarm(
-		__thread_t * thread,
-		__time_t * timeout,
-		__alarm_call_back * call_back,
-		void * usr_data,
-		uint32_t usr_data_size,
-		uint32_t * alarm_id);
+		const __thread_t * const thread,
+		const __time_t * const timeout,
+		__alarm_call_back * const call_back,
+		const void * const usr_data,
+		const uint32_t usr_data_size,
+		uint32_t * const alarm_id);
 
 /**
  * Cancel a running alarm
  * @param alarm_id The alarm ID to cancel
  * @return Errors
  */
-error_t __alarm_unset_alarm(uint32_t alarm_id);
+error_t __alarm_unset_alarm(const uint32_t alarm_id);
 
 #endif /* ALARM_MANAGER_H_ */

@@ -16,11 +16,13 @@
 typedef struct
 {
 	__alarm_call_back *	call_back;
-	void *				usr_data;
-	uint32_t				usr_data_size;
+	void * 				usr_data;
+	uint32_t			usr_data_size;
 	__time_t			alarm_time;
 } __alarm_t;
 
+UNBOUNDED_LIST_TYPE(alarm_list_t)
+UNBOUNDED_LIST_INTERNAL_TYPE(alarm_list_t, __alarm_t*)
 UNBOUNDED_LIST_SPEC(static, alarm_list_t, __alarm_t*)
 UNBOUNDED_LIST_BODY(static, alarm_list_t, __alarm_t*)
 
@@ -45,18 +47,18 @@ void __alarm_initialse(void)
 	alarm_list_t_initialise(&__alarm_list, NULL);
 }
 
-void __alarm_set_timer(__timer_t * timer)
+void __alarm_set_timer(__timer_t * const timer)
 {
 	__alarm_timer = timer;
 }
 
 error_t __alarm_set_alarm(
-		__thread_t * thread,
-		__time_t * timeout,
-		__alarm_call_back * call_back,
-		void * usr_data,
-		uint32_t usr_data_size,
-		uint32_t * alarm_id)
+		const __thread_t * const thread,
+		const __time_t * const timeout,
+		__alarm_call_back * const call_back,
+		const void * const usr_data,
+		const uint32_t usr_data_size,
+		uint32_t * const alarm_id)
 {
 	error_t ret = NO_ERROR;
 	if ( thread && timeout )
@@ -87,7 +89,7 @@ error_t __alarm_set_alarm(
 			{
 				new_alarm->alarm_time = __time_add(now, *timeout);
 				new_alarm->call_back = call_back;
-				new_alarm->usr_data = usr_data;
+				new_alarm->usr_data = (void *)usr_data;
 				new_alarm->usr_data_size = usr_data_size;
 				if ( alarm_list_t_add(list, new_alarm) )
 				{
@@ -128,7 +130,7 @@ error_t __alarm_set_alarm(
  * @param alarm_id The alarm ID to cancel
  * @return Errors
  */
-error_t __alarm_unset_alarm(uint32_t alarm_id)
+error_t __alarm_unset_alarm(const uint32_t alarm_id)
 {
 	error_t ret = NO_ERROR;
 

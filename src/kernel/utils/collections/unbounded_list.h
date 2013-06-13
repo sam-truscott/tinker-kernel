@@ -13,6 +13,33 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
+#define UNBOUNDED_LIST_TYPE(LIST_T) \
+	\
+	typedef struct LIST_T LIST_T; \
+
+#define UNBOUNDED_LIST_INTERNAL_TYPE(LIST_T, ITEM_T) \
+	\
+	/**
+	 * The data structure for a single element
+	 * in the list
+	 */ \
+	typedef struct LIST_T##_element \
+	{ \
+		ITEM_T item; \
+		struct LIST_T##_element * next; \
+	} LIST_T##_element_t; \
+	\
+	/**
+	 * The data structure to use for the array
+	 */ \
+	typedef struct LIST_T \
+	{ \
+		uint32_t size; \
+		LIST_T##_element_t * head; \
+		LIST_T##_element_t * tail; \
+		__mem_pool_info_t * pool; \
+	} LIST_T##_internal; \
+
 /**
  * This abstract data type is used to model a generic
  * single (forward) linked list.
@@ -30,27 +57,6 @@
  * to free the memory on the heap.
  */
 #define UNBOUNDED_LIST_SPEC(PREFIX, LIST_T, ITEM_T) \
-	\
-	/**
-	 * The data structure for a single element
-	 * in the list
-	 */ \
-	typedef struct LIST_T##_element \
-	{ \
-		ITEM_T item; \
-		struct LIST_T##_element * next; \
-	} LIST_T##_element_t; \
-	\
-	/**
-	 * The data structure to use for the array
-	 */ \
-	typedef struct LIST_T##_STRUCT \
-	{ \
-		uint32_t size; \
-		LIST_T##_element_t * head; \
-		LIST_T##_element_t * tail; \
-		__mem_pool_info_t * pool; \
-	} LIST_T; \
 	\
 	PREFIX void LIST_T##_initialise(LIST_T * list, __mem_pool_info_t * pool); \
 	\

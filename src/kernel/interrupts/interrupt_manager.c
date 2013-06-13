@@ -18,7 +18,7 @@
 #include "kernel/utils/util_memcpy.h"
 #include "arch/tgt.h"
 
-static __kernel_device_t * __int_isrs[__MAX_ISRS];
+static const __kernel_device_t * __int_isrs[__MAX_ISRS];
 
 void __int_initialise(void)
 {
@@ -28,20 +28,22 @@ void __int_initialise(void)
 	}
 }
 
-void __int_install_isr(uint32_t vector, __kernel_device_t * device)
+void __int_install_isr(
+		 const uint32_t vector,
+		 const __kernel_device_t * const device)
 {
 	__int_isrs[vector] = device;
 }
 
-void __int_uninstall_isr(uint32_t vector)
+void __int_uninstall_isr(const uint32_t vector)
 {
 	__int_isrs[vector] = NULL;
 }
 
-error_t __int_handle_external_vector(uint32_t vector)
+error_t __int_handle_external_vector(const uint32_t vector)
 {
 	error_t ret = NO_ERROR;
-	__kernel_device_t * device = __int_isrs[vector];
+	const __kernel_device_t * const device = __int_isrs[vector];
 	if ( device && device->isr )
 	{
 		device->isr(device->user_data, vector);
@@ -54,8 +56,8 @@ error_t __int_handle_external_vector(uint32_t vector)
 }
 
 void __int_context_switch_interrupt(
-		void * context,
-		uint32_t context_size)
+		void * const context,
+		const uint32_t context_size)
 {
 	__kernel_assert("Context Switch Context missing", context != NULL);
 	__kernel_assert("Context Switch Context missing", context_size > 0);
@@ -68,8 +70,8 @@ void __int_context_switch_interrupt(
 }
 
 void __int_fatal_program_error_interrupt(
-		void * context,
-		uint32_t context_size)
+		void * const context,
+		const uint32_t context_size)
 {
 	__kernel_assert("Fatal Interrupt Context missing", context != NULL);
 	__kernel_assert("Fatal Interrupt Context missing", context_size > 0);
@@ -80,8 +82,8 @@ void __int_fatal_program_error_interrupt(
 }
 
 void __int_syscall_request_interrupt(
-		void * context,
-		uint32_t context_size)
+		void * const context,
+		const uint32_t context_size)
 {
 	__kernel_assert("System Call Interrupt Context missing", context != NULL);
 	__kernel_assert("System Call Interrupt Context missing", context_size > 0);

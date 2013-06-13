@@ -19,7 +19,7 @@
  * @param val The value to write
  * @return Error
  */
-static error_t opic_intc_write_register(void * usr_data, uint32_t id, uint32_t val);
+static error_t opic_intc_write_register(const void * const usr_data, const uint32_t id, const uint32_t val);
 
 /**
  * Read a value from a register on the device
@@ -28,13 +28,7 @@ static error_t opic_intc_write_register(void * usr_data, uint32_t id, uint32_t v
  * @param val The address of value to write
  * @return Error
  */
-static error_t opic_intc_read_register(void * usr_data, uint32_t id, uint32_t * val);
-
-/**
- * Endian swap routine
- * @param var The variable to swap
- */
-static void opic_swap_endianness(uint32_t* var);
+static error_t opic_intc_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val);
 
 /**
  * Device details
@@ -73,11 +67,11 @@ void opic_intc_get_device(
 	}
 }
 
-error_t opic_intc_write_register(void * usr_data, uint32_t id, uint32_t val)
+error_t opic_intc_write_register(const void * const usr_data, const uint32_t id, const uint32_t val)
 {
 #ifdef OPIC_BIG_ENDIAN
 		uint32_t new_val = val;
-		opic_swap_endianness(&new_val);
+		new_val = SWAP_32(new_val);
 		*(uint32_t*)((uint32_t)(usr_data) + id) = new_val;
 #else
 		*(uint32_t*)((uint32_t)(usr_data) + id) = val;
@@ -86,32 +80,19 @@ error_t opic_intc_write_register(void * usr_data, uint32_t id, uint32_t val)
 	return NO_ERROR;
 }
 
-error_t opic_intc_read_register(void * usr_data, uint32_t id, uint32_t * val)
+error_t opic_intc_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val)
 {
 	/* TODO driver_id should be checked */
 #ifdef OPIC_BIG_ENDIAN
 		uint32_t v;
 		v = *(uint32_t*)((uint32_t)(usr_data) + id);
-		opic_swap_endianness(&v);
+		v = SWAP_32(v);
 		*val = v;
 #else
 		*val = *(uint32_t*)((uint32_t)(usr_data) + id);
 #endif
 
 	return NO_ERROR;
-}
-
-static void opic_swap_endianness(uint32_t* var)
-{
-	uint32_t new_val = 0;
-	uint8_t* overlay = (uint8_t*)var;
-
-	new_val += (overlay[3] << 24);
-	new_val += (overlay[2] << 16);
-	new_val += (overlay[1] << 8);
-	new_val += (overlay[0]);
-
-	*var = new_val;
 }
 
 /*

@@ -37,13 +37,13 @@ static void __mem_allocate_block(
 		__mem_block_t ** new_block);
 
 static void __mem_deallocate_block(
-		__mem_pool_info_t * pool,
-		__mem_block_t * block);
+		__mem_pool_info_t * const pool,
+		__mem_block_t * const block);
 
 static void __mem_join_blocks(
-		__mem_pool_info_t * pool,
-		__mem_block_t * free_block,
-		const __mem_block_t * freed_block);
+		__mem_pool_info_t * const pool,
+		__mem_block_t * const free_block,
+		const __mem_block_t * const freed_block);
 
 /**
  * the primary memory pool i.e. RAM
@@ -70,7 +70,7 @@ bool __mem_initialise(
 bool 	__mem_init_memory_pool(
 		const uint32_t base_addr,
 		const uint32_t pool_size,
-		__mem_pool_info_t ** pool)
+		__mem_pool_info_t ** const pool)
 {
 	uint32_t temp = 0;
 	uint32_t pool_base = base_addr;
@@ -131,7 +131,7 @@ bool 	__mem_init_memory_pool(
 }
 
 bool	__mem_init_process_memory(
-		__mem_pool_info_t ** proc_memory_block,
+		__mem_pool_info_t ** const proc_memory_block,
 		const uint32_t size)
 {
 	bool ret = false;
@@ -158,14 +158,14 @@ bool	__mem_init_process_memory(
 }
 
 void *	__mem_alloc(
-		__mem_pool_info_t * pool,
+		__mem_pool_info_t * const pool,
 		const uint32_t size)
 {
 	return __mem_alloc_aligned(pool, size, 0);
 }
 
 void* __mem_alloc_aligned(
-		__mem_pool_info_t * pool,
+		__mem_pool_info_t * const pool,
 		const uint32_t size,
 		const uint32_t alignment)
 {
@@ -178,8 +178,9 @@ void* __mem_alloc_aligned(
 
 	if ( pool != NULL )
 	{
+		__mem_pool_info_t * allocation_pool = pool;
 		__mem_find_free_block(
-				&pool,
+				&allocation_pool,
 				size,
 				alignment,
 				&free_block);
@@ -194,7 +195,7 @@ void* __mem_alloc_aligned(
 #endif
 
 			__mem_allocate_block(
-					pool,
+					allocation_pool,
 					size,
 					free_block,
 					&new_block);
@@ -222,7 +223,7 @@ void __mem_find_free_block(
 		__mem_pool_info_t ** pool,
 		const uint32_t size,
 		const uint32_t alignment,
-		__mem_block_t **ret_block)
+		__mem_block_t ** ret_block)
 {
 	__mem_pool_info_t * pool_info = NULL;
 	bool found = false;
@@ -320,8 +321,8 @@ void __mem_allocate_block(
 }
 
 void __mem_deallocate_block(
-		__mem_pool_info_t * pool,
-		__mem_block_t * block)
+		__mem_pool_info_t * const pool,
+		__mem_block_t * const block)
 {
 	__mem_block_t *next = NULL;
 	__mem_block_t *prev = NULL;
@@ -398,9 +399,9 @@ void __mem_deallocate_block(
 }
 
 void __mem_join_blocks(
-		__mem_pool_info_t * pool,
-		__mem_block_t * free_block,
-		const __mem_block_t * freed_block)
+		__mem_pool_info_t * const pool,
+		__mem_block_t * const free_block,
+		const __mem_block_t * const freed_block)
 {
 	__mem_block_t * block = NULL;
 	__mem_block_t * prev_block = NULL;
@@ -442,8 +443,8 @@ void __mem_join_blocks(
 }
 
 void __mem_free(
-		__mem_pool_info_t * pool,
-		void * base)
+		__mem_pool_info_t * const pool,
+		const void * const base)
 {
 	__mem_pool_info_t * pool_info = pool;
 	bool found = false;

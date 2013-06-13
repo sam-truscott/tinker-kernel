@@ -13,9 +13,11 @@
 #include "kernel/utils/collections/unbounded_list.h"
 #include "kernel/utils/collections/unbounded_list_iterator.h"
 
-UNBOUNDED_LIST_SPEC(extern, process_list_t, __process_t*)
+UNBOUNDED_LIST_TYPE(process_list_t)
+UNBOUNDED_LIST_ITERATOR_TYPE(process_list_it_t)
 UNBOUNDED_LIST_ITERATOR_SPEC(extern, process_list_it_t, process_list_t, __process_t*)
-UNBOUNDED_LIST_SPEC(extern, thread_list_t, __thread_t*)
+UNBOUNDED_LIST_TYPE(thread_list_t)
+UNBOUNDED_LIST_ITERATOR_TYPE(thread_list_it_t)
 UNBOUNDED_LIST_ITERATOR_SPEC(extern, thread_list_it_t, thread_list_t, __thread_t*)
 /*
  * Process Manager

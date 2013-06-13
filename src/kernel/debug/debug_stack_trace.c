@@ -15,10 +15,10 @@ void __debug_print_current_stack_trace(void)
 	__debug_print_stack_trace(__tgt_get_stack_pointer());
 }
 
-void __debug_print_stack_trace(uint32_t frame_pointer)
+void __debug_print_stack_trace(const uint32_t frame_pointer)
 {
-	uint32_t * sp = (uint32_t*)frame_pointer;
-	uint32_t pc;
+	const uint32_t * sp = (const uint32_t*)frame_pointer;
+	uint32_t pc = 0;
 
 	while (*sp != 0)
 	{

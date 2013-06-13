@@ -82,15 +82,25 @@ static error_t uart16550_initialise(
 		void * param,
 		const uint32_t param_size);
 
-static error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val);
+static error_t uart16550_write_register(const void * const usr_data, const uint32_t id, const uint32_t val);
 
-static error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val);
+static error_t uart16550_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val);
 
-static error_t uart16650_write_buffer(void * usr_data, const uint32_t dst, void * src, const uint32_t src_size);
+static error_t uart16650_write_buffer(
+		const void * const usr_data,
+		const uint32_t dst,
+		const void * const src,
+		const uint32_t src_size);
 
-static error_t uart16550_read_buffer(void * usr_data, const uint32_t src, void * dst, const uint32_t dst_size);
+static error_t uart16550_read_buffer(
+		const void * const usr_data,
+		const uint32_t src,
+		void * const dst,
+		const uint32_t dst_size);
 
-static error_t uart16550_isr(void * usr_data, uint32_t vector);
+static error_t uart16550_isr(
+		const void * const usr_data,
+		const uint32_t vector);
 
 static const __kernel_device_t UART16550_DEVICE_INFO =
 {
@@ -116,7 +126,9 @@ static void __serial_process_msr(
 		uart_16550_modem_status_t *info,
 		uint8_t val);
 
-void uart16550_get_device(void * base_address, __kernel_device_t * device)
+void uart16550_get_device(
+		const void * const base_address,
+		__kernel_device_t * const device)
 {
 	__kernel_device_t new_device;
 	__util_memcpy(
@@ -174,7 +186,7 @@ error_t uart16550_initialise(
 	return ret;
 }
 
-error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val)
+error_t uart16550_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val)
 {
 	error_t ret = NO_ERROR;
 	uart_16550_device_map_t *raw_com_port = NULL;
@@ -224,7 +236,7 @@ error_t uart16550_read_register(void * usr_data, uint32_t id, uint32_t * val)
 	return ret;
 }
 
-error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val)
+error_t uart16550_write_register(const void * const usr_data, const uint32_t id, const uint32_t val)
 {
 	error_t ret = NO_ERROR;
 	uart_16550_device_map_t *raw_com_port = NULL;
@@ -275,9 +287,9 @@ error_t uart16550_write_register(void * usr_data, uint32_t id, uint32_t val)
 }
 
 error_t uart16650_write_buffer(
-		void * usr_data,
+		const void * const usr_data,
 		const uint32_t dst,
-		void * src,
+		const void * const src,
 		const uint32_t src_size)
 {
 	error_t retval = NO_ERROR;
@@ -320,9 +332,9 @@ error_t uart16650_write_buffer(
 }
 
 error_t uart16550_read_buffer(
-		void * usr_data,
+		const void * const usr_data,
 		const uint32_t src,
-		void * dst,
+		void * const dst,
 		const uint32_t dst_size)
 {
 	error_t retval = NO_ERROR;
@@ -368,7 +380,9 @@ error_t uart16550_read_buffer(
 	return retval;
 }
 
-error_t uart16550_isr(void * usr_data, uint32_t vector)
+error_t uart16550_isr(
+		const void * const usr_data,
+		const uint32_t vector)
 {
 	error_t retval = NO_ERROR;
 	uart_16550_device_map_t *raw_com_port = NULL;

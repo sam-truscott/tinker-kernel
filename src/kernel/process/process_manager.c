@@ -23,21 +23,27 @@
 /**
  * A linked list of processes
  */
+UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC(static, process_list_t, __process_t*)
 UNBOUNDED_LIST_BODY(extern, process_list_t, __process_t*)
 
 /**
  * An iterator for the process list
  */
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, __process_t*)
 UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, __process_t*)
 
 /**
  * The code to handle an unbounded list of threads for the process
  */
+UNBOUNDED_LIST_INTERNAL_TYPE(thread_list_t, __thread_t*)
+UNBOUNDED_LIST_SPEC(static, thread_list_t, __thread_t*)
 UNBOUNDED_LIST_BODY(extern, thread_list_t, __thread_t*)
 
 /**
  * An iterator for the thread list
  */
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(thread_list_it_t, thread_list_t, __thread_t*)
 UNBOUNDED_LIST_ITERATOR_BODY(extern, thread_list_it_t, thread_list_t, __thread_t*)
 
 /**
