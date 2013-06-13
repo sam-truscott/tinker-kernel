@@ -17,9 +17,6 @@
 
 #include "arch/target_types.h"
 
-#define EXTERN extern
-#define INLINE inline
-
 #define NULL ((void*)0)
 
 typedef enum

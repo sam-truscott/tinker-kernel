@@ -11,6 +11,6 @@
 
 #include "sos.h"
 
-EXTERN void __kernel_boot(void);
+extern void __kernel_boot(void);
 
 #endif /* BOOT_H_ */

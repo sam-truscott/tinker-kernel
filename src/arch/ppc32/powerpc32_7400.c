@@ -14,7 +14,7 @@
 /**
  * Varaible used to store the stack pointer in interrupt routines
  */
-EXTERN uint32_t __ivt_stack_end;
+extern uint32_t __ivt_stack_end;
 uint32_t * __ivt_stack = &__ivt_stack_end;
 
 void __tgt_initialise(void)

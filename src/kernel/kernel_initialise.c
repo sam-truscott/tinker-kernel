@@ -125,17 +125,17 @@ void __kernel_initialise(void)
 	__sch_initialise_scheduler();
 }
 
-inline __process_t * __kernel_get_process(void)
+__process_t * __kernel_get_process(void)
 {
 	return __kernel_process;
 }
 
-inline __thread_t * __kernel_get_idle_thread(void)
+__thread_t * __kernel_get_idle_thread(void)
 {
 	return __kernel_idle_thread;
 }
 
-inline __thread_t * __kernel_get_scheduler_thread(void)
+__thread_t * __kernel_get_scheduler_thread(void)
 {
 	return __kernel_sch_thread;
 }

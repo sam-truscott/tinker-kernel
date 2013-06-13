@@ -79,18 +79,18 @@ typedef enum __ppc32_interrupt_vector
 	__ppc32_vector_floating_point_assist = 14
 } __ppc32_interrupt_vector_t;
 
-EXTERN uint32_t __ivt_system_reset_interrupt;
-EXTERN uint32_t __ivt_machine_check_interrupt;
-EXTERN uint32_t __ivt_data_storage_interrupt;
-EXTERN uint32_t __ivt_inst_storage_interrupt;
-EXTERN uint32_t __ivt_external_interrupt;
-EXTERN uint32_t __ivt_alignment_interrupt;
-EXTERN uint32_t __ivt_program_interrupt;
-EXTERN uint32_t __ivt_fp_unavailable;
-EXTERN uint32_t __ivt_decrementer_interrupt;
-EXTERN uint32_t __ivt_syscall_interrupt;
-EXTERN uint32_t __ivt_trace_interrupt;
-EXTERN uint32_t __ivt_fp_assist_interrupt;
+extern uint32_t __ivt_system_reset_interrupt;
+extern uint32_t __ivt_machine_check_interrupt;
+extern uint32_t __ivt_data_storage_interrupt;
+extern uint32_t __ivt_inst_storage_interrupt;
+extern uint32_t __ivt_external_interrupt;
+extern uint32_t __ivt_alignment_interrupt;
+extern uint32_t __ivt_program_interrupt;
+extern uint32_t __ivt_fp_unavailable;
+extern uint32_t __ivt_decrementer_interrupt;
+extern uint32_t __ivt_syscall_interrupt;
+extern uint32_t __ivt_trace_interrupt;
+extern uint32_t __ivt_fp_assist_interrupt;
 
 /**
  * The structure of the saved interrupt vector context

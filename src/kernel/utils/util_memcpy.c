@@ -13,11 +13,6 @@
 #define SIZE_OF_16 sizeof(uint16_t)
 #define SIZE_OF_8 sizeof(uint8_t)
 
-extern inline void * memcpy(void * dst, const void * src, const uint32_t size) {
-	__util_memcpy(dst, src, size);
-	return dst;
-}
-
 void __util_memcpy(void * dst, const void * src, const uint32_t size)
 {
 	uint32_t total = size;

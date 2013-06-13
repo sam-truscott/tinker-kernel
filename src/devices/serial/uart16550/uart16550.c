@@ -140,7 +140,10 @@ void uart16550_get_device(
 
 	if (device)
 	{
-		*device = new_device;
+		__util_memcpy(
+				device,
+				&new_device,
+				sizeof(__kernel_device_t));
 	}
 }
 

@@ -66,8 +66,6 @@ void __sch_priority_initialise(void)
 		queue_stack_t_initialise( &__sch_queue_stack, __mem_get_default_pool() );
 		queue_stack_t_push(&__sch_queue_stack, __sch_active_queue);
 
-		/* __sch_priority_stack = queue_stack_t_create(__kernel_get_process()->heap_stack); */
-
 		/* get the process iterator */
 		__sch_process_iterator = __proc_get_process_iterator();
 		process_list_it_t_get(__sch_process_iterator, &proc);
@@ -106,7 +104,7 @@ void __sch_priority_execute(__thread_t ** new_thread)
 	}
 }
 
-void __sch_priority_notify_new_thread(__thread_t * t)
+void __sch_priority_notify_new_thread(__thread_t * const t)
 {
 	if ( !__sch_initialised )
 	{
@@ -115,7 +113,7 @@ void __sch_priority_notify_new_thread(__thread_t * t)
 
 	if ( t )
 	{
-		thread_queue_t * queue = &(__sch_thread_queues[t->priority]);
+		thread_queue_t * const queue = &(__sch_thread_queues[t->priority]);
 		thread_queue_t_push(queue, t);
 
 		if ( t->priority > __sch_current_priority )
@@ -126,52 +124,53 @@ void __sch_priority_notify_new_thread(__thread_t * t)
 		}
 		else if ( t->priority < __sch_current_priority )
 		{
-			/* if we add a thread that's of a lower priority then itmust be added
+			/* if we add a thread that's of a lower priority then it must be added
 			 * to the queue stack so when the new high priority task finishes the
-			 *  new lower priority task won't be executed */
+			 *  new lower priority task will be executed */
 			thread_queue_t * stack_queue = NULL;
 			const uint32_t stack_size = queue_stack_t_size(&__sch_queue_stack);
-			int32_t current_priority = (int32_t)(stack_size - 1);
+			int32_t stack_index = (int32_t)(stack_size - 1);
 			bool found = false;
 			int32_t insert_index = -1;
 
 			/*
 			 * the stack queue uses the end of the queue (size) as the highest priority
 			 * and the start (0) of the queue as the lowest priority
+			 *
+			 * --> the below code works out where to install the priority queue into
+			 * --> the stack which is priority based
+			 *
 			 */
-			while(current_priority >= 0)
+			while(stack_index >= 0 && !found)
 			{
-				if ( queue_stack_t_get(&__sch_queue_stack, current_priority, &stack_queue) )
+				if ( queue_stack_t_get(&__sch_queue_stack, stack_index, &stack_queue) )
 				{
 					const uint32_t queue_size = thread_queue_t_size(stack_queue);
 					if ( queue_size )
 					{
 						__thread_t * nt = NULL;
-						bool ok;
-						ok = thread_queue_t_front(stack_queue, &nt);
+						const bool ok = thread_queue_t_front(stack_queue, &nt);
 						if ( ok == true )
 						{
 							if ( nt->priority == t->priority )
 							{
 								/* it's already on the stack */
 								found = true;
-								break;
 							}
 							else if ( nt->priority < t->priority)
 							{
-								insert_index = current_priority + 1;
+								insert_index = stack_index + 1;
 								found = false;
-								break;
 							}
 						}
 					}
 				}
-				current_priority--;
+				stack_index--;
 			}
 
 			/*
-			 * we meed to insert the queue into the stack to ensure
-			 * that at somepoint it'll be scheduled
+			 * we need to insert the queue into the stack to ensure
+			 * that at some point it'll be scheduled
 			 */
 			if ( !found && insert_index >= 0 )
 			{
@@ -185,7 +184,7 @@ void __sch_priority_notify_new_thread(__thread_t * t)
 	}
 }
 
-void __sch_priority_notify_exit_thread(__thread_t * t)
+void __sch_priority_notify_exit_thread(__thread_t * const t)
 {
 	if ( t )
 	{
@@ -206,17 +205,19 @@ void __sch_priority_notify_exit_thread(__thread_t * t)
 	}
 }
 
-void __sch_priority_notify_pause_thread(__thread_t * t)
+void __sch_priority_notify_pause_thread(__thread_t * const t)
 {
 	__sch_priority_notify_exit_thread(t);
 }
 
-void __sch_priority_notify_resume_thread(__thread_t * t)
+void __sch_priority_notify_resume_thread(__thread_t * const t)
 {
 	__sch_priority_notify_new_thread(t);
 }
 
-void __sch_priority_notify_change_priority(__thread_t * t, priority_t original_priority)
+void __sch_priority_notify_change_priority(
+		__thread_t * const t,
+		const priority_t original_priority)
 {
 	if ( t )
 	{
@@ -249,7 +250,7 @@ __thread_t * __sch_priority_get_curr_thread(void)
 	return __sch_current_thread;
 }
 
-void __sch_priority_set_curr_thread(__thread_t * thread)
+void __sch_priority_set_curr_thread(__thread_t * const thread)
 {
 	if ( thread )
 	{

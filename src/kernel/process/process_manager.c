@@ -72,7 +72,7 @@ error_t __proc_create_process(
 	error_t ret = NO_ERROR;
 	__process_t * proc = NULL;
 
-	/* get the new process id - SLOW! - need to speed up */
+	/* get the new process id - SLOW! - TODO need to speed up */
 	__process_t * tmp = NULL;
 	uint32_t proc_id = 0;
 	for ( uint32_t i = 0 ; i < __MAX_PROCESSES ; i++ )

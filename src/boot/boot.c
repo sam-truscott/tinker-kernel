@@ -9,7 +9,7 @@
 #include "boot.h"
 #include "kernel/kernel_main.h"
 
-EXTERN void __kernel_boot(void)
+extern void __kernel_boot(void)
 {
 	/*
 	 * Kick off the kernel

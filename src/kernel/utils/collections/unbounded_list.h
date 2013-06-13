@@ -313,7 +313,7 @@
 		\
 		if (list) \
 		{ \
-			if (list->size == 1) \
+			if (list->size <= 1) /* 0 or 1 implicitly works */ \
 			{ \
 				ret = true; \
 			} \
