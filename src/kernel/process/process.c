@@ -29,7 +29,7 @@ UNBOUNDED_LIST_ITERATOR_BODY(extern, thread_list_it_t, thread_list_t, __thread_t
 typedef struct __process_t
 {
 	uint32_t				process_id;
-	const thread_list_t*	threads;
+	thread_list_t	*		threads;
 	__mem_pool_info_t * 	memory_pool;
 	__object_table_t *		object_table;
 	object_number_t			object_number;
@@ -56,7 +56,7 @@ __process_t * __process_create(
 		const uint32_t length = __util_strlen(name,__MAX_PROCESS_IMAGE_LEN);
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
-		 // FIXME: needs to be allocated?
+		p->object_table = __obj_table_create(p->memory_pool);
 	}
 	return p;
 }
@@ -151,7 +151,10 @@ bool __process_add_thread(
 				thread_id,
 				thread,
 				 objno);
+
 		__thread_set_oid(thread, *objno);
+
+		thread_list_t_add(process->threads, thread);
 
 		ret = true;
 	}
@@ -160,7 +163,7 @@ bool __process_add_thread(
 
 __thread_t * _process_get_main_thread(const __process_t * process)
 {
-	__thread_t * t;
+	__thread_t * t = NULL;
 	thread_list_t_get(process->threads, 0, &t);
 	return t;
 }

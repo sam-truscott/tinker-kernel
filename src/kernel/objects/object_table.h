@@ -15,6 +15,8 @@
 
 typedef struct __object_table_t __object_table_t;
 
+__object_table_t * __obj_table_create(__mem_pool_info_t * const pool);
+
 error_t __obj_initialse_table(
 		__object_table_t * const table,
 		__mem_pool_info_t * const pool);

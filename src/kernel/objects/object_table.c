@@ -33,6 +33,16 @@ typedef struct __object_table_t
 	object_number_t next_id;
 } __object_table_internal_t;
 
+__object_table_t * __obj_table_create(__mem_pool_info_t * const pool)
+{
+	__object_table_t * table = __mem_alloc(pool, sizeof(__object_table_t));
+	if (table)
+	{
+		__obj_initialse_table(table, pool);
+	}
+	return table;
+}
+
 error_t __obj_initialse_table(
 		__object_table_t * const table,
 		__mem_pool_info_t * const pool)

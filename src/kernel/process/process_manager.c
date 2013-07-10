@@ -100,7 +100,7 @@ error_t __proc_create_process(
 		parent_pool = __process_get_mem_pool(__thread_get_parent(curr_thread));
 	}
 
-	__mem_pool_info_t * new_mem_pool;
+	__mem_pool_info_t * new_mem_pool = NULL;
 	const bool pool_allocated = __mem_init_process_memory(
 			&new_mem_pool,
 			heap + stack);
@@ -124,53 +124,47 @@ error_t __proc_create_process(
 		}
 		else
 		{
-			ret = __obj_initialse_table(
-					__process_get_object_table(proc),
-					__process_get_mem_pool(proc));
+			__object_t * process_obj = NULL;
+			__object_t * thread_obj = NULL;
+			ret = __proc_create_thread(
+									proc,
+									initial_task_name,
+									entry_point,
+									priority,
+									stack,
+									flags,
+									&thread_obj,
+									NULL);
 
 			if ( ret == NO_ERROR )
 			{
-				__object_t * process_obj = NULL;
-				__object_t * thread_obj = NULL;
-				ret = __proc_create_thread(
-										proc,
-										initial_task_name,
-										entry_point,
-										priority,
-										stack,
-										flags,
-										&thread_obj,
-										NULL);
+				ret = __obj_create_process(
+						__process_get_mem_pool(proc),
+						__process_get_object_table(proc),
+						__process_get_pid(proc),
+						&process_obj);
+				//FIXME: pass oid in as param
+				__process_set_oid(proc, __obj_get_number(process_obj));
 
 				if ( ret == NO_ERROR )
 				{
-					ret = __obj_create_process(
-							__process_get_mem_pool(proc),
-							__process_get_object_table(proc),
-							__process_get_pid(proc),
-							&process_obj);
-					__process_set_oid(proc, __obj_get_number(process_obj));
-
-					if ( ret == NO_ERROR )
+					if ( process_list_t_add(__process_list, proc) == false )
 					{
-						if ( process_list_t_add(__process_list, proc) == false )
-						{
-							__util_free(proc);
-							ret = OUT_OF_MEMORY;
-						}
-						else
-						{
-							__tgt_initialise_process(proc);
-							if ( process )
-							{
-								* process = proc;
-							}
-						}
+						__util_free(proc);
+						ret = OUT_OF_MEMORY;
 					}
 					else
 					{
-						ret = OBJECT_ADD_FAILED;
+						__tgt_initialise_process(proc);
+						if ( process )
+						{
+							* process = proc;
+						}
 					}
+				}
+				else
+				{
+					ret = OBJECT_ADD_FAILED;
 				}
 			}
 		}
@@ -206,7 +200,7 @@ error_t __proc_create_thread(
 	if ( thread != NULL )
 	{
 		/* add the thread to the process list */
-		object_number_t objno;
+		object_number_t objno = INVALID_OBJECT;
 		if (__process_add_thread(process, thread, &objno))
 		{
 			if (__thread_get_state(thread) == thread_ready)
