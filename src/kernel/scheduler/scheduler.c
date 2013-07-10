@@ -14,12 +14,9 @@
 #include "kernel/kernel_assert.h"
 #include "kernel/kernel_panic.h"
 #include "kernel/kernel_initialise.h"
-
 #include "kernel/process/process_manager.h"
-
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_semaphore.h"
-
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/utils/collections/unbounded_queue.h"
 #include "kernel/utils/collections/stack.h"
@@ -255,8 +252,6 @@ void __sch_scheduler(void)
 {
 	while(1==1)
 	{
-		__thread_t * next_thread = NULL;
-
 		if ( __sch_active_queue )
 		{
 			thread_queue_t_front(__sch_active_queue, &__sch_current_thread);
@@ -265,7 +260,7 @@ void __sch_scheduler(void)
 		/* once we're either back at the start or we've
 		 * selected a new thread check its running and
 		 * then use it */
-		if ( next_thread && __sch_current_thread )
+		if ( __sch_current_thread )
 		{
 			const bool reorder_ok = thread_queue_t_reorder_first(__sch_active_queue);
 			__kernel_assert("re-ordering of priority queue failed", reorder_ok);
@@ -273,20 +268,19 @@ void __sch_scheduler(void)
 			if ( state == thread_ready)
 			{
 				__thread_set_state(__sch_current_thread, thread_running);
-				 next_thread = __sch_current_thread;
 			}
 			else
 			{
-				next_thread = NULL;
+				__sch_current_thread = NULL;
 			}
 		}
 
-		if ( next_thread == NULL )
+		if ( __sch_current_thread == NULL )
 		{
-			next_thread = __kernel_get_idle_thread();
+			__sch_current_thread = __kernel_get_idle_thread();
 		}
 
-		__kernel_assert("Scheduler couldn't get next thread", next_thread != NULL);
+		__kernel_assert("Scheduler couldn't get next thread", __sch_current_thread != NULL);
 
 		SOS_API_CALL_0(syscall_load_thread);
 	}
