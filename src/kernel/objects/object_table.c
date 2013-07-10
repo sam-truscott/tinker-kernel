@@ -11,10 +11,11 @@
 #include "object.h"
 #include "obj_thread.h"
 
-#include "../utils/util_malloc.h"
-#include "../memory/memory_manager.h"
+#include "kernel/process/process.h"
+#include "kernel/utils/util_malloc.h"
+#include "kernel/memory/memory_manager.h"
 
-/** TODO: this takes up too much space mainly because we declare and index list for
+/** FIXME TODO: this takes up too much space mainly because we declare and index list for
  * all the elements (1024), this could be optimised down to only have a table for
  * blocks of say 10 elements.
  * @param object_map_t
@@ -22,25 +23,32 @@
  * @param
  * @param __MAX_OBJECT_TABLE_SIZE
  */
-HASH_MAP_TYPE_T(object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
-HASH_MAP_SPEC_T(static, object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
-HASH_MAP_BODY_T(static, object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_SPEC_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+
+typedef struct __object_table_t
+{
+	object_map_t * the_map;
+	object_number_t next_id;
+} __object_table_internal_t;
 
 error_t __obj_initialse_table(
-		const __process_t * const proc,
-		__object_table_t * const t)
+		__object_table_t * const table,
+		__mem_pool_info_t * const pool)
 {
 	error_t ret = NO_ERROR;
+
 	/* create the hashmap for the object table */
-	if ( t )
+	if ( table )
 	{
-		t->the_map = __mem_alloc(proc->memory_pool, sizeof(object_map_t));
-		t->the_map = object_map_t_create(
+		table->the_map = __mem_alloc(pool, sizeof(object_map_t));
+		table->the_map = object_map_t_create(
 				__hash_basic_integer,
-				proc->memory_pool);
-		if  (t->the_map )
+				pool);
+		if  (table->the_map )
 		{
-			t->next_id = 1;
+			table->next_id = 1;
 		}
 		else
 		{
@@ -50,19 +58,19 @@ error_t __obj_initialse_table(
 	return ret;
 }
 
-error_t __obj_allocate_next_free_object(
-		__mem_pool_info_t * const pool,
+error_t __obj_add_object(
 		__object_table_t * const t,
-		__object_t ** o)
+		__object_t * const obj,
+		object_number_t * const objno)
 {
 	bool id_ok = false;
 	error_t ret = NO_ERROR;
 
-	if ( t && o)
+	if ( t && obj)
 	{
 		object_map_t * map = (object_map_t*)t->the_map;
 		/* find the next suitable object id to use */
-		uint32_t id = t->next_id;
+		object_number_t id = t->next_id;
 		const uint32_t tc = object_map_t_capacity(map);
 		for ( ; id != tc ; id++ )
 		{
@@ -77,16 +85,11 @@ error_t __obj_allocate_next_free_object(
 		if ( id_ok )
 		{
 			t->next_id++;
-			__object_t * obj = __mem_alloc(pool, sizeof(__object_t));
-			if ( object_map_t_put(( (object_map_t*)t->the_map), id, obj) )
+			if ( !object_map_t_put(((object_map_t*)t->the_map), id, obj))
 			{
-				__obj_initialise_object(obj);
-				__obj_set_number(obj, id);
-				__obj_set_allocated(obj, true);
-				*o = obj;
-			} else {
 				ret = OBJECT_ADD_FAILED;
 			}
+			*objno = id;
 		} else {
 			ret = OBJECT_TABLE_FULL;
 		}
@@ -97,7 +100,7 @@ error_t __obj_allocate_next_free_object(
 	return ret;
 }
 
-__object_t * __obj_get_thread_object(__object_table_t * t, uint32_t oid)
+__object_t * __obj_get_object(__object_table_t * t, object_number_t oid)
 {
 	__object_t * o = NULL;
 	if ( t )
@@ -107,10 +110,7 @@ __object_t * __obj_get_thread_object(__object_table_t * t, uint32_t oid)
 
 		if ( object_map_t_get(map, oid, &tmp_object) )
 		{
-			if ( __obj_get_type(tmp_object) == THREAD_OBJ)
-			{
-				o = tmp_object;
-			}
+			o = tmp_object;
 		}
 	}
 	return o;

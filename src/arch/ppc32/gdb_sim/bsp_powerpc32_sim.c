@@ -17,7 +17,6 @@
 #include "kernel/kernel_initialise.h"
 #include "kernel/interrupts/interrupt_manager.h"
 #include "kernel/scheduler/scheduler.h"
-#include "kernel/scheduler/round_robin/scheduler_rr.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/alarms/alarm_manager.h"

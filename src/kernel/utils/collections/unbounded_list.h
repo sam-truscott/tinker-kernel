@@ -413,6 +413,8 @@
 		LIST_T##_remove_item(NULL, NULL); \
 		LIST_T##_insert(NULL, 0, NULL); \
 		LIST_T##_head_to_tail(NULL); \
+		LIST_T##_get(NULL, 0, NULL); \
+		LIST_T##_add(NULL, NULL); \
 	} \
 
 #endif /* UNBOUNDED_LIST_H_ */

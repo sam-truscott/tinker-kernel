@@ -21,15 +21,15 @@
 	\
 	typedef struct ITERATOR_T \
 	{ \
-		LIST_T * list; \
+		const LIST_T * list; \
 		LIST_T##_element_t * current; \
 	} ITERATOR_T##__internal ; \
 
 #define UNBOUNDED_LIST_ITERATOR_SPEC(PREFIX, ITERATOR_T, LIST_T, ITEM_T) \
 	\
-	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, LIST_T * list); \
+	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, const LIST_T * const list); \
 	\
-	PREFIX ITERATOR_T * ITERATOR_T##_create(LIST_T * list); \
+	PREFIX ITERATOR_T * ITERATOR_T##_create(const LIST_T * const list); \
 	\
 	PREFIX void ITERATOR_T##_delete(ITERATOR_T * it); \
 	\
@@ -45,7 +45,7 @@
 	/*
 	 * Initialise a new linked list
 	 */ \
-	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, LIST_T * list) \
+	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, const LIST_T * const list) \
 	{ \
 		 if ( it && list ) \
 		 { \
@@ -62,7 +62,7 @@
 	/*
 	 * Create a new instance of an iterator for the linked list
 	 */ \
-	PREFIX ITERATOR_T * ITERATOR_T##_create(LIST_T * list) \
+	PREFIX ITERATOR_T * ITERATOR_T##_create(const LIST_T * const list) \
 	{ \
 		ITERATOR_T * it = NULL; \
 		if ( list ) \

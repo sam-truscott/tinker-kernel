@@ -7,5 +7,9 @@
  *  All Rights Reserved.
  */
 #include "obj_timer.h"
+#include "kernel/kernel_types.h"
 
-int __timer = 0;
+typedef struct __object_timer_t
+{
+	__time_t timeout;
+} __object_timer_internal_t;

@@ -11,8 +11,6 @@
 #include "../arch/board_support.h"
 #include "kernel_assert.h"
 #include "kernel_idle.h"
-#include "kernel/scheduler/round_robin/scheduler_rr.h"
-#include "kernel/scheduler/priority/scheduler_priority.h"
 #include "alarms/alarm_manager.h"
 #include "debug/debug_print.h"
 #include "interrupts/interrupt_manager.h"
@@ -66,29 +64,6 @@ void __kernel_initialise(void)
 
 	__proc_initialise();
 
-	/* TODO we should call the rr scheduler to get this structure */
-	__scheduler_t sch;
-	__util_memset(&sch, 0, sizeof(sch));
-#define SCH_PRIORITY
-#if defined (SCH_ROUND_ROBIN)
-	sch.initialise = __sc_rr_initialise;
-	sch.scheduler = __sch_rr_execute;
-	sch.get_curr_thread = __sch_rr_get_curr_thread;
-	sch.set_curr_thread = __sch_rr_set_curr_thread;
-#endif /* SCH_ROUND_ROBIN*/
-#if defined (SCH_PRIORITY)
-	sch.initialise = __sch_priority_initialise;
-	sch.scheduler = __sch_priority_execute;
-	sch.get_curr_thread = __sch_priority_get_curr_thread;
-	sch.set_curr_thread = __sch_priority_set_curr_thread;
-	sch.new_thread = __sch_priority_notify_new_thread;
-	sch.exit_thread = __sch_priority_notify_exit_thread;
-	sch.pause_thread = __sch_priority_notify_pause_thread;
-	sch.resume_thread = __sch_priority_notify_resume_thread;
-	sch.change_priority = __sch_priority_notify_change_priority;
-#endif /* SCH_PRIORITY */
-	__sch_initialise(&sch);
-
 	__debug_print("Kernel: Initialising Kernel Process...\n");
 
 	__proc_create_process(
@@ -101,15 +76,15 @@ void __kernel_initialise(void)
 			THREAD_FLAG_NONE,
 			&__kernel_process);
 
-	__kernel_idle_thread = __proc_get_thread(__kernel_process, 0);
+	__kernel_idle_thread = _process_get_main_thread(__kernel_process);
 
 	__kernel_assert("Kernel Process not created",__kernel_process != NULL);
 	__kernel_assert("Kernel Idle Thread not created", __kernel_idle_thread != NULL);
 
-	__kernel_idle_thread->state = thread_system;
+	__thread_set_state(__kernel_idle_thread, thread_system);
 
 	__proc_create_thread(
-			__kernel_idle_thread->parent,
+			__thread_get_parent(__kernel_idle_thread),
 			"scheduler",
 			__sch_scheduler,
 			0,
@@ -119,7 +94,7 @@ void __kernel_initialise(void)
 			&__kernel_sch_thread);
 	__tgt_disable_thread_interrupts(__kernel_sch_thread);
 
-	__kernel_sch_thread->state = thread_system;
+	__thread_set_state(__kernel_sch_thread, thread_system);
 	__kernel_assert("Kernel couldn't start Scheduler Thread", __kernel_sch_thread != NULL);
 
 	__sch_initialise_scheduler();

@@ -8,10 +8,11 @@
  */
 #include "alarm_manager.h"
 
-#include "../memory/memory_manager.h"
-#include "../time/time_manager.h"
-#include "../time/time_utilities.h"
-#include "../utils/collections/unbounded_list.h"
+#include "kernel/process/process.h"
+#include "kernel/memory/memory_manager.h"
+#include "kernel/time/time_manager.h"
+#include "kernel/time/time_utilities.h"
+#include "kernel/utils/collections/unbounded_list.h"
 
 typedef struct
 {
@@ -84,7 +85,7 @@ error_t __alarm_set_alarm(
 				}
 			}
 
-			__alarm_t * new_alarm = __mem_alloc(thread->parent->memory_pool, sizeof(__alarm_t));
+			__alarm_t * new_alarm = __mem_alloc(__process_get_mem_pool(__thread_get_parent(thread)), sizeof(__alarm_t));
 			if ( new_alarm )
 			{
 				new_alarm->alarm_time = __time_add(now, *timeout);

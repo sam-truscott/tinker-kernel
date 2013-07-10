@@ -211,9 +211,10 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool fp_enabled)
 
 void __tgt_disable_thread_interrupts(__thread_t * const thread)
 {
-	if ( thread && thread->context)
+	if (thread)
 	{
-		__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)thread->context;
+		const uint8_t * const context = __thread_get_context(thread);
+		__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)context;
 		vector_info->srr1 &= (uint32_t)(~MSR_FLAG_EE);
 	}
 }
@@ -285,21 +286,25 @@ static void __ppc_setup_paged_area(
 
 void __tgt_initialise_process(__process_t * const process)
 {
-	if ( !process->kernel_process )
+	if ( !__process_is_kernel(process) )
 	{
+		const uint32_t pid = __process_get_pid(process);
+		segment_info_t segment_info;
 		/* setup all the segment IDs */
 		for ( uint8_t sid = 0 ; sid < MMU_SEG_COUNT ; sid++ )
 		{
-			process->segment_info.segment_ids[sid] = (process->process_id * MMU_SEG_COUNT) + sid;
+			segment_info.segment_ids[sid] =
+					(pid * MMU_SEG_COUNT) + sid;
 		}
+		__process_set_segment_info(process, &segment_info);
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
-		mmu_section_t * section = process->first_section;
+		mmu_section_t * section = __process_get_first_section(process);
 		while ( section )
 		{
 			/* setup virt -> real mapping for size */
 			__ppc_setup_paged_area(
-					&process->segment_info,
+					&segment_info,
 					section->real_address,
 					section->virt_address,
 					section->size,
@@ -312,15 +317,16 @@ void __tgt_initialise_process(__process_t * const process)
 
 		/* define a mmu section for the processes stack */
 		mmu_section_t pool_section;
+		const __mem_pool_info_t * const process_pool = __process_get_mem_pool(process);
 		section = &pool_section;
-		section->real_address = process->memory_pool->start_pool;
+		section->real_address = process_pool->start_pool;
 		section->virt_address = STACK_VIRTUAL_BASE;
-		section->size = process->memory_pool->total_pool_size;
+		section->size = process_pool->total_pool_size;
 		section->access_rights = mmu_read_write;
 
 		/* setup up pages for the memory pool */
 		__ppc_setup_paged_area(
-				&process->segment_info,
+				&segment_info,
 				section->real_address,
 				section->virt_address,
 				section->size,
@@ -329,26 +335,32 @@ void __tgt_initialise_process(__process_t * const process)
 	}
 }
 
-static uint32_t virtual_stack_pointer(__thread_t * thread)
+static void virtual_stack_pointer(__thread_t * thread)
 {
 	uint32_t sp;
-	uint32_t offset;
+	const uint32_t stack_size = __thread_get_stack_size(thread);
 
-	if ( !thread->parent->kernel_process )
+	if ( !__process_is_kernel(__thread_get_parent(thread)) )
 	{
 		/* calculate the offset inside the memory pool */
-		offset = ((((uint32_t)thread->stack) + thread->stack_size - 12)) - thread->parent->memory_pool->start_pool;
-		thread->r_stack_base = thread->parent->memory_pool->start_pool;
+		const __mem_pool_info_t * const mempool = __process_get_mem_pool(__thread_get_parent(thread));
+		const uint32_t offset = ((((uint32_t)__thread_get_stack_memory(thread)) + stack_size - 12)) - mempool->start_pool;
+		__thread_set_real_stack_base(thread, mempool->start_pool);
 		//thread->r_stack_base = thread->parent->memory_pool->start_pool + offset;
 		sp = STACK_VIRTUAL_BASE + offset; /* FIXME: Absolute for memory pool base */
 	}
 	else
 	{
-		sp = (uint32_t)(thread->stack) + thread->stack_size - 12;
-		thread->r_stack_base = sp;
+		sp = (uint32_t)(__thread_get_stack_memory(thread)) + stack_size - 12;
+		__thread_set_real_stack_base(thread, sp);
 	}
 
-	return sp;
+	/* leave some space on the end for what it might have thought
+	 * was the old context */
+	/* TODO explain the 12 in terms of FP etc for the previous frame */
+	/* FIXME: Is this correct? The adjusted SP */
+	/* vector_info->sp = (uint32_t)(thread->stack) + thread->stack_size - 12; */
+	__thread_set_virt_stack_base(thread, sp);
 }
 
 void __tgt_initialise_context(
@@ -356,17 +368,12 @@ void __tgt_initialise_context(
 		const bool kernel_mode,
 		const uint32_t exit_function)
 {
-	if ( thread && thread->context)
+	if (thread)
 	{
-		__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)thread->context;
+		__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)__thread_get_context(thread);
 
-		/* leave some space on the end for what it might have thought
-		 * was the old context */
-		/* TODO explain the 12 in terms of FP etc for the previous frame */
-		/* FIXME: Is this correct? The adjusted SP */
-		/* vector_info->sp = (uint32_t)(thread->stack) + thread->stack_size - 12; */
-		thread->v_stack_base = virtual_stack_pointer(thread);
-		vector_info->sp = thread->v_stack_base;
+		virtual_stack_pointer(thread);
+		vector_info->sp = __thread_get_virt_stack_base(thread);
 		vector_info->fp = vector_info->sp;
 		for (uint8_t gpr = 0 ; gpr < PPC_CONTEXT_GPR ; gpr++)
 		{
@@ -376,12 +383,12 @@ void __tgt_initialise_context(
 		{
 			vector_info->fpr[fpr] = 0;
 		}
-		vector_info->srr0 = (uint32_t)thread->entry_point;
+		vector_info->srr0 = (uint32_t)__thread_get_entry_point(thread);
 
 		/* if it's not the kernel we need to add the privilege mode */
 		vector_info->srr1 = MSR_FLAG_ME | MSR_FLAG_RI | MSR_FLAG_EE;
 		vector_info->srr1 |= (MSR_FLAG_IR | MSR_FLAG_DR);
-		if ( (thread->flags & THREAD_FLAG_FP) == THREAD_FLAG_FP)
+		if ( (__thread_get_flags(thread) & THREAD_FLAG_FP) == THREAD_FLAG_FP)
 		{
 			vector_info->srr1 |= MSR_FLAG_FP;
 		}
@@ -408,77 +415,84 @@ void __tgt_prepare_context(
 		uint8_t ks_flag = SR_KS_FAIL;
 		uint8_t kp_flag = SR_KP_OK;
 
-		if ( thread->parent->kernel_process )
+		const __process_t * const proc = __thread_get_parent(thread);
+
+		if (__process_is_kernel(proc))
 		{
 			// only the kernel has access to kernel segments
 			ks_flag = SR_KS_OK;
 		}
 
-		__util_memcpy(context, thread->context, sizeof(__ppc32_ivt_struct_t));
+		const segment_info_t * const segment_info = __process_get_segment_info(proc);
+
+		__util_memcpy(
+				context,
+				__thread_get_context(thread),
+				sizeof(__ppc32_ivt_struct_t));
 		__ppc32_set_sr0(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[0]));
+						segment_info->segment_ids[0]));
 		__ppc32_set_sr1(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[1]));
+						segment_info->segment_ids[1]));
 		__ppc32_set_sr2(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[2]));
+						segment_info->segment_ids[2]));
 		__ppc32_set_sr3(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[3]));
+						segment_info->segment_ids[3]));
 		__ppc32_set_sr4(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[4]));
+						segment_info->segment_ids[4]));
 		__ppc32_set_sr5(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[5]));
+						segment_info->segment_ids[5]));
 		__ppc32_set_sr6(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[6]));
+						segment_info->segment_ids[6]));
 		__ppc32_set_sr7(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[7]));
+						segment_info->segment_ids[7]));
 		__ppc32_set_sr8(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[8]));
+						segment_info->segment_ids[8]));
 		__ppc32_set_sr9(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[9]));
+						segment_info->segment_ids[9]));
 		__ppc32_set_sr10(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[10]));
+						segment_info->segment_ids[10]));
 		__ppc32_set_sr11(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[11]));
+						segment_info->segment_ids[11]));
 		__ppc32_set_sr12(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[12]));
+						segment_info->segment_ids[12]));
 		__ppc32_set_sr13(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[13]));
+						segment_info->segment_ids[13]));
 		__ppc32_set_sr14(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[14]));
+						segment_info->segment_ids[14]));
 		__ppc32_set_sr15(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
-						thread->parent->segment_info.segment_ids[15]));
+						segment_info->segment_ids[15]));
 	}
 }
 

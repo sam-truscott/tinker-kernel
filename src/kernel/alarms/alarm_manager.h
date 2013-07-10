@@ -9,7 +9,8 @@
 #ifndef ALARM_MANAGER_H_
 #define ALARM_MANAGER_H_
 
-#include "../kernel_types.h"
+#include "kernel/kernel_types.h"
+#include "kernel/process/thread.h"
 
 void __alarm_initialse(void);
 

@@ -10,8 +10,7 @@
 #define SCHEDULER_IMPL_H_
 
 #include "../kernel_types.h"
-
-void __sch_initialise(const __scheduler_t * const impl);
+#include "kernel/process/thread.h"
 
 void __sch_initialise_scheduler(void);
 

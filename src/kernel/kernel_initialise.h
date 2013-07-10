@@ -11,6 +11,8 @@
 
 #include "kernel_types.h"
 
+#include "kernel/process/process.h"
+
 /**
  * Initialise the internals of the kernel.
  * This should only be done once the BSP has been initialised

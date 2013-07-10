@@ -9,7 +9,11 @@
 #ifndef OBJ_PROCESS_H_
 #define OBJ_PROCESS_H_
 
-#include "../kernel_types.h"
+#include "kernel/kernel_types.h"
+#include "kernel/objects/object.h"
+#include "kernel/objects/object_table.h"
+
+typedef struct __object_process_t __object_process_t;
 
 error_t __obj_create_process(
 		__mem_pool_info_t * const pool,

@@ -6,52 +6,37 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "object.h"
 #include "obj_semaphore.h"
+
+#include "object.h"
+#include "object_private.h"
 #include "obj_thread.h"
 #include "object_table.h"
 #include "kernel/scheduler/scheduler.h"
-
 #include "kernel/utils/collections/unbounded_queue.h"
 
 UNBOUNDED_QUEUE_TYPE(thread_obj_queue_t)
-UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_obj_queue_t, __object_t*)
-UNBOUNDED_QUEUE_SPEC(static,thread_obj_queue_t, __object_t*)
-UNBOUNDED_QUEUE_BODY(static,thread_obj_queue_t, __object_t*)
+UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY(static,thread_obj_queue_t, __object_thread_t*)
+
+typedef struct __object_sema_t
+{
+	__object_internal_t object;
+	uint32_t sem_count;
+	uint32_t sem_alloc;
+	thread_obj_queue_t * listeners;
+	thread_obj_queue_t * owners;
+	priority_t highest_priority;
+} __object_sema_internal_t;
 
 static void __obj_push_semaphore_listener(
 		thread_obj_queue_t * const list,
-		__object_t * const object);
+		__object_thread_t * const object);
 
 static void __obj_notify_semaphore_listener(
-		__object_t * const semaphore,
+		__object_sema_t * const semaphore,
 		thread_obj_queue_t * const list);
-
-error_t __obj_initialise_semaphore(
-		__object_t * const object,
-		const uint32_t initial_count)
-{
-	error_t result = NO_ERROR;
-
-	__thread_t * current_thread = __sch_get_current_thread();
-	if ( current_thread && current_thread->parent)
-	{
-		__obj_set_type(object, SEMAPHORE_OBJ);
-		object->specifics.semaphore.sem_count = initial_count;
-		object->specifics.semaphore.sem_alloc = 0;
-		object->specifics.semaphore.listeners = thread_obj_queue_t_create(
-				current_thread->parent->memory_pool);
-		object->specifics.semaphore.owners = thread_obj_queue_t_create(
-				current_thread->parent->memory_pool);
-		object->specifics.semaphore.highest_priority = 0;
-	}
-	else
-	{
-		result = INVALID_CONTEXT;
-	}
-
-	return result;
-}
 
 error_t __obj_create_semaphore(
 		__mem_pool_info_t * const pool,
@@ -59,17 +44,25 @@ error_t __obj_create_semaphore(
 		__object_t ** object,
 		const uint32_t initial_count)
 {
-	__object_t * no = NULL;
+	__object_sema_t * no = NULL;
 	error_t result = NO_ERROR;
 
 	if ( object )
 	{
 		if ( table )
 		{
-			if ( (result = __obj_allocate_next_free_object(pool, table, &no)) == NO_ERROR )
+			no = (__object_sema_t*)__mem_alloc(pool, sizeof(__object_sema_t));
+			object_number_t objno;
+			result = __obj_add_object(table, (__object_t*)no, &objno);
+			if ( result == NO_ERROR )
 			{
-				result = __obj_initialise_semaphore(no, initial_count);
-				*object = no;
+				__obj_initialise_object(&no->object, objno, SEMAPHORE_OBJ);
+				no->sem_count = initial_count;
+				no->sem_alloc = 0;
+				no->listeners = thread_obj_queue_t_create(pool);
+				no->owners = thread_obj_queue_t_create(pool);
+				no->highest_priority = 0;
+				*object = (__object_t*)no;
 			}
 		}
 		else
@@ -85,88 +78,79 @@ error_t __obj_create_semaphore(
 	return result;
 }
 
-error_t __obj_get_semaphore(__object_t * const thread,
-							__object_t * const semaphore)
+error_t __obj_get_semaphore(
+		__object_thread_t * const thread,
+		__object_sema_t * const semaphore)
 {
 	error_t result = NO_ERROR;
 
 	if ( thread && semaphore )
 	{
-		if ( __obj_get_type(thread)==THREAD_OBJ &&
-				__obj_get_type(semaphore)==SEMAPHORE_OBJ)
+		__thread_state_t ts;
+		__obj_get_thread_state(thread, &ts);
+		if (ts != thread_not_created && ts != thread_terminated)
 		{
-			__thread_state_t ts;
+			__object_thread_t * first_owner_obj = NULL;
 
-			ts = thread->specifics.thread.thread->state;
-			if (ts != thread_not_created && ts != thread_terminated)
+			__obj_lock(&semaphore->object);
+
+			thread_obj_queue_t_front(semaphore->owners, &first_owner_obj);
+
+			const priority_t thread_priority =
+					__obj_get_thread_priority_ex(thread);
+			const priority_t waiting_thread_priority =
+					__obj_get_thread_priority_ex(first_owner_obj);
+
+			/* deal with incoming priority inheritance */
+			if ( (semaphore->sem_count == 0) &&
+					(thread_priority
+					> waiting_thread_priority) )
 			{
-				thread_obj_queue_t * owner_list = NULL;
-				__object_t * first_owner_obj = NULL;
-				__thread_t * owner_thread = NULL;
-				__thread_t * new_thread = NULL;
+				/* store the old priority */
+				__obj_set_thread_original_priority(first_owner_obj);
 
-				__obj_lock(semaphore);
+				/* set the lower threads priority to the higher one
+				 * and set it running */
+				__obj_set_thread_priority(
+						first_owner_obj,
+						thread_priority);
 
-				owner_list = (thread_obj_queue_t*)semaphore->specifics.semaphore.owners;
-				thread_obj_queue_t_front(owner_list, &first_owner_obj);
-				owner_thread = first_owner_obj->specifics.thread.thread;
-				new_thread = thread->specifics.thread.thread;
+				semaphore->highest_priority = thread_priority;
 
-				/* deal with incoming priority inheritance */
-				if ( (semaphore->specifics.semaphore.sem_count == 0) &&
-						(new_thread->priority
-						> owner_thread->priority) )
+				__thread_state_t state;
+				__obj_get_thread_state(first_owner_obj, &state);
+				if ( state == thread_waiting )
 				{
-					/* store the old priority */
-					__obj_set_thread_original_priority(first_owner_obj);
-
-					/* set the lower threads priority to the higher one
-					 * and set it running */
-					__obj_set_thread_priority(
-							first_owner_obj,
-							thread->specifics.thread.thread->priority);
-
-					semaphore->specifics.semaphore.highest_priority =
-							thread->specifics.thread.thread->priority;
-
-					if ( owner_thread->state == thread_waiting )
-					{
-						__obj_set_thread_ready(first_owner_obj);
-					}
-
-				}
-				else
-				{
-					/* not a priority inversion, just update the numbers to ensure
-					 * that when the semaphore is released we don't accidently change
-					 * a threads priority level*/
-					thread_obj_queue_t_push(owner_list, thread);
-
-					semaphore->specifics.semaphore.highest_priority =
-							thread->specifics.thread.thread->priority;
+					__obj_set_thread_ready(first_owner_obj);
 				}
 
-				/* if a thread has it, wait... */
-				if (semaphore->specifics.semaphore.sem_count == 0)
-				{
-					__obj_set_thread_waiting(thread, semaphore);
-					__obj_push_semaphore_listener(
-							semaphore->specifics.semaphore.listeners,
-							thread);
-				}
-
-				semaphore->specifics.semaphore.sem_count--;
-				semaphore->specifics.semaphore.sem_alloc++;
-				__obj_release(semaphore);
 			}
 			else
 			{
-				result = OBJECT_IN_INVALID_STATE;
+				/* not a priority inversion, just update the numbers to ensure
+				 * that when the semaphore is released we don't accidently change
+				 * a threads priority level*/
+				thread_obj_queue_t_push(semaphore->owners, thread);
+
+				semaphore->highest_priority = thread_priority;
 			}
+
+			/* if a thread has it, wait... */
+			if (semaphore->sem_count == 0)
+			{
+				__obj_set_thread_waiting(thread, (__object_t*)semaphore);
+				__obj_push_semaphore_listener(
+						semaphore->listeners,
+						thread);
+			}
+
+			semaphore->sem_count--;
+			semaphore->sem_alloc++;
+			__obj_release(&semaphore->object);
 		}
 		else
 		{
-			result = INVALID_OBJECT;
+			result = OBJECT_IN_INVALID_STATE;
 		}
 	}
 	else
@@ -178,56 +162,45 @@ error_t __obj_get_semaphore(__object_t * const thread,
 }
 
 error_t __obj_release_semaphore(
-		__object_t * const thread,
-		__object_t * const semaphore)
+		__object_thread_t * const thread,
+		__object_sema_t * const semaphore)
 {
 	error_t result = NO_ERROR;
 
 	if ( semaphore )
 	{
-		if ( __obj_get_type(semaphore)==SEMAPHORE_OBJ)
+		__obj_lock(&semaphore->object);
+		if ( semaphore->sem_alloc > 0)
 		{
-			__obj_lock(semaphore);
-			if ( semaphore->specifics.semaphore.sem_alloc > 0)
+			semaphore->sem_count++;
+			semaphore->sem_alloc--;
+
+			/* the thread was a lower priority thread that had
+			 * its priority temporarily elevated to avoid priority
+			 * inversion so the original thread priority is restored
+			 */
+			const priority_t thread_orig_priority = __obj_get_thread_original_priority_ex(thread);
+			const priority_t thread_priority = __obj_get_thread_priority_ex(thread);
+			if ( semaphore->highest_priority != thread_orig_priority)
 			{
-				semaphore->specifics.semaphore.sem_count++;
-				semaphore->specifics.semaphore.sem_alloc--;
-
-				/* the thread was a lower priority thread that had
-				 * its priority temporarily elevated to avoid priority
-				 * inversion so the original thread priority is restored
-				 */
-				if ( semaphore->specifics.semaphore.highest_priority !=
-						thread->specifics.thread.original_priority)
-				{
-					thread_obj_queue_t * owner_list = NULL;
-
-					owner_list = (thread_obj_queue_t*)semaphore->specifics.semaphore.owners;
-					thread_obj_queue_t_remove(owner_list, thread);
-					__obj_reset_thread_original_priority(thread);
-				}
-				/* need to keep the highest priority at the right level */
-				else if ( semaphore->specifics.semaphore.highest_priority >
-						  thread->specifics.thread.original_priority )
-				{
-					semaphore->specifics.semaphore.highest_priority =
-							thread->specifics.thread.original_priority;
-				}
-
-				__obj_notify_semaphore_listener(
-						semaphore,
-						semaphore->specifics.semaphore.listeners);
+				thread_obj_queue_t_remove(semaphore->owners, thread);
+				__obj_reset_thread_original_priority(thread);
 			}
-			else
+			/* need to keep the highest priority at the right level */
+			else if ( semaphore->highest_priority > thread_priority)
 			{
-				result = SEMAPHORE_EMPTY;
+				semaphore->highest_priority = thread_orig_priority;
 			}
-			__obj_release(semaphore);
+
+			__obj_notify_semaphore_listener(
+					semaphore,
+					semaphore->listeners);
 		}
 		else
 		{
-			result = INVALID_OBJECT;
+			result = SEMAPHORE_EMPTY;
 		}
+		__obj_release(&semaphore->object);
 	}
 	else
 	{
@@ -239,16 +212,16 @@ error_t __obj_release_semaphore(
 
 static void __obj_push_semaphore_listener(
 		thread_obj_queue_t * const list,
-		__object_t * const object)
+		__object_thread_t * const thread)
 {
-	if ( list && object )
+	if ( list && thread )
 	{
-		thread_obj_queue_t_push(list, object);
+		thread_obj_queue_t_push(list, thread);
 	}
 }
 
 static void __obj_notify_semaphore_listener(
-		__object_t * const semaphore,
+		__object_sema_t * const semaphore,
 		thread_obj_queue_t * const list)
 {
 	if ( list )
@@ -256,7 +229,7 @@ static void __obj_notify_semaphore_listener(
 		const uint32_t listener_count = thread_obj_queue_t_size(list);
 		if ( listener_count > 0 )
 		{
-			__object_t * next_thread = NULL;
+			__object_thread_t * next_thread = NULL;
 			bool ok;
 
 			ok = thread_obj_queue_t_front(list, &next_thread);
@@ -266,8 +239,8 @@ static void __obj_notify_semaphore_listener(
 				/* tell the most recent one to go now */
 				__obj_set_thread_ready(next_thread);
 
-				if ( next_thread->specifics.thread.thread->priority <
-						semaphore->specifics.semaphore.highest_priority )
+				const priority_t thread_priority = __obj_get_thread_priority_ex(next_thread);
+				if (thread_priority < semaphore->highest_priority )
 				{
 					/* update the original priority and copy across the temporary
 					 * higher priority */
@@ -275,19 +248,18 @@ static void __obj_notify_semaphore_listener(
 
 					__obj_set_thread_priority(
 							next_thread,
-							semaphore->specifics.semaphore.highest_priority);
+							semaphore->highest_priority);
 				}
 				else
 				{
 					/* not a priority inversion, just update the numbers to ensure
 					 * that when the semaphore is released we don't accidently change
 					 * a threads priority level*/
-					semaphore->specifics.semaphore.highest_priority =
-							next_thread->specifics.thread.thread->priority;
+					semaphore->highest_priority = thread_priority;
 				}
 
 				thread_obj_queue_t_push(
-						semaphore->specifics.semaphore.owners,
+						semaphore->owners,
 						next_thread);
 
 				thread_obj_queue_t_pop(list);

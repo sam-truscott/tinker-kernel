@@ -10,10 +10,11 @@
 #define OBJ_SEMAPHORE_H_
 
 #include "../kernel_types.h"
+#include "kernel/objects/object.h"
+#include "kernel/objects/obj_thread.h"
+#include "kernel/objects/object_table.h"
 
-error_t __obj_initialise_semaphore(
-		__object_t * const object,
-		const uint32_t initial_count);
+typedef struct __object_sema_t __object_sema_t;
 
 error_t __obj_create_semaphore(
 		__mem_pool_info_t * const pool,
@@ -22,11 +23,11 @@ error_t __obj_create_semaphore(
 		const uint32_t initial_count);
 
 error_t __obj_get_semaphore(
-		__object_t * const thread,
-		__object_t * const semaphore);
+		__object_thread_t * const thread,
+		__object_sema_t * const semaphore);
 
 error_t __obj_release_semaphore(
-		__object_t * const thread,
-		__object_t * const semaphore);
+		__object_thread_t * const thread,
+		__object_sema_t * const semaphore);
 
 #endif /* OBJ_SEMAPHORE_H_ */

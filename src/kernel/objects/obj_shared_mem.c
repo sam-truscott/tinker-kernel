@@ -7,5 +7,11 @@
  *  All Rights Reserved.
  */
 #include "obj_shared_mem.h"
+#include "arch/target_types.h"
 
-int __S = 0;
+typedef struct __object_shm_t
+{
+	uint32_t real_start;
+	uint32_t virtual_start;
+	uint32_t size;
+} __object_shm_internal_t;

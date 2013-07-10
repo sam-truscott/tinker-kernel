@@ -32,7 +32,7 @@ void __ppc_get_timer(__process_t * parent, __timer_t * timer)
 	{
 		timer->timer_setup = __ppc_timer_setup;
 		timer->timer_cancel = __ppc_timer_cancel;
-		timer->usr_data = __mem_alloc(parent->memory_pool, sizeof(__ppc_timer_usr_data_t));
+		timer->usr_data = __mem_alloc(__process_get_mem_pool(parent), sizeof(__ppc_timer_usr_data_t));
 		if ( timer->usr_data )
 		{
 			timer->usr_data_size = sizeof(__ppc_timer_usr_data_t);

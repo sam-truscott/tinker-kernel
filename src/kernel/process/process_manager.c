@@ -25,26 +25,13 @@
  */
 UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, __process_t*)
 UNBOUNDED_LIST_SPEC(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY(extern, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY(static, process_list_t, __process_t*)
 
 /**
  * An iterator for the process list
  */
 UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, __process_t*)
 UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, __process_t*)
-
-/**
- * The code to handle an unbounded list of threads for the process
- */
-UNBOUNDED_LIST_INTERNAL_TYPE(thread_list_t, __thread_t*)
-UNBOUNDED_LIST_SPEC(static, thread_list_t, __thread_t*)
-UNBOUNDED_LIST_BODY(extern, thread_list_t, __thread_t*)
-
-/**
- * An iterator for the thread list
- */
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(thread_list_it_t, thread_list_t, __thread_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(extern, thread_list_it_t, thread_list_t, __thread_t*)
 
 /**
  * The static list of processes in the system
@@ -62,7 +49,7 @@ void __proc_initialise(void)
 error_t __proc_create_process(
 		const char * image,
 		const char * initial_task_name,
-		__thread_entry * entry_point,
+		thread_entry_point * entry_point,
 		const uint8_t priority,
 		const uint32_t stack,
 		const uint32_t heap,
@@ -71,6 +58,11 @@ error_t __proc_create_process(
 {
 	error_t ret = NO_ERROR;
 	__process_t * proc = NULL;
+
+	if ( process )
+	{
+		* process = 0;
+	}
 
 	/* get the new process id - SLOW! - TODO need to speed up */
 	__process_t * tmp = NULL;
@@ -91,68 +83,73 @@ error_t __proc_create_process(
 	 *
 	 * Otherwise we need to use the current processes pool.
 	 */
-	__thread_t * curr_thread = __sch_get_current_thread();
+	const __thread_t * const curr_thread = __sch_get_current_thread();
+	__mem_pool_info_t * parent_pool;
 	if (curr_thread == NULL )
 	{
 #if defined (__PROCESS_DEBUGGING )
 		__debug_print("proc: create process from default pool\n");
 #endif
-		proc = __mem_alloc_aligned(__mem_get_default_pool(), sizeof(__process_t), MMU_PAGE_SIZE);
+		parent_pool = __mem_get_default_pool();
 	} else {
 #if defined (__PROCESS_DEBUGGING )
 		__debug_print("proc: create process for %s from %s\n",
 				image,
 				curr_thread->parent->image);
 #endif
-		proc = __mem_alloc_aligned(curr_thread->parent->memory_pool, sizeof(__process_t), MMU_PAGE_SIZE);
+		parent_pool = __process_get_mem_pool(__thread_get_parent(curr_thread));
 	}
 
-	if ( proc != NULL )
+	__mem_pool_info_t * new_mem_pool;
+	const bool pool_allocated = __mem_init_process_memory(
+			&new_mem_pool,
+			heap + stack);
+
+	if (!pool_allocated)
 	{
-		proc->kernel_process = (curr_thread == NULL);
-		proc->process_id = proc_id;
+		ret = OUT_OF_MEMORY;
+	}
+	else
+	{
+		proc = __process_create(
+				parent_pool,
+				proc_id,
+				image,
+				(curr_thread == NULL),
+				new_mem_pool);
 
-		/* create space for the heap and stack from the parent process */
-		if ( __mem_init_process_memory(&proc->memory_pool, heap + stack))
+		if ( proc == NULL )
 		{
-			const uint32_t length = __util_strlen(image,__MAX_PROCESS_IMAGE_LEN);
-			__util_memcpy(proc->image, image, length);
+			ret = OUT_OF_MEMORY;
+		}
+		else
+		{
+			ret = __obj_initialse_table(
+					__process_get_object_table(proc),
+					__process_get_mem_pool(proc));
 
-			proc->image[length] = '\0';
-
-#if defined (__PROCESS_DEBUGGING )
-			__debug_print("proc: initialising object table for %s\n", image);
-#endif
-			ret = __obj_initialse_table(proc, &proc->object_table);
 			if ( ret == NO_ERROR )
 			{
 				__object_t * process_obj = NULL;
 				__object_t * thread_obj = NULL;
-
-#if defined (__PROCESS_DEBUGGING )
-				__debug_print("proc: creating initial thread %s for %s\n",
-						initial_task_name,
-						image);
-#endif
-
 				ret = __proc_create_thread(
-						proc,
-						initial_task_name,
-						entry_point,
-						priority,
-						stack,
-						flags,
-						&thread_obj,
-						NULL);
+										proc,
+										initial_task_name,
+										entry_point,
+										priority,
+										stack,
+										flags,
+										&thread_obj,
+										NULL);
 
 				if ( ret == NO_ERROR )
 				{
 					ret = __obj_create_process(
-							proc->memory_pool,
-							&proc->object_table,
-							proc->process_id,
+							__process_get_mem_pool(proc),
+							__process_get_object_table(proc),
+							__process_get_pid(proc),
 							&process_obj);
-					proc->object_number = process_obj->object_number;
+					__process_set_oid(proc, __obj_get_number(process_obj));
 
 					if ( ret == NO_ERROR )
 					{
@@ -164,6 +161,10 @@ error_t __proc_create_process(
 						else
 						{
 							__tgt_initialise_process(proc);
+							if ( process )
+							{
+								* process = proc;
+							}
 						}
 					}
 					else
@@ -173,15 +174,6 @@ error_t __proc_create_process(
 				}
 			}
 		}
-
-		if ( process )
-		{
-			* process = proc;
-		}
-	}
-	else
-	{
-		ret = OUT_OF_MEMORY;
 	}
 
 	return ret;
@@ -189,8 +181,8 @@ error_t __proc_create_process(
 
 error_t __proc_create_thread(
 		__process_t * process,
-		const char * name,
-		__thread_entry * entry_point,
+		const char * const name,
+		thread_entry_point * entry_point,
 		const uint8_t priority,
 		const uint32_t stack,
 		const uint32_t flags,
@@ -200,141 +192,71 @@ error_t __proc_create_thread(
 	error_t ret = NO_ERROR;
 	__thread_t * thread = NULL;
 
-	/* if the process doesn't contain a thread list,
-	 * create it! */
-	if ( process->threads == NULL )
-	{
-		process->threads = thread_list_t_create(process->memory_pool);
-	}
+	/* allocate memory for thread from processes pool */
+	thread = __thread_create(
+			__process_get_mem_pool(process),
+			(const __fwd_process_t*)process,
+			priority,
+			entry_point,
+			flags,
+			stack,
+			name);
 
-	thread_list_t * list = (thread_list_t*)process->threads;
-	if ( list )
+	/* initialise the thread */
+	if ( thread != NULL )
 	{
-		if ( thread_list_t_size(list) < __MAX_THREADS )
+		/* add the thread to the process list */
+		object_number_t objno;
+		if (__process_add_thread(process, thread, &objno))
 		{
-			/* get the new thread id - SLOW! - need to speed up */
-			__thread_t * tmp = NULL;
-			const uint32_t tmp_size = thread_list_t_size(list);
-			uint32_t thread_id = 0;
-			if ( tmp_size == 0 )
+			if (__thread_get_state(thread) == thread_ready)
 			{
-				thread_id = 0;
-			}
-			else
-			{
-				for ( uint32_t i = 0 ; i < __MAX_THREADS ; i++ )
+				bool is_kernel;
+				__process_t * kernel_process = NULL;
+
+				kernel_process = __kernel_get_process();
+
+				if (kernel_process)
 				{
-					if ( !thread_list_t_get(list, i, &tmp) )
-					{
-						thread_id = i;
-						break;
-					}
-				}
-			}
-
-			/* allocate memory for thread from processes pool */
-			thread = __mem_alloc(process->memory_pool, sizeof(__thread_t));
-
-			/* initialise the thread */
-			if ( thread != NULL )
-			{
-				thread->parent = process;
-
-				/* add the thread to the process list */
-				thread_list_t_add(list, thread);
-				const uint32_t length = __util_strlen(name,__MAX_THREAD_NAME_LEN);
-
-				thread->thread_id = thread_id;
-				thread->priority = priority;
-				thread->entry_point = entry_point;
-				thread->flags = flags;
-
-				thread->stack = __mem_alloc_aligned(process->memory_pool, stack, MMU_PAGE_SIZE);
-				if ( thread->stack )
-				{
-					bool is_kernel;
-					__process_t * kernel_process = NULL;
-
-					for ( uint32_t sp = 0 ; sp < stack ; sp++ )
-					{
-						*(((char*)thread->stack) + sp) = 'S';
-					}
-					thread->stack_size = stack;
-					thread->state = thread_ready;
-
-					kernel_process = __kernel_get_process();
-
-					if (kernel_process)
-					{
-						is_kernel = (process == kernel_process);
-					}
-					else
-					{
-						/* the kernel_process is NULL therefore
-						 * we're initialising the kernel process */
-						is_kernel = true;
-					}
-
-					/*
-					 * We need to ensure that the context information
-					 * is configured properly
-					 */
-					/** FIXME: Change the 0 **/
-					__tgt_initialise_context(thread, is_kernel, 0);
+					is_kernel = (process == kernel_process);
 				}
 				else
 				{
-					thread->stack_size = 0;
-					thread->state = thread_not_created;
+					/* the kernel_process is NULL therefore
+					 * we're initialising the kernel process */
+					is_kernel = true;
 				}
 
-				__util_memcpy(thread->name, name, length);
-				thread->name[length] = '\0';
+				/*
+				 * We need to ensure that the context information
+				 * is configured properly
+				 */
+				/** FIXME: Change the 0 **/
+				__tgt_initialise_context(thread, is_kernel, 0);
+			}
+		}
+		else
+		{
+			ret = OUT_OF_MEMORY;
+		}
 
-				if ( new_thread )
-				{
-					*new_thread = thread;
-				}
+		if ( ret == NO_ERROR )
+		{
+			if ( new_thread )
+			{
+				*new_thread = thread;
+			}
 
-				__object_t * thread_obj = NULL;
-				ret = __obj_create_thread(
-						process->memory_pool,
-						&process->object_table,
-						process->process_id,
-						thread->thread_id,
-						thread,
-						 &thread_obj);
-				if ( ret == NO_ERROR )
-				{
-					thread->object_number = thread_obj->object_number;
-					process->thread_count++;
-
-					if ( thread_object )
-					{
-						*thread_object = thread_obj;
-					}
-				}
+			if ( thread_object )
+			{
+				*thread_object = __obj_get_object(
+						__process_get_object_table(process),
+						objno);
 			}
 		}
 	}
-	else
-	{
-		ret = OUT_OF_MEMORY;
-	}
 
 	return ret;
-}
-
-void __proc_get_object_table(__object_table_t ** t)
-{
-	__thread_t * curr_thread = __sch_get_current_thread();
-	if ( curr_thread && t )
-	{
-		if ( curr_thread->parent)
-		{
-			*t = &curr_thread->parent->object_table;
-		}
-	}
 }
 
 __process_t * __proc_get_process(const uint32_t process_id)
@@ -347,31 +269,6 @@ __process_t * __proc_get_process(const uint32_t process_id)
 	}
 
 	return p;
-}
-
-__thread_t * __proc_get_thread(const __process_t * proc, const uint32_t thread_id)
-{
-	__thread_t * t = NULL;
-
-	if ( proc != NULL )
-	{
-		thread_list_t * list = ((thread_list_t*)proc->threads);
-		uint32_t thread_count = thread_list_t_size(list);
-		__thread_t * tmp_thread = NULL;
-		for ( uint32_t tmp = 0 ; tmp < thread_count ; tmp++ )
-		{
-			if ( thread_list_t_get( list, thread_id, &tmp_thread) == true )
-			{
-				if ( tmp_thread->thread_id == thread_id )
-				{
-					t = tmp_thread;
-					break;
-				}
-			}
-		}
-	}
-
-	return t;
 }
 
 process_list_it_t * __proc_get_process_iterator(void)
