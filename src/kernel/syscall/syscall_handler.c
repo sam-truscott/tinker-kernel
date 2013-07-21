@@ -26,17 +26,19 @@
 #include "kernel/utils/util_free.h"
 #include "kernel/utils/util_memcpy.h"
 
+static inline object_number_t __syscall_get_thread_oid(void)
+{
+	return __thread_get_object_no(__sch_get_current_thread());
+}
+
 static inline __object_thread_t * __syscall_get_thread_object(void)
 {
-	__thread_t * thread = NULL;
 	__process_t * proc = NULL;
 	__object_table_t * table = NULL;
 
-	/* get the thread object */
-	thread = __sch_get_current_thread();
-	proc = __thread_get_parent(thread);
+	proc = __thread_get_parent(__sch_get_current_thread());
 	table = __process_get_object_table(proc);
-	return (__object_thread_t*)__obj_get_object(table, __thread_get_object_no(thread));
+	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid());
 }
 
 void __syscall_handle_system_call(void * context, uint32_t context_size)
@@ -59,12 +61,12 @@ void __syscall_handle_system_call(void * context, uint32_t context_size)
 	 * at some weird virtual address */
 	for ( uint8_t i = 0 ; i < 7 ; i++ )
 	{
-		if ( param[i] >= 0xC0000000u )
+		if ( param[i] >= VIRTUAL_ADDRESS_SPACE )
 		{
-			param[i] -= 0xC0000000u;
-			param[i] += __thread_get_virt_stack_base(this_thread) - 1428; // FIXME what is 1428?
-			//param[i] = this_thread->v_stack_base - param[i];
-			//param[i] += this_thread->r_stack_base;
+			const uint32_t pool_start = __process_get_mem_pool(__thread_get_parent(this_thread))->start_pool;
+			param[i] -= VIRTUAL_ADDRESS_SPACE;
+			param[i] += pool_start;
+			param[i] -= 428;
 		}
 	}
 
@@ -145,11 +147,9 @@ void __syscall_handle_system_call(void * context, uint32_t context_size)
 
 		case syscall_thread_object:
 			{
-				__object_thread_t * thread_obj = __syscall_get_thread_object();
-				if ( thread_obj )
-				{
-					*((object_number_t*)param[0]) = __obj_thread_get_oid(thread_obj);
-				}
+				const object_number_t objno = __syscall_get_thread_oid();
+				*((object_number_t*)param[0]) = objno;
+				ret = NO_ERROR;
 			}
 			break;
 

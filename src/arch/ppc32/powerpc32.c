@@ -16,8 +16,6 @@
  */
 #define MAX_PPC_IVECT 20
 
-#define STACK_VIRTUAL_BASE 0xC0000000u
-
 /**
  * The interrupt service routine (ISR) table
  */
@@ -315,12 +313,12 @@ void __tgt_initialise_process(__process_t * const process)
 			section = section->next;
 		}
 
-		/* define a mmu section for the processes stack */
+		/* define a mmu section for the processes stack and heap */
 		mmu_section_t pool_section;
 		const __mem_pool_info_t * const process_pool = __process_get_mem_pool(process);
 		section = &pool_section;
 		section->real_address = process_pool->start_pool;
-		section->virt_address = STACK_VIRTUAL_BASE;
+		section->virt_address = VIRTUAL_ADDRESS_SPACE;
 		section->size = process_pool->total_pool_size;
 		section->access_rights = mmu_read_write;
 
@@ -335,32 +333,24 @@ void __tgt_initialise_process(__process_t * const process)
 	}
 }
 
-static void virtual_stack_pointer(__thread_t * thread)
+static void __tgt_setup_stack(__thread_t * thread)
 {
-	uint32_t sp;
 	const uint32_t stack_size = __thread_get_stack_size(thread);
+	const uint32_t rsp = (uint32_t)(__thread_get_stack_memory(thread)) + stack_size - 12;
+	uint32_t vsp;
 
 	if ( !__process_is_kernel(__thread_get_parent(thread)) )
 	{
-		/* calculate the offset inside the memory pool */
-		const __mem_pool_info_t * const mempool = __process_get_mem_pool(__thread_get_parent(thread));
-		const uint32_t offset = ((((uint32_t)__thread_get_stack_memory(thread)) + stack_size - 12)) - mempool->start_pool;
-		__thread_set_real_stack_base(thread, mempool->start_pool);
-		//thread->r_stack_base = thread->parent->memory_pool->start_pool + offset;
-		sp = STACK_VIRTUAL_BASE + offset; /* FIXME: Absolute for memory pool base */
+		vsp = VIRTUAL_ADDRESS_SPACE
+				+ (((uint32_t)__thread_get_stack_memory(thread)-__process_get_mem_pool(__thread_get_parent(thread))->start_pool)
+						+ stack_size - 12);
 	}
 	else
 	{
-		sp = (uint32_t)(__thread_get_stack_memory(thread)) + stack_size - 12;
-		__thread_set_real_stack_base(thread, sp);
+		vsp = rsp;
 	}
-
-	/* leave some space on the end for what it might have thought
-	 * was the old context */
-	/* TODO explain the 12 in terms of FP etc for the previous frame */
-	/* FIXME: Is this correct? The adjusted SP */
-	/* vector_info->sp = (uint32_t)(thread->stack) + thread->stack_size - 12; */
-	__thread_set_virt_stack_base(thread, sp);
+	__thread_set_real_stack_base(thread, rsp);
+	__thread_set_virt_stack_base(thread, vsp);
 }
 
 void __tgt_initialise_context(
@@ -370,9 +360,9 @@ void __tgt_initialise_context(
 {
 	if (thread)
 	{
-		__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)__thread_get_context(thread);
+		__ppc32_ivt_struct_t* const vector_info = (__ppc32_ivt_struct_t*const)__thread_get_context(thread);
 
-		virtual_stack_pointer(thread);
+		__tgt_setup_stack(thread);
 		vector_info->sp = __thread_get_virt_stack_base(thread);
 		vector_info->fp = vector_info->sp;
 		for (uint8_t gpr = 0 ; gpr < PPC_CONTEXT_GPR ; gpr++)

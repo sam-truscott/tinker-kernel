@@ -9,6 +9,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#define VIRTUAL_ADDRESS_SPACE 0xC0000000u
+
 /**
  * The size of the heap for the kernel
  */

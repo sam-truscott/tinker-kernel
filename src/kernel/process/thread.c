@@ -9,6 +9,7 @@
 #include "kernel/process/thread.h"
 
 #include "config.h"
+#include "arch/tgt.h"
 #include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/utils/util_strlen.h"
@@ -17,9 +18,8 @@ typedef struct __thread_t
 {
 	uint32_t			thread_id;
 	void 				* stack;
-	/** The base address of the stack in real memory */
-	uint32_t		    v_stack_base;
 	uint32_t			r_stack_base;
+	uint32_t			v_stack_base;
 	uint32_t			stack_size;
 	priority_t			priority;
 	uint32_t			flags;
@@ -61,6 +61,12 @@ __thread_t * __thread_create(
 		{
 			thread->stack_size = stack;
 			thread->state = thread_ready;
+			/*
+			 * We need to ensure that the context information
+			 * is configured properly
+			 */
+			/** FIXME: Change the 0 **/
+			__tgt_initialise_context(thread, __process_is_kernel(thread->parent), 0);
 		}
 		else
 		{
@@ -152,6 +158,13 @@ uint32_t __thread_get_virt_stack_base(
 	return thread->v_stack_base;
 }
 
+void __thread_set_virt_stack_base(
+		__thread_t * const thread,
+		const uint32_t virt_stack_base)
+{
+	thread->v_stack_base = virt_stack_base;
+}
+
 uint32_t __thread_get_real_stack_base(
 		const __thread_t * const thread)
 {
@@ -163,13 +176,6 @@ void __thread_set_real_stack_base(
 		const uint32_t real_stack_base)
 {
 	thread->r_stack_base = real_stack_base;
-}
-
-void __thread_set_virt_stack_base(
-		__thread_t * const thread,
-		const uint32_t virt_stack_base)
-{
-	thread->v_stack_base = virt_stack_base;
 }
 
 thread_entry_point * __thread_get_entry_point(

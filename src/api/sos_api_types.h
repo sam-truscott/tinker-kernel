@@ -42,4 +42,6 @@ typedef enum __thread_state
 
 typedef uint16_t object_number_t;
 
+#define INVALID_OBJECT_ID -1
+
 #endif /* SOS_API_TYPES_H_ */

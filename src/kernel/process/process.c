@@ -9,6 +9,7 @@
 #include "process.h"
 
 #include "config.h"
+#include "arch/tgt.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/utils/util_strlen.h"
@@ -57,6 +58,7 @@ __process_t * __process_create(
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
 		p->object_table = __obj_table_create(p->memory_pool);
+		__tgt_initialise_process(p);
 	}
 	return p;
 }

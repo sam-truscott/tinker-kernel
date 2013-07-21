@@ -49,13 +49,12 @@ static void my_other_thread(void)
 static void my_initial_thread(void)
 {
 	uint8_t my_priority;
-	sos_thread my_thread;
-	sos_thread other_thread;
-
+	sos_thread my_thread = 0xDEAF;//INVALID_OBJECT_ID;
+	sos_thread other_thread = INVALID_OBJECT_ID;
 	error_t error = NO_ERROR;
 
-	my_thread = 0xDEAFu;
-
+	sos_thread * tmp = &my_thread;
+	if (tmp) {}
 	error = sos_get_thread_object(&my_thread);
 
 	error = sos_get_thread_priority(

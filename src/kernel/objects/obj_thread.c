@@ -75,7 +75,7 @@ error_t __obj_create_thread(
 object_number_t __obj_thread_get_oid
 	(const __object_thread_t * const o)
 {
-	object_number_t oid = INVALID_OBJECT;
+	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
 	{
 		if (o->object.initialised == OBJECT_INITIALISED)

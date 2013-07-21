@@ -155,7 +155,6 @@ error_t __proc_create_process(
 					}
 					else
 					{
-						__tgt_initialise_process(proc);
 						if ( process )
 						{
 							* process = proc;
@@ -200,33 +199,12 @@ error_t __proc_create_thread(
 	if ( thread != NULL )
 	{
 		/* add the thread to the process list */
-		object_number_t objno = INVALID_OBJECT;
+		object_number_t objno = INVALID_OBJECT_ID;
 		if (__process_add_thread(process, thread, &objno))
 		{
-			if (__thread_get_state(thread) == thread_ready)
+			if (__thread_get_state(thread) != thread_ready)
 			{
-				bool is_kernel;
-				__process_t * kernel_process = NULL;
-
-				kernel_process = __kernel_get_process();
-
-				if (kernel_process)
-				{
-					is_kernel = (process == kernel_process);
-				}
-				else
-				{
-					/* the kernel_process is NULL therefore
-					 * we're initialising the kernel process */
-					is_kernel = true;
-				}
-
-				/*
-				 * We need to ensure that the context information
-				 * is configured properly
-				 */
-				/** FIXME: Change the 0 **/
-				__tgt_initialise_context(thread, is_kernel, 0);
+				ret = OUT_OF_MEMORY;
 			}
 		}
 		else

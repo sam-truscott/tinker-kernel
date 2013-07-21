@@ -69,16 +69,16 @@ void * __thread_get_stack_memory(
 uint32_t __thread_get_virt_stack_base(
 		const __thread_t * const thread);
 
+void __thread_set_virt_stack_base(
+		__thread_t * const thread,
+		const uint32_t virt_stack_base);
+
 uint32_t __thread_get_real_stack_base(
 		const __thread_t * const thread);
 
 void __thread_set_real_stack_base(
 		__thread_t * const thread,
 		const uint32_t real_stack_base);
-
-void __thread_set_virt_stack_base(
-		__thread_t * const thread,
-		const uint32_t virt_stack_base);
 
 thread_entry_point * __thread_get_entry_point(
 		const __thread_t * const thread);
