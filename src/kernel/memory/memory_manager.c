@@ -98,15 +98,13 @@ bool 	__mem_init_memory_pool(
 			- (MMU_PAGE_SIZE - sizeof(__mem_pool_info_t)));
 
 	pool_info->start_pool = base_addr;
+	pool_info->pool_alloc_size = pool_size;
 	pool_info->total_pool_size =
 			pool_size - sizeof(__mem_pool_info_t) - sizeof(__mem_block_t);
 	pool_info->end_pool
 		= pool_info->start_pool + pool_info->total_pool_size;
 	pool_info->blocks = 0;
 	pool_info->free_pool_bytes = pool_info->total_pool_size;
-	pool_info->page_size = MMU_PAGE_SIZE;
-	pool_info->total_pages
-		= pool_info->total_pool_size / pool_info->page_size;
 	pool_info->next_pool_info = NULL;
 
 	first_block
@@ -137,10 +135,10 @@ bool	__mem_init_process_memory(
 	bool ret = false;
 
 	/* allocate that from RAM */
-	// FIXME TODO This should be page aligned1
-	uint32_t proc_memory_pool = (uint32_t)__mem_alloc(
+	uint32_t proc_memory_pool = (uint32_t)__mem_alloc_aligned(
 			__mem_memory_pool,
-			size);
+			size,
+			MMU_PAGE_SIZE);
 
 	if ( proc_memory_pool != 0 )
 	{

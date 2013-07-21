@@ -53,12 +53,9 @@ typedef struct __mem_pool_info
 	 * this should go backwards in memory from
 	 * here to the last block */
 	__mem_block_t *	first_block;
-	/* the size of a single page */
-	uint32_t page_size;
-	/* total heap in pages */
-	uint32_t total_pages;
 	/* total heap in bytes */
 	uint32_t total_pool_size;
+	uint32_t pool_alloc_size;
 	/* if this block becomes full this is
 	 * the next one to use */
 	struct __mem_pool_info * next_pool_info;

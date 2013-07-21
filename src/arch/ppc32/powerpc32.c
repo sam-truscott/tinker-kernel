@@ -338,7 +338,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 			section = &pool_section;
 			section->real_address = process_pool->start_pool;
 			section->virt_address = VIRTUAL_ADDRESS_SPACE;
-			section->size = process_pool->total_pool_size;
+			section->size = process_pool->pool_alloc_size;
 			section->access_rights = mmu_read_write;
 
 			/* setup up pages for the memory pool */

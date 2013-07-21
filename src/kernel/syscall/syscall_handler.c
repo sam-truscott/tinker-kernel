@@ -66,7 +66,6 @@ void __syscall_handle_system_call(void * context, uint32_t context_size)
 			const uint32_t pool_start = __process_get_mem_pool(__thread_get_parent(this_thread))->start_pool;
 			param[i] -= VIRTUAL_ADDRESS_SPACE;
 			param[i] += pool_start;
-			param[i] -= 428;
 		}
 	}
 
