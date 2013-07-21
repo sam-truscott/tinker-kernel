@@ -38,7 +38,7 @@ static void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint
  * @param rw_access Read/Write access
  * @param mem_type The type of memory being mapped
  */
-static void __ppc_setup_paged_area(
+static error_t __ppc_setup_paged_area(
 		segment_info_t * segment_info,
 		uint32_t real_address,
 		uint32_t virtual_address,
@@ -217,7 +217,7 @@ void __tgt_disable_thread_interrupts(__thread_t * const thread)
 	}
 }
 
-static void __ppc_setup_paged_area(
+static error_t __ppc_setup_paged_area(
 		segment_info_t * segment_info,
 		uint32_t real_address,
 		uint32_t virtual_address,
@@ -227,6 +227,19 @@ static void __ppc_setup_paged_area(
 {
 	uint32_t w0 = 0;
 	uint32_t w1 = 0;
+
+	if ((real_address % MMU_PAGE_SIZE) != 0)
+	{
+		return MEM_NOT_ALIGNED;
+	}
+	if ((size % MMU_PAGE_SIZE) != 0)
+	{
+		return MEM_NOT_ALIGNED;
+	}
+	if ((virtual_address % MMU_PAGE_SIZE) != 0)
+	{
+		return MEM_NOT_ALIGNED;
+	}
 
 	uint32_t pages = size / MMU_PAGE_SIZE;
 	if ( (size % MMU_PAGE_SIZE) !=0 )
@@ -280,10 +293,14 @@ static void __ppc_setup_paged_area(
 				w0,
 				w1);
 	}
+
+	return true;
 }
 
-void __tgt_initialise_process(__process_t * const process)
+error_t __tgt_initialise_process(__process_t * const process)
 {
+	error_t ok = NO_ERROR;
+
 	if ( !__process_is_kernel(process) )
 	{
 		const uint32_t pid = __process_get_pid(process);
@@ -298,10 +315,10 @@ void __tgt_initialise_process(__process_t * const process)
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
 		mmu_section_t * section = __process_get_first_section(process);
-		while ( section )
+		while ( section && (ok == NO_ERROR))
 		{
 			/* setup virt -> real mapping for size */
-			__ppc_setup_paged_area(
+			ok = __ppc_setup_paged_area(
 					&segment_info,
 					section->real_address,
 					section->virt_address,
@@ -313,24 +330,29 @@ void __tgt_initialise_process(__process_t * const process)
 			section = section->next;
 		}
 
-		/* define a mmu section for the processes stack and heap */
-		mmu_section_t pool_section;
-		const __mem_pool_info_t * const process_pool = __process_get_mem_pool(process);
-		section = &pool_section;
-		section->real_address = process_pool->start_pool;
-		section->virt_address = VIRTUAL_ADDRESS_SPACE;
-		section->size = process_pool->total_pool_size;
-		section->access_rights = mmu_read_write;
+		if (ok == NO_ERROR)
+		{
+			/* define a mmu section for the processes stack and heap */
+			mmu_section_t pool_section;
+			const __mem_pool_info_t * const process_pool = __process_get_mem_pool(process);
+			section = &pool_section;
+			section->real_address = process_pool->start_pool;
+			section->virt_address = VIRTUAL_ADDRESS_SPACE;
+			section->size = process_pool->total_pool_size;
+			section->access_rights = mmu_read_write;
 
-		/* setup up pages for the memory pool */
-		__ppc_setup_paged_area(
-				&segment_info,
-				section->real_address,
-				section->virt_address,
-				section->size,
-				section->access_rights,
-				mmu_random_access_memory);
+			/* setup up pages for the memory pool */
+			ok = __ppc_setup_paged_area(
+					&segment_info,
+					section->real_address,
+					section->virt_address,
+					section->size,
+					section->access_rights,
+					mmu_random_access_memory);
+		}
 	}
+
+	return ok;
 }
 
 static void __tgt_setup_stack(__thread_t * thread)

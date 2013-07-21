@@ -25,7 +25,7 @@ void __tgt_disable_external_interrupts(void);
 
 void __tgt_disable_thread_interrupts(__thread_t * const thread);
 
-void __tgt_initialise_process(__process_t * const process);
+error_t __tgt_initialise_process(__process_t * const process);
 
 void __tgt_initialise_context(
 		__thread_t * const thread,

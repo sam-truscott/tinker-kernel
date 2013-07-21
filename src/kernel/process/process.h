@@ -20,12 +20,13 @@ UNBOUNDED_LIST_TYPE(thread_list_t)
 UNBOUNDED_LIST_ITERATOR_TYPE(thread_list_it_t)
 UNBOUNDED_LIST_ITERATOR_SPEC(extern, thread_list_it_t, thread_list_t, __thread_t*)
 
-__process_t * __process_create(
+error_t __process_create(
 		__mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,
 		const bool is_kernel,
-		const __mem_pool_info_t * pool);
+		const __mem_pool_info_t * pool,
+		__process_t ** process);
 
 uint32_t __process_get_pid(const __process_t * const process);
 

@@ -137,6 +137,7 @@ bool	__mem_init_process_memory(
 	bool ret = false;
 
 	/* allocate that from RAM */
+	// FIXME TODO This should be page aligned1
 	uint32_t proc_memory_pool = (uint32_t)__mem_alloc(
 			__mem_memory_pool,
 			size);

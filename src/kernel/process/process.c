@@ -40,14 +40,16 @@ typedef struct __process_t
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
 } __process_internal_t;
 
-__process_t * __process_create(
+error_t __process_create(
 		__mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,
 		const bool is_kernel,
-		const __mem_pool_info_t * pool)
+		const __mem_pool_info_t * pool,
+		__process_t ** process)
 {
 	__process_t * p = (__process_t*)__mem_alloc_aligned(mempool, sizeof(__process_t), MMU_PAGE_SIZE);
+	error_t ret = NO_ERROR;
 	if (p)
 	{
 		p->threads = thread_list_t_create(mempool);
@@ -58,9 +60,17 @@ __process_t * __process_create(
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
 		p->object_table = __obj_table_create(p->memory_pool);
-		__tgt_initialise_process(p);
+		ret = __tgt_initialise_process(p);
+		if (ret == NO_ERROR && process)
+		{
+			*process = p;
+		}
 	}
-	return p;
+	else
+	{
+		ret = OUT_OF_MEMORY;
+	}
+	return ret;
 }
 
 uint32_t __process_get_pid(const __process_t * const process)

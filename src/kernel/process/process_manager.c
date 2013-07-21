@@ -111,18 +111,15 @@ error_t __proc_create_process(
 	}
 	else
 	{
-		proc = __process_create(
+		ret = __process_create(
 				parent_pool,
 				proc_id,
 				image,
 				(curr_thread == NULL),
-				new_mem_pool);
+				new_mem_pool,
+				&proc);
 
-		if ( proc == NULL )
-		{
-			ret = OUT_OF_MEMORY;
-		}
-		else
+		if (ret == NO_ERROR)
 		{
 			__object_t * process_obj = NULL;
 			__object_t * thread_obj = NULL;
