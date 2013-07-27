@@ -11,6 +11,7 @@
 
 #include "kernel/kernel_types.h"
 #include "kernel/process/process.h"
+#include "kernel/time/time.h"
 
 void __ppc_get_timer(__process_t * parent, __timer_t * timer);
 

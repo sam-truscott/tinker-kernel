@@ -10,6 +10,7 @@
 #define POWERPC_CLOCK_H_
 
 #include "kernel/kernel_types.h"
+#include "kernel/time/time.h"
 
 void __ppc_setup_timebase_details(uint64_t clock_as_hz, uint32_t ticks_per_clock);
 

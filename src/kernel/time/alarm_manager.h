@@ -10,6 +10,7 @@
 #define ALARM_MANAGER_H_
 
 #include "kernel/kernel_types.h"
+#include "kernel/time/time.h"
 #include "kernel/process/thread.h"
 
 void __alarm_initialse(void);

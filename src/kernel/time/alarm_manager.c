@@ -12,6 +12,7 @@
 #include "kernel/memory/memory_manager.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/time/time_utilities.h"
+#include "kernel/time/time.h"
 #include "kernel/utils/collections/unbounded_list.h"
 
 typedef struct

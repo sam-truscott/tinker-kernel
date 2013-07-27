@@ -8,6 +8,7 @@
  */
 #include "obj_timer.h"
 #include "kernel/kernel_types.h"
+#include "kernel/time/time.h"
 
 typedef struct __object_timer_t
 {
