@@ -27,7 +27,7 @@
 typedef struct
 {
 	int32_t seconds;
-	int64_t nanoseconds;
+	int32_t nanoseconds;
 } __time_t;
 
 #define __ZERO_TIME ((__time_t){0,0})

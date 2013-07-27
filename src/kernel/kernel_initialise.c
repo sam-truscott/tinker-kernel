@@ -11,12 +11,12 @@
 #include "../arch/board_support.h"
 #include "kernel_assert.h"
 #include "kernel_idle.h"
-#include "alarms/alarm_manager.h"
 #include "debug/debug_print.h"
 #include "interrupts/interrupt_manager.h"
 #include "memory/memory_manager.h"
 #include "process/process_manager.h"
 #include "time/time_manager.h"
+#include "time/alarm_manager.h"
 #include "kernel/utils/util_memset.h"
 #include "arch/tgt.h"
 

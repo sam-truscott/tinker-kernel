@@ -19,7 +19,7 @@
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/time/time_manager.h"
-#include "kernel/alarms/alarm_manager.h"
+#include "kernel/time/alarm_manager.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/util_i_to_h.h"
 

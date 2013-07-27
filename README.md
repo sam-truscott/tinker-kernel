@@ -28,6 +28,7 @@ issues / todo
 * re-do hash maps; they're just wrong
 * re-write memcpy to be target specific with weak reference for basic implementation
 * mmu code on ppc isn't finished, no flushing out when process dies
+* replace the mempool implementation with dlmalloc (?)
 * no crt / newlib code for userland yet
 * no way to load usermode elfs in
 * pipes, shms and timers aren't implemented yet
