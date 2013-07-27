@@ -35,8 +35,8 @@ typedef struct __process_t
 	__object_table_t *		object_table;
 	object_number_t			object_number;
 	bool					kernel_process;
-	segment_info_t			segment_info;
-	mmu_section_t *			first_section;
+	tgt_mem_t				segment_info;
+	const mem_section_t *	first_section;
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
 } __process_internal_t;
 
@@ -60,6 +60,16 @@ error_t __process_create(
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
 		p->object_table = __obj_table_create(p->memory_pool);
+
+		p->first_section = __mem_sec_create(
+				p->memory_pool,
+				__mem_get_start_addr(p->memory_pool),
+				VIRTUAL_ADDRESS_SPACE,
+				__mem_get_alloc_size(p->memory_pool),
+				mmu_random_access_memory,
+				mmu_user_access,
+				mmu_read_write);
+
 		ret = __tgt_initialise_process(p);
 		if (ret == NO_ERROR && process)
 		{
@@ -110,19 +120,19 @@ __object_table_t * __process_get_object_table(const __process_t * const process)
 	return process->object_table;
 }
 
-const segment_info_t * __process_get_segment_info(const __process_t * const process)
+const tgt_mem_t * __process_get_segment_info(const __process_t * const process)
 {
 	return &process->segment_info;
 }
 
 void __process_set_segment_info(
 		__process_t * const process,
-		const segment_info_t * const seg)
+		const tgt_mem_t * const seg)
 {
 	__util_memcpy(
 			&process->segment_info,
 			seg,
-			sizeof(segment_info_t));
+			sizeof(tgt_mem_t));
 }
 
 bool __process_add_thread(
@@ -185,7 +195,7 @@ thread_list_it_t * __process_get_threads(const __process_t * const process)
 	return thread_list_it_t_create(process->threads);
 }
 
-mmu_section_t * __process_get_first_section(const __process_t * const process)
+const mem_section_t * __process_get_first_section(const __process_t * const process)
 {
 	return process->first_section;
 }

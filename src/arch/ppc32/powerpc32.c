@@ -39,12 +39,8 @@ static void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint
  * @param mem_type The type of memory being mapped
  */
 static error_t __ppc_setup_paged_area(
-		segment_info_t * segment_info,
-		uint32_t real_address,
-		uint32_t virtual_address,
-		uint32_t size,
-		__ppc32_pp_t rw_access,
-		mmu_memory_t mem_type);
+		const tgt_mem_t * const segment_info,
+		const mem_section_t * const mem_sec);
 
 void __ppc_isr_initialise(void)
 {
@@ -218,17 +214,19 @@ void __tgt_disable_thread_interrupts(__thread_t * const thread)
 }
 
 static error_t __ppc_setup_paged_area(
-		segment_info_t * segment_info,
-		uint32_t real_address,
-		uint32_t virtual_address,
-		uint32_t size,
-		__ppc32_pp_t rw_access,
-		mmu_memory_t mem_type)
+		const tgt_mem_t * const segment_info,
+		const mem_section_t * const mem_sec)
 {
 	uint32_t w0 = 0;
 	uint32_t w1 = 0;
 
-	if ((real_address % MMU_PAGE_SIZE) != 0)
+	const uint32_t real_addr = __mem_sec_get_real_addr(mem_sec);
+	const uint32_t size = __mem_sec_get_size(mem_sec);
+	const uint32_t virt_addr = __mem_sec_get_virt_addr(mem_sec);
+	const mmu_memory_t mem_type = __mem_sec_get_mem_type(mem_sec);
+	const mmu_access_t access = __mem_sec_get_access(mem_sec);
+
+	if ((real_addr % MMU_PAGE_SIZE) != 0)
 	{
 		return MEM_NOT_ALIGNED;
 	}
@@ -236,7 +234,7 @@ static error_t __ppc_setup_paged_area(
 	{
 		return MEM_NOT_ALIGNED;
 	}
-	if ((virtual_address % MMU_PAGE_SIZE) != 0)
+	if ((virt_addr % MMU_PAGE_SIZE) != 0)
 	{
 		return MEM_NOT_ALIGNED;
 	}
@@ -249,8 +247,8 @@ static error_t __ppc_setup_paged_area(
 
 	for ( uint32_t page = 0 ; page < pages ; page++ )
 	{
-		uint32_t page_virtual_address = (virtual_address + (page * MMU_PAGE_SIZE));
-		uint32_t page_real_address = (real_address + (page * MMU_PAGE_SIZE));
+		uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
+		uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
 		uint32_t vsid = segment_info->segment_ids[__PPC_GET_SEGMENT_INDEX(page_virtual_address)];
 
 		w0 = __PPC_PTE_W0(
@@ -271,7 +269,7 @@ static error_t __ppc_setup_paged_area(
 							__ppc32_cache_enabled,
 							__ppc32_memory_no_coherency,
 							__ppc32_not_guarded),
-							rw_access);
+							access);
 		}
 		else
 		{
@@ -285,7 +283,7 @@ static error_t __ppc_setup_paged_area(
 							__ppc32_cache_inhibited,
 							__ppc32_memory_no_coherency,
 							__ppc32_guarded),
-							rw_access);
+							access);
 		}
 		__ppc32_add_pte(
 				page_virtual_address,
@@ -304,7 +302,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 	if ( !__process_is_kernel(process) )
 	{
 		const uint32_t pid = __process_get_pid(process);
-		segment_info_t segment_info;
+		tgt_mem_t segment_info;
 		/* setup all the segment IDs */
 		for ( uint8_t sid = 0 ; sid < MMU_SEG_COUNT ; sid++ )
 		{
@@ -314,41 +312,16 @@ error_t __tgt_initialise_process(__process_t * const process)
 		__process_set_segment_info(process, &segment_info);
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
-		mmu_section_t * section = __process_get_first_section(process);
+		const mem_section_t * section = __process_get_first_section(process);
 		while ( section && (ok == NO_ERROR))
 		{
 			/* setup virt -> real mapping for size */
 			ok = __ppc_setup_paged_area(
 					&segment_info,
-					section->real_address,
-					section->virt_address,
-					section->size,
-					section->access_rights,
-					mmu_random_access_memory); /* FIXME: Don't assume RAM, look at the section */
+					section);
 
 			/* next section */
-			section = section->next;
-		}
-
-		if (ok == NO_ERROR)
-		{
-			/* define a mmu section for the processes stack and heap */
-			mmu_section_t pool_section;
-			const __mem_pool_info_t * const process_pool = __process_get_mem_pool(process);
-			section = &pool_section;
-			section->real_address = process_pool->start_pool;
-			section->virt_address = VIRTUAL_ADDRESS_SPACE;
-			section->size = process_pool->pool_alloc_size;
-			section->access_rights = mmu_read_write;
-
-			/* setup up pages for the memory pool */
-			ok = __ppc_setup_paged_area(
-					&segment_info,
-					section->real_address,
-					section->virt_address,
-					section->size,
-					section->access_rights,
-					mmu_random_access_memory);
+			section = __mem_sec_get_next(section);
 		}
 	}
 
@@ -364,7 +337,9 @@ static void __tgt_setup_stack(__thread_t * thread)
 	if ( !__process_is_kernel(__thread_get_parent(thread)) )
 	{
 		vsp = VIRTUAL_ADDRESS_SPACE
-				+ (((uint32_t)__thread_get_stack_memory(thread)-__process_get_mem_pool(__thread_get_parent(thread))->start_pool)
+				+ (((uint32_t)__thread_get_stack_memory(thread)
+						- __mem_get_start_addr(__process_get_mem_pool(
+								__thread_get_parent(thread))))
 						+ stack_size - 12);
 	}
 	else
@@ -435,7 +410,7 @@ void __tgt_prepare_context(
 			ks_flag = SR_KS_OK;
 		}
 
-		const segment_info_t * const segment_info = __process_get_segment_info(proc);
+		const tgt_mem_t * const segment_info = __process_get_segment_info(proc);
 
 		__util_memcpy(
 				context,

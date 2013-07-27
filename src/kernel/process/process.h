@@ -9,7 +9,9 @@
 #ifndef PROCESS_H_
 #define PROCESS_H_
 
+#include "tgt_mem.h"
 #include "kernel/process/thread.h"
+#include "kernel/memory/mem_section.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/utils/collections/unbounded_list.h"
 #include "kernel/utils/collections/unbounded_list_iterator.h"
@@ -47,16 +49,16 @@ bool __process_add_thread(
 		__thread_t * const thread,
 		object_number_t * const objno);
 
-const segment_info_t * __process_get_segment_info(const __process_t * const process);
+const tgt_mem_t * __process_get_segment_info(const __process_t * const process);
 
 void __process_set_segment_info(
 		__process_t * const process,
-		const segment_info_t * const seg);
+		const tgt_mem_t * const seg);
 
 __thread_t * _process_get_main_thread(const __process_t * process);
 
 thread_list_it_t * __process_get_threads(const __process_t * const process);
 
-mmu_section_t * __process_get_first_section(const __process_t * const process);
+const mem_section_t * __process_get_first_section(const __process_t * const process);
 
 #endif /* PROCESS_H_ */

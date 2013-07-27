@@ -9,7 +9,7 @@
 #ifndef CLOCK_MANAGER_H_
 #define CLOCK_MANAGER_H_
 
-#include "../kernel_types.h"
+#include "kernel/kernel_types.h"
 
 /**
  * Initialise the time manager

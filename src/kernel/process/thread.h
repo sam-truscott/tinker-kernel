@@ -11,6 +11,7 @@
 
 #include "sos_api_process.h"
 #include "kernel/kernel_types.h"
+#include "kernel/memory/mem_pool.h"
 
 typedef uint8_t priority_t;
 

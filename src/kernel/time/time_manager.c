@@ -8,7 +8,7 @@
  */
 #include "time_manager.h"
 
-#include "../kernel_assert.h"
+#include "kernel/kernel_assert.h"
 #include "time_utilities.h"
 
 static int64_t __time_system_time_ns;
