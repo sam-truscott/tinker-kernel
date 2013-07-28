@@ -8,7 +8,6 @@
 #ifndef MEM_SECTION_H_
 #define MEM_SECTION_H_
 
-#include "kernel/kernel_types.h"
 #include "mem_pool.h"
 
 typedef struct mem_section_t mem_section_t;

@@ -9,7 +9,7 @@
 #ifndef KERNEL_ASSERT_H_
 #define KERNEL_ASSERT_H_
 
-#include "kernel_types.h"
+#include "arch/tgt_types.h"
 
 void __kernel_assert_cond(const char * message, bool var, const bool cond);
 

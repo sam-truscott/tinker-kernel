@@ -9,7 +9,7 @@
 #ifndef KERNEL_MAIN_H_
 #define KERNEL_MAIN_H_
 
-#include "kernel_types.h"
+#include "arch/tgt_types.h"
 
 /**
  * Start up the Kernel

@@ -9,7 +9,6 @@
 #ifndef PPC32TBR_TIMER_H_
 #define PPC32TBR_TIMER_H_
 
-#include "kernel/kernel_types.h"
 #include "kernel/process/process.h"
 #include "kernel/time/time.h"
 

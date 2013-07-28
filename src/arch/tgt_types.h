@@ -6,10 +6,20 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#ifndef TARGET_TYPES_H_
-#define TARGET_TYPES_H_
+#ifndef TGT_TYPES_H_
+#define TGT_TYPES_H_
 
-#include "tgt_types.h"
+#include "tgt_ints.h"
+#include "tgt_mem.h"
+#include "tgt_io.h"
+
+typedef enum
+{
+	false = 0,
+	true = 1
+} bool;
+
+#define NULL ((void*)0)
 
 typedef volatile uint8_t __spinlock_t;
 #define LOCK_ON 0xDE
@@ -21,4 +31,4 @@ typedef volatile uint8_t __spinlock_t;
 	(V & 0x00FF0000) >> 8  | \
 	(V & 0xFF000000) >> 24
 
-#endif /* TARGET_TYPES_H_ */
+#endif /* TGT_TYPES_H_ */

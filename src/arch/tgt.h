@@ -9,8 +9,7 @@
 #ifndef TGT_H_
 #define THT_H_
 
-#include "arch/target_types.h"
-#include "kernel/kernel_types.h"
+#include "tgt_types.h"
 #include "kernel/process/process.h"
 
 void __tgt_initialise(void);

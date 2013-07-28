@@ -9,8 +9,6 @@
 #ifndef KERNEL_INITIALISE_H_
 #define KERNEL_INITIALISE_H_
 
-#include "kernel_types.h"
-
 #include "kernel/process/process.h"
 
 /**

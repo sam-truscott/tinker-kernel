@@ -9,7 +9,6 @@
 #ifndef PROCESS_MANAGER_H_
 #define PROCESS_MANAGER_H_
 
-#include "kernel/kernel_types.h"
 #include "process.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/object_table.h"

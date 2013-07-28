@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 #include "obj_shared_mem.h"
-#include "arch/target_types.h"
+#include "arch/tgt_types.h"
 
 typedef struct __object_shm_t
 {

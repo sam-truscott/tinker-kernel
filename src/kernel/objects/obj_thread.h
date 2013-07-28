@@ -9,7 +9,6 @@
 #ifndef OBJ_THREAD_H_
 #define OBJ_THREAD_H_
 
-#include "kernel/kernel_types.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/process/thread.h"

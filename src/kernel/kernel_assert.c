@@ -9,7 +9,6 @@
 #include "kernel_assert.h"
 
 #include "kernel_panic.h"
-#include "kernel_types.h"
 #include "debug/debug_print.h"
 
 void __kernel_assert(const char * message, const bool var)

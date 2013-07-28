@@ -9,7 +9,7 @@
 #ifndef DEBUG_STACK_TRACE_H_
 #define DEBUG_STACK_TRACE_H_
 
-#include "kernel/kernel_types.h"
+#include "arch/tgt_types.h"
 
 void __debug_print_current_stack_trace(void);
 

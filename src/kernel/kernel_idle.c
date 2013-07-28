@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 #include "kernel_idle.h"
-#include "kernel_types.h"
+#include "arch/tgt_types.h"
 
 static uint32_t __kernel_idle_check(uint32_t count)
 {

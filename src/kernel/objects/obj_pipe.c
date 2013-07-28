@@ -8,7 +8,7 @@
  */
 #include "obj_pipe.h"
 
-#include "arch/target_types.h"
+#include "arch/tgt_types.h"
 
 typedef struct __object_pipe_t
 {

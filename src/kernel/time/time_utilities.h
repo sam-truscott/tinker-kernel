@@ -9,7 +9,6 @@
 #ifndef TIMER_UTILITIES_H_
 #define TIMER_UTILITIES_H_
 
-#include "kernel/kernel_types.h"
 #include "kernel/time/time.h"
 
 __time_t __time_add(__time_t l, __time_t r);

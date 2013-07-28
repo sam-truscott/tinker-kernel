@@ -8,6 +8,7 @@
  */
 #include "alarm_manager.h"
 
+#include "config.h"
 #include "kernel/process/process.h"
 #include "kernel/memory/memory_manager.h"
 #include "kernel/time/time_manager.h"

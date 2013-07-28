@@ -9,7 +9,7 @@
 #ifndef MEM_POOL_H_
 #define MEM_POOL_H_
 
-#include "kernel/kernel_types.h"
+#include "arch/tgt_types.h"
 
 typedef struct __mem_pool_info_t __mem_pool_info_t;
 

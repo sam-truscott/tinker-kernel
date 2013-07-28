@@ -9,7 +9,7 @@
 #ifndef OBJECT_PRIVATE_H_
 #define OBJECT_PRIVATE_H_
 
-#include "arch/target_types.h"
+#include "arch/tgt_types.h"
 
 #define OBJECT_INITIALISED 0x55AA
 #define OBJECT_ALLOCATED 0xFEED

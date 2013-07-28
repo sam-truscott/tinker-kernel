@@ -9,7 +9,6 @@
 #include "mem_pool.h"
 
 #include "sos_api_types.h"
-#include "kernel/kernel_types.h"
 #include "kernel/kernel_assert.h"
 #include "tgt_mem.h"
 

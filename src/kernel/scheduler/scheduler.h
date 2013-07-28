@@ -9,7 +9,6 @@
 #ifndef SCHEDULER_IMPL_H_
 #define SCHEDULER_IMPL_H_
 
-#include "../kernel_types.h"
 #include "kernel/process/thread.h"
 
 void __sch_initialise_scheduler(void);

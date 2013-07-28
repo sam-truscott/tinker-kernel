@@ -9,7 +9,7 @@
 #ifndef INTERRUPT_MANAGER_H_
 #define INTERRUPT_MANAGER_H_
 
-#include "../kernel_types.h"
+#include "kernel/devices/device_type.h"
 
 /**
  * Initialise the Interrupt Services

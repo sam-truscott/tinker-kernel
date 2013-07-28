@@ -8,9 +8,9 @@
  */
 #include "object_table.h"
 
+#include "config.h"
 #include "object.h"
 #include "obj_thread.h"
-
 #include "kernel/process/process.h"
 #include "kernel/utils/util_malloc.h"
 #include "kernel/memory/memory_manager.h"

@@ -9,9 +9,6 @@
 #ifndef POWERPC32_7400_H_
 #define POWERPC32_7400_H_
 
-#include "arch/target_types.h"
-#include "arch/ppc32/powerpc32.h"
-
 #define MAX_DTLB_ENTRIES 64
 #define MAX_ITLB_ENTRIES 64
 #define MAX_DBAT_ENTRIES 4

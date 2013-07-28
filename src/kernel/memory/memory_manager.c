@@ -8,7 +8,7 @@
  */
 #include "memory_manager.h"
 
-#include "tgt_mem.h"
+#include "arch/tgt_types.h"
 #include "kernel/debug/debug_print.h"
 #include "kernel/kernel_assert.h"
 

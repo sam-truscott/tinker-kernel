@@ -8,6 +8,7 @@
  */
 #include "process_manager.h"
 
+#include "config.h"
 #include "arch/tgt.h"
 #include "kernel/kernel_initialise.h"
 #include "kernel/scheduler/scheduler.h"

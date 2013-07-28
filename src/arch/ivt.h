@@ -9,8 +9,6 @@
 #ifndef IVT_H_
 #define IVT_H_
 
-#include "arch/target_types.h"
-
 void __ivt_initialise(void);
 
 #endif /* IVT_H_ */

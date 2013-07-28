@@ -9,8 +9,8 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
-#include "kernel/kernel_types.h"
-#include "kernel/process/thread.h"
+#include "arch/tgt_types.h"
+#include "sos_api_types.h"
 
 typedef enum __object_type
 {

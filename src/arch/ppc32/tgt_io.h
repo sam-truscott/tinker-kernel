@@ -6,10 +6,10 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#ifndef POWERPC_IO_H_
-#define POWERPC_IO_H_
+#ifndef TGT_IO_H_
+#define TGT_IO_H_
 
-#include "arch/target_types.h"
+#include "tgt_ints.h"
 
 #define __out_(N,T) \
 	static inline void __out_##N(T * const addr, const T const value) \
@@ -39,4 +39,4 @@ __in_(s16, int16_t)
 __in_(u32, uint32_t)
 __in_(s32, int32_t)
 
-#endif /* POWERPC_IO_H_ */
+#endif /* TGT_IO_H_ */

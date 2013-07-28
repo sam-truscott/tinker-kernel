@@ -9,7 +9,6 @@
 #ifndef MEMORY_MANAGER_H_
 #define MEMORY_MANAGER_H_
 
-#include "kernel/kernel_types.h"
 #include "mem_pool.h"
 
 /**

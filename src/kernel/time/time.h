@@ -9,7 +9,7 @@
 #ifndef TIME_H_
 #define TIME_H_
 
-#include "kernel/kernel_types.h"
+#include "arch/tgt_types.h"
 
 #define ONE_SECOND_AS_NANOSECONDS	1000000000
 #define ONE_MS_AS_NANOSECONDS 		1000000

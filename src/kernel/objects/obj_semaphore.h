@@ -9,7 +9,6 @@
 #ifndef OBJ_SEMAPHORE_H_
 #define OBJ_SEMAPHORE_H_
 
-#include "../kernel_types.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/object_table.h"

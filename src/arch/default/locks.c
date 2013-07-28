@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 
-#include "arch/target_types.h"
+#include "arch/tgt_types.h"
 
 void __tgt_acquire_lock(__spinlock_t * lock)
 {

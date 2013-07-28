@@ -9,7 +9,7 @@
 #ifndef UART16550_H_
 #define UART16550_H_
 
-#include "kernel/kernel_types.h"
+#include "kernel/devices/device_type.h"
 
 /**
  * List of valid UART 16550 registers

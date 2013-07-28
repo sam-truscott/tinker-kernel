@@ -9,6 +9,7 @@
 #include "powerpc32.h"
 #include "powerpc32_mmu.h"
 
+#include "config.h"
 #include "kernel/time/time.h"
 #include "kernel/utils/util_memcpy.h"
 

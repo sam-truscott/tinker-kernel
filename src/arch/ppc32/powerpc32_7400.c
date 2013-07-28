@@ -6,8 +6,9 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "arch/target_types.h"
+
 #include "arch/ppc32/powerpc32_7400.h"
+#include "arch/ppc32/powerpc32.h"
 #include "arch/ppc32/powerpc32_mmu.h"
 #include "kernel/utils/util_memcpy.h"
 

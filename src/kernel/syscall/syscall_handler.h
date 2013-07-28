@@ -9,7 +9,7 @@
 #ifndef SYSCALL_HANDLER_H_
 #define SYSCALL_HANDLER_H_
 
-#include "kernel/kernel_types.h"
+#include "arch/tgt_types.h"
 
 void __syscall_handle_system_call(void * context, uint32_t context_size);
 

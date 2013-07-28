@@ -8,8 +8,6 @@
  */
 #include "mem_section.h"
 
-#include "kernel/kernel_types.h"
-
 typedef struct mem_section_t
 {
 	mem_section_t *next;

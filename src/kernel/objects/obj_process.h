@@ -9,7 +9,7 @@
 #ifndef OBJ_PROCESS_H_
 #define OBJ_PROCESS_H_
 
-#include "kernel/kernel_types.h"
+#include "arch/tgt_types.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/object_table.h"
 

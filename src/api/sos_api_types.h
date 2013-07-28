@@ -15,15 +15,7 @@
 #define SOS_API_SUFFIX
 #endif
 
-#include "arch/target_types.h"
-
-#define NULL ((void*)0)
-
-typedef enum
-{
-	false = 0,
-	true = 1
-} bool;
+#include "arch/tgt_types.h"
 
 typedef enum __thread_state
 {

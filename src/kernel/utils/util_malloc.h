@@ -9,7 +9,7 @@
 #ifndef UTIL_MALLOC_H_
 #define UTIL_MALLOC_H_
 
-#include "../kernel_types.h"
+#include "arch/tgt_types.h"
 
 void * __util_malloc(const uint32_t size);
 

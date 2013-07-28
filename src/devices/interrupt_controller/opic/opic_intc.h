@@ -11,7 +11,7 @@
 
 #define OPIC_BIG_ENDIAN
 
-#include "kernel/kernel_types.h"
+#include "kernel/devices/device_type.h"
 
 /**
  * The register region base addresses

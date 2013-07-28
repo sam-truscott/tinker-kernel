@@ -9,7 +9,6 @@
 #ifndef ALARM_MANAGER_H_
 #define ALARM_MANAGER_H_
 
-#include "kernel/kernel_types.h"
 #include "kernel/time/time.h"
 #include "kernel/process/thread.h"
 

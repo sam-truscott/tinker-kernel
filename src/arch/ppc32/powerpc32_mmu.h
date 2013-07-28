@@ -9,7 +9,7 @@
 #ifndef POWERPC32_7400_MMU_H_
 #define POWERPC32_7400_MMU_H_
 
-#include "arch/target_types.h"
+#include "arch/tgt_types.h"
 
 /*
  * Operations for the 7400 MMU
