@@ -31,4 +31,6 @@ typedef volatile uint8_t __spinlock_t;
 	(V & 0x00FF0000) >> 8  | \
 	(V & 0xFF000000) >> 24
 
+typedef struct __tgt_context_t __tgt_context_t;
+
 #endif /* TGT_TYPES_H_ */

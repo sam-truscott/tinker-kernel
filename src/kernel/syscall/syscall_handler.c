@@ -41,7 +41,7 @@ static inline __object_thread_t * __syscall_get_thread_object(void)
 	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid());
 }
 
-void __syscall_handle_system_call(void * context, uint32_t context_size)
+void __syscall_handle_system_call(__tgt_context_t * const context)
 {
 	__syscall_function_t api = (__syscall_function_t)__tgt_get_syscall_param(context, 0);
 	uint32_t ret = 0;
@@ -223,20 +223,6 @@ void __syscall_handle_system_call(void * context, uint32_t context_size)
 		}
 
 		case syscall_load_thread:
-
-			if ( __kernel_is_first_run() )
-			{
-				__kernel_first_run_ok();
-			}
-			else
-			{
-				/* save the schedulers (where we've come from) context
-				 * for re-entry next time */
-				__util_memcpy(
-						(uint8_t*)__thread_get_context(__kernel_get_scheduler_thread()),
-						context,
-						context_size);
-			}
 			__tgt_prepare_context(context, this_thread);
 			break;
 
@@ -265,7 +251,6 @@ void __syscall_handle_system_call(void * context, uint32_t context_size)
 		 (state != thread_running) )
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
-		__sch_save_context(context, context_size);
-		__sch_prepare_scheduler_context(context, context_size);
+		__sch_set_context_for_next_thread(context);
 	}
 }

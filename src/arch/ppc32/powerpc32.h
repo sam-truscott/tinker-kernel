@@ -93,33 +93,10 @@ extern uint32_t __ivt_trace_interrupt;
 extern uint32_t __ivt_fp_assist_interrupt;
 
 /**
- * The structure of the saved interrupt vector context
- */
-#pragma pack(push,1)
-typedef struct __ppc32_ivt_struct
-{
-	uint32_t sp;
-	uint32_t restore_lr;
-	uint32_t link_area_1;
-	uint32_t link_area_2;
-	uint32_t gpr_0;
-	uint32_t gpr_2_31[PPC_CONTEXT_GPR];
-	uint32_t srr0;
-	uint32_t srr1;
-	uint32_t xer;
-	uint32_t cr;
-	uint32_t ctr;
-	uint64_t fpr[PPC_CONTEXT_FPR]; /* FIXME need to be moved to the end */
-	uint32_t lr;
-	uint32_t fp;
-} __ppc32_ivt_struct_t;
-#pragma pack(pop)
-
-/**
  * Type declaration for interrupt service routines
  * @param context The saved context from the interrupt vector
  */
-typedef void(__ppc_isr)(uint32_t vector, __ppc32_ivt_struct_t * context, bool fp_enabled);
+typedef void(__ppc_isr)(uint32_t vector, __tgt_context_t * context, bool fp_enabled);
 
 /**
  * Initialise the basic powerpc interrupt services

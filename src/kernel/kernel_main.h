@@ -16,8 +16,4 @@
  */
 void __kernel_main(void);
 
-bool __kernel_is_first_run(void);
-
-void __kernel_first_run_ok(void);
-
 #endif /* KERNEL_MAIN_H_ */

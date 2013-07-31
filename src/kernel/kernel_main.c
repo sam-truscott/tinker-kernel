@@ -19,8 +19,6 @@
 
 extern void kmain(void);
 
-static bool __kernel_first_run_var = true;
-
 void __kernel_main(void)
 {
 	/*
@@ -56,7 +54,7 @@ void __kernel_main(void)
 	 * This will also perform the first call to initialise
 	 * the timer
 	 */
-	__thread_t * idle_thread = __kernel_get_idle_thread();
+	__thread_t * const idle_thread = __kernel_get_idle_thread();
 	__kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
 	__sch_set_current_thread(idle_thread);
 
@@ -74,19 +72,8 @@ void __kernel_main(void)
 			NULL);
 #endif /* HAS_CONSOLE */
 
-	/*
-	 * these two need to be as close as possible
-	 */
+	__tgt_enter_usermode();
 	SOS_API_CALL_0(syscall_load_thread);
 }
 
-bool __kernel_is_first_run(void)
-{
-	return __kernel_first_run_var;
-}
-
-void __kernel_first_run_ok(void)
-{
-	__kernel_first_run_var = false;
-}
 

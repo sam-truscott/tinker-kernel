@@ -56,8 +56,8 @@ issues / todo
 =============
 
 ** re-do hashmaps; they're just wrong!
-* scheduler needs to move from usermode (was a nice idea) to kernel space to avoid the extra context switch
 * mmu code on ppc isn't finished, e.g. no flushing out when process dies
+* makefile
 * no way to load usermode elfs in
 * replace the mempool implementation with dlmalloc (?)
 * pipes, shms and timers aren't implemented yet

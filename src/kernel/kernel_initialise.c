@@ -30,11 +30,6 @@ static __process_t * __kernel_process = NULL;
  */
 static __thread_t * __kernel_idle_thread = NULL;
 
-/**
- * The kernel scheduler thread
- */
-static __thread_t * __kernel_sch_thread = NULL;
-
 void __kernel_initialise(void)
 {
 	const uint32_t memory_start = __bsp_get_usable_memory_start();
@@ -83,20 +78,6 @@ void __kernel_initialise(void)
 
 	__thread_set_state(__kernel_idle_thread, thread_system);
 
-	__proc_create_thread(
-			__thread_get_parent(__kernel_idle_thread),
-			"scheduler",
-			__sch_scheduler,
-			0,
-			0x1000,
-			0,
-			NULL,
-			&__kernel_sch_thread);
-	__tgt_disable_thread_interrupts(__kernel_sch_thread);
-
-	__thread_set_state(__kernel_sch_thread, thread_system);
-	__kernel_assert("Kernel couldn't start Scheduler Thread", __kernel_sch_thread != NULL);
-
 	__sch_initialise_scheduler();
 }
 
@@ -108,9 +89,4 @@ __process_t * __kernel_get_process(void)
 __thread_t * __kernel_get_idle_thread(void)
 {
 	return __kernel_idle_thread;
-}
-
-__thread_t * __kernel_get_scheduler_thread(void)
-{
-	return __kernel_sch_thread;
 }

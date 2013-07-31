@@ -34,8 +34,7 @@
  * @param context_size The size of the context data
  */
 void __int_context_switch_interrupt(
-		void * const context,
-		const uint32_t context_size);
+		__tgt_context_t * const context);
 
 /**
  * Interrupt that occurs when the executing program/process/thread
@@ -45,8 +44,7 @@ void __int_context_switch_interrupt(
  * @param context_size The size of the context data
  */
 void __int_fatal_program_error_interrupt(
-		void * const context,
-		const uint32_t context_size);
+		__tgt_context_t * const context);
 
 /**
  * Interrupt that occurs when the executing program/process/thread
@@ -56,7 +54,6 @@ void __int_fatal_program_error_interrupt(
  * @param context_size The size of the context data
  */
 void __int_syscall_request_interrupt(
-		void * const context,
-		const uint32_t context_size);
+		__tgt_context_t * const context);
 
 #endif /* INTERRUPT_MANAGER_H_ */

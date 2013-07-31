@@ -13,8 +13,6 @@
 
 void __sch_initialise_scheduler(void);
 
-void __sch_scheduler(void);
-
 void __sch_notify_new_thread(__thread_t * const t);
 void __sch_notify_exit_thread(__thread_t * const t);
 void __sch_notify_pause_thread(__thread_t * const t);
@@ -27,16 +25,10 @@ __thread_t * __sch_get_current_thread(void);
 
 void __sch_set_current_thread(__thread_t * const thread);
 
-void __sch_prepare_scheduler_context(
-		void * const context,
-		const uint32_t context_size);
-
-void __sch_save_context(
-		const void * const context,
-		const uint32_t context_size);
-
 void __sch_terminate_current_thread(
-		const void * const context,
-		const uint32_t context_size);
+		const __tgt_context_t * const context);
+
+void __sch_set_context_for_next_thread(
+		__tgt_context_t * const context);
 
 #endif /* SCHEDULER_IMPL_H_ */

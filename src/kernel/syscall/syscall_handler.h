@@ -11,6 +11,6 @@
 
 #include "arch/tgt_types.h"
 
-void __syscall_handle_system_call(void * context, uint32_t context_size);
+void __syscall_handle_system_call(__tgt_context_t * const context);
 
 #endif /* SYSCALL_HANDLER_H_ */

@@ -18,26 +18,37 @@ void __tgt_initialise(void);
  * Interrupts
  */
 
+void __tgt_enter_usermode(void);
+
 void __tgt_enable_external_interrupts(void);
 
 void __tgt_disable_external_interrupts(void);
 
-void __tgt_disable_thread_interrupts(__thread_t * const thread);
+void __tgt_disable_thread_interrupts(__tgt_context_t * const context);
 
 error_t __tgt_initialise_process(__process_t * const process);
 
 void __tgt_initialise_context(
-		__thread_t * const thread,
+		const __thread_t * thread,
+		__tgt_context_t ** const context,
 		const bool kernel_mode,
 		const uint32_t exit_function);
 
 void __tgt_prepare_context(
-		void * const context,
+		__tgt_context_t * const context,
 		const __thread_t * const thread);
 
 uint32_t __tgt_get_stack_pointer(void);
 
 uint32_t __tgt_get_context_stack_pointer(const void * const context);
+
+void __tgt_load_context(
+		const __tgt_context_t * const thread,
+		__tgt_context_t * const context);
+
+void __tgt_save_context(
+		__tgt_context_t * const thread,
+		const __tgt_context_t * const context);
 
 /*
  * Syscall TODO remove

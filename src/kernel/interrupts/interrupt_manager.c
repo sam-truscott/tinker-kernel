@@ -56,37 +56,29 @@ error_t __int_handle_external_vector(const uint32_t vector)
 }
 
 void __int_context_switch_interrupt(
-		void * const context,
-		const uint32_t context_size)
+		__tgt_context_t * const context)
 {
 	__kernel_assert("Context Switch Context missing", context != NULL);
-	__kernel_assert("Context Switch Context missing", context_size > 0);
-
-	/*  Backup the vector data */
-	__sch_save_context(context, context_size);
 
 	/* Copy over the context for the scheduler */
-	__sch_prepare_scheduler_context(context, context_size);
+	__sch_set_context_for_next_thread(context);
+	__bsp_enable_schedule_timer();
 }
 
 void __int_fatal_program_error_interrupt(
-		void * const context,
-		const uint32_t context_size)
+		__tgt_context_t * const context)
 {
 	__kernel_assert("Fatal Interrupt Context missing", context != NULL);
-	__kernel_assert("Fatal Interrupt Context missing", context_size > 0);
 
-	__debug_print("Fatal Fault: Context @ %X (%d bytes)\n", context, context_size);
-	__sch_terminate_current_thread(context, context_size);
-	__sch_prepare_scheduler_context(context, context_size);
+	__debug_print("Fatal Fault: Context @ %X\n", context);
+	__sch_terminate_current_thread(context);
+	__sch_set_context_for_next_thread(context);
 }
 
 void __int_syscall_request_interrupt(
-		void * const context,
-		const uint32_t context_size)
+		__tgt_context_t * const context)
 {
 	__kernel_assert("System Call Interrupt Context missing", context != NULL);
-	__kernel_assert("System Call Interrupt Context missing", context_size > 0);
 
-	__syscall_handle_system_call(context, context_size);
+	__syscall_handle_system_call(context);
 }

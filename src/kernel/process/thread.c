@@ -32,9 +32,30 @@ typedef struct __thread_t
 	 * TODO May need other entries for data/bss after
 	 * we've written the ELF importer - list of memory areas?
 	 */
-	uint8_t				context[__MAX_CONTEXT_SIZE];
+	__tgt_context_t		* context;
 	char 				name[__MAX_THREAD_NAME_LEN + 1];
 } __thread_internal_t;
+
+static void __thread_setup_stack(__thread_t * const thread)
+{
+	const uint32_t stack_size = thread->stack_size;
+	const uint32_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
+	uint32_t vsp;
+
+	if ( !__process_is_kernel(thread->parent) )
+	{
+		vsp = VIRTUAL_ADDRESS_SPACE
+				+ (((uint32_t)thread->stack
+						- __mem_get_start_addr(__process_get_mem_pool(thread->parent)))
+						+ stack_size - 12);
+	}
+	else
+	{
+		vsp = rsp;
+	}
+	thread->r_stack_base = rsp;
+	thread->v_stack_base = vsp;
+}
 
 __thread_t * __thread_create(
 		__mem_pool_info_t * const pool,
@@ -66,7 +87,12 @@ __thread_t * __thread_create(
 			 * is configured properly
 			 */
 			/** FIXME: Change the 0 **/
-			__tgt_initialise_context(thread, __process_is_kernel(thread->parent), 0);
+			__thread_setup_stack(thread);
+			__tgt_initialise_context(
+					thread,
+					&thread->context,
+					__process_is_kernel(thread->parent),
+					0);
 		}
 		else
 		{
@@ -134,10 +160,18 @@ uint32_t __thread_get_stack_size(
 	return thread->stack_size;
 }
 
-const uint8_t * __thread_get_context(
-		const __thread_t * const thread)
+void __thread_load_context(
+		const __thread_t * const thread,
+		__tgt_context_t * const context)
 {
-	return thread->context;
+	__tgt_load_context(thread->context, context);
+}
+
+void __thread_save_context(
+		__thread_t * const thread,
+		const __tgt_context_t * const context)
+{
+	__tgt_save_context(thread->context, context);
 }
 
 object_number_t __thread_get_object_no(
@@ -158,24 +192,10 @@ uint32_t __thread_get_virt_stack_base(
 	return thread->v_stack_base;
 }
 
-void __thread_set_virt_stack_base(
-		__thread_t * const thread,
-		const uint32_t virt_stack_base)
-{
-	thread->v_stack_base = virt_stack_base;
-}
-
 uint32_t __thread_get_real_stack_base(
 		const __thread_t * const thread)
 {
 	return thread->r_stack_base;
-}
-
-void __thread_set_real_stack_base(
-		__thread_t * const thread,
-		const uint32_t real_stack_base)
-{
-	thread->r_stack_base = real_stack_base;
 }
 
 thread_entry_point * __thread_get_entry_point(

@@ -232,18 +232,14 @@ void __sch_notify_change_priority(
 }
 
 void __sch_terminate_current_thread(
-		const void * const context,
-		const uint32_t context_size)
+		const __tgt_context_t * const context)
 {
 	__thread_t * thread = __sch_get_current_thread();
 
 	if ( thread )
 	{
 		__thread_set_state(thread, thread_terminated);
-		__util_memcpy(
-				(uint8_t*)__thread_get_context(thread), //FIXME get the thread to save the context
-				context,
-				context_size);
+		__thread_save_context(thread, context);
 		__sch_notify_exit_thread(thread);
 	}
 }
@@ -252,35 +248,6 @@ void __sch_scheduler(void)
 {
 	while(1==1)
 	{
-		if ( __sch_active_queue )
-		{
-			thread_queue_t_front(__sch_active_queue, &__sch_current_thread);
-		}
-
-		/* once we're either back at the start or we've
-		 * selected a new thread check its running and
-		 * then use it */
-		if ( __sch_current_thread )
-		{
-			const bool reorder_ok = thread_queue_t_reorder_first(__sch_active_queue);
-			__kernel_assert("re-ordering of priority queue failed", reorder_ok);
-			const __thread_state_t state = __thread_get_state(__sch_current_thread);
-			if ( state == thread_ready)
-			{
-				__thread_set_state(__sch_current_thread, thread_running);
-			}
-			else
-			{
-				__sch_current_thread = NULL;
-			}
-		}
-
-		if ( __sch_current_thread == NULL )
-		{
-			__sch_current_thread = __kernel_get_idle_thread();
-		}
-
-		__kernel_assert("Scheduler couldn't get next thread", __sch_current_thread != NULL);
 
 		SOS_API_CALL_0(syscall_load_thread);
 	}
@@ -296,38 +263,6 @@ void __sch_set_current_thread(__thread_t * const thread)
 	if ( thread )
 	{
 		__sch_current_thread = thread;
-	}
-}
-
-void __sch_prepare_scheduler_context(
-		void * const context,
-		const uint32_t context_size)
-{
-	__util_memcpy(
-			context,
-			__thread_get_context(__kernel_get_scheduler_thread()),
-			context_size);
-}
-
-void __sch_save_context(
-		const void * const context,
-		const uint32_t context_size)
-{
-	__thread_t * curr_thread = __sch_get_current_thread();
-	if ( curr_thread )
-	{
-		/*
-		 * Move the thread from the running state to the ready state
-		 */
-		const __thread_state_t state = __thread_get_state(curr_thread);
-		if (state == thread_running)
-		{
-			__thread_set_state(curr_thread, thread_ready);
-		}
-		__util_memcpy(
-				(uint8_t*)__thread_get_context(curr_thread),
-				context,
-				context_size);
 	}
 }
 
@@ -351,4 +286,55 @@ static void __sch_priority_find_next_queue(__thread_t * const t)
 	__sch_current_priority = p;
 	__sch_active_queue = queue;
 	queue_stack_t_push(&__sch_queue_stack, __sch_active_queue);
+}
+
+void __sch_set_context_for_next_thread(
+		__tgt_context_t * const context)
+{
+	__thread_t * const current_thread = __sch_current_thread;
+
+	if ( __sch_active_queue )
+	{
+		thread_queue_t_front(__sch_active_queue, &__sch_current_thread);
+	}
+
+	/* once we're either back at the start or we've
+	 * selected a new thread check its running and
+	 * then use it */
+	if ( __sch_current_thread )
+	{
+		const bool reorder_ok = thread_queue_t_reorder_first(__sch_active_queue);
+		__kernel_assert("re-ordering of priority queue failed", reorder_ok);
+		const __thread_state_t state = __thread_get_state(__sch_current_thread);
+		if ( state == thread_ready)
+		{
+			__thread_set_state(__sch_current_thread, thread_running);
+		}
+		else
+		{
+			__sch_current_thread = NULL;
+		}
+	}
+
+	if ( __sch_current_thread == NULL )
+	{
+		__sch_current_thread = __kernel_get_idle_thread();
+	}
+
+	// the thread changed so save the state of the previous thread
+	if (current_thread != __sch_current_thread)
+	{
+		// Move the thread from the running state to the ready state
+		const __thread_state_t state = __thread_get_state(current_thread);
+		if (state == thread_running)
+		{
+			__thread_set_state(current_thread, thread_ready);
+		}
+		__thread_save_context(current_thread, context);
+		// load in the state of the new thread
+		__thread_load_context(__sch_current_thread, context);
+		__tgt_prepare_context(context, __sch_current_thread);
+	}
+
+	__kernel_assert("Scheduler couldn't get next thread", __sch_current_thread != NULL);
 }

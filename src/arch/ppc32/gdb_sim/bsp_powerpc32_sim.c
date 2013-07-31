@@ -41,7 +41,7 @@ static void __bsp_print_hex(uint32_t i);
  */
 static void __bsp_external_interrupt(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled);
 
 /**
@@ -51,7 +51,7 @@ static void __bsp_external_interrupt(
  */
 static void __bsp_decrementer_interrupt(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled);
 
 /**
@@ -61,7 +61,7 @@ static void __bsp_decrementer_interrupt(
  */
 static void __bsp_fatal_program_error(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled);
 
 /**
@@ -71,7 +71,7 @@ static void __bsp_fatal_program_error(
  */
 static void __bsp_system_call_request(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled);
 
 /**
@@ -336,7 +336,7 @@ char __bsp_read_debug_char(void)
 
 static void __bsp_external_interrupt(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled)
 {
 	if ( vector && context && fp_enabled ) {}
@@ -347,7 +347,7 @@ static void __bsp_external_interrupt(
 
 static void __bsp_decrementer_interrupt(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled)
 {
 	__asm__("mfdec %r10");
@@ -361,13 +361,13 @@ static void __bsp_decrementer_interrupt(
 
 		/* switch the context afterwards as what we change to may
 		 * have changed because of any alarms/timers */
-		__int_context_switch_interrupt(context, sizeof(__ppc32_ivt_struct_t));
+		__int_context_switch_interrupt(context);
 	}
 }
 
 static void __bsp_fatal_program_error(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled)
 {
 	if ( vector && fp_enabled )
@@ -419,19 +419,19 @@ static void __bsp_fatal_program_error(
 				break;
 		}
 
-		__int_fatal_program_error_interrupt(context, sizeof(__ppc32_ivt_struct_t));
+		__int_fatal_program_error_interrupt(context);
 	}
 }
 
 static void __bsp_system_call_request(
 		uint32_t vector,
-		__ppc32_ivt_struct_t * context,
+		__tgt_context_t * context,
 		bool fp_enabled)
 {
 	if ( fp_enabled ) {}
 	if ( vector == __ppc32_vector_syscall )
 	{
-		__int_syscall_request_interrupt(context,sizeof(__ppc32_ivt_struct_t));
+		__int_syscall_request_interrupt(context);
 	}
 }
 

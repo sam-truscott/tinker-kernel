@@ -19,6 +19,29 @@
 #define MAX_PPC_IVECT 20
 
 /**
+ * The structure of the saved interrupt vector context
+ */
+#pragma pack(push,1)
+typedef struct __tgt_context_t
+{
+	uint32_t sp;
+	uint32_t restore_lr;
+	uint32_t link_area_1;
+	uint32_t link_area_2;
+	uint32_t gpr_0;
+	uint32_t gpr_2_31[PPC_CONTEXT_GPR];
+	uint32_t srr0;
+	uint32_t srr1;
+	uint32_t xer;
+	uint32_t cr;
+	uint32_t ctr;
+	uint64_t fpr[PPC_CONTEXT_FPR]; /* FIXME need to be moved to the end */
+	uint32_t lr;
+	uint32_t fp;
+} __tgt_context_internal_t;
+#pragma pack(pop)
+
+/**
  * The interrupt service routine (ISR) table
  */
 static __ppc_isr * __ppc_isr_table[MAX_PPC_IVECT];
@@ -27,7 +50,7 @@ static __ppc_isr * __ppc_isr_table[MAX_PPC_IVECT];
  * The default, empty, ISR handler
  * @param The saved context from the interrupt
  */
-static void __ppc_isr_default_handler(uint32_t vector, __ppc32_ivt_struct_t *, bool fp_enabled);
+static void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t *, bool fp_enabled);
 
 static void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t size);
 
@@ -81,7 +104,7 @@ void __ppc_isr_detach(const uint32_t vector)
 	}
 }
 
-void __ppc_isr_default_handler(uint32_t vector, __ppc32_ivt_struct_t * context, bool fp_enabled)
+void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t * context, bool fp_enabled)
 {
 	/**
 	 * TODO log a notificaiton of an unhandled exception
@@ -94,13 +117,13 @@ void __ppc_isr_default_handler(uint32_t vector, __ppc32_ivt_struct_t * context, 
 
 uint32_t __tgt_get_syscall_param(const void * context, uint8_t param)
 {
-	__ppc32_ivt_struct_t * vector = (__ppc32_ivt_struct_t*)context;
+	__tgt_context_t * vector = (__tgt_context_t*)context;
 	return vector->gpr_2_31[1 + param];
 }
 
 void __tgt_set_syscall_return(void * context, uint32_t value)
 {
-	__ppc32_ivt_struct_t * vector = (__ppc32_ivt_struct_t*)context;
+	__tgt_context_t * vector = (__tgt_context_t*)context;
 	vector->gpr_2_31[1] = value;
 }
 
@@ -127,7 +150,7 @@ uint32_t __tgt_get_context_stack_pointer(const void * const context)
 {
 	uint32_t sp = 0;
 
-	__ppc32_ivt_struct_t * vector = (__ppc32_ivt_struct_t*)context;
+	__tgt_context_t * const vector = (__tgt_context_t*)context;
 	if ( vector )
 	{
 		sp = vector->sp;
@@ -167,6 +190,13 @@ void __ivt_initialise(void)
 	__ppc_set_msr(msr);
 }
 
+void __tgt_enter_usermode(void)
+{
+	uint32_t msr = __ppc_get_msr();
+	msr |=  MSR_FLAG_PR;
+	__ppc_set_msr(msr);
+}
+
 void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t size)
 {
 	uint32_t * dst = (uint32_t*)address;
@@ -181,7 +211,7 @@ void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t si
 
 void __ppc_isr_handler(const uint32_t vector, void * registers, bool fp_enabled)
 {
-	__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)registers;
+	__tgt_context_t * const vector_info = (__tgt_context_t*)registers;
 
 	if ( vector_info )
 	{
@@ -205,13 +235,11 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool fp_enabled)
 	}
 }
 
-void __tgt_disable_thread_interrupts(__thread_t * const thread)
+void __tgt_disable_thread_interrupts(__tgt_context_t * const context)
 {
-	if (thread)
+	if (context)
 	{
-		const uint8_t * const context = __thread_get_context(thread);
-		__ppc32_ivt_struct_t* vector_info = (__ppc32_ivt_struct_t*)context;
-		vector_info->srr1 &= (uint32_t)(~MSR_FLAG_EE);
+		context->srr1 &= (uint32_t)(~MSR_FLAG_EE);
 	}
 }
 
@@ -330,76 +358,53 @@ error_t __tgt_initialise_process(__process_t * const process)
 	return ok;
 }
 
-static void __tgt_setup_stack(__thread_t * thread)
-{
-	const uint32_t stack_size = __thread_get_stack_size(thread);
-	const uint32_t rsp = (uint32_t)(__thread_get_stack_memory(thread)) + stack_size - 12;
-	uint32_t vsp;
-
-	if ( !__process_is_kernel(__thread_get_parent(thread)) )
-	{
-		vsp = VIRTUAL_ADDRESS_SPACE
-				+ (((uint32_t)__thread_get_stack_memory(thread)
-						- __mem_get_start_addr(__process_get_mem_pool(
-								__thread_get_parent(thread))))
-						+ stack_size - 12);
-	}
-	else
-	{
-		vsp = rsp;
-	}
-	__thread_set_real_stack_base(thread, rsp);
-	__thread_set_virt_stack_base(thread, vsp);
-}
-
 void __tgt_initialise_context(
-		__thread_t * const thread,
+		const __thread_t * thread,
+		__tgt_context_t ** const context,
 		const bool kernel_mode,
 		const uint32_t exit_function)
 {
-	if (thread)
+	if (context)
 	{
-		__ppc32_ivt_struct_t* const vector_info = (__ppc32_ivt_struct_t*const)__thread_get_context(thread);
-
-		__tgt_setup_stack(thread);
-		vector_info->sp = __thread_get_virt_stack_base(thread);
-		vector_info->fp = vector_info->sp;
+		*context = __mem_alloc(__process_get_mem_pool(__thread_get_parent(thread)), sizeof(__tgt_context_t));
+		__tgt_context_t * const ppc_context = *context;
+		ppc_context->sp = __thread_get_virt_stack_base(thread);
+		ppc_context->fp = ppc_context->sp;
 		for (uint8_t gpr = 0 ; gpr < PPC_CONTEXT_GPR ; gpr++)
 		{
-			vector_info->gpr_2_31[gpr] = 0;
+			ppc_context->gpr_2_31[gpr] = 0;
 		}
 		for ( uint8_t fpr = 0 ; fpr < PPC_CONTEXT_FPR ; fpr++ )
 		{
-			vector_info->fpr[fpr] = 0;
+			ppc_context->fpr[fpr] = 0;
 		}
-		vector_info->srr0 = (uint32_t)__thread_get_entry_point(thread);
+		ppc_context->srr0 = (uint32_t)__thread_get_entry_point(thread);
 
 		/* if it's not the kernel we need to add the privilege mode */
-		vector_info->srr1 = MSR_FLAG_ME | MSR_FLAG_RI | MSR_FLAG_EE;
-		vector_info->srr1 |= (MSR_FLAG_IR | MSR_FLAG_DR);
+		ppc_context->srr1 = MSR_FLAG_ME | MSR_FLAG_RI | MSR_FLAG_EE;
+		ppc_context->srr1 |= (MSR_FLAG_IR | MSR_FLAG_DR);
 		if ( (__thread_get_flags(thread) & THREAD_FLAG_FP) == THREAD_FLAG_FP)
 		{
-			vector_info->srr1 |= MSR_FLAG_FP;
+			ppc_context->srr1 |= MSR_FLAG_FP;
 		}
 		if ( kernel_mode == false )
 		{
 			/* kernel mode code runs as supervisor */
-			vector_info->srr1 |= MSR_FLAG_PR;
+			ppc_context->srr1 |= MSR_FLAG_PR;
 		}
 
-		vector_info->xer = 0;
-		vector_info->cr = 0;
-		vector_info->ctr = 0;
-		vector_info->lr = exit_function;
+		ppc_context->xer = 0;
+		ppc_context->cr = 0;
+		ppc_context->ctr = 0;
+		ppc_context->lr = exit_function;
 	}
 }
 
 void __tgt_prepare_context(
-		void * const context,
+		__tgt_context_t * const context,
 		const __thread_t * const thread)
 {
-	__ppc32_ivt_struct_t * vector = (__ppc32_ivt_struct_t*)context;
-	if ( vector && thread )
+	if ( context && thread )
 	{
 		uint8_t ks_flag = SR_KS_FAIL;
 		uint8_t kp_flag = SR_KP_OK;
@@ -414,10 +419,8 @@ void __tgt_prepare_context(
 
 		const tgt_mem_t * const segment_info = __process_get_segment_info(proc);
 
-		__util_memcpy(
-				context,
-				__thread_get_context(thread),
-				sizeof(__ppc32_ivt_struct_t));
+		__thread_load_context(thread, context);
+
 		__ppc32_set_sr0(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
@@ -503,4 +506,18 @@ void __tgt_acquire_lock(__spinlock_t * lock)
 void __tgt_release_lock(__spinlock_t * lock)
 {
 	*lock = LOCK_OFF;
+}
+
+void __tgt_load_context(
+		const __tgt_context_t * const thread,
+		__tgt_context_t * const context)
+{
+	__util_memcpy(context, thread, sizeof(__tgt_context_t));
+}
+
+void __tgt_save_context(
+		__tgt_context_t * const thread,
+		const __tgt_context_t * const context)
+{
+	__util_memcpy(thread, context, sizeof(__tgt_context_t));
 }

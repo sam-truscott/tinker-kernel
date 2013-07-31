@@ -21,6 +21,4 @@ __process_t * __kernel_get_process(void);
 
 __thread_t * __kernel_get_idle_thread(void);
 
-__thread_t * __kernel_get_scheduler_thread(void);
-
 #endif /* KERNEL_INITIALISE_H_ */
