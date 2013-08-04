@@ -55,12 +55,11 @@ the kernel bsp should only have drivers for timers and a debugging port such as 
 issues / todo
 =============
 
-** re-do hashmaps; they're just wrong!
 * mmu code on ppc isn't finished, e.g. no flushing out when process dies
 * makefile
-* no way to load usermode elfs in
 * replace the mempool implementation with dlmalloc (?)
-* pipes, shms and timers aren't implemented yet
+* pipes, shms and timers aren't implemented yet - use the mmu for performance
+* no way to load usermode elfs in
 * no crt / newlib code for userland yet
 * re-write memcpy to be target specific with weak reference for basic implementation
 * need to review it all head to toe since refactor

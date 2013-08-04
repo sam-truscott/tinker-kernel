@@ -22,13 +22,13 @@ MEMORY
 SECTIONS{
     
     /* interrupt vector table */
-    .ivt 0x100 : {
+    .ivt 0x100 (NOLOAD) : {
         __ivt = .;
         *(.vectors)
         . += __VECTOR_SIZE;
     } > RAM
     
-    .ivt_stack 0x1000 : {
+    .ivt_stack 0x1000 (NOLOAD) : {
         __ivt_stack = .;
         . += __VECTOR_STACK_SIZE;
         __ivt_stack_end = .;
@@ -93,12 +93,11 @@ SECTIONS{
     .dynstr ALIGN (0x1000) : { *(.dynstr) }>RAM
     .hash   ALIGN (0x1000) : { *(.hash)   }>RAM
     
-    .memory_pool ALIGN (0x1000) : {
+    .memory_pool ALIGN (0x1000) (NOLOAD) : {
     	end = .;
     }>RAM
     
-    /* .page_table ALIGN(0x1000) : { */
-    .page_table 0x7F00000 : {
+    .page_table 0x7F00000 (NOLOAD) : {
         *(.page_table)
     }>RAM
 }
