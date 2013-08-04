@@ -85,7 +85,6 @@ error_t opic_intc_write_register(const void * const usr_data, const uint32_t id,
 
 error_t opic_intc_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val)
 {
-	/* TODO driver_id should be checked */
 #ifdef OPIC_BIG_ENDIAN
 		uint32_t v;
 		v = *(uint32_t*)((uint32_t)(usr_data) + id);

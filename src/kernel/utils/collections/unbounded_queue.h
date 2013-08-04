@@ -88,7 +88,6 @@
 			{ \
 				QUEUE_T##_list_t_delete(queue->list);\
 			} \
-			/* FIXME This'll fail as pool will be NULL */ \
 			__mem_free(queue->list->pool, queue); \
 		} \
 	} \

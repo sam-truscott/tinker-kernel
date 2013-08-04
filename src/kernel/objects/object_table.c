@@ -15,14 +15,6 @@
 #include "kernel/utils/util_malloc.h"
 #include "kernel/memory/memory_manager.h"
 
-/** FIXME TODO: this takes up too much space mainly because we declare and index list for
- * all the elements (1024), this could be optimised down to only have a table for
- * blocks of say 10 elements.
- * @param object_map_t
- * @param UINT32
- * @param
- * @param __MAX_OBJECT_TABLE_SIZE
- */
 HASH_MAP_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_SPEC_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)

@@ -83,7 +83,6 @@
 			{ \
 				STACK_T##_list_t_delete(stack->list);\
 			} \
-			/* FIXME This'll fail as pool will be NULL */ \
 			__mem_free(stack->list->pool, stack); \
 		} \
 	} \
