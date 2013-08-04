@@ -110,12 +110,12 @@ error_t __obj_add_object(
 	return ret;
 }
 
-__object_t * __obj_get_object(__object_table_t * t, object_number_t oid)
+__object_t * __obj_get_object(const __object_table_t * t, object_number_t oid)
 {
 	__object_t * o = NULL;
 	if ( t )
 	{
-		__object_t * tmp_object;
+		__object_t * tmp_object = NULL;
 		object_map_t * map = (object_map_t*)t->the_map;
 
 		if ( object_map_t_get(map, oid, &tmp_object) )

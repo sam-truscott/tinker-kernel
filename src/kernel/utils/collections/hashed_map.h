@@ -29,8 +29,7 @@
 #include "../util_memset.h"
 
 /*
- * This abstract data type is used to model a hash-map. For a given
- * key a suitable value can be found using a complexity of O(1).
+ * This abstract data type is used to model a hash-map.
  *
  * The KEY_T can be of most types but ideally should be discrete to
  * enable the contains_key function to work. The contains_value has
@@ -57,20 +56,25 @@
  * The hash-map is *NOT* synchronised and is therefore not thread safe.
  *
  */
+#define BUCKET_SIZE 10
 #define HASH_MAP_TYPE_T(HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
 	\
-	typedef struct HASH_MAP_T##entry \
+	typedef struct HASH_MAP_T##_entry \
 	{ \
 		KEY_T key; \
 		VALUE_T value; \
-		bool used; \
-	} HASH_MAP_T##entry_t; \
+	} HASH_MAP_T##_entry_t; \
+	\
+	typedef struct HASH_MAP_T##_bucket \
+	{ \
+		HASH_MAP_T##_entry_t * entries[BUCKET_SIZE]; \
+	} HASH_MAP_T##_bucket_t; \
 	\
 	typedef struct HASH_MAP_T##_STRUCT \
 	{ \
 		uint32_t size; \
 		uint32_t capacity; \
-		HASH_MAP_T##entry_t table[MAP_CAPACITY]; \
+		HASH_MAP_T##_bucket_t * buckets[MAP_CAPACITY/BUCKET_SIZE]; \
 		__hash_create_hash * hashing_algorithm; \
 		__mem_pool_info_t * pool; \
 	} HASH_MAP_T;\
@@ -116,9 +120,9 @@
 		map->capacity = MAP_CAPACITY; \
 		map->hashing_algorithm = hashing_algorithm; \
 		map->pool = pool; \
-		for ( uint32_t tmp = 0 ; tmp < MAP_CAPACITY ; tmp++ ) \
+		for ( uint32_t tmp = 0 ; tmp < MAP_CAPACITY/BUCKET_SIZE ; tmp++ ) \
 		{ \
-			__util_memset(&map->table[tmp], 0, sizeof(HASH_MAP_T##entry_t)); \
+			map->buckets[tmp] = NULL; \
 		} \
 	} \
 	\
@@ -146,7 +150,7 @@
 	{ \
 		 if ( map != NULL && map->pool != NULL ) \
 		 { \
-			__mem_free ( map->pool, map ); \
+			__mem_free (map->pool, map); \
 		 } \
 	} \
 	\
@@ -171,7 +175,7 @@
 		 * normalise the hashed value to be a suitable index within
 		 * the range of the tables index
 		 */ \
-		return HASH_MAP_T##_hash(map, key) & (map->capacity - 1); \
+		return HASH_MAP_T##_hash(map, key) & ((map->capacity/BUCKET_SIZE) - 1); \
 	} \
 	\
 	/*
@@ -179,15 +183,26 @@
 	 */ \
 	PREFIX bool HASH_MAP_T##_get(const HASH_MAP_T * map, const KEY_T key, VALUE_T * value) \
 	{ \
-		const HASH_MAP_T##entry_t * table_entry; \
+		const HASH_MAP_T##_bucket_t * bucket; \
 		bool found = false; \
 		/* find the table entry */ \
-		table_entry = &map->table[HASH_MAP_T##_index_of(map, key)]; \
+		bucket = (const HASH_MAP_T##_bucket_t *) \
+			map->buckets[HASH_MAP_T##_index_of(map, key)]; \
 		/* if found and used return the value */ \
-		if ( table_entry->used == true && value != NULL) \
+		if ( bucket && value != NULL) \
 		{ \
-			*value = table_entry->value; \
-			found = true; \
+			uint32_t i; \
+			for (i=0 ; i < BUCKET_SIZE && !found ; i++) \
+			{ \
+				if (bucket->entries[i]) \
+				{ \
+					if (bucket->entries[i]->key == key) \
+					{ \
+						*value = bucket->entries[i]->value; \
+						found = true; \
+					} \
+				} \
+			} \
 		} \
 		return found; \
 	} \
@@ -200,13 +215,28 @@
 		bool put_ok = false; \
 		if ( map->size < map->capacity ) \
 		{ \
-			HASH_MAP_T##entry_t * table_entry = NULL; \
-			table_entry = &map->table[HASH_MAP_T##_index_of(map, key)]; \
-			table_entry->key = key; \
-			table_entry->value = value; \
-			table_entry->used = true; \
-			put_ok = true; \
-			map->size++; \
+			const int32_t index = HASH_MAP_T##_index_of(map, key); \
+			if (!map->buckets[index]) \
+			{ \
+				map->buckets[index] = \
+					__mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
+			} \
+			HASH_MAP_T##_bucket_t * bucket = map->buckets[index]; \
+			if (bucket) \
+			{ \
+				uint32_t i; \
+				for (i = 0 ; i < BUCKET_SIZE && !put_ok ; i++) \
+				{ \
+					if (!bucket->entries[i]) \
+					{ \
+						bucket->entries[i] = __mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
+						bucket->entries[i]->key = key; \
+						bucket->entries[i]->value = value; \
+						put_ok = true; \
+						map->size++; \
+					} \
+				} \
+			} \
 		} \
 		return put_ok; \
 	} \
@@ -217,15 +247,22 @@
 	PREFIX bool HASH_MAP_T##_remove(HASH_MAP_T * map, const KEY_T key) \
 	{ \
 		 bool ok = false; \
-		 HASH_MAP_T##entry_t * table_entry = NULL; \
+		 HASH_MAP_T##_bucket_t * bucket = NULL; \
 		 \
-		 table_entry = &map->table[HASH_MAP_T##_index_of(map, key)]; \
-		 if ( table_entry->used == true ) \
+		 bucket = map->buckets[HASH_MAP_T##_index_of(map, key)]; \
+		 if ( bucket ) \
 		 { \
-			 /* this will also set the 'used' variable to 'false' */ \
-			 __util_memset(table_entry, 0, sizeof(HASH_MAP_T##entry_t)); \
-			 ok = true; \
-			 map->size--; \
+			 uint32_t i; \
+			 for (i = 0 ; i < BUCKET_SIZE && !ok; i++) \
+			 { \
+				 if (bucket->entries[i]->key == key) \
+				 { \
+					 ok = true; \
+					 map->size--; \
+					 bucket->entries[i] = NULL; \
+					 __mem_free(map->pool, bucket->entries[i]); \
+				 } \
+			 } \
 		 } \
 		 \
 		 return ok; \
@@ -252,12 +289,22 @@
 	{ \
 		uint32_t tmp = 0; \
 		bool found = false; \
-		for ( ; tmp < map->capacity && found == false ; tmp++ ) \
+		for ( ; tmp < (map->capacity/BUCKET_SIZE) && !found == false ; tmp++ ) \
 		{ \
-			const HASH_MAP_T##entry_t * table_entry = &map->table[tmp]; \
-			if ( (table_entry->used == true) && (table_entry->key == key) ) \
+			const HASH_MAP_T##_bucket_t * bucket = map->buckets[tmp]; \
+			if (bucket) \
 			{ \
-				found = true; \
+				uint32_t i; \
+				for (i = 0 ; i < BUCKET_SIZE && !found ; i++) \
+				{ \
+					if (bucket->entries[i]) \
+					{ \
+						if (bucket->entries[i]->key == key) \
+						{ \
+							found = true; \
+						} \
+					} \
+				} \
 			} \
 		} \
 		\

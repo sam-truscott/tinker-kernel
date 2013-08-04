@@ -33,18 +33,53 @@ static inline object_number_t __syscall_get_thread_oid(void)
 
 static inline __object_thread_t * __syscall_get_thread_object(void)
 {
-	__process_t * proc = NULL;
-	__object_table_t * table = NULL;
-
-	proc = __thread_get_parent(__sch_get_current_thread());
-	table = __process_get_object_table(proc);
+	const __process_t * const proc =  __thread_get_parent(__sch_get_current_thread());
+	const __object_table_t * const table = __process_get_object_table(proc);
 	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid());
+}
+
+static error_t __syscall_get_sema(
+		const object_number_t sema_no,
+		__object_sema_t ** sema)
+{
+	error_t ret = UNKNOWN_ERROR;
+
+	const __object_table_t * const table =
+			__process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+
+	__object_thread_t * const thread_obj = __syscall_get_thread_object();
+	if (table && thread_obj)
+	{
+		__object_t * const possible_sema = __obj_get_object(table,sema_no);
+		if (possible_sema)
+		{
+			__object_sema_t * const sema_obj = __obj_cast_sema(possible_sema);
+			if (sema_obj)
+			{
+				*sema = sema_obj;
+				ret = NO_ERROR;
+			}
+			else
+			{
+				ret = WRONG_OBJ_TYPE;
+			}
+		}
+		else
+		{
+			ret = INVALID_OBJECT;
+		}
+	}
+	else
+	{
+		ret = INVALID_OBJECT;
+	}
+	return ret;
 }
 
 void __syscall_handle_system_call(__tgt_context_t * const context)
 {
 	__syscall_function_t api = (__syscall_function_t)__tgt_get_syscall_param(context, 0);
-	uint32_t ret = 0;
+	error_t ret = 0;
 	/* FIXME hard coded 7 */
 	uint32_t param[7];
 	param[0] = __tgt_get_syscall_param(context, 1);
@@ -193,7 +228,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 				ret = __obj_create_semaphore(
 						__process_get_mem_pool(proc),
 						table,
-						(__object_t**)param[0],
+						(object_number_t*)param[0],
 						(const uint32_t)param[1]);
 			}
 			break;
@@ -201,9 +236,13 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case syscall_get_semaphore:
 		{
 			__object_thread_t * const thread_obj = __syscall_get_thread_object();
-			if ( thread_obj )
+			__object_sema_t * sema_obj;
+
+			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
+
+			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
-				ret = __obj_get_semaphore( thread_obj, (__object_sema_t*)param[0]);
+				ret = __obj_get_semaphore( thread_obj, sema_obj);
 			}
 			else
 			{
@@ -215,9 +254,13 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case syscall_release_semaphore:
 		{
 			__object_thread_t * const thread_obj = __syscall_get_thread_object();
-			if ( thread_obj )
+			__object_sema_t * sema_obj;
+
+			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
+
+			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
-				ret = __obj_release_semaphore( thread_obj, (__object_sema_t*)param[0] );
+				ret = __obj_release_semaphore( thread_obj, sema_obj);
 			}
 			break;
 		}

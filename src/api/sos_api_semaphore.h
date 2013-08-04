@@ -12,7 +12,7 @@
 #include "sos_api_types.h"
 #include "sos_api_errors.h"
 
-typedef void* sos_sem;
+typedef object_number_t sos_sem;
 
 error_t sos_sem_create(sos_sem * semaphore, uint32_t initial_count) SOS_API_SUFFIX;
 

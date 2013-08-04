@@ -15,10 +15,12 @@
 
 typedef struct __object_sema_t __object_sema_t;
 
+__object_sema_t * __obj_cast_sema(__object_t * o);
+
 error_t __obj_create_semaphore(
 		__mem_pool_info_t * const pool,
 		__object_table_t * const table,
-		__object_t ** object,
+		object_number_t * objectno,
 		const uint32_t initial_count);
 
 error_t __obj_get_semaphore(

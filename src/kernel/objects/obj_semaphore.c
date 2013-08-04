@@ -38,16 +38,31 @@ static void __obj_notify_semaphore_listener(
 		__object_sema_t * const semaphore,
 		thread_obj_queue_t * const list);
 
+__object_sema_t * __obj_cast_sema(__object_t * o)
+{
+	__object_sema_t * result = NULL;
+	if(o)
+	{
+		const __object_sema_t * const tmp = (const __object_sema_t*)o;
+		if (tmp->object.initialised == OBJECT_INITIALISED
+			&& tmp->object.type == SEMAPHORE_OBJ)
+		{
+			result = (__object_sema_t*)tmp;
+		}
+	}
+	return result;
+}
+
 error_t __obj_create_semaphore(
 		__mem_pool_info_t * const pool,
 		__object_table_t * const table,
-		__object_t ** object,
+		object_number_t * objectno,
 		const uint32_t initial_count)
 {
 	__object_sema_t * no = NULL;
 	error_t result = NO_ERROR;
 
-	if ( object )
+	if ( objectno )
 	{
 		if ( table )
 		{
@@ -62,7 +77,7 @@ error_t __obj_create_semaphore(
 				no->listeners = thread_obj_queue_t_create(pool);
 				no->owners = thread_obj_queue_t_create(pool);
 				no->highest_priority = 0;
-				*object = (__object_t*)no;
+				*objectno = no->object.object_number;
 			}
 		}
 		else

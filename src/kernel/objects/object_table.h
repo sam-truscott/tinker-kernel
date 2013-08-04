@@ -26,6 +26,6 @@ error_t __obj_add_object(
 		__object_t * const obj,
 		object_number_t * const objno);
 
-__object_t * __obj_get_object(__object_table_t * t, object_number_t oid);
+__object_t * __obj_get_object(const __object_table_t * t, object_number_t oid);
 
 #endif /* OBJECT_TABLE_H_ */
