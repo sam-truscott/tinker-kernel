@@ -49,7 +49,7 @@ static void my_other_thread(void)
 static void my_initial_thread(void)
 {
 	uint8_t my_priority;
-	sos_thread my_thread = 0xDEAF;//INVALID_OBJECT_ID;
+	sos_thread my_thread = INVALID_OBJECT_ID;
 	sos_thread other_thread = INVALID_OBJECT_ID;
 	error_t error = NO_ERROR;
 
@@ -81,7 +81,7 @@ static void my_initial_thread(void)
 	}
 
 
-	int timer = 5000;
+	int timer = 5000000;
 
 	while(timer--){}
 

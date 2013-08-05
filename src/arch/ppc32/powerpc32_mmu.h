@@ -282,4 +282,6 @@ uint32_t __ppc32_get_sdr1(void);
 
 void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1);
 
+void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1);
+
 #endif /* POWERPC32_7400_MMU_H_ */

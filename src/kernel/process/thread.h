@@ -90,4 +90,6 @@ void __thread_set_waiting_on(
 		__thread_t * const thread,
 		const struct __object_t * const object);
 
+void __thread_exit(__thread_t * const thread);
+
 #endif /* THREAD_H_ */

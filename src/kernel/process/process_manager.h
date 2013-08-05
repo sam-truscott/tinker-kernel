@@ -15,10 +15,6 @@
 #include "kernel/utils/collections/unbounded_list.h"
 #include "kernel/utils/collections/unbounded_list_iterator.h"
 
-UNBOUNDED_LIST_TYPE(process_list_t)
-UNBOUNDED_LIST_ITERATOR_TYPE(process_list_it_t)
-UNBOUNDED_LIST_ITERATOR_SPEC(extern, process_list_it_t, process_list_t, __process_t*)
-
 /*
  * Process Manager
  */
@@ -46,9 +42,5 @@ error_t __proc_create_thread(
 		__thread_t ** new_thread);
 
 __process_t * __proc_get_process(const uint32_t process_id);
-
-process_list_it_t * __proc_get_process_iterator(void);
-
-process_list_it_t * __proc_get_new_process_iterator(void);
 
 #endif /* PROCESS_MANAGER_H_ */

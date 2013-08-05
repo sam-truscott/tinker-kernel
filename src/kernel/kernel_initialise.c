@@ -71,7 +71,7 @@ void __kernel_initialise(void)
 			THREAD_FLAG_NONE,
 			&__kernel_process);
 
-	__kernel_idle_thread = _process_get_main_thread(__kernel_process);
+	__kernel_idle_thread = __process_get_main_thread(__kernel_process);
 
 	__kernel_assert("Kernel Process not created",__kernel_process != NULL);
 	__kernel_assert("Kernel Idle Thread not created", __kernel_idle_thread != NULL);

@@ -57,7 +57,11 @@
  *
  */
 #define BUCKET_SIZE 10
-#define HASH_MAP_TYPE_T(HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
+#define HASH_MAP_TYPE_T(HASH_MAP_T) \
+	\
+	typedef struct HASH_MAP_T HASH_MAP_T; \
+
+#define HASH_MAP_INTERNAL_TYPE_T(HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
 	\
 	typedef struct HASH_MAP_T##_entry \
 	{ \
@@ -70,14 +74,14 @@
 		HASH_MAP_T##_entry_t * entries[BUCKET_SIZE]; \
 	} HASH_MAP_T##_bucket_t; \
 	\
-	typedef struct HASH_MAP_T##_STRUCT \
+	typedef struct HASH_MAP_T \
 	{ \
 		uint32_t size; \
 		uint32_t capacity; \
 		HASH_MAP_T##_bucket_t * buckets[MAP_CAPACITY/BUCKET_SIZE]; \
 		__hash_create_hash * hashing_algorithm; \
 		__mem_pool_info_t * pool; \
-	} HASH_MAP_T;\
+	} HASH_MAP_T##_internal_t;\
 	\
 
 #define HASH_MAP_SPEC_T(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
@@ -289,7 +293,7 @@
 	{ \
 		uint32_t tmp = 0; \
 		bool found = false; \
-		for ( ; tmp < (map->capacity/BUCKET_SIZE) && !found == false ; tmp++ ) \
+		for ( ; tmp < (map->capacity/BUCKET_SIZE) && !found ; tmp++ ) \
 		{ \
 			const HASH_MAP_T##_bucket_t * bucket = map->buckets[tmp]; \
 			if (bucket) \

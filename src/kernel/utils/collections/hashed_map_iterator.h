@@ -13,14 +13,22 @@
 #include "../util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
-#define HASH_MAP_TYPE_ITERATOR_SPEC(PREFIX, ITERATOR_T, HASH_MAP_T, VALUE_T) \
+#define HASH_MAP_TYPE_ITERATOR_TYPE(ITERATOR_T) \
 	\
-	typedef struct ITERATOR_T##_STRUCT \
+	typedef struct ITERATOR_T ITERATOR_T;
+
+#define HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(ITERATOR_T, HASH_MAP_T) \
+	\
+	typedef struct ITERATOR_T \
 	{ \
 		HASH_MAP_T * map; \
-		HASH_MAP_T##entry_t * map_entry; \
-		uint32_t position; \
-	} ITERATOR_T;\
+		HASH_MAP_T##_entry_t * map_entry; \
+		HASH_MAP_T##_bucket_t * map_bucket; \
+		uint32_t bucket; \
+		uint32_t entry; \
+	} ITERATOR_T##_internal_t;\
+
+#define HASH_MAP_TYPE_ITERATOR_SPEC(PREFIX, ITERATOR_T, HASH_MAP_T, VALUE_T) \
 	\
 	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, HASH_MAP_T * map); \
 	\
@@ -39,25 +47,17 @@
 	\
 	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, HASH_MAP_T * map) \
 	{ \
-		if ( it && map ) \
+		if (it && map) \
 		{ \
 			it->map = map; \
-			for ( uint32_t i = 0 ; i < MAP_CAPACITY ; i++ ) \
-			{ \
-				if ( it->map->table[i].used ) \
-				{ \
-					it->map_entry = &it->map->table[i]; \
-					it->position = i; \
-					break; \
-				} \
-			} \
+			ITERATOR_T##_reset(it); \
 		} \
 	} \
 	\
 	PREFIX ITERATOR_T * ITERATOR_T##_create(HASH_MAP_T * map) \
 	{ \
 		ITERATOR_T * it = NULL; \
-		if ( map ) \
+		if (map) \
 		{ \
 			it = __mem_alloc(map->pool, sizeof(ITERATOR_T)); \
 			ITERATOR_T##_initialise(it, map); \
@@ -95,15 +95,36 @@
 		\
 		if ( it && item ) \
 		{ \
-			for ( uint32_t i = it->position + 1 ; i < MAP_CAPACITY ; i++ ) \
+			for(uint32_t e = it->entry + 1 ; e < BUCKET_SIZE ; e++) \
 			{ \
-				if ( it->map->table[i].used ) \
+				if (it->map_bucket->entries[e]) \
 				{ \
-					it->position = i; \
-					it->map_entry = &it->map->table[i]; \
-					__util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
+					it->entry = e; \
+					it->map_entry = it->map_bucket->entries[e]; \
 					ok = true; \
+					__util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
 					break; \
+				} \
+			} \
+			if (!ok) \
+			{ \
+				for ( uint32_t b = it->bucket + 1 ; b < (MAP_CAPACITY/BUCKET_SIZE) ; b++ ) \
+				{ \
+					if ( it->map->buckets[b] ) \
+					{ \
+						for (uint32_t e = 0 ; e < BUCKET_SIZE ; e++) \
+						{ \
+							if (it->map->buckets[b]->entries[e]) \
+							{ \
+								it->entry = e; \
+								it->bucket = b; \
+								it->map_entry = it->map->buckets[b]->entries[e]; \
+								__util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
+								ok = true; \
+								break; \
+							} \
+						} \
+					} \
 				} \
 			} \
 		} \
@@ -113,14 +134,27 @@
 	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it) \
 	{ \
-		if ( it ) \
+		if (it) \
 		{ \
-			for ( uint32_t i = 0 ; i < MAP_CAPACITY ; i++ ) \
+			it->map_bucket = NULL; \
+			it->map_entry = NULL; \
+			it->entry = 0; \
+			it->bucket = 0; \
+			for ( uint32_t b = 0 ; b < (MAP_CAPACITY/BUCKET_SIZE) ; b++ ) \
 			{ \
-				if ( it->map->table[i].used ) \
+				if ( it->map->buckets[b] ) \
 				{ \
-					it->map_entry = &it->map->table[i]; \
-					it->position = i; \
+					for (uint32_t e = 0 ; e < BUCKET_SIZE ; e++) \
+					{ \
+						if (it->map->buckets[b]->entries[e]) \
+						{ \
+							it->map_bucket = it->map->buckets[b]; \
+							it->map_entry = it->map->buckets[b]->entries[e]; \
+							it->entry = e; \
+							it->bucket = b; \
+							break; \
+						} \
+					} \
 				} \
 			} \
 		} \

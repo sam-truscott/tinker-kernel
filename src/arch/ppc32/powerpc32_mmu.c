@@ -9,9 +9,8 @@
 #include "powerpc32.h"
 #include "powerpc32_mmu.h"
 
-void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
+static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
 {
-
 	/* below code generates a primary PTE
 	 * 06/03/2012 - checked against PPC Programming Environments Manual, page 278 */
 	uint32_t hash = 0;
@@ -34,6 +33,12 @@ void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w
 	hash10 = (hash & 0x3FFu);
 
 	pPteg = (__ppc32_pteg_t*)(htabord | (hash9 << 16) | (hash10<<6));
+	return pPteg;
+}
+
+void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
+{
+	__ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
 
 	if ( pPteg )
 	{
@@ -50,6 +55,31 @@ void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w
 					pte->w0 = pte_w0;
 					pte->w1 = pte_w1;
 					break;
+				}
+			}
+		}
+	}
+}
+
+void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
+{
+	__ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
+	if ( pPteg )
+	{
+		uint8_t i;
+		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
+		{
+			__ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
+			if ( pte )
+			{
+				if (pte->w0 & 0x80000000u)
+				{
+					if ((pte->w0 == pte_w0) && (pte->w1 == pte_w1))
+					{
+						pte->w0 = 0;
+						pte->w1 = 0;
+						break;
+					}
 				}
 			}
 		}

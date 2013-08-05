@@ -16,7 +16,23 @@ typedef struct __object_process_t
 {
 	__object_internal_t object;
 	uint32_t pid;
+	__mem_pool_info_t * pool;
 } __object_process_internal_t;
+
+__object_process_t * __obj_cast_process(__object_t * o)
+{
+	__object_process_t * result = NULL;
+	if(o)
+	{
+		const __object_process_t * const tmp = (const __object_process_t*)o;
+		if (tmp->object.initialised == OBJECT_INITIALISED
+			&& tmp->object.type == PROCESS_OBJ)
+		{
+			result = (__object_process_t*)tmp;
+		}
+	}
+	return result;
+}
 
 error_t __obj_create_process(
 		__mem_pool_info_t * const pool,
@@ -39,6 +55,7 @@ error_t __obj_create_process(
 				__obj_initialise_object(&no->object, objno, PROCESS_OBJ);
 				__obj_lock(&no->object);
 				no->pid = process_id;
+				no->pool = pool;
 				__obj_release(&no->object);
 				*object = (__object_t*)no;
 			}
@@ -54,4 +71,23 @@ error_t __obj_create_process(
 	}
 
 	return result;
+}
+
+void __obj_delete_process(__object_process_t * const o)
+{
+	__mem_free(o->pool, o);
+}
+
+object_number_t __obj_process_get_oid
+	(const __object_process_t * const o)
+{
+	object_number_t oid = INVALID_OBJECT_ID;
+	if (o)
+	{
+		if (o->object.initialised == OBJECT_INITIALISED)
+		{
+			oid = o->object.object_number;
+		}
+	}
+	return oid;
 }

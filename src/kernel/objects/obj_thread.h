@@ -23,6 +23,8 @@ error_t __obj_create_thread(
 		__thread_t * const thread,
 		object_number_t * const object_no);
 
+void __obj_delete_thread(__object_thread_t * const thread);
+
 __object_thread_t * __obj_cast_thread(__object_t * o);
 
 object_number_t __obj_thread_get_oid
@@ -72,5 +74,7 @@ error_t __obj_get_thread_original_priority(
 		priority_t * const p);
 
 priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o);
+
+object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o);
 
 #endif /* OBJ_THREAD_H_ */

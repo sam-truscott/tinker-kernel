@@ -72,7 +72,7 @@ void opic_intc_get_device(
 
 error_t opic_intc_write_register(const void * const usr_data, const uint32_t id, const uint32_t val)
 {
-#ifdef OPIC_BIG_ENDIAN
+#if defined(OPIC_BIG_ENDIAN)
 		uint32_t new_val = val;
 		new_val = SWAP_32(new_val);
 		*(uint32_t*)((uint32_t)(usr_data) + id) = new_val;
@@ -85,7 +85,7 @@ error_t opic_intc_write_register(const void * const usr_data, const uint32_t id,
 
 error_t opic_intc_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val)
 {
-#ifdef OPIC_BIG_ENDIAN
+#if defined(OPIC_BIG_ENDIAN)
 		uint32_t v;
 		v = *(uint32_t*)((uint32_t)(usr_data) + id);
 		v = SWAP_32(v);

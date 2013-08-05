@@ -11,16 +11,21 @@
 #include "config.h"
 #include "object.h"
 #include "obj_thread.h"
+#include "kernel/kernel_assert.h"
 #include "kernel/process/process.h"
 #include "kernel/utils/util_malloc.h"
 #include "kernel/memory/memory_manager.h"
 
-HASH_MAP_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_INTERNAL_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_SPEC_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 
+HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(object_table_it_t, object_map_t)
+HASH_MAP_TYPE_ITERATOR_BODY(extern, object_table_it_t, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+
 typedef struct __object_table_t
 {
+	__mem_pool_info_t * pool;
 	object_map_t * the_map;
 	object_number_t next_id;
 } __object_table_internal_t;
@@ -35,6 +40,13 @@ __object_table_t * __obj_table_create(__mem_pool_info_t * const pool)
 	return table;
 }
 
+void __obj_table_delete(const __object_table_t * const table)
+{
+	__kernel_assert("__obj_table_delete - check that the object table is present", table != NULL);
+	object_map_t_delete(table->the_map);
+	__mem_free(table->pool, table);
+}
+
 error_t __obj_initialse_table(
 		__object_table_t * const table,
 		__mem_pool_info_t * const pool)
@@ -44,7 +56,7 @@ error_t __obj_initialse_table(
 	/* create the hashmap for the object table */
 	if ( table )
 	{
-		table->the_map = __mem_alloc(pool, sizeof(object_map_t));
+		table->pool = pool;
 		table->the_map = object_map_t_create(
 				__hash_basic_integer,
 				pool);
@@ -68,9 +80,9 @@ error_t __obj_add_object(
 	bool id_ok = false;
 	error_t ret = NO_ERROR;
 
-	if ( t && obj)
+	if (t && obj)
 	{
-		object_map_t * map = (object_map_t*)t->the_map;
+		object_map_t * const map = (object_map_t*)t->the_map;
 		/* find the next suitable object id to use */
 		object_number_t id = t->next_id;
 		const uint32_t tc = object_map_t_capacity(map);
@@ -84,7 +96,7 @@ error_t __obj_add_object(
 		}
 
 		/* now create an allocate the object */
-		if ( id_ok )
+		if (id_ok)
 		{
 			t->next_id++;
 			if ( !object_map_t_put(((object_map_t*)t->the_map), id, obj))
@@ -97,6 +109,31 @@ error_t __obj_add_object(
 		}
 	} else {
 		ret = PARAMETERS_INVALID;
+	}
+
+	return ret;
+}
+
+error_t __obj_remove_object(
+		__object_table_t * const t,
+		const object_number_t objno)
+{
+	error_t ret = NO_ERROR;
+
+	if (t)
+	{
+		object_map_t * const map = (object_map_t*)t->the_map;
+		if (object_map_t_contains_key(map, objno))
+		{
+			if(!object_map_t_remove(map, objno))
+			{
+				ret = UNKNOWN_OBJ;
+			}
+		}
+		else
+		{
+			ret = INVALID_OBJECT;
+		}
 	}
 
 	return ret;
@@ -116,4 +153,9 @@ __object_t * __obj_get_object(const __object_table_t * t, object_number_t oid)
 		}
 	}
 	return o;
+}
+
+object_table_it_t * __obj_iterator(const __object_table_t * t)
+{
+	return object_table_it_t_create(t->the_map);
 }

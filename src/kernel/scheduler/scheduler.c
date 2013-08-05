@@ -32,13 +32,6 @@ STACK_SPEC(static, queue_stack_t, thread_queue_t* )
 STACK_BODY(static, queue_stack_t, thread_queue_t* )
 
 /**
- * The current process being used
- */
-static process_list_it_t * __sch_process_iterator = NULL;
-
-static thread_list_it_t * __sch_thread_iterator = NULL;
-
-/**
  * The current thread executing
  */
 static __thread_t * __sch_current_thread = NULL;
@@ -59,10 +52,6 @@ void __sch_initialise_scheduler(void)
 {
 	if ( !__sch_initialised )
 	{
-		__process_t * proc = NULL;
-
-		__sch_current_priority = 0;
-
 		for ( uint16_t i = 0 ; i < __MAX_PRIORITY + 1 ; i++ )
 		{
 			thread_queue_t_initialise(&__sch_thread_queues[i], __mem_get_default_pool());
@@ -71,14 +60,6 @@ void __sch_initialise_scheduler(void)
 		__sch_active_queue = &(__sch_thread_queues[0]);
 		queue_stack_t_initialise( &__sch_queue_stack, __mem_get_default_pool() );
 		queue_stack_t_push(&__sch_queue_stack, __sch_active_queue);
-
-		/* get the process iterator */
-		__sch_process_iterator = __proc_get_process_iterator();
-		process_list_it_t_get(__sch_process_iterator, &proc);
-
-		/* get the thread iterator and first thread */
-		__sch_thread_iterator = __process_get_threads(proc);
-		thread_list_it_t_get(__sch_thread_iterator, &__sch_current_thread);
 
 		__sch_initialised = true;
 	}
@@ -172,16 +153,16 @@ void __sch_notify_exit_thread(__thread_t * const t)
 	if ( t )
 	{
 		const priority_t thread_priority = __thread_get_priority(t);
-		thread_queue_t * queue = &(__sch_thread_queues[thread_priority]);
+		thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
 		thread_queue_t_remove(queue, t);
 
-		if ( thread_queue_t_size(__sch_active_queue) == 0 )
+		if (thread_queue_t_size(__sch_active_queue) == 0)
 		{
 			/* pop the one we're using off */
 			queue_stack_t_pop(&__sch_queue_stack, &__sch_active_queue);
 			/* pop the next queue off the stack - if one can't be found
 			 * perform a slow search */
-			if ( !queue_stack_t_front(&__sch_queue_stack, &__sch_active_queue) )
+			if (!queue_stack_t_front(&__sch_queue_stack, &__sch_active_queue))
 			{
 				__sch_priority_find_next_queue(t);
 			}
@@ -196,7 +177,7 @@ void __sch_notify_pause_thread(__thread_t * const t)
 
 void __sch_notify_resume_thread(__thread_t * const t)
 {
-	__sch_notify_exit_thread(t);
+	__sch_notify_new_thread(t);
 }
 
 void __sch_notify_change_priority(

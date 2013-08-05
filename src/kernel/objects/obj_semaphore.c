@@ -28,6 +28,7 @@ typedef struct __object_sema_t
 	thread_obj_queue_t * listeners;
 	thread_obj_queue_t * owners;
 	priority_t highest_priority;
+	__mem_pool_info_t * pool;
 } __object_sema_internal_t;
 
 static void __obj_push_semaphore_listener(
@@ -38,7 +39,7 @@ static void __obj_notify_semaphore_listener(
 		__object_sema_t * const semaphore,
 		thread_obj_queue_t * const list);
 
-__object_sema_t * __obj_cast_sema(__object_t * o)
+__object_sema_t * __obj_cast_semaphore(__object_t * o)
 {
 	__object_sema_t * result = NULL;
 	if(o)
@@ -51,6 +52,20 @@ __object_sema_t * __obj_cast_sema(__object_t * o)
 		}
 	}
 	return result;
+}
+
+object_number_t __obj_semaphore_get_oid
+	(const __object_sema_t * const o)
+{
+	object_number_t oid = INVALID_OBJECT_ID;
+	if (o)
+	{
+		if (o->object.initialised == OBJECT_INITIALISED)
+		{
+			oid = o->object.object_number;
+		}
+	}
+	return oid;
 }
 
 error_t __obj_create_semaphore(
@@ -77,6 +92,7 @@ error_t __obj_create_semaphore(
 				no->listeners = thread_obj_queue_t_create(pool);
 				no->owners = thread_obj_queue_t_create(pool);
 				no->highest_priority = 0;
+				no->pool = pool;
 				*objectno = no->object.object_number;
 			}
 		}
@@ -93,16 +109,34 @@ error_t __obj_create_semaphore(
 	return result;
 }
 
+error_t __object_delete_semaphore(
+		__object_sema_t * const semaphore)
+{
+	error_t result = NO_ERROR;
+	if (semaphore)
+	{
+		thread_obj_queue_t_delete(semaphore->listeners);
+		thread_obj_queue_t_delete(semaphore->owners);
+		__mem_free(semaphore->pool, semaphore);
+	}
+	else
+	{
+		result = INVALID_OBJECT;
+	}
+	return result;
+}
+
 error_t __obj_get_semaphore(
 		__object_thread_t * const thread,
 		__object_sema_t * const semaphore)
 {
 	error_t result = NO_ERROR;
 
-	if ( thread && semaphore )
+	if (thread && semaphore)
 	{
 		__thread_state_t ts;
 		__obj_get_thread_state(thread, &ts);
+
 		if (ts != thread_not_created && ts != thread_terminated)
 		{
 			__object_thread_t * first_owner_obj = NULL;
@@ -113,6 +147,7 @@ error_t __obj_get_semaphore(
 
 			const priority_t thread_priority =
 					__obj_get_thread_priority_ex(thread);
+
 			const priority_t waiting_thread_priority =
 					__obj_get_thread_priority_ex(first_owner_obj);
 
@@ -158,9 +193,12 @@ error_t __obj_get_semaphore(
 						semaphore->listeners,
 						thread);
 			}
+			else
+			{
+				semaphore->sem_count--;
+				semaphore->sem_alloc++;
+			}
 
-			semaphore->sem_count--;
-			semaphore->sem_alloc++;
 			__obj_release(&semaphore->object);
 		}
 		else
@@ -195,14 +233,13 @@ error_t __obj_release_semaphore(
 			 * inversion so the original thread priority is restored
 			 */
 			const priority_t thread_orig_priority = __obj_get_thread_original_priority_ex(thread);
-			const priority_t thread_priority = __obj_get_thread_priority_ex(thread);
 			if ( semaphore->highest_priority != thread_orig_priority)
 			{
 				thread_obj_queue_t_remove(semaphore->owners, thread);
 				__obj_reset_thread_original_priority(thread);
 			}
 			/* need to keep the highest priority at the right level */
-			else if ( semaphore->highest_priority > thread_priority)
+			else if ( semaphore->highest_priority > thread_orig_priority)
 			{
 				semaphore->highest_priority = thread_orig_priority;
 			}
@@ -215,6 +252,7 @@ error_t __obj_release_semaphore(
 		{
 			result = SEMAPHORE_EMPTY;
 		}
+
 		__obj_release(&semaphore->object);
 	}
 	else
@@ -229,7 +267,7 @@ static void __obj_push_semaphore_listener(
 		thread_obj_queue_t * const list,
 		__object_thread_t * const thread)
 {
-	if ( list && thread )
+	if (list && thread)
 	{
 		thread_obj_queue_t_push(list, thread);
 	}
@@ -239,23 +277,23 @@ static void __obj_notify_semaphore_listener(
 		__object_sema_t * const semaphore,
 		thread_obj_queue_t * const list)
 {
-	if ( list )
+	if (list)
 	{
 		const uint32_t listener_count = thread_obj_queue_t_size(list);
-		if ( listener_count > 0 )
+		if (listener_count > 0)
 		{
 			__object_thread_t * next_thread = NULL;
 			bool ok;
 
 			ok = thread_obj_queue_t_front(list, &next_thread);
 
-			if ( ok && next_thread)
+			if (ok && next_thread)
 			{
 				/* tell the most recent one to go now */
 				__obj_set_thread_ready(next_thread);
 
 				const priority_t thread_priority = __obj_get_thread_priority_ex(next_thread);
-				if (thread_priority < semaphore->highest_priority )
+				if (thread_priority < semaphore->highest_priority)
 				{
 					/* update the original priority and copy across the temporary
 					 * higher priority */

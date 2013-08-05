@@ -60,10 +60,6 @@ static char __ksh_object_types[9][255] =
 		"TIMER  \0"
 };
 
-HASH_MAP_TYPE_T(object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
-HASH_MAP_TYPE_ITERATOR_SPEC(static, obj_tbl_it_t, object_map_t, __object_t*)
-HASH_MAP_TYPE_ITERATOR_BODY(static, obj_tbl_it_t, object_map_t, uint32_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
-
 void __kshell_start(void)
 {
 	__ksh_input_pointer = 0;

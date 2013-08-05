@@ -109,7 +109,7 @@ error_t __opic_timer_write_register(
 			break;
 	}
 
-#ifdef OPIC_BIG_ENDIAN
+#if defined(OPIC_BIG_ENDIAN)
 	opic_swap_endianness(&new_value);
 #endif
 

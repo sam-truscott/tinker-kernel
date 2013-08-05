@@ -24,27 +24,19 @@
 /**
  * A linked list of processes
  */
+UNBOUNDED_LIST_TYPE(process_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, __process_t*)
 UNBOUNDED_LIST_SPEC(static, process_list_t, __process_t*)
 UNBOUNDED_LIST_BODY(static, process_list_t, __process_t*)
-
-/**
- * An iterator for the process list
- */
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, __process_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, __process_t*)
 
 /**
  * The static list of processes in the system
  */
 static process_list_t * __process_list = NULL;
 
-static process_list_it_t * __process_iterator = NULL;
-
 void __proc_initialise(void)
 {
 	__process_list = process_list_t_create(__mem_get_default_pool());
-	__process_iterator = process_list_it_t_create(__process_list);
 }
 
 error_t __proc_create_process(
@@ -88,15 +80,14 @@ error_t __proc_create_process(
 	__mem_pool_info_t * parent_pool;
 	if (curr_thread == NULL )
 	{
-#if defined (__PROCESS_DEBUGGING )
+#if defined (__PROCESS_DEBUGGING)
 		__debug_print("proc: create process from default pool\n");
 #endif
 		parent_pool = __mem_get_default_pool();
 	} else {
-#if defined (__PROCESS_DEBUGGING )
-		__debug_print("proc: create process for %s from %s\n",
-				image,
-				curr_thread->parent->image);
+#if defined (__PROCESS_DEBUGGING)
+		__debug_print("proc: create process for %s from parent\n",
+				image);
 #endif
 		parent_pool = __process_get_mem_pool(__thread_get_parent(curr_thread));
 	}
@@ -240,15 +231,5 @@ __process_t * __proc_get_process(const uint32_t process_id)
 	}
 
 	return p;
-}
-
-process_list_it_t * __proc_get_process_iterator(void)
-{
-	return __process_iterator;
-}
-
-process_list_it_t * __proc_get_new_process_iterator(void)
-{
-	return process_list_it_t_create(__process_list);
 }
 

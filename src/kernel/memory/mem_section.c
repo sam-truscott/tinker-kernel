@@ -8,6 +8,8 @@
  */
 #include "mem_section.h"
 
+#include "kernel/kernel_assert.h"
+
 typedef struct mem_section_t
 {
 	mem_section_t *next;
@@ -17,6 +19,7 @@ typedef struct mem_section_t
 	mmu_memory_t		memory_type;
 	mmu_privilege_t		privilege;
 	mmu_access_t		access_rights;
+	__mem_pool_info_t * pool;
 } mem_section_internal_t;
 
 const mem_section_t * __mem_sec_create(
@@ -37,8 +40,15 @@ const mem_section_t * __mem_sec_create(
 		ms->memory_type = mem_type;
 		ms->privilege = mem_priv;
 		ms->access_rights = mem_access;
+		ms->pool = pool;
 	}
 	return ms;
+}
+
+void __mem_sec_delete(const mem_section_t * const section)
+{
+	__kernel_assert("__mem_sec_delete - check that the section is valid", section != NULL);
+	__mem_free(section->pool, section);
 }
 
 uint32_t __mem_sec_get_real_addr(const mem_section_t * const ms)

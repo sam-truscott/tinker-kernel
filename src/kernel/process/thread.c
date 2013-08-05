@@ -86,13 +86,12 @@ __thread_t * __thread_create(
 			 * We need to ensure that the context information
 			 * is configured properly
 			 */
-			/** FIXME: Change the 0 **/
 			__thread_setup_stack(thread);
 			__tgt_initialise_context(
 					thread,
 					&thread->context,
 					__process_is_kernel(thread->parent),
-					0);
+					(const uint32_t)sos_exit_thread);
 		}
 		else
 		{
@@ -222,4 +221,16 @@ void __thread_set_waiting_on(
 		const __object_t * const object)
 {
 	thread->waiting_on = object;
+}
+
+void __thread_exit(__thread_t * const thread)
+{
+	__mem_pool_info_t * const pool = __process_get_mem_pool(thread->parent);
+
+	// stack
+	__mem_free(pool, __thread_get_stack_memory(thread->stack));
+	// contact
+	__tgt_destroy_context(thread, thread->context);
+	// thread itself
+	__mem_free(pool, thread);
 }

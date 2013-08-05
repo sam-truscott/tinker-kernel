@@ -41,6 +41,9 @@ const mem_section_t * __mem_sec_create(
 		const mmu_memory_t mem_type,
 		const mmu_privilege_t mem_priv,
 		const mmu_access_t mem_access);
+
+void __mem_sec_delete(const mem_section_t * const section);
+
 uint32_t __mem_sec_get_real_addr(const mem_section_t * const ms);
 uint32_t __mem_sec_get_virt_addr(const mem_section_t * const ms);
 uint32_t __mem_sec_get_size(const mem_section_t * const ms);

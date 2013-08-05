@@ -9,7 +9,7 @@
 #ifndef SOS_API_TYPES_H_
 #define SOS_API_TYPES_H_
 
-#ifdef __BUILDING_KERNEL
+#if defined(__BUILDING_KERNEL)
 #define SOS_API_SUFFIX __attribute__((section(".user_text")))
 #else
 #define SOS_API_SUFFIX

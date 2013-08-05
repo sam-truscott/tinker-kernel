@@ -220,9 +220,9 @@
 	{ \
 		bool ret = false; \
 		\
-		if ( list ) \
+		if (list) \
 		{ \
-			if ( list->size > index ) \
+			if (list->size > index) \
 			{ \
 				LIST_T##_element_t * e = list->head; \
 				LIST_T##_element_t * p = NULL; \

@@ -67,6 +67,10 @@ static error_t __ppc_setup_paged_area(
 		const tgt_mem_t * const segment_info,
 		const mem_section_t * const mem_sec);
 
+static void __ppc_remove_paged_area(
+		const tgt_mem_t * const segment_info,
+		const mem_section_t * const mem_sec);
+
 void __ppc_isr_initialise(void)
 {
 	uint32_t vect = 0;
@@ -277,9 +281,9 @@ static error_t __ppc_setup_paged_area(
 
 	for ( uint32_t page = 0 ; page < pages ; page++ )
 	{
-		uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
-		uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
-		uint32_t vsid = segment_info->segment_ids[__PPC_GET_SEGMENT_INDEX(page_virtual_address)];
+		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
+		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
+		const uint32_t vsid = segment_info->segment_ids[__PPC_GET_SEGMENT_INDEX(page_virtual_address)];
 
 		w0 = __PPC_PTE_W0(
 				PTE_VALID,
@@ -325,6 +329,74 @@ static error_t __ppc_setup_paged_area(
 	return true;
 }
 
+static void __ppc_remove_paged_area(
+		const tgt_mem_t * const segment_info,
+		const mem_section_t * const mem_sec)
+{
+	const uint32_t real_addr = __mem_sec_get_real_addr(mem_sec);
+	const uint32_t size = __mem_sec_get_size(mem_sec);
+	const uint32_t virt_addr = __mem_sec_get_virt_addr(mem_sec);
+	const mmu_memory_t mem_type = __mem_sec_get_mem_type(mem_sec);
+	const mmu_access_t access = __mem_sec_get_access(mem_sec);
+
+	uint32_t w0 = 0;
+	uint32_t w1 = 0;
+
+	uint32_t pages = size / MMU_PAGE_SIZE;
+	if ( (size % MMU_PAGE_SIZE) !=0 )
+	{
+		pages++;
+	}
+
+	for ( uint32_t page = 0 ; page < pages ; page++ )
+	{
+		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
+		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
+		const uint32_t vsid = segment_info->segment_ids[__PPC_GET_SEGMENT_INDEX(page_virtual_address)];
+
+		w0 = __PPC_PTE_W0(
+				PTE_VALID,
+				vsid,
+				HASH_PRIMARY,
+				0);
+
+		if ( mem_type == mmu_random_access_memory)
+		{
+			/* RAM can have cache enabled */
+			w1 = __PPC_PTE_W1(
+					page_real_address,
+					0,
+					0,
+					__PPC32_WIMG(
+							__ppc32_write_back,
+							__ppc32_cache_enabled,
+							__ppc32_memory_no_coherency,
+							__ppc32_not_guarded),
+							access);
+		}
+		else
+		{
+			/* hardware needs caching disabled and OoO access disabled */
+			w1 = __PPC_PTE_W1(
+					page_real_address,
+					0,
+					0,
+					__PPC32_WIMG(
+							__ppc32_write_through,
+							__ppc32_cache_inhibited,
+							__ppc32_memory_no_coherency,
+							__ppc32_guarded),
+							access);
+		}
+
+		__ppc32_remove_pte(
+				page_virtual_address,
+				vsid,
+				w0,
+				w1);
+	}
+}
+
 error_t __tgt_initialise_process(__process_t * const process)
 {
 	error_t ok = NO_ERROR;
@@ -343,7 +415,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
 		const mem_section_t * section = __process_get_first_section(process);
-		while ( section && (ok == NO_ERROR))
+		while (section && (ok == NO_ERROR))
 		{
 			/* setup virt -> real mapping for size */
 			ok = __ppc_setup_paged_area(
@@ -356,6 +428,21 @@ error_t __tgt_initialise_process(__process_t * const process)
 	}
 
 	return ok;
+}
+
+void __tgt_destroy_process(const __process_t * const process)
+{
+	const mem_section_t * section = __process_get_first_section(process);
+	const tgt_mem_t * const segment_info = __process_get_segment_info(process);
+	while (section)
+	{
+		__ppc_remove_paged_area(
+				segment_info,
+				section);
+
+		/* next section */
+		section = __mem_sec_get_next(section);
+	}
 }
 
 void __tgt_initialise_context(
@@ -397,6 +484,16 @@ void __tgt_initialise_context(
 		ppc_context->cr = 0;
 		ppc_context->ctr = 0;
 		ppc_context->lr = exit_function;
+	}
+}
+
+void __tgt_destroy_context(
+		const __thread_t * thread,
+		__tgt_context_t * const context)
+{
+	if (context)
+	{
+		__mem_free(__process_get_mem_pool(__thread_get_parent(thread)), context);
 	}
 }
 

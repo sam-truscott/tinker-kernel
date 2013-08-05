@@ -11,6 +11,7 @@
 #include "object_table.h"
 #include "object.h"
 #include "object_private.h"
+#include "kernel/debug/debug_print.h"
 #include "kernel/memory/memory_manager.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/scheduler/scheduler.h"
@@ -27,6 +28,7 @@ typedef struct __object_thread_t
 	 */
 	priority_t priority_inheritance;
 	priority_t original_priority;
+	__mem_pool_info_t * pool;
 } __object_thread_internal_t;
 
 error_t __obj_create_thread(
@@ -49,6 +51,7 @@ error_t __obj_create_thread(
 		{
 			__obj_initialise_object(&no->object, objno, THREAD_OBJ);
 			__obj_lock(&no->object);
+			no->pool = pool;
 			no->pid = process_id;
 			no->tid = thread_id;
 			no->thread = thread;
@@ -70,6 +73,14 @@ error_t __obj_create_thread(
 	}
 
 	return result;
+}
+
+void __obj_delete_thread(__object_thread_t * const thread)
+{
+	if (thread)
+	{
+		__mem_free(thread->pool, thread);
+	}
 }
 
 object_number_t __obj_thread_get_oid
@@ -170,22 +181,22 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 		__thread_t * t = NULL;
 
 		__obj_lock(&o->object);
-
 		t = o->thread;
+
+		__debug_print("proc %d thread %d is exiting\n", o->pid, o->tid);
 
 		const __thread_state_t state = __thread_get_state(t);
 		if ( state != thread_terminated
 				&& state != thread_not_created)
 		{
-                        /* update the reason for the exit and
-                         * notify the scheduler so it can do something else*/
+			/* update the reason for the exit and
+			 * notify the scheduler so it can do something else*/
 			__thread_set_state(t, thread_terminated);
 			__sch_notify_exit_thread(t);
-                        
-                        /* free up the stack space used by the thread*/
-                        __mem_free(
-                        		__process_get_mem_pool(__thread_get_parent(t)),
-                        		__thread_get_stack_memory(t));
+
+			/* free up the stack space used by the thread*/
+			__process_thread_exit(__thread_get_parent(t), t);
+			__thread_exit(t);
 		}
 		else
 		{
@@ -193,6 +204,7 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 		}
 
 		__obj_release(&o->object);
+		__obj_delete_thread(o);
 	}
 	else
 	{
@@ -316,6 +328,18 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 	return result;
 }
 
+priority_t __obj_get_thread_priority_ex(__object_thread_t * const o)
+{
+	const __thread_t * t = o->thread;
+	priority_t p;
+
+	__obj_lock(&o->object);
+	p = __thread_get_priority(t);
+	__obj_release(&o->object);
+
+	return p;
+}
+
 error_t __obj_get_thread_priority(
 		__object_thread_t * const o,
 		uint8_t * const priority)
@@ -339,18 +363,6 @@ error_t __obj_get_thread_priority(
 	}
 
 	return result;
-}
-
-priority_t __obj_get_thread_priority_ex(__object_thread_t * const o)
-{
-	const __thread_t * t = o->thread;
-	priority_t p;
-
-	__obj_lock(&o->object);
-	p = __thread_get_priority(t);
-	__obj_release(&o->object);
-
-	return p;
 }
 
 error_t __obj_set_thread_priority(
@@ -467,4 +479,9 @@ priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
 	__obj_release(&o->object);
 
 	return p;
+}
+
+object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o)
+{
+	return o->object.object_number;
 }

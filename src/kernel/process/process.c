@@ -10,27 +10,23 @@
 
 #include "config.h"
 #include "arch/tgt.h"
+#include "kernel/kernel_assert.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_thread.h"
+#include "kernel/objects/obj_semaphore.h"
+#include "kernel/objects/obj_process.h"
 #include "kernel/utils/util_strlen.h"
+#include "kernel/utils/collections/hashed_map.h"
 
-/**
- * The code to handle an unbounded list of threads for the process
- */
-UNBOUNDED_LIST_INTERNAL_TYPE(thread_list_t, __thread_t*)
-UNBOUNDED_LIST_SPEC(static, thread_list_t, __thread_t*)
-UNBOUNDED_LIST_BODY(static, thread_list_t, __thread_t*)
-
-/**
- * An iterator for the thread list
- */
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(thread_list_it_t, thread_list_t, __thread_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(extern, thread_list_it_t, thread_list_t, __thread_t*)
+HASH_MAP_TYPE_T(thread_map_t)
+HASH_MAP_INTERNAL_TYPE_T(thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
+HASH_MAP_SPEC_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
+HASH_MAP_BODY_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
 
 typedef struct __process_t
 {
 	uint32_t				process_id;
-	thread_list_t	*		threads;
+	thread_map_t	*		threads;
 	__mem_pool_info_t * 	memory_pool;
 	__object_table_t *		object_table;
 	object_number_t			object_number;
@@ -38,6 +34,8 @@ typedef struct __process_t
 	tgt_mem_t				segment_info;
 	const mem_section_t *	first_section;
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
+	uint32_t 				next_thread_id;
+	__thread_t * 			initial_thread;
 } __process_internal_t;
 
 error_t __process_create(
@@ -52,7 +50,7 @@ error_t __process_create(
 	error_t ret = NO_ERROR;
 	if (p)
 	{
-		p->threads = thread_list_t_create(mempool);
+		p->threads = thread_map_t_create(__hash_basic_integer, mempool);
 		p->process_id = pid;
 		p->kernel_process = is_kernel;
 		p->memory_pool = (__mem_pool_info_t *)pool;
@@ -60,6 +58,8 @@ error_t __process_create(
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
 		p->object_table = __obj_table_create(p->memory_pool);
+		p->next_thread_id = 0;
+		p->initial_thread = NULL;
 
 		p->first_section = __mem_sec_create(
 				p->memory_pool,
@@ -141,27 +141,25 @@ bool __process_add_thread(
 		object_number_t * const objno)
 {
 	bool ret = false;
-	const uint32_t thread_count = thread_list_t_size(process->threads);
+	const uint32_t thread_count = thread_map_t_size(process->threads);
 	if ( thread_count < __MAX_THREADS )
 	{
-		/* get the new thread id - SLOW! - need to speed up */
-		__thread_t * tmp = NULL;
-		uint32_t thread_id = 0;
-		if ( thread_count == 0 )
+		uint32_t thread_id = (process->next_thread_id % __MAX_THREADS);
+		for ( uint32_t i = thread_id ; i < __MAX_THREADS ; i++ )
 		{
-			thread_id = 0;
-		}
-		else
-		{
-			for ( uint32_t i = 0 ; i < __MAX_THREADS ; i++ )
+			if ( !thread_map_t_contains_key(process->threads, thread_id) )
 			{
-				if ( !thread_list_t_get(process->threads, i, &tmp) )
-				{
-					thread_id = i;
-					break;
-				}
+				thread_id = i;
+				break;
 			}
 		}
+		process->next_thread_id++;
+
+		if (process->initial_thread == NULL)
+		{
+			process->initial_thread = thread;
+		}
+
 		// update the thread's id
 		__thread_set_tid(thread, thread_id);
 
@@ -176,26 +174,93 @@ bool __process_add_thread(
 
 		__thread_set_oid(thread, *objno);
 
-		thread_list_t_add(process->threads, thread);
+		thread_map_t_put(process->threads, thread_id, thread);
 
 		ret = true;
 	}
 	return ret;
 }
 
-__thread_t * _process_get_main_thread(const __process_t * process)
+__thread_t * __process_get_main_thread(const __process_t * process)
 {
-	__thread_t * t = NULL;
-	thread_list_t_get(process->threads, 0, &t);
-	return t;
+	return process->initial_thread;
 }
 
-thread_list_it_t * __process_get_threads(const __process_t * const process)
+uint32_t __process_get_thread_count(const __process_t * process)
 {
-	return thread_list_it_t_create(process->threads);
+	return thread_map_t_size(process->threads);
 }
 
 const mem_section_t * __process_get_first_section(const __process_t * const process)
 {
 	return process->first_section;
+}
+
+void __process_thread_exit(__process_t * const process, __thread_t * const thread)
+{
+	__kernel_assert("__process_thread_exit - check process is not null", process != NULL);
+	__kernel_assert("__process_thread_exit - check thread is not null", thread != NULL);
+	thread_map_t_remove(process->threads, __thread_get_tid(thread));
+}
+
+void __process_exit(__process_t * const process)
+{
+	__kernel_assert("process_exit - check process is not null", process != NULL);
+	// thread list
+	thread_map_t_delete(process->threads);
+	// object table
+	object_table_it_t * const it = __obj_iterator(process->object_table);
+	if (it)
+	{
+		__object_t * object = NULL;
+		bool objects_exist = object_table_it_t_get(it, &object);
+		while (objects_exist)
+		{
+			// delete it
+			__object_thread_t * const thread = __obj_cast_thread(object);
+			if (thread)
+			{
+				__obj_exit_thread(thread);
+				__obj_remove_object(
+						process->object_table,
+						__obj_thread_get_oid(thread));
+			}
+			else
+			{
+				__object_sema_t * const sema = __obj_cast_semaphore(object);
+				if (sema)
+				{
+					__object_delete_semaphore(sema);
+					__obj_remove_object(
+							process->object_table,
+							__obj_semaphore_get_oid(sema));
+				}
+				else
+				{
+					__object_process_t * const process_obj = __obj_cast_process(object);
+					if (process_obj)
+					{
+						__obj_delete_process(process_obj);
+						__obj_remove_object(
+								process->object_table,
+								__obj_process_get_oid(process_obj));
+					}
+				}
+				/* TODO: Support the other object types */
+			}
+			object_table_it_t_reset(it);
+			objects_exist = object_table_it_t_get(it, &object);
+		}
+		object_table_it_t_delete(it);
+	}
+	__obj_table_delete(process->object_table);
+
+	// memory sections
+	__tgt_destroy_process(process);
+	const mem_section_t * section = process->first_section;
+	while (section)
+	{
+		__mem_sec_delete(section);
+		section = __mem_sec_get_next(section);
+	}
 }

@@ -28,11 +28,17 @@ void __tgt_disable_thread_interrupts(__tgt_context_t * const context);
 
 error_t __tgt_initialise_process(__process_t * const process);
 
+void __tgt_destroy_process(const __process_t * const process);
+
 void __tgt_initialise_context(
 		const __thread_t * thread,
 		__tgt_context_t ** const context,
 		const bool kernel_mode,
 		const uint32_t exit_function);
+
+void __tgt_destroy_context(
+		const __thread_t * thread,
+		__tgt_context_t * const context);
 
 void __tgt_prepare_context(
 		__tgt_context_t * const context,

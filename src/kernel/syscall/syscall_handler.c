@@ -53,7 +53,7 @@ static error_t __syscall_get_sema(
 		__object_t * const possible_sema = __obj_get_object(table,sema_no);
 		if (possible_sema)
 		{
-			__object_sema_t * const sema_obj = __obj_cast_sema(possible_sema);
+			__object_sema_t * const sema_obj = __obj_cast_semaphore(possible_sema);
 			if (sema_obj)
 			{
 				*sema = sema_obj;
@@ -188,14 +188,26 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 
 		case syscall_exit_thread:
-
-		{
-			__object_thread_t * thread_obj =__syscall_get_thread_object();
-			if ( thread_obj )
 			{
-				ret = __obj_exit_thread(thread_obj);
+				__object_thread_t * const thread_obj =__syscall_get_thread_object();
+				if ( thread_obj )
+				{
+					ret = __obj_exit_thread(thread_obj);
+
+					__process_t * const proc = __thread_get_parent(this_thread);
+					if (ret == NO_ERROR && proc)
+					{
+						__obj_remove_object(
+								__process_get_object_table(proc),
+								__obj_thread_get_oid(thread_obj));
+						const uint32_t thread_count = __process_get_thread_count(proc);
+						if (!thread_count)
+						{
+							__process_exit(proc);
+						}
+					}
+				}
 			}
-		}
 			break;
 
 		case syscall_malloc:

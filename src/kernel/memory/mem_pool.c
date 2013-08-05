@@ -10,6 +10,7 @@
 
 #include "sos_api_types.h"
 #include "kernel/kernel_assert.h"
+#include "kernel/debug/debug_print.h"
 #include "tgt_mem.h"
 
 #define MAX_MMU_NAME_LEN 32u
@@ -95,7 +96,7 @@ bool 	__mem_init_memory_pool(
 		pool_base = base_addr + (MMU_PAGE_SIZE - temp);
 	}
 
-#if defined (__MEMORY_DEBUGGING )
+#if defined (__MEMORY_DEBUGGING)
 	__debug_print("mem: creating new pool at %x for %d bytes\n", pool_base, pool_size);
 #endif
 
@@ -131,7 +132,7 @@ bool 	__mem_init_memory_pool(
 		*pool = pool_info;
 	}
 
-#if defined (__MEMORY_DEBUGGING )
+#if defined (__MEMORY_DEBUGGING)
 	__debug_print("mem: new pool is at %x\n", pool_info);
 #endif
 
@@ -182,7 +183,7 @@ void* __mem_alloc_aligned(
 	void* new_base = NULL;
 	__mem_block_t * free_block = NULL;
 
-#if defined (__MEMORY_DEBUGGING )
+#if defined (__MEMORY_DEBUGGING)
 	__debug_print("\nmem: looking for %d bytes in pool %x\n", size, pool);
 #endif
 
@@ -200,7 +201,7 @@ void* __mem_alloc_aligned(
 			__mem_block_t * new_block;
 			new_base = (void*)free_block->addr;
 
-#if defined (__MEMORY_DEBUGGING )
+#if defined (__MEMORY_DEBUGGING)
 			__debug_print("mem: block found with %d bytes\n", free_block->size);
 #endif
 
@@ -210,7 +211,7 @@ void* __mem_alloc_aligned(
 					free_block,
 					&new_block);
 
-#if defined (__MEMORY_DEBUGGING )
+#if defined (__MEMORY_DEBUGGING)
 			__debug_print("mem: old block now %d, new block is %d\n",
 					free_block->size,
 					new_block->size);
@@ -222,7 +223,7 @@ void* __mem_alloc_aligned(
 		__kernel_assert("mem: attempt to allocate to a null pool\n", false);
 	}
 
-#if defined (__MEMORY_DEBUGGING )
+#if defined (__MEMORY_DEBUGGING)
 	__debug_print("mem: base at %x, size %x\n\n", new_base, size);
 #endif
 
@@ -317,8 +318,8 @@ void __mem_allocate_block(
 		block->addr += size;
 		block->size -= size;
 
-#if defined (__MEMORY_DEBUGGING )
-		__debug_print("block found; free block now contains %d bytes\n", block->size);
+#if defined (__MEMORY_DEBUGGING)
+		__debug_print("mem: block found; free block now contains %d bytes\n", block->size);
 #endif
 
 		pool->blocks++;
