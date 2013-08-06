@@ -503,7 +503,7 @@ object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o)
 	return o->object.object_number;
 }
 
-__thread_t __obj_get_thread(const __object_thread_t * const o)
+__thread_t * __obj_get_thread(const __object_thread_t * const o)
 {
 	return o->thread;
 }

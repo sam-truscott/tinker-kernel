@@ -79,6 +79,6 @@ priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o);
 
 object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o);
 
-__thread_t __obj_get_thread(const __object_thread_t * const o);
+__thread_t * __obj_get_thread(const __object_thread_t * const o);
 
 #endif /* OBJ_THREAD_H_ */
