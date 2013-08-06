@@ -14,3 +14,4 @@ uint32_t __util_strlen(const char * string, const uint32_t max)
 	while ( string[c] != '\0' && c++ <= max) {}
 	return c;
 }
+#pragma weak __util_strlen

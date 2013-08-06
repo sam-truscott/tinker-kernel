@@ -62,3 +62,4 @@ void __util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length
 		}
 	}
 }
+#pragma weak __util_i_to_h

@@ -8,7 +8,8 @@
  */
 #include "util_memset.h"
 
-void __util_memset(void * address, uint8_t value, uint32_t size)
+#pragma GCC optimize ("-O2") // this code screws up on -O3
+void* memset(void * address, uint32_t value, uint32_t size)
 {
 	uint8_t * addr = (uint8_t*) address;
 	while(size--)
@@ -16,4 +17,6 @@ void __util_memset(void * address, uint8_t value, uint32_t size)
 		(*addr) = value;
 		addr++;
 	}
+	return address;
 }
+#pragma weak memset

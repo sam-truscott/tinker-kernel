@@ -17,3 +17,4 @@ void __util_trim(char * string, uint32_t * length)
 		(*length)--;
 	}
 }
+#pragma weak __util_trim

@@ -20,6 +20,7 @@ void __util_to_upper(char * string)
 		copy++;
 	}
 }
+#pragma weak __util_to_upper
 
 void __util_to_lower(char * string)
 {
@@ -33,3 +34,4 @@ void __util_to_lower(char * string)
 		copy++;
 	}
 }
+#pragma weak __util_to_lower

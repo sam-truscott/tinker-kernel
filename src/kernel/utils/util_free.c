@@ -19,3 +19,4 @@ void __util_free(void * ptr)
 	__mem_pool_info_t * const mempool = __process_get_mem_pool(current_process);
 	__mem_free(mempool, ptr);
 }
+#pragma weak __util_free

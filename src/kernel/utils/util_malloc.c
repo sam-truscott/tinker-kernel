@@ -19,3 +19,4 @@ void * __util_malloc(const uint32_t size)
 	__mem_pool_info_t * const mempool = __process_get_mem_pool(current_process);
 	return __mem_alloc(mempool, size);
 }
+#pragma weak __util_malloc

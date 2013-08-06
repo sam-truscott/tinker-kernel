@@ -26,7 +26,6 @@
 
 #include "api/sos_api_types.h"
 #include "../hash/basic_hashes.h"
-#include "../util_memset.h"
 
 /*
  * This abstract data type is used to model a hash-map.
@@ -103,9 +102,9 @@
 	\
 	PREFIX bool HASH_MAP_T##_remove(HASH_MAP_T * map, const KEY_T key); \
 	\
-	PREFIX uint32_t HASH_MAP_T##_size(const HASH_MAP_T * map); \
+	PREFIX inline uint32_t HASH_MAP_T##_size(const HASH_MAP_T * map); \
 	\
-	PREFIX uint32_t HASH_MAP_T##_capacity(const HASH_MAP_T * map); \
+	PREFIX inline uint32_t HASH_MAP_T##_capacity(const HASH_MAP_T * map); \
 	\
 	PREFIX bool HASH_MAP_T##_contains_key(const HASH_MAP_T * map, const KEY_T key); \
 	\

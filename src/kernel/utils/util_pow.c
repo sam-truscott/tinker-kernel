@@ -22,3 +22,4 @@ uint32_t __util_pow(const uint32_t a, const uint32_t b)
 
 	return ret;
 }
+#pragma weak __util_pow

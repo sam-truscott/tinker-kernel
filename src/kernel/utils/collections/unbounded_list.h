@@ -78,9 +78,7 @@
 	\
 	PREFIX bool LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr); \
 	\
-	PREFIX uint32_t LIST_T##_size(const LIST_T * list); \
-	\
-	PREFIX uint32_t LIST_T##_next_index(const LIST_T * list); \
+	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list); \
 	\
 
 #define UNBOUNDED_LIST_BODY(PREFIX, LIST_T, ITEM_T) \
@@ -390,26 +388,17 @@
 	/**
 	 * Get the size of the list
 	 */ \
-	PREFIX uint32_t LIST_T##_size(const LIST_T * list) \
+	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list) \
 	{ \
 		return list->size; \
-	} \
-	\
-	/**
-	 * Get the next free index
-	 */ \
-	\
-	PREFIX uint32_t LIST_T##_next_index(const LIST_T * list) \
-	{ \
-		return LIST_T##_size(list); \
 	} \
 	\
 	extern void LIST_T##_test__(void) \
 	{ \
 		LIST_T##_create(NULL); \
 		LIST_T##_delete(NULL); \
+		LIST_T##_size(NULL); \
 		LIST_T##_next(NULL, NULL, NULL); \
-		LIST_T##_next_index(NULL); \
 		LIST_T##_remove_item(NULL, NULL); \
 		LIST_T##_insert(NULL, 0, NULL); \
 		LIST_T##_head_to_tail(NULL); \

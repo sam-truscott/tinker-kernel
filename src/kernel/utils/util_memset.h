@@ -11,6 +11,6 @@
 
 #include "sos_api.h"
 
-void __util_memset(void * address, uint8_t value, uint32_t size);
+void * memset(void * address, uint32_t value, uint32_t size);
 
 #endif /* I_MEMSET_H_ */
