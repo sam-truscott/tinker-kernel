@@ -9,7 +9,7 @@
 #include "kernel_assert.h"
 
 #include "kernel_panic.h"
-#include "debug/debug_print.h"
+#include "console/print_out.h"
 
 void __kernel_assert(const char * message, const bool var)
 {
@@ -20,7 +20,7 @@ void __kernel_assert_cond(const char * message, bool var, const bool cond)
 {
 	if ( var != cond )
 	{
-		__debug_print("ASSERT FAILED: %s\n", message);
+		__error_print("ASSERT FAILED: %s\n", message);
 		__kernel_panic();
 	}
 }
@@ -29,6 +29,6 @@ void __assert(const char * message, const bool var)
 {
 	if ( !var )
 	{
-		__debug_print("Assertion failed: %s\n", message);
+		__error_print("Assertion failed: %s\n", message);
 	}
 }

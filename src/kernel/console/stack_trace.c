@@ -6,16 +6,16 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "debug_stack_trace.h"
-#include "debug_print.h"
-#include "../../arch/tgt.h"
+#include "stack_trace.h"
+#include "print_out.h"
+#include "arch/tgt.h"
 
-void __debug_print_current_stack_trace(void)
+void __print_current_stack_trace(void)
 {
-	__debug_print_stack_trace(__tgt_get_stack_pointer());
+	__print_stack_trace(__tgt_get_stack_pointer());
 }
 
-void __debug_print_stack_trace(const uint32_t frame_pointer)
+void __print_stack_trace(const uint32_t frame_pointer)
 {
 	const uint32_t * sp = (const uint32_t*)frame_pointer;
 	uint32_t pc = 0;
@@ -27,7 +27,7 @@ void __debug_print_stack_trace(const uint32_t frame_pointer)
 
 		/* TODO can we interrogate the symbol table?
 		 * not without having a separate file or embedded ourself in */
-		__debug_print("%X\n", pc);
+		__error_print("%X\n", pc);
 	}
 }
 

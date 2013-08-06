@@ -8,10 +8,10 @@
  */
 #include "kernel_panic.h"
 
-#include "../arch/board_support.h"
-#include "debug/debug_stack_trace.h"
-#include "debug/debug_print.h"
-#include "../arch/tgt.h"
+#include "arch/board_support.h"
+#include "console/stack_trace.h"
+#include "console/print_out.h"
+#include "arch/tgt.h"
 
 void __kernel_panic(void)
 {
@@ -20,8 +20,8 @@ void __kernel_panic(void)
 	 */
 	__tgt_disable_external_interrupts();
 
-	__debug_print("KERNEL PANIC\n");
-	__debug_print_current_stack_trace();
+	__error_print("KERNEL PANIC\n");
+	__print_current_stack_trace();
 
 	/*
 	 * Sit in a tight loop

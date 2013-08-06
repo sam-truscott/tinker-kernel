@@ -11,7 +11,7 @@
 #include "object_private.h"
 #include "object_table.h"
 #include "kernel/kernel_assert.h"
-#include "kernel/debug/debug_print.h"
+#include "kernel/console/print_out.h"
 #include "kernel/process/thread.h"
 #include "kernel/memory/memory_manager.h"
 

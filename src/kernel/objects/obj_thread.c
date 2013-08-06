@@ -11,7 +11,7 @@
 #include "object_table.h"
 #include "object.h"
 #include "object_private.h"
-#include "kernel/debug/debug_print.h"
+#include "kernel/console/print_out.h"
 #include "kernel/memory/memory_manager.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/scheduler/scheduler.h"

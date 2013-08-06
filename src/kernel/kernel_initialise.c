@@ -11,7 +11,7 @@
 #include "../arch/board_support.h"
 #include "kernel_assert.h"
 #include "kernel_idle.h"
-#include "debug/debug_print.h"
+#include "console/print_out.h"
 #include "interrupts/interrupt_manager.h"
 #include "memory/memory_manager.h"
 #include "process/process_manager.h"

@@ -11,8 +11,8 @@
 
 #include "arch/tgt_types.h"
 
-void __debug_print_current_stack_trace(void);
+void __print_current_stack_trace(void);
 
-void __debug_print_stack_trace(const uint32_t frame_pointer);
+void __print_stack_trace(const uint32_t frame_pointer);
 
 #endif /* DEBUG_STACK_TRACE_H_ */

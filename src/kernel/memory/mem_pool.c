@@ -10,7 +10,7 @@
 
 #include "sos_api_types.h"
 #include "kernel/kernel_assert.h"
-#include "kernel/debug/debug_print.h"
+#include "kernel/console/print_out.h"
 #include "tgt_mem.h"
 
 #define MAX_MMU_NAME_LEN 32u

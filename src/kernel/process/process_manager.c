@@ -19,7 +19,7 @@
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/memory/memory_manager.h"
-#include "kernel/debug/debug_print.h"
+#include "kernel/console/print_out.h"
 
 /**
  * A linked list of processes
@@ -134,7 +134,6 @@ error_t __proc_create_process(
 						__process_get_pid(proc),
 						proc,
 						&process_obj);
-				//FIXME: pass oid in as param
 				__process_set_oid(proc, __obj_get_number(process_obj));
 
 				if ( ret == NO_ERROR )

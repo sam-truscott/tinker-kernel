@@ -40,13 +40,14 @@
 								<option id="gnu.c.compiler.option.optimization.flags.194745959" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags" value="-mpowerpc -mno-hard-dfp -mcpu=750 -mtune=750 -mno-altivec -mno-vrsave -m32 -msoft-float -mmultiple -mstring -mno-strict-align -mbig" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.933216957" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__KERNEL_DEBUGGING"/>
-									<listOptionValue builtIn="false" value="__MEMORY_DEBUGGINGx"/>
 									<listOptionValue builtIn="false" value="__PROCESS_DEBUGGING"/>
-									<listOptionValue builtIn="false" value="__KERNEL_SHELLx"/>
 									<listOptionValue builtIn="false" value="__BUILDING_KERNEL"/>
 								</option>
 								<option id="gnu.c.compiler.option.debugging.other.549540139" name="Other debugging flags" superClass="gnu.c.compiler.option.debugging.other" value="-gdwarf-4" valueType="string"/>
-								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.2038880834" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol"/>
+								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.2038880834" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" valueType="undefDefinedSymbols">
+									<listOptionValue builtIn="false" value="__MEMORY_DEBUGGING"/>
+									<listOptionValue builtIn="false" value="__KERNEL_SHELL"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.621059128" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool command="gcc" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1744150832" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -85,7 +86,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="kernel/scheduler/round_robin|arch/arm32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="kernel/utils/third_party/udivdi3.c|kernel/utils/third_party/udivmoddi4.c|kernel/utils/third_party/divdi3.c|arch/arm32|kernel/scheduler/round_robin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -169,7 +170,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="kernel/scheduler/round_robin|arch/ppc32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="arch/ppc32|kernel/scheduler/round_robin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -195,7 +196,7 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1493560645" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder autoBuildTarget="all" buildPath="${workspace_loc:/sos3/Debug}" cleanBuildTarget="clean" enableAutoBuild="false" id="org.eclipse.cdt.build.core.internal.builder.1026019482" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1385974469" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.2060483983" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.2060483983" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" value="gnu.c.optimization.level.more" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.124192386" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.warnings.pedantic.942570912" name="Pedantic (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.warnings.pedantic.error.113968648" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.c.compiler.option.warnings.pedantic.error" value="true" valueType="boolean"/>
@@ -213,18 +214,19 @@
 								<option id="gnu.c.compiler.option.preprocessor.nostdinc.1380524972" name="Do not search system directories (-nostdinc)" superClass="gnu.c.compiler.option.preprocessor.nostdinc" value="true" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.optimization.flags.2140174362" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags" value="-mpowerpc -mno-hard-dfp -mcpu=750 -mtune=750 -mno-altivec -mno-vrsave -m32 -msoft-float -mmultiple -mstring -mno-strict-align -mbig" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.808340931" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__KERNEL_DEBUGGING"/>
 									<listOptionValue builtIn="false" value="__BUILDING_KERNEL"/>
 								</option>
 								<option id="gnu.c.compiler.option.debugging.other.19968511" name="Other debugging flags" superClass="gnu.c.compiler.option.debugging.other" value="-gdwarf-4" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.1491533031" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" valueType="undefDefinedSymbols">
 									<listOptionValue builtIn="false" value="__KERNEL_SHELL"/>
+									<listOptionValue builtIn="false" value="__KERNEL_DEBUGGING"/>
+									<listOptionValue builtIn="false" value="__PROCESS_DEBUGGING"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.661588428" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool command="gcc" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.901823916" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.724469322" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.debugging.level.183756404" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.debugging.level.183756404" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.warnings.pedantic.113184683" name="Pedantic (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.warnings.pedantic.error.1986687574" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.cpp.compiler.option.warnings.pedantic.error" value="true" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.warnings.extrawarn.1486619463" name="Extra warnings (-Wextra)" superClass="gnu.cpp.compiler.option.warnings.extrawarn" value="true" valueType="boolean"/>
@@ -258,7 +260,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="kernel/scheduler/round_robin|arch/arm32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="kernel/utils/third_party/udivdi3.c|kernel/utils/third_party/udivmoddi4.c|kernel/utils/third_party/divdi3.c|arch/arm32|kernel/scheduler/round_robin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

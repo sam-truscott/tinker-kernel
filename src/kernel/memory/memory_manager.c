@@ -9,7 +9,7 @@
 #include "memory_manager.h"
 
 #include "arch/tgt_types.h"
-#include "kernel/debug/debug_print.h"
+#include "kernel/console/print_out.h"
 #include "kernel/kernel_assert.h"
 
 /* #define __MEMORY_DEBUGGING 1 */

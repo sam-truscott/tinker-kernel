@@ -6,9 +6,9 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "debug_read.h"
+#include "read_in.h"
 
-#include "../../arch/board_support.h"
+#include "arch/board_support.h"
 
 char __debug_read(void)
 {

@@ -13,7 +13,7 @@
 #include "kernel_version.h"
 #include "kernel_assert.h"
 #include "../arch/tgt.h"
-#include "debug/debug_print.h"
+#include "console/print_out.h"
 #include "kernel/shell/kshell.h"
 #include "kernel/process/process_manager.h"
 
