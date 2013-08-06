@@ -1,0 +1,5 @@
+target sim -e bug -E big -r 134217728 -t devices -f src/arch/ppc32/gdb_sim/device_tree
+#target sim -e chirp -E big -t devices -f device_tree
+set architecture powerpc:7400
+file release_ppc_7400/sos3
+load
