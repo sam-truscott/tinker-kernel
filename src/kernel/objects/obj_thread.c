@@ -29,6 +29,7 @@ typedef struct __object_thread_t
 	priority_t priority_inheritance;
 	priority_t original_priority;
 	__mem_pool_info_t * pool;
+	object_number_t process_obj_no;
 } __object_thread_internal_t;
 
 error_t __obj_create_thread(
@@ -37,6 +38,7 @@ error_t __obj_create_thread(
 	 	const uint32_t process_id,
 		const uint32_t thread_id,
 		__thread_t * const thread,
+		const object_number_t proc_obj_no,
 		object_number_t * const object_no)
 {
 	__object_thread_t * no = NULL;
@@ -52,6 +54,7 @@ error_t __obj_create_thread(
 			__obj_initialise_object(&no->object, objno, THREAD_OBJ);
 			__obj_lock(&no->object);
 			no->pool = pool;
+			no->process_obj_no = proc_obj_no;
 			no->pid = process_id;
 			no->tid = thread_id;
 			no->thread = thread;
@@ -92,6 +95,19 @@ object_number_t __obj_thread_get_oid
 		if (o->object.initialised == OBJECT_INITIALISED)
 		{
 			oid = o->object.object_number;
+		}
+	}
+	return oid;
+}
+
+object_number_t __obj_thread_get_proc_oid(const __object_thread_t * const o)
+{
+	object_number_t oid = INVALID_OBJECT_ID;
+	if (o)
+	{
+		if (o->object.initialised == OBJECT_INITIALISED)
+		{
+			oid = o->process_obj_no;
 		}
 	}
 	return oid;
@@ -183,7 +199,9 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 		__obj_lock(&o->object);
 		t = o->thread;
 
+#if defined(__PROCESS_DEBUGGING)
 		__debug_print("proc %d thread %d is exiting\n", o->pid, o->tid);
+#endif
 
 		const __thread_state_t state = __thread_get_state(t);
 		if ( state != thread_terminated
@@ -195,7 +213,6 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 			__sch_notify_exit_thread(t);
 
 			/* free up the stack space used by the thread*/
-			__process_thread_exit(__thread_get_parent(t), t);
 			__thread_exit(t);
 		}
 		else
@@ -484,4 +501,9 @@ priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
 object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o)
 {
 	return o->object.object_number;
+}
+
+__thread_t __obj_get_thread(const __object_thread_t * const o)
+{
+	return o->thread;
 }

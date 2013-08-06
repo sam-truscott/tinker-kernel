@@ -132,6 +132,7 @@ error_t __proc_create_process(
 						__process_get_mem_pool(proc),
 						__process_get_object_table(proc),
 						__process_get_pid(proc),
+						proc,
 						&process_obj);
 				//FIXME: pass oid in as param
 				__process_set_oid(proc, __obj_get_number(process_obj));
@@ -220,16 +221,3 @@ error_t __proc_create_thread(
 
 	return ret;
 }
-
-__process_t * __proc_get_process(const uint32_t process_id)
-{
-	__process_t * p = NULL;
-
-	if ( process_list_t_get(__process_list, process_id, &p) == false || p == NULL )
-	{
-		p = NULL;
-	}
-
-	return p;
-}
-

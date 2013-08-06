@@ -66,7 +66,7 @@ SECTIONS{
     }>RAM
    
 	/* code */
-    .text ALIGN (0x1000) : { /* 0x110000 : { */
+    .text ALIGN (0x1000) : {
         __text = .;
     	*(.boot)
     	*(.vector_code)

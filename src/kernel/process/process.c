@@ -170,6 +170,7 @@ bool __process_add_thread(
 				process->process_id,
 				thread_id,
 				thread,
+				process->object_number,
 				 objno);
 
 		__thread_set_oid(thread, *objno);

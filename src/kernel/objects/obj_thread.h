@@ -21,14 +21,16 @@ error_t __obj_create_thread(
 	 	const uint32_t process_id,
 		const uint32_t thread_id,
 		__thread_t * const thread,
+		const object_number_t proc_obj_no,
 		object_number_t * const object_no);
 
 void __obj_delete_thread(__object_thread_t * const thread);
 
 __object_thread_t * __obj_cast_thread(__object_t * o);
 
-object_number_t __obj_thread_get_oid
-	(const __object_thread_t * const o);
+object_number_t __obj_thread_get_oid(const __object_thread_t * const o);
+
+object_number_t __obj_thread_get_proc_oid(const __object_thread_t * const o);
 
 error_t __obj_pause_thread(
 		__object_thread_t * const o);
@@ -76,5 +78,7 @@ error_t __obj_get_thread_original_priority(
 priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o);
 
 object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o);
+
+__thread_t __obj_get_thread(const __object_thread_t * const o);
 
 #endif /* OBJ_THREAD_H_ */

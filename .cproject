@@ -13,7 +13,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743" name="debug_ppc_7400" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743" name="debug_ppc_7400" parent="cdt.managedbuild.config.gnu.cross.exe.debug" postbuildStep="">
 					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.1287436610" name="Cross GCC" nonInternalBuilderId="cdt.managedbuild.builder.gnu.cross" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1198548075" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="powerpc-none-eabi-" valueType="string"/>
@@ -46,7 +46,7 @@
 									<listOptionValue builtIn="false" value="__BUILDING_KERNEL"/>
 								</option>
 								<option id="gnu.c.compiler.option.debugging.other.549540139" name="Other debugging flags" superClass="gnu.c.compiler.option.debugging.other" value="-gdwarf-4" valueType="string"/>
-								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.2038880834" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" valueType="undefDefinedSymbols"/>
+								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.2038880834" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.621059128" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool command="gcc" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1744150832" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">

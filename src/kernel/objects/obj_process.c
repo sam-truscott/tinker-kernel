@@ -10,6 +10,9 @@
 #include "object.h"
 #include "object_private.h"
 #include "object_table.h"
+#include "kernel/kernel_assert.h"
+#include "kernel/debug/debug_print.h"
+#include "kernel/process/thread.h"
 #include "kernel/memory/memory_manager.h"
 
 typedef struct __object_process_t
@@ -17,6 +20,7 @@ typedef struct __object_process_t
 	__object_internal_t object;
 	uint32_t pid;
 	__mem_pool_info_t * pool;
+	__process_t * process;
 } __object_process_internal_t;
 
 __object_process_t * __obj_cast_process(__object_t * o)
@@ -38,6 +42,7 @@ error_t __obj_create_process(
 		__mem_pool_info_t * const pool,
 		__object_table_t * const table,
 		const uint32_t process_id,
+		__process_t * const process,
 		__object_t ** object)
 {
 	__object_process_t * no = NULL;
@@ -56,6 +61,7 @@ error_t __obj_create_process(
 				__obj_lock(&no->object);
 				no->pid = process_id;
 				no->pool = pool;
+				no->process = process;
 				__obj_release(&no->object);
 				*object = (__object_t*)no;
 			}
@@ -71,6 +77,38 @@ error_t __obj_create_process(
 	}
 
 	return result;
+}
+
+void __obj_process_thread(
+		__object_process_t * const o,
+		const __object_thread_t * const thread)
+{
+	__kernel_assert("__obj_process_thread - check process object exists\n", o != NULL);
+	__kernel_assert("__obj_process_thread - check thread object exists\n", thread != NULL);
+
+	__process_thread_exit(o->process, __obj_get_thread(thread));
+	__obj_remove_object(
+			__process_get_object_table(o->process),
+			__obj_thread_get_oid(thread));
+
+	const uint32_t thread_count = __process_get_thread_count(o->process);
+	if (!thread_count)
+	{
+		__obj_process_exit(o);
+	}
+}
+
+void __obj_process_exit(__object_process_t * const o)
+{
+	__kernel_assert("__obj_process_exit - check process object exists\n", o != NULL);
+	__process_exit(o->process);
+	__obj_remove_object(
+			__process_get_object_table(o->process),
+			o->object.object_number);
+#if defined(__PROCESS_DEBUGGING)
+	__debug_print("process %d exit\n", o->pid);
+#endif
+	__obj_delete_process(o);
 }
 
 void __obj_delete_process(__object_process_t * const o)

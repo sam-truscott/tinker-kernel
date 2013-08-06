@@ -41,6 +41,4 @@ error_t __proc_create_thread(
 		__object_t ** thread_object,
 		__thread_t ** new_thread);
 
-__process_t * __proc_get_process(const uint32_t process_id);
-
 #endif /* PROCESS_MANAGER_H_ */

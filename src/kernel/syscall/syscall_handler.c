@@ -19,6 +19,7 @@
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_semaphore.h"
+#include "kernel/objects/obj_process.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_thread.h"
 
@@ -192,19 +193,20 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 				__object_thread_t * const thread_obj =__syscall_get_thread_object();
 				if ( thread_obj )
 				{
+					const __object_table_t * const table =
+							__process_get_object_table(__thread_get_parent(this_thread));
+
 					ret = __obj_exit_thread(thread_obj);
 
-					__process_t * const proc = __thread_get_parent(this_thread);
-					if (ret == NO_ERROR && proc)
+					// get the object for the process
+					__object_process_t * const proc_obj =
+							__obj_cast_process(
+									__obj_get_object(table,
+									__obj_thread_get_proc_oid(thread_obj)));
+
+					if (ret == NO_ERROR && proc_obj)
 					{
-						__obj_remove_object(
-								__process_get_object_table(proc),
-								__obj_thread_get_oid(thread_obj));
-						const uint32_t thread_count = __process_get_thread_count(proc);
-						if (!thread_count)
-						{
-							__process_exit(proc);
-						}
+						__obj_process_thread(proc_obj, thread_obj);
 					}
 				}
 			}
