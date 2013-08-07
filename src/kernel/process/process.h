@@ -9,7 +9,7 @@
 #ifndef PROCESS_H_
 #define PROCESS_H_
 
-#include "tgt_mem.h"
+#include "arch/tgt_types.h"
 #include "kernel/process/thread.h"
 #include "kernel/memory/mem_section.h"
 #include "kernel/objects/object_table.h"
@@ -20,13 +20,13 @@ error_t __process_create(
 		__mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,
-		const bool is_kernel,
+		const bool_t is_kernel,
 		const __mem_pool_info_t * pool,
 		__process_t ** process);
 
 uint32_t __process_get_pid(const __process_t * const process);
 
-bool __process_is_kernel(const __process_t * const process);
+bool_t __process_is_kernel(const __process_t * const process);
 
 object_number_t __process_get_oid(const __process_t * const process);
 
@@ -38,7 +38,7 @@ __mem_pool_info_t * __process_get_mem_pool(const __process_t * const process);
 
 __object_table_t * __process_get_object_table(const __process_t * const process);
 
-bool __process_add_thread(
+bool_t __process_add_thread(
 		__process_t * const process,
 		__thread_t * const thread,
 		object_number_t * const objno);
@@ -52,6 +52,8 @@ void __process_set_segment_info(
 __thread_t * __process_get_main_thread(const __process_t * process);
 
 uint32_t __process_get_thread_count(const __process_t * process);
+
+__thread_t * __process_get_thread(const __process_t * process, const uint32_t tid);
 
 const mem_section_t * __process_get_first_section(const __process_t * const process);
 

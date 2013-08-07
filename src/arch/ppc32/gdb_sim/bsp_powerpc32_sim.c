@@ -42,7 +42,7 @@ static void __bsp_print_hex(uint32_t i);
 static void __bsp_external_interrupt(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled);
+		bool_t fp_enabled);
 
 /**
  * Decrementer Interrupt by the PowerPC
@@ -52,7 +52,7 @@ static void __bsp_external_interrupt(
 static void __bsp_decrementer_interrupt(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled);
+		bool_t fp_enabled);
 
 /**
  * All program error interrupts
@@ -62,7 +62,7 @@ static void __bsp_decrementer_interrupt(
 static void __bsp_fatal_program_error(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled);
+		bool_t fp_enabled);
 
 /**
  * Requests from programs to perform system operations
@@ -72,7 +72,7 @@ static void __bsp_fatal_program_error(
 static void __bsp_system_call_request(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled);
+		bool_t fp_enabled);
 
 /**
  * The device information for port 1 of the UART 16550
@@ -339,7 +339,7 @@ char __bsp_read_debug_char(void)
 static void __bsp_external_interrupt(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled)
+		bool_t fp_enabled)
 {
 	if ( vector && context && fp_enabled ) {}
 	const uint32_t external_vector = opic_ack(&opic_intc);
@@ -350,7 +350,7 @@ static void __bsp_external_interrupt(
 static void __bsp_decrementer_interrupt(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled)
+		bool_t fp_enabled)
 {
 	__asm__("mfdec %r10");
 	if ( vector == __ppc32_vector_decrementer )
@@ -370,7 +370,7 @@ static void __bsp_decrementer_interrupt(
 static void __bsp_fatal_program_error(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled)
+		bool_t fp_enabled)
 {
 	if ( vector && fp_enabled )
 	{
@@ -428,7 +428,7 @@ static void __bsp_fatal_program_error(
 static void __bsp_system_call_request(
 		uint32_t vector,
 		__tgt_context_t * context,
-		bool fp_enabled)
+		bool_t fp_enabled)
 {
 	if ( fp_enabled ) {}
 	if ( vector == __ppc32_vector_syscall )

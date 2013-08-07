@@ -18,6 +18,7 @@
 #include "time/time_manager.h"
 #include "time/alarm_manager.h"
 #include "kernel/utils/util_memset.h"
+#include "kernel/objects/registry.h"
 #include "arch/tgt.h"
 
 /**
@@ -49,7 +50,7 @@ void __kernel_initialise(void)
 	__kernel_assert("Memory End > 0", memory_end > 0);
 	__kernel_assert("Memory Size > 0", memory_end > memory_start);
 
-	const bool mem_init_ok = __mem_initialise(
+	const bool_t mem_init_ok = __mem_initialise(
 			memory_start,
 			memory_end);
 
@@ -58,6 +59,10 @@ void __kernel_initialise(void)
 	__debug_print("Process: Initialising Management...\n");
 
 	__proc_initialise();
+
+	__debug_print("Registry: Initialising the Registry...\n");
+
+	__registry_initialise(__mem_get_default_pool());
 
 	__debug_print("Kernel: Initialising Kernel Process...\n");
 

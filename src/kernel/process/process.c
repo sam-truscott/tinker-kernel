@@ -21,7 +21,8 @@
 HASH_MAP_TYPE_T(thread_map_t)
 HASH_MAP_INTERNAL_TYPE_T(thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
 HASH_MAP_SPEC_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
-HASH_MAP_BODY_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
+HASH_FUNCS_VALUE(thread_map_t, uint32_t)
+HASH_MAP_BODY_T(static, thread_map_t, uint32_t,__thread_t*, __MAX_THREADS)
 
 typedef struct __process_t
 {
@@ -30,7 +31,7 @@ typedef struct __process_t
 	__mem_pool_info_t * 	memory_pool;
 	__object_table_t *		object_table;
 	object_number_t			object_number;
-	bool					kernel_process;
+	bool_t					kernel_process;
 	tgt_mem_t				segment_info;
 	const mem_section_t *	first_section;
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
@@ -42,7 +43,7 @@ error_t __process_create(
 		__mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,
-		const bool is_kernel,
+		const bool_t is_kernel,
 		const __mem_pool_info_t * pool,
 		__process_t ** process)
 {
@@ -50,7 +51,11 @@ error_t __process_create(
 	error_t ret = NO_ERROR;
 	if (p)
 	{
-		p->threads = thread_map_t_create(__hash_basic_integer, mempool);
+		p->threads = thread_map_t_create(
+				__hash_basic_integer,
+				__hash_equal_integer,
+				true,
+				mempool);
 		p->process_id = pid;
 		p->kernel_process = is_kernel;
 		p->memory_pool = (__mem_pool_info_t *)pool;
@@ -100,14 +105,9 @@ void __process_set_oid(
 	process->object_number = oid;
 }
 
-bool __process_is_kernel(const __process_t * const process)
+bool_t __process_is_kernel(const __process_t * const process)
 {
 	return process->kernel_process;
-}
-
-void __process_set_kernel(__process_t * process, bool is_kernel)
-{
-	process->kernel_process = is_kernel;
 }
 
 __mem_pool_info_t * __process_get_mem_pool(const __process_t * const process)
@@ -135,12 +135,12 @@ void __process_set_segment_info(
 			sizeof(tgt_mem_t));
 }
 
-bool __process_add_thread(
+bool_t __process_add_thread(
 		__process_t * const process,
 		__thread_t * const thread,
 		object_number_t * const objno)
 {
-	bool ret = false;
+	bool_t ret = false;
 	const uint32_t thread_count = thread_map_t_size(process->threads);
 	if ( thread_count < __MAX_THREADS )
 	{
@@ -192,6 +192,13 @@ uint32_t __process_get_thread_count(const __process_t * process)
 	return thread_map_t_size(process->threads);
 }
 
+__thread_t * __process_get_thread(const __process_t * process, const uint32_t tid)
+{
+	__thread_t * t = NULL;
+	thread_map_t_get(process->threads, tid, &t);
+	return t;
+}
+
 const mem_section_t * __process_get_first_section(const __process_t * const process)
 {
 	return process->first_section;
@@ -214,7 +221,7 @@ void __process_exit(__process_t * const process)
 	if (it)
 	{
 		__object_t * object = NULL;
-		bool objects_exist = object_table_it_t_get(it, &object);
+		bool_t objects_exist = object_table_it_t_get(it, &object);
 		while (objects_exist)
 		{
 			// delete it

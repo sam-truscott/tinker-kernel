@@ -41,15 +41,15 @@
 	\
 	PREFIX void STACK_T##_push(STACK_T * stack, ITEM_T item); \
 	\
-	PREFIX bool STACK_T##_pop(STACK_T * stack, ITEM_T * item); \
+	PREFIX bool_t STACK_T##_pop(STACK_T * stack, ITEM_T * item); \
 	\
-	PREFIX bool STACK_T##_front(const STACK_T * stack, ITEM_T * item); \
+	PREFIX bool_t STACK_T##_front(const STACK_T * stack, ITEM_T * item); \
 	\
 	PREFIX uint32_t STACK_T##_size(const STACK_T * stack); \
 	\
-	PREFIX bool STACK_T##_get(const STACK_T * stack, uint32_t index, ITEM_T * item); \
+	PREFIX bool_t STACK_T##_get(const STACK_T * stack, uint32_t index, ITEM_T * item); \
 	\
-	PREFIX bool STACK_T##_insert(STACK_T * stack, uint32_t index, ITEM_T item); \
+	PREFIX bool_t STACK_T##_insert(STACK_T * stack, uint32_t index, ITEM_T item); \
 	\
 
 #define STACK_BODY(PREFIX, STACK_T, ITEM_T) \
@@ -94,9 +94,9 @@
 			STACK_T##_list_t_add(stack->list, item); \
 		} \
 	} \
-	PREFIX bool STACK_T##_insert(STACK_T * stack, uint32_t index, ITEM_T item) \
+	PREFIX bool_t STACK_T##_insert(STACK_T * stack, uint32_t index, ITEM_T item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( stack ) \
 		{ \
@@ -105,9 +105,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool STACK_T##_pop(STACK_T * stack, ITEM_T * item) \
+	PREFIX bool_t STACK_T##_pop(STACK_T * stack, ITEM_T * item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( stack && item ) \
 		{ \
@@ -121,9 +121,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool STACK_T##_front(const STACK_T * stack, ITEM_T * item) \
+	PREFIX bool_t STACK_T##_front(const STACK_T * stack, ITEM_T * item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( stack && item ) \
 		{ \
@@ -134,9 +134,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool STACK_T##_get(const STACK_T * stack, uint32_t index, ITEM_T * item) \
+	PREFIX bool_t STACK_T##_get(const STACK_T * stack, uint32_t index, ITEM_T * item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( stack && item ) \
 		{ \

@@ -25,7 +25,7 @@ typedef struct __mem_block
 	uint32_t addr;
 	uint32_t size;
 	uint16_t offset;
-	bool is_free;
+	bool_t is_free;
 } __mem_block_t;
 #pragma pack(pop)
 
@@ -78,7 +78,7 @@ static void __mem_join_blocks(
 		__mem_block_t * const free_block,
 		const __mem_block_t * const freed_block);
 
-bool 	__mem_init_memory_pool(
+bool_t 	__mem_init_memory_pool(
 		const uint32_t base_addr,
 		const uint32_t pool_size,
 		__mem_pool_info_t ** const pool)
@@ -139,12 +139,12 @@ bool 	__mem_init_memory_pool(
 	return true;
 }
 
-bool	__mem_init_process_memory(
+bool_t	__mem_init_process_memory(
 		__mem_pool_info_t * const pool,
 		__mem_pool_info_t ** const proc_memory_block,
 		const uint32_t size)
 {
-	bool ret = false;
+	bool_t ret = false;
 
 	/* allocate that from RAM */
 	uint32_t proc_memory_pool = (uint32_t)__mem_alloc_aligned(
@@ -237,7 +237,7 @@ void __mem_find_free_block(
 		__mem_block_t ** ret_block)
 {
 	__mem_pool_info_t * pool_info = NULL;
-	bool found = false;
+	bool_t found = false;
 
 	if ( pool )
 	{
@@ -458,7 +458,7 @@ void __mem_free(
 		const void * const base)
 {
 	__mem_pool_info_t * pool_info = pool;
-	bool found = false;
+	bool_t found = false;
 
 	while ( pool_info != NULL && found == false )
 	{

@@ -36,9 +36,9 @@
 	\
 	PREFIX void ITERATOR_T##_delete(ITERATOR_T * it); \
 	\
-	PREFIX bool ITERATOR_T##_get(ITERATOR_T * it, VALUE_T * item); \
+	PREFIX bool_t ITERATOR_T##_get(ITERATOR_T * it, VALUE_T * item); \
 	\
-	PREFIX bool ITERATOR_T##_next(ITERATOR_T * it, VALUE_T * item); \
+	PREFIX bool_t ITERATOR_T##_next(ITERATOR_T * it, VALUE_T * item); \
 	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it); \
 	\
@@ -73,9 +73,9 @@
 		} \
 	} \
 	\
-	PREFIX bool ITERATOR_T##_get(ITERATOR_T * it, VALUE_T * item) \
+	PREFIX bool_t ITERATOR_T##_get(ITERATOR_T * it, VALUE_T * item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( it && item ) \
 		{ \
@@ -89,9 +89,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool ITERATOR_T##_next(ITERATOR_T * it, VALUE_T * item) \
+	PREFIX bool_t ITERATOR_T##_next(ITERATOR_T * it, VALUE_T * item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( it && item ) \
 		{ \

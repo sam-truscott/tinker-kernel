@@ -14,8 +14,14 @@
 /**
  * Initialise memory services
  */
-bool __mem_initialise(
+bool_t __mem_initialise(
 		const uint32_t start,
 		const uint32_t end);
+
+/**
+ * Get the default memory pool
+ * @return The default memory pool
+ */
+__mem_pool_info_t * __mem_get_default_pool(void);
 
 #endif /* MEMORY_MANAGER_H_ */

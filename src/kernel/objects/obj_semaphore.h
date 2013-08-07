@@ -9,6 +9,7 @@
 #ifndef OBJ_SEMAPHORE_H_
 #define OBJ_SEMAPHORE_H_
 
+#include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/object_table.h"
@@ -21,9 +22,10 @@ object_number_t __obj_semaphore_get_oid
 	(const __object_sema_t * const o);
 
 error_t __obj_create_semaphore(
-		__mem_pool_info_t * const pool,
+		__process_t * const process,
 		__object_table_t * const table,
 		object_number_t * objectno,
+		const char * name,
 		const uint32_t initial_count);
 
 error_t __object_delete_semaphore(

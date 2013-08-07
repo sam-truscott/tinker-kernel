@@ -61,7 +61,7 @@ static void my_initial_thread(void)
 			my_thread,
 			&my_priority);
 
-	error = sos_sem_create(&sem, 1);
+	error = sos_sem_create(&sem, 1, "sos_test_1");
 
 	if ( error == NO_ERROR )
 	{

@@ -18,6 +18,7 @@
 
 HASH_MAP_INTERNAL_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_MAP_SPEC_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_FUNCS_VALUE(object_map_t, object_number_t)
 HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 
 HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(object_table_it_t, object_map_t)
@@ -47,6 +48,11 @@ void __obj_table_delete(const __object_table_t * const table)
 	__mem_free(table->pool, table);
 }
 
+static bool_t __hash_equal_object_number(object_number_t l, object_number_t r)
+{
+	return (l == r);
+}
+
 error_t __obj_initialse_table(
 		__object_table_t * const table,
 		__mem_pool_info_t * const pool)
@@ -59,6 +65,8 @@ error_t __obj_initialse_table(
 		table->pool = pool;
 		table->the_map = object_map_t_create(
 				__hash_basic_integer,
+				__hash_equal_object_number,
+				true,
 				pool);
 		if  (table->the_map )
 		{
@@ -77,7 +85,7 @@ error_t __obj_add_object(
 		__object_t * const obj,
 		object_number_t * const objno)
 {
-	bool id_ok = false;
+	bool_t id_ok = false;
 	error_t ret = NO_ERROR;
 
 	if (t && obj)

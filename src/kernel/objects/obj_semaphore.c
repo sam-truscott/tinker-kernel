@@ -8,11 +8,14 @@
  */
 #include "obj_semaphore.h"
 
+#include "config.h"
 #include "object.h"
 #include "object_private.h"
 #include "obj_thread.h"
 #include "object_table.h"
+#include "registry.h"
 #include "kernel/scheduler/scheduler.h"
+#include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/unbounded_queue.h"
 
 UNBOUNDED_QUEUE_TYPE(thread_obj_queue_t)
@@ -29,6 +32,7 @@ typedef struct __object_sema_t
 	thread_obj_queue_t * owners;
 	priority_t highest_priority;
 	__mem_pool_info_t * pool;
+	char name[__MAX_SHARED_OBJECT_NAME_LENGTH];
 } __object_sema_internal_t;
 
 static void __obj_push_semaphore_listener(
@@ -69,9 +73,10 @@ object_number_t __obj_semaphore_get_oid
 }
 
 error_t __obj_create_semaphore(
-		__mem_pool_info_t * const pool,
+		__process_t * const process,
 		__object_table_t * const table,
 		object_number_t * objectno,
+		const char * name,
 		const uint32_t initial_count)
 {
 	__object_sema_t * no = NULL;
@@ -81,6 +86,7 @@ error_t __obj_create_semaphore(
 	{
 		if ( table )
 		{
+			__mem_pool_info_t * const pool = __process_get_mem_pool(process);
 			no = (__object_sema_t*)__mem_alloc(pool, sizeof(__object_sema_t));
 			object_number_t objno;
 			result = __obj_add_object(table, (__object_t*)no, &objno);
@@ -93,6 +99,9 @@ error_t __obj_create_semaphore(
 				no->owners = thread_obj_queue_t_create(pool);
 				no->highest_priority = 0;
 				no->pool = pool;
+				memset(no->name, 0, __MAX_SHARED_OBJECT_NAME_LENGTH);
+				__util_memcpy(no->name, name, __util_strlen(name, __MAX_SHARED_OBJECT_NAME_LENGTH));
+				__regsitery_add(name, process, no->object.object_number);
 				*objectno = no->object.object_number;
 			}
 		}
@@ -115,6 +124,7 @@ error_t __object_delete_semaphore(
 	error_t result = NO_ERROR;
 	if (semaphore)
 	{
+		__registry_remove(semaphore->name);
 		thread_obj_queue_t_delete(semaphore->listeners);
 		thread_obj_queue_t_delete(semaphore->owners);
 		__mem_free(semaphore->pool, semaphore);
@@ -283,7 +293,7 @@ static void __obj_notify_semaphore_listener(
 		if (listener_count > 0)
 		{
 			__object_thread_t * next_thread = NULL;
-			bool ok;
+			bool_t ok;
 
 			ok = thread_obj_queue_t_front(list, &next_thread);
 

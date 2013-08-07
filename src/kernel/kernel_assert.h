@@ -11,10 +11,10 @@
 
 #include "arch/tgt_types.h"
 
-void __kernel_assert_cond(const char * message, bool var, const bool cond);
+void __kernel_assert_cond(const char * message, bool_t var, const bool_t cond);
 
-void __kernel_assert(const char * message, const bool var);
+void __kernel_assert(const char * message, const bool_t var);
 
-void __assert(const char * message, const bool var);
+void __assert(const char * message, const bool_t var);
 
 #endif /* KERNEL_ASSERT_H_ */

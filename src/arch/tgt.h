@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 #ifndef TGT_H_
-#define THT_H_
+#define TGT_H_
 
 #include "tgt_types.h"
 #include "kernel/process/process.h"
@@ -33,7 +33,7 @@ void __tgt_destroy_process(const __process_t * const process);
 void __tgt_initialise_context(
 		const __thread_t * thread,
 		__tgt_context_t ** const context,
-		const bool kernel_mode,
+		const bool_t kernel_mode,
 		const uint32_t exit_function);
 
 void __tgt_destroy_context(

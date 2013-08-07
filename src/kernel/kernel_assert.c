@@ -11,12 +11,12 @@
 #include "kernel_panic.h"
 #include "console/print_out.h"
 
-void __kernel_assert(const char * message, const bool var)
+void __kernel_assert(const char * message, const bool_t var)
 {
 	__kernel_assert_cond(message, var, true);
 }
 
-void __kernel_assert_cond(const char * message, bool var, const bool cond)
+void __kernel_assert_cond(const char * message, bool_t var, const bool_t cond)
 {
 	if ( var != cond )
 	{
@@ -25,7 +25,7 @@ void __kernel_assert_cond(const char * message, bool var, const bool cond)
 	}
 }
 
-void __assert(const char * message, const bool var)
+void __assert(const char * message, const bool_t var)
 {
 	if ( !var )
 	{

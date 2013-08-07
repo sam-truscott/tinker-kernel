@@ -32,9 +32,9 @@ void __obj_initialise_object(
 		const object_number_t id,
 		const __object_type_t type);
 
-bool __obj_is_initialised(__object_t * const o);
+bool_t __obj_is_initialised(__object_t * const o);
 
-bool __obj_is_allocated(__object_t * const o);
+bool_t __obj_is_allocated(__object_t * const o);
 
 uint32_t __obj_get_number(__object_t * const o);
 

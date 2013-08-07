@@ -25,22 +25,16 @@ typedef uint32_t seg_id_t;
  * the heap_info_type is put at the end of the heap and
  * also returned for information (unless NULL)
  */
-bool 	__mem_init_memory_pool(
+bool_t 	__mem_init_memory_pool(
 		const uint32_t base_addr,
 		const uint32_t pool_size,
 		__mem_pool_info_t ** const pool);
 
 /**
- * Get the default memory pool
- * @return The default memory pool
- */
-__mem_pool_info_t * __mem_get_default_pool(void);
-
-/**
  * initialise a process with a memory pool and a stack
  * for the initialise thread
  */
-bool	__mem_init_process_memory(
+bool_t	__mem_init_process_memory(
 		__mem_pool_info_t * const pool,
 		__mem_pool_info_t ** const proc_memory_block,
 		const uint32_t size);

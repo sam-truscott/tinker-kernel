@@ -35,11 +35,11 @@ __mem_pool_info_t * __mem_get_default_pool(void)
 	return __mem_memory_pool;
 }
 
-bool __mem_initialise(
+bool_t __mem_initialise(
 		const uint32_t start,
 		const uint32_t end)
 {
-	bool ret =  __mem_init_memory_pool(
+	bool_t ret =  __mem_init_memory_pool(
 		start,
 		end - start,
 		(&__mem_memory_pool));

@@ -26,7 +26,7 @@ static void __print_out_print_signed(const int32_t);
 
 static void __print_out_print_hex(
 		const uint32_t,
-		const bool upper_case,
+		const bool_t upper_case,
 		const uint32_t pad);
 
 void __error_print(const char * const msg, ...)
@@ -136,7 +136,7 @@ void __print_out_print_signed(const int32_t i)
 
 void __print_out_print_hex(
 		const uint32_t i,
-		const bool upper_case,
+		const bool_t upper_case,
 		const uint32_t pad)
 {
 	char hex_number[MAX_HEX_INTEGER_LENGTH + 1] = {0,0,0,0,0,0,0,0,0};

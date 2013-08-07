@@ -15,11 +15,11 @@ __time_t __time_add(__time_t l, __time_t r);
 
 __time_t __time_sub(__time_t l, __time_t r);
 
-bool __time_lt(__time_t l, __time_t r);
+bool_t __time_lt(__time_t l, __time_t r);
 
-bool __time_gt(__time_t l, __time_t r);
+bool_t __time_gt(__time_t l, __time_t r);
 
-bool __time_eq(__time_t l, __time_t r);
+bool_t __time_eq(__time_t l, __time_t r);
 
 __time_t __time_seconds(uint32_t seconds);
 

@@ -13,11 +13,11 @@
 #include "tgt_mem.h"
 #include "tgt_io.h"
 
-typedef enum
+typedef enum bool
 {
 	false = 0,
 	true = 1
-} bool;
+} bool_t;
 
 #define NULL ((void*)0)
 

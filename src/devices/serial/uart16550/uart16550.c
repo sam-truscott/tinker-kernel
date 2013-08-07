@@ -33,26 +33,26 @@
 
 typedef struct
 {
-	bool data_ready;
-	bool overrun_error;
-	bool parity_error;
-	bool framing_error;
-	bool break_interrupt;
-	bool tx_holding_register;
-	bool tx_empty;
-	bool rx_fifo_error;
+	bool_t data_ready;
+	bool_t overrun_error;
+	bool_t parity_error;
+	bool_t framing_error;
+	bool_t break_interrupt;
+	bool_t tx_holding_register;
+	bool_t tx_empty;
+	bool_t rx_fifo_error;
 } uart_16550_line_status_t;
 
 typedef struct
 {
-	bool delta_clear_to_send;
-	bool delta_data_set_ready;
-	bool trailing_edge_indicator;
-	bool delta_data_carrier_detect;
-	bool clear_to_send;
-	bool data_set_ready;
-	bool ring_indicator;
-	bool data_carrier_detect;
+	bool_t delta_clear_to_send;
+	bool_t delta_data_set_ready;
+	bool_t trailing_edge_indicator;
+	bool_t delta_data_carrier_detect;
+	bool_t clear_to_send;
+	bool_t data_set_ready;
+	bool_t ring_indicator;
+	bool_t data_carrier_detect;
 } uart_16550_modem_status_t;
 
 /* Interrupt causes */

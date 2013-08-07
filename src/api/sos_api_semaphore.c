@@ -9,11 +9,12 @@
 #include "sos_api_semaphore.h"
 #include "sos_api_kernel_interface.h"
 
-error_t sos_sem_create(sos_sem * semaphore, uint32_t initial_count)
+error_t sos_sem_create(sos_sem * semaphore, uint32_t initial_count, char * name)
 {
-	return SOS_API_CALL_2(
+	return SOS_API_CALL_3(
 			syscall_create_semaphore,
 			(uint32_t)semaphore,
+			(uint32_t)name,
 			(uint32_t) initial_count);
 }
 

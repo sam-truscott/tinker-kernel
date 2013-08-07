@@ -45,9 +45,9 @@ __time_t __time_sub(__time_t l, __time_t r)
 	return t;
 }
 
-bool __time_lt(__time_t l, __time_t r)
+bool_t __time_lt(__time_t l, __time_t r)
 {
-	bool lt = false;
+	bool_t lt = false;
 	if ( l.seconds < r.seconds)
 	{
 		lt = true;
@@ -59,9 +59,9 @@ bool __time_lt(__time_t l, __time_t r)
 	return lt;
 }
 
-bool __time_gt(__time_t l, __time_t r)
+bool_t __time_gt(__time_t l, __time_t r)
 {
-	bool gt = false;
+	bool_t gt = false;
 	if ( l.seconds > r.seconds)
 	{
 		gt = true;
@@ -73,9 +73,9 @@ bool __time_gt(__time_t l, __time_t r)
 	return gt;
 }
 
-bool __time_eq(__time_t l, __time_t r)
+bool_t __time_eq(__time_t l, __time_t r)
 {
-	bool eq = false;
+	bool_t eq = false;
 	if(l.seconds == r.seconds && l.nanoseconds == r.nanoseconds)
 	{
 		eq = true;

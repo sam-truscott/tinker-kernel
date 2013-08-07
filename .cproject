@@ -40,6 +40,7 @@
 								<option id="gnu.c.compiler.option.optimization.flags.194745959" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags" value="-mpowerpc -mno-hard-dfp -mcpu=750 -mtune=750 -mno-altivec -mno-vrsave -m32 -msoft-float -mmultiple -mstring -mno-strict-align -mbig" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.933216957" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__KERNEL_DEBUGGING"/>
+									<listOptionValue builtIn="false" value="__DEBUG_COLLECTIONS"/>
 									<listOptionValue builtIn="false" value="__PROCESS_DEBUGGING"/>
 									<listOptionValue builtIn="false" value="__BUILDING_KERNEL"/>
 								</option>

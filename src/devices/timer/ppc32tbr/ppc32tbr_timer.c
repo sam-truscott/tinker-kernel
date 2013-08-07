@@ -14,7 +14,7 @@
 
 typedef struct
 {
-	bool enabled;
+	bool_t enabled;
 	__time_t alarm_time;
 	__timer_callback * call_back;
 } __ppc_timer_usr_data_t;

@@ -46,7 +46,7 @@ static queue_stack_t __sch_queue_stack;
 
 static void __sch_priority_find_next_queue(__thread_t * const t);
 
-static bool __sch_initialised = false;
+static bool_t __sch_initialised = false;
 
 void __sch_initialise_scheduler(void)
 {
@@ -92,7 +92,7 @@ void __sch_notify_new_thread(__thread_t * const t)
 			thread_queue_t * stack_queue = NULL;
 			const uint32_t stack_size = queue_stack_t_size(&__sch_queue_stack);
 			int32_t stack_index = (int32_t)(stack_size - 1);
-			bool found = false;
+			bool_t found = false;
 			int32_t insert_index = -1;
 
 			/*
@@ -113,7 +113,7 @@ void __sch_notify_new_thread(__thread_t * const t)
 					if ( queue_size )
 					{
 						__thread_t * firstThreadInQueue = NULL;
-						const bool ok = thread_queue_t_front(stack_queue, &firstThreadInQueue);
+						const bool_t ok = thread_queue_t_front(stack_queue, &firstThreadInQueue);
 						if ( ok == true )
 						{
 							const priority_t stack_thread_priority = __thread_get_priority(firstThreadInQueue);
@@ -284,7 +284,7 @@ void __sch_set_context_for_next_thread(
 	 * then use it */
 	if ( __sch_current_thread )
 	{
-		const bool reorder_ok = thread_queue_t_reorder_first(__sch_active_queue);
+		const bool_t reorder_ok = thread_queue_t_reorder_first(__sch_active_queue);
 		__kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const __thread_state_t state = __thread_get_state(__sch_current_thread);
 		if ( state == thread_ready)

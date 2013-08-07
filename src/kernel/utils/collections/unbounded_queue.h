@@ -39,17 +39,17 @@
 	\
 	PREFIX void QUEUE_T##_delete(QUEUE_T * queue); \
 	\
-	PREFIX bool QUEUE_T##_push(QUEUE_T * queue, ITEM_T item); \
+	PREFIX bool_t QUEUE_T##_push(QUEUE_T * queue, ITEM_T item); \
 	\
-	PREFIX bool QUEUE_T##_pop(QUEUE_T * queue); \
+	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * queue); \
 	\
-	PREFIX bool QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr); \
+	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr); \
 	\
-	PREFIX bool QUEUE_T##_reorder_first(QUEUE_T * queue); \
+	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * queue); \
 	\
 	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * queue); \
 	\
-	PREFIX bool QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item); \
+	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item); \
 	\
 
 #define UNBOUNDED_QUEUE_BODY(PREFIX, QUEUE_T, ITEM_T) \
@@ -92,9 +92,9 @@
 		} \
 	} \
 	\
-	PREFIX bool QUEUE_T##_push(QUEUE_T * queue, ITEM_T item) \
+	PREFIX bool_t QUEUE_T##_push(QUEUE_T * queue, ITEM_T item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		if ( queue && queue->list ) \
 		{ \
 			ok = QUEUE_T##_list_t_add(queue->list, item); \
@@ -102,9 +102,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool QUEUE_T##_pop(QUEUE_T * queue) \
+	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * queue) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		if ( queue && queue->list ) \
 		{ \
 			ok = QUEUE_T##_list_t_remove(queue->list, 0); \
@@ -112,9 +112,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr) \
+	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		if ( queue && queue->list ) \
 		{ \
 			ok = QUEUE_T##_list_t_get(queue->list, 0, item_ptr); \
@@ -122,9 +122,9 @@
 		return ok; \
 	} \
 	\
-	PREFIX bool QUEUE_T##_reorder_first(QUEUE_T * queue) \
+	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * queue) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		if (queue && queue->list) \
 		{ \
 			ok = QUEUE_T##_list_t_head_to_tail(queue->list); \
@@ -143,9 +143,9 @@
 		return size; \
 	} \
 	\
-	PREFIX bool QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item) \
+	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		if ( queue && queue->list ) \
 		{ \

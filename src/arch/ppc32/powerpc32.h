@@ -96,7 +96,7 @@ extern uint32_t __ivt_fp_assist_interrupt;
  * Type declaration for interrupt service routines
  * @param context The saved context from the interrupt vector
  */
-typedef void(__ppc_isr)(uint32_t vector, __tgt_context_t * context, bool fp_enabled);
+typedef void(__ppc_isr)(uint32_t vector, __tgt_context_t * context, bool_t fp_enabled);
 
 /**
  * Initialise the basic powerpc interrupt services
@@ -162,7 +162,7 @@ void __ppc_set_decrementer(uint32_t v);
  * The place where the IVT routines will end up
  * once they've saved the context
  */
-void __ppc_isr_handler(const uint32_t vector, void * registers, bool fp_enabled);
+void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enabled);
 
 /**
  * Setup the powerpc instruction breakpoint register IDAR

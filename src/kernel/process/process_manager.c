@@ -93,7 +93,7 @@ error_t __proc_create_process(
 	}
 
 	__mem_pool_info_t * new_mem_pool = NULL;
-	const bool pool_allocated = __mem_init_process_memory(
+	const bool_t pool_allocated = __mem_init_process_memory(
 			parent_pool,
 			&new_mem_pool,
 			heap + stack);

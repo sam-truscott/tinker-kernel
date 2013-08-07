@@ -35,11 +35,6 @@
 #define __MAX_PRIORITY 255
 
 /**
- * The maximum size of the interrupt vector context
- */
-#define __MAX_CONTEXT_SIZE 168 + 256 /* Based on PPC32 - 256 for FP Registers */
-
-/**
  * The maximum length of the name of a process
  * and thread
  */
@@ -51,6 +46,16 @@
  * in an object table
  */
 #define __MAX_OBJECT_TABLE_SIZE 1024
+
+/**
+ * The maximum number of shared (named) objects in the registry
+ */
+#define __MAX_SHARED_OBJECTS (__MAX_OBJECT_TABLE_SIZE * __MAX_PROCESSES)
+
+/**
+ * The maximum length of the name of a shared object
+ */
+#define __MAX_SHARED_OBJECT_NAME_LENGTH 64
 
 /**
  * The maximum number of hardware devices in the system

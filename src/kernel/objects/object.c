@@ -25,18 +25,18 @@ void __obj_initialise_object(
 	__tgt_release_lock(&o->lock);
 }
 
-bool __obj_is_initialised(__object_t * const o)
+bool_t __obj_is_initialised(__object_t * const o)
 {
 	__tgt_acquire_lock(&o->lock);
-	bool r = ((o->initialised == OBJECT_INITIALISED) ? true : false);
+	bool_t r = ((o->initialised == OBJECT_INITIALISED) ? true : false);
 	__tgt_release_lock(&o->lock);
 	return r;
 }
 
-bool __obj_is_allocated(__object_t * const o)
+bool_t __obj_is_allocated(__object_t * const o)
 {
 	__tgt_acquire_lock(&o->lock);
-	bool r = ((o->allocated == OBJECT_ALLOCATED) ? true : false);
+	bool_t r = ((o->allocated == OBJECT_ALLOCATED) ? true : false);
 	__tgt_release_lock(&o->lock);
 	return r;
 }

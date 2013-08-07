@@ -9,10 +9,14 @@
 #ifndef BASIC_HASHES_H_
 #define BASIC_HASHES_H_
 
-#include "hash.h"
+#include "arch/tgt_types.h"
 
 int32_t __hash_basic_integer(const void * ptr, const uint32_t size);
 
 int32_t __hash_basic_string(const void * ptr, const uint32_t size);
+
+bool_t __hash_equal_integer(uint32_t l, uint32_t r);
+
+bool_t __hash_equal_string(char * const l, char * const r);
 
 #endif /* BASIC_HASHES_H_ */

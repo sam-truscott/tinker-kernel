@@ -50,7 +50,7 @@ static __ppc_isr * __ppc_isr_table[MAX_PPC_IVECT];
  * The default, empty, ISR handler
  * @param The saved context from the interrupt
  */
-static void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t *, bool fp_enabled);
+static void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t *, bool_t fp_enabled);
 
 static void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t size);
 
@@ -108,7 +108,7 @@ void __ppc_isr_detach(const uint32_t vector)
 	}
 }
 
-void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t * context, bool fp_enabled)
+void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t * context, bool_t fp_enabled)
 {
 	/**
 	 * TODO log a notificaiton of an unhandled exception
@@ -213,7 +213,7 @@ void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t si
 	}
 }
 
-void __ppc_isr_handler(const uint32_t vector, void * registers, bool fp_enabled)
+void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enabled)
 {
 	__tgt_context_t * const vector_info = (__tgt_context_t*)registers;
 
@@ -448,7 +448,7 @@ void __tgt_destroy_process(const __process_t * const process)
 void __tgt_initialise_context(
 		const __thread_t * thread,
 		__tgt_context_t ** const context,
-		const bool kernel_mode,
+		const bool_t kernel_mode,
 		const uint32_t exit_function)
 {
 	if (context)

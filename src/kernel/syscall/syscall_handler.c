@@ -240,10 +240,11 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 				table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
 
 				ret = __obj_create_semaphore(
-						__process_get_mem_pool(proc),
+						proc,
 						table,
 						(object_number_t*)param[0],
-						(const uint32_t)param[1]);
+						(char*)param[1],
+						(const uint32_t)param[2]);
 			}
 			break;
 

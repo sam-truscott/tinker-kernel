@@ -64,19 +64,19 @@
 	\
 	PREFIX void LIST_T##_delete(LIST_T * list); \
 	\
-	PREFIX bool LIST_T##_add(LIST_T * list, ITEM_T item); \
+	PREFIX bool_t LIST_T##_add(LIST_T * list, ITEM_T item); \
 	\
-	PREFIX bool LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item); \
+	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item); \
 	\
-	PREFIX bool LIST_T##_remove(LIST_T * list, const uint32_t index); \
+	PREFIX bool_t LIST_T##_remove(LIST_T * list, const uint32_t index); \
 	\
-	PREFIX bool LIST_T##_remove_item(LIST_T * list, ITEM_T item); \
+	PREFIX bool_t LIST_T##_remove_item(LIST_T * list, ITEM_T item); \
 	\
-	PREFIX bool LIST_T##_head_to_tail(LIST_T * list); \
+	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list); \
 	\
-	PREFIX bool LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr); \
+	PREFIX bool_t LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr); \
 	\
-	PREFIX bool LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr); \
+	PREFIX bool_t LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr); \
 	\
 	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list); \
 	\
@@ -132,9 +132,9 @@
 	/**
 	 * Add an entry to the list
 	 */ \
-	PREFIX bool LIST_T##_add(LIST_T * list, ITEM_T item) \
+	PREFIX bool_t LIST_T##_add(LIST_T * list, ITEM_T item) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		if ( list ) \
 		{ \
@@ -161,9 +161,9 @@
 		return ret; \
 	} \
 	\
-	PREFIX bool LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item) \
+	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item) \
 	{ \
-		bool ok = false; \
+		bool_t ok = false; \
 		\
 		if ( list ) \
 		{ \
@@ -214,9 +214,9 @@
 	/**
 	 * Delete an entry from the list
 	 */ \
-	PREFIX bool LIST_T##_remove(LIST_T * list, const uint32_t index) \
+	PREFIX bool_t LIST_T##_remove(LIST_T * list, const uint32_t index) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		if (list) \
 		{ \
@@ -285,9 +285,9 @@
 	/**
 	 * Remove an item from the list
 	 */ \
-	PREFIX bool LIST_T##_remove_item(LIST_T * list, ITEM_T item) \
+	PREFIX bool_t LIST_T##_remove_item(LIST_T * list, ITEM_T item) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		if ( list && list->size ) \
 		{ \
@@ -305,9 +305,9 @@
 		} \
 		return ret; \
 	} \
-	PREFIX bool LIST_T##_head_to_tail(LIST_T * list) \
+	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		if (list) \
 		{ \
@@ -333,9 +333,9 @@
 	/**
 	 * Get an entry from the list
 	 */ \
-	PREFIX bool LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr) \
+	PREFIX bool_t LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		if ( list->size > index ) \
 		{ \
@@ -357,9 +357,9 @@
 	/**
 	 * Return the next element, if one, or return NULL if there isn't
 	 */ \
-	PREFIX bool LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr) \
+	PREFIX bool_t LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr) \
 	{ \
-		bool ret = false; \
+		bool_t ret = false; \
 		\
 		LIST_T##_element_t * e = list->head; \
 		uint32_t p = 0; \
