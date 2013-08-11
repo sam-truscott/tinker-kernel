@@ -342,17 +342,28 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case syscall_receive_message:
 		{
 			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			table = __process_get_object_table(__thread_get_parent(this_thread));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
 					(const __object_t *)__obj_get_object(
 							table,
 							(object_number_t)param[0]));
+
+			void ** msg = (void**)param[1];
+			uint32_t * msg_size = (uint32_t*)param[2];
 			ret = __obj_pipe_receive_message(
 					pipe,
 					__syscall_get_thread_object(),
-					(void**)param[1],
-					(uint32_t*)param[2],
+					msg,
+					msg_size,
 					(const bool_t)param[3]);
+
+			const uint32_t pool_start = __mem_get_start_addr(
+					__process_get_mem_pool(
+							__thread_get_parent(this_thread)));
+			msg += VIRTUAL_ADDRESS_SPACE;
+			msg -= pool_start;
+			msg_size += VIRTUAL_ADDRESS_SPACE;
+			msg_size -= pool_start;
 		}
 			break;
 		case syscall_received_message:
