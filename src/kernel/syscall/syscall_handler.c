@@ -22,6 +22,7 @@
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_thread.h"
+#include "kernel/objects/obj_pipe.h"
 
 #include "kernel/utils/util_malloc.h"
 #include "kernel/utils/util_free.h"
@@ -279,6 +280,92 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 		}
+		case syscall_create_pipe:
+			ret = __obj_create_pipe(
+					__thread_get_parent(this_thread),
+					(object_number_t*)param[0],
+					(const char*)param[1],
+					(const sos_pipe_direction_t)param[2],
+					(const uint32_t)param[3],
+					(const uint32_t)param[4]);
+			break;
+		case syscall_delete_pipe:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_pipe_t * const pipe = __obj_cast_pipe(
+					(const __object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_delete_pipe(pipe);
+		}
+			break;
+		case syscall_open_pipe:
+			ret = __object_open_pipe(
+					__thread_get_parent(this_thread),
+					(object_number_t*)param[0],
+					(const char*)param[1],
+					(const sos_pipe_direction_t)param[2],
+					(const uint32_t)param[3],
+					(const uint32_t)param[4]);
+			break;
+		case syscall_close_pipe:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_pipe_t * const pipe = __obj_cast_pipe(
+					(const __object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			// FIXME This will replace memory but isn't right,
+			// close needs to remove the item from the senders list etc
+			ret = __obj_delete_pipe(pipe);
+		}
+			break;
+		case syscall_send_message:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_pipe_t * const pipe = __obj_cast_pipe(
+					(const __object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_pipe_send_message(
+					pipe,
+					__syscall_get_thread_object(),
+					(sos_pipe_send_kind_t)param[1],
+					(void*)param[2],
+					(const uint32_t)param[3],
+					(const bool_t)param[4]);
+		}
+			break;
+		case syscall_receive_message:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_pipe_t * const pipe = __obj_cast_pipe(
+					(const __object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_pipe_receive_message(
+					pipe,
+					__syscall_get_thread_object(),
+					(void**)param[1],
+					(uint32_t*)param[2],
+					(const bool_t)param[3]);
+		}
+			break;
+		case syscall_received_message:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_pipe_t * const pipe = __obj_cast_pipe(
+					(const __object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_pipe_received_message(pipe);
+		}
+			break;
 
 		case syscall_load_thread:
 			__tgt_prepare_context(context, this_thread);

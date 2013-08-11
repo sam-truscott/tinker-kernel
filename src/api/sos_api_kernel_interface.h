@@ -32,6 +32,14 @@ typedef enum __syscall_function
 	syscall_get_semaphore,
 	syscall_release_semaphore,
 
+	syscall_create_pipe,
+	syscall_delete_pipe,
+	syscall_open_pipe,
+	syscall_close_pipe,
+	syscall_send_message,
+	syscall_receive_message,
+	syscall_received_message,
+
 	syscall_malloc,
 	syscall_mfree,
 	syscall_memset,
