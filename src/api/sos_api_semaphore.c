@@ -9,7 +9,7 @@
 #include "sos_api_semaphore.h"
 #include "sos_api_kernel_interface.h"
 
-error_t sos_sem_create(sos_sem * semaphore, uint32_t initial_count, char * name)
+error_t sos_sem_create(sos_sem_t * semaphore, uint32_t initial_count, char * name)
 {
 	return SOS_API_CALL_3(
 			syscall_create_semaphore,
@@ -19,7 +19,7 @@ error_t sos_sem_create(sos_sem * semaphore, uint32_t initial_count, char * name)
 }
 
 
-error_t sos_sem_get(sos_sem semaphore)
+error_t sos_sem_get(sos_sem_t semaphore)
 {
 	return SOS_API_CALL_1(
 			syscall_get_semaphore,
@@ -27,7 +27,7 @@ error_t sos_sem_get(sos_sem semaphore)
 }
 
 
-error_t sos_sem_release(sos_sem semaphore)
+error_t sos_sem_release(sos_sem_t semaphore)
 {
 	return SOS_API_CALL_1(
 			syscall_release_semaphore,

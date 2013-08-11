@@ -21,12 +21,12 @@ typedef void (thread_entry_point)(void);
 /**
  * The type in user space for a process
  */
-typedef object_number_t sos_process;
+typedef object_number_t sos_process_t;
 
 /**
  * The type in user space for a thread
  */
-typedef object_number_t sos_thread;
+typedef object_number_t sos_thread_t;
 
 error_t sos_create_process(
 		const char * image_name,
@@ -35,7 +35,7 @@ error_t sos_create_process(
 		uint32_t heap,
 		uint32_t stack,
 		uint32_t flags,
-		sos_process * process) SOS_API_SUFFIX;
+		sos_process_t * process) SOS_API_SUFFIX;
 
 error_t sos_create_thread(
 		const char * thread_name,
@@ -43,12 +43,12 @@ error_t sos_create_thread(
 		uint8_t priority,
 		uint32_t stack,
 		uint32_t flags,
-		sos_thread * thread) SOS_API_SUFFIX;
+		sos_thread_t * thread) SOS_API_SUFFIX;
 
-error_t sos_get_thread_object(sos_thread * thread) SOS_API_SUFFIX ;
+error_t sos_get_thread_object(sos_thread_t * thread) SOS_API_SUFFIX ;
 
 error_t	sos_get_thread_priority(
-		sos_thread thread,
+		sos_thread_t thread,
 		uint8_t * priority) SOS_API_SUFFIX;
 
 error_t sos_exit_thread(void) SOS_API_SUFFIX;

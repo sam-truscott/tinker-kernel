@@ -287,7 +287,9 @@ error_t __obj_get_thread_state(
 	return result;
 }
 
-error_t __obj_set_thread_waiting(__object_thread_t * const o, const __object_t * const waiting_on)
+error_t __obj_set_thread_waiting(
+		__object_thread_t * const o,
+		const __object_t * const waiting_on)
 {
 	error_t result = NO_ERROR;
 

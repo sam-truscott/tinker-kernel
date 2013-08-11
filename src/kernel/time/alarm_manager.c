@@ -26,8 +26,18 @@ typedef struct
 
 UNBOUNDED_LIST_TYPE(alarm_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_INITIALISE(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_ADD(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_REMOVE(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_GET(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_SIZE(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_INITIALISE(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_ADD(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_REMOVE(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_GET(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_SIZE(static, alarm_list_t, __alarm_t*)
 
 static void __alarm_calculate_next_alarm(__alarm_t * new_alarm);
 

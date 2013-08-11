@@ -56,32 +56,30 @@
  * with the _create function, the _delete procedure should be used
  * to free the memory on the heap.
  */
-#define UNBOUNDED_LIST_SPEC(PREFIX, LIST_T, ITEM_T) \
-	\
-	PREFIX void LIST_T##_initialise(LIST_T * list, __mem_pool_info_t * pool); \
-	\
-	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * pool); \
-	\
-	PREFIX void LIST_T##_delete(LIST_T * list); \
-	\
-	PREFIX bool_t LIST_T##_add(LIST_T * list, ITEM_T item); \
-	\
-	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item); \
-	\
-	PREFIX bool_t LIST_T##_remove(LIST_T * list, const uint32_t index); \
-	\
-	PREFIX bool_t LIST_T##_remove_item(LIST_T * list, ITEM_T item); \
-	\
-	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list); \
-	\
-	PREFIX bool_t LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr); \
-	\
-	PREFIX bool_t LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr); \
-	\
-	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list); \
-	\
+#define UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, LIST_T, ITEM_T) \
+	PREFIX void LIST_T##_initialise(LIST_T * list, __mem_pool_info_t * pool);
+#define UNBOUNDED_LIST_SPEC_CREATE(PREFIX, LIST_T, ITEM_T) \
+	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * pool);
+#define UNBOUNDED_LIST_SPEC_DELETE(PREFIX, LIST_T, ITEM_T) \
+	PREFIX void LIST_T##_delete(LIST_T * list);
+#define UNBOUNDED_LIST_SPEC_ADD(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_add(LIST_T * list, ITEM_T item);
+#define UNBOUNDED_LIST_SPEC_INSERT(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item);
+#define UNBOUNDED_LIST_SPEC_REMOVE(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_remove(LIST_T * list, const uint32_t index);
+#define UNBOUNDED_LIST_SPEC_REMOVE_ITEM(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_remove_item(LIST_T * list, ITEM_T item);
+#define UNBOUNDED_LIST_SPEC_HEAD_TO_TAIL(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list);
+#define UNBOUNDED_LIST_SPEC_GET(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr);
+#define UNBOUNDED_LIST_SPEC_NEXT(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr);
+#define UNBOUNDED_LIST_SPEC_SIZE(PREFIX, LIST_T, ITEM_T) \
+	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list);
 
-#define UNBOUNDED_LIST_BODY(PREFIX, LIST_T, ITEM_T) \
+#define UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, LIST_T, ITEM_T) \
 	\
 	/**
 	 * Initialise the data structure
@@ -94,8 +92,8 @@
 			 list->size = 0; \
 			 list->head = list->tail = NULL; \
 		 } \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_CREATE(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Constructor, returns a list on the heap or
 	 * NULL if it failed.
@@ -109,8 +107,8 @@
 			LIST_T##_initialise(lst, pool); \
 		} \
 		return lst; \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_DELETE(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Delete the list and every element
 	 */ \
@@ -127,8 +125,8 @@
 			} \
 			__mem_free( list-> pool, list ); \
 		} \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_ADD(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Add an entry to the list
 	 */ \
@@ -159,8 +157,8 @@
 		} \
 		\
 		return ret; \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_INSERT(PREFIX, LIST_T, ITEM_T) \
 	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item) \
 	{ \
 		bool_t ok = false; \
@@ -209,8 +207,8 @@
 			} \
 		} \
 		return ok; \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_REMOVE(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Delete an entry from the list
 	 */ \
@@ -280,8 +278,8 @@
 		} \
 		\
 		return ret; \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_REMOVE_ITEM(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Remove an item from the list
 	 */ \
@@ -304,7 +302,8 @@
 			} \
 		} \
 		return ret; \
-	} \
+	}
+#define UNBOUNDED_LIST_BODY_HEAD_TO_TAIL(PREFIX, LIST_T, ITEM_T) \
 	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list) \
 	{ \
 		bool_t ret = false; \
@@ -328,8 +327,8 @@
 		} \
 		\
 		return ret; \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_GET(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Get an entry from the list
 	 */ \
@@ -352,8 +351,8 @@
 			} \
 		} \
 		return ret; \
-	} \
-	\
+	}
+#define UNBOUNDED_LIST_BODY_NEXT(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Return the next element, if one, or return NULL if there isn't
 	 */ \
@@ -384,7 +383,8 @@
 			} \
 		} \
 		return ret; \
-	} \
+	}
+#define UNBOUNDED_LIST_BODY_SIZE(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Get the size of the list
 	 */ \
@@ -393,17 +393,5 @@
 		return list->size; \
 	} \
 	\
-	extern void LIST_T##_test__(void) \
-	{ \
-		LIST_T##_create(NULL); \
-		LIST_T##_delete(NULL); \
-		LIST_T##_size(NULL); \
-		LIST_T##_next(NULL, NULL, NULL); \
-		LIST_T##_remove_item(NULL, NULL); \
-		LIST_T##_insert(NULL, 0, NULL); \
-		LIST_T##_head_to_tail(NULL); \
-		LIST_T##_get(NULL, 0, NULL); \
-		LIST_T##_add(NULL, NULL); \
-	} \
 
 #endif /* UNBOUNDED_LIST_H_ */

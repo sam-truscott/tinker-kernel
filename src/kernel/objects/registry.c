@@ -8,7 +8,6 @@
  */
 #include "registry.h"
 
-#include "config.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/utils/collections/hashed_map.h"
@@ -18,8 +17,6 @@ typedef struct registry_entry
 	const __process_t * process;
 	object_number_t objno;
 } registry_entry_t;
-
-typedef char registry_key_t[__MAX_SHARED_OBJECT_NAME_LENGTH];
 
 HASH_MAP_TYPE_T(registry_t)
 HASH_MAP_INTERNAL_TYPE_T(registry_t, registry_key_t, registry_entry_t, __MAX_SHARED_OBJECTS)

@@ -26,8 +26,14 @@
  */
 UNBOUNDED_LIST_TYPE(process_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, __process_t*)
-UNBOUNDED_LIST_SPEC(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_CREATE(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_INITIALISE(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_GET(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_ADD(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_CREATE(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_INITIALISE(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_GET(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_ADD(static, process_list_t, __process_t*)
 
 /**
  * The static list of processes in the system

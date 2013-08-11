@@ -11,7 +11,10 @@
 
 #include "sos_api_types.h"
 #include "sos_api_errors.h"
+#include "config.h"
 #include "kernel/process/process.h"
+
+typedef char registry_key_t[__MAX_SHARED_OBJECT_NAME_LENGTH];
 
 void __registry_initialise(__mem_pool_info_t * const pool);
 

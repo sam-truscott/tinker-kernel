@@ -31,7 +31,7 @@ error_t sos_create_process(
 		uint32_t heap,
 		uint32_t stack,
 		uint32_t flags,
-		sos_process * process)
+		sos_process_t * process)
 {
 	return SOS_API_CALL_7(
 			syscall_create_process,
@@ -50,7 +50,7 @@ error_t sos_create_thread(
 		uint8_t priority,
 		uint32_t stack,
 		uint32_t flags,
-		sos_thread * thread)
+		sos_thread_t * thread)
 {
 	return SOS_API_CALL_6(
 			syscall_create_thread,
@@ -62,7 +62,7 @@ error_t sos_create_thread(
 			(uint32_t)thread);
 }
 
-error_t sos_get_thread_object(sos_thread * thread)
+error_t sos_get_thread_object(sos_thread_t * thread)
 {
 	return SOS_API_CALL_1(
 			syscall_thread_object,
@@ -70,7 +70,7 @@ error_t sos_get_thread_object(sos_thread * thread)
 }
 
 error_t	sos_get_thread_priority(
-		sos_thread thread,
+		sos_thread_t thread,
 		uint8_t * priority)
 {
 	return SOS_API_CALL_2(

@@ -20,8 +20,22 @@
 
 UNBOUNDED_QUEUE_TYPE(thread_obj_queue_t)
 UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_CREATE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_INITIALISE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_DELETE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_FRONT(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_PUSH(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_POP(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_REMOVE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_SIZE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_CREATE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_INITIALISE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_DELETE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_FRONT(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_PUSH(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_POP(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_REMOVE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_SIZE(static,thread_obj_queue_t, __object_thread_t*)
 
 typedef struct __object_sema_t
 {
@@ -99,8 +113,8 @@ error_t __obj_create_semaphore(
 				no->owners = thread_obj_queue_t_create(pool);
 				no->highest_priority = 0;
 				no->pool = pool;
-				memset(no->name, 0, __MAX_SHARED_OBJECT_NAME_LENGTH);
-				__util_memcpy(no->name, name, __util_strlen(name, __MAX_SHARED_OBJECT_NAME_LENGTH));
+				memset(no->name, 0, sizeof(no->name));
+				__util_memcpy(no->name, name, __util_strlen(name, sizeof(name)));
 				__regsitery_add(name, process, no->object.object_number);
 				*objectno = no->object.object_number;
 			}

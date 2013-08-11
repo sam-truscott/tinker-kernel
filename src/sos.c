@@ -8,14 +8,14 @@
  */
 #include "api/sos_api.h"
 
-static sos_sem sem __attribute__((section(".user_data")));
+static sos_sem_t sem __attribute__((section(".user_data")));
 
 static void my_initial_thread(void) __attribute__((section(".user_text")));
 static void my_other_thread(void) __attribute__((section(".user_text")));
 
 int kmain(void)
 {       
-	sos_process p = 0;
+	sos_process_t p = 0;
 
 	error_t e = sos_create_process(
 			"test_image",
@@ -49,11 +49,11 @@ static void my_other_thread(void)
 static void my_initial_thread(void)
 {
 	uint8_t my_priority;
-	sos_thread my_thread = INVALID_OBJECT_ID;
-	sos_thread other_thread = INVALID_OBJECT_ID;
+	sos_thread_t my_thread = INVALID_OBJECT_ID;
+	sos_thread_t other_thread = INVALID_OBJECT_ID;
 	error_t error = NO_ERROR;
 
-	sos_thread * tmp = &my_thread;
+	sos_thread_t * tmp = &my_thread;
 	if (tmp) {}
 	error = sos_get_thread_object(&my_thread);
 
