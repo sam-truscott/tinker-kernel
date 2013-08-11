@@ -317,7 +317,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(const __object_t *)__obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			// FIXME This will replace memory but isn't right,
+			// FIXME This will release memory but isn't right,
 			// close needs to remove the item from the senders list etc
 			ret = __obj_delete_pipe(pipe);
 		}

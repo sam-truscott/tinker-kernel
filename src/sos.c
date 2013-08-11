@@ -9,6 +9,8 @@
 #include "api/sos_api.h"
 
 static sos_sem_t sem __attribute__((section(".user_data")));
+static sos_pipe_t tx_pipe __attribute__((section(".user_data")));
+static sos_pipe_t rx_pipe __attribute__((section(".user_data")));
 
 static void my_initial_thread(void) __attribute__((section(".user_text")));
 static void my_other_thread(void) __attribute__((section(".user_text")));
@@ -42,9 +44,14 @@ static void my_other_thread(void)
 		error = sos_sem_release(sem);
 	}
 
-	error = NO_ERROR;
-}
+	//FIXME: This needs to block
+	error = sos_open_pipe(&rx_pipe, "transmit", PIPE_RECEIVE, 1024, 10);
 
+	if (error == NO_ERROR)
+	{
+
+	}
+}
 
 static void my_initial_thread(void)
 {
@@ -56,6 +63,12 @@ static void my_initial_thread(void)
 	sos_thread_t * tmp = &my_thread;
 	if (tmp) {}
 	error = sos_get_thread_object(&my_thread);
+
+	error = sos_create_pipe(&tx_pipe, "transmit", PIPE_SEND, 1024, 1);
+	if (error == NO_ERROR)
+	{
+
+	}
 
 	error = sos_get_thread_priority(
 			my_thread,
@@ -81,7 +94,7 @@ static void my_initial_thread(void)
 	}
 
 
-	int timer = 5000000;
+	int timer = 500000;
 
 	while(timer--){}
 

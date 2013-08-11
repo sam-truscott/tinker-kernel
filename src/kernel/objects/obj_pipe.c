@@ -222,14 +222,14 @@ error_t __obj_create_pipe(
 				result = __obj_add_object(table, (__object_t*)no, &objno);
 				if ( result == NO_ERROR )
 				{
-					__obj_initialise_object(&no->object, objno, SEMAPHORE_OBJ);
+					__obj_initialise_object(&no->object, objno, PIPE_OBJ);
 					no->direction = direction;
 					no->pool = pool;
 					no->memory = memory;
 					no->tx_data.listening_readers = rx_queue;
 					no->rx_data.senders = tx_queue;
-					memset(no->name, 0, sizeof(no->name));
-					__util_memcpy(no->name, name, __util_strlen(name, sizeof(name)));
+					memset(no->name, 0, sizeof(registry_key_t));
+					__util_memcpy(no->name, name, __util_strlen(name, sizeof(registry_key_t)));
 					const rx_data_t counter = {
 							.free_messages = messages,
 							.total_messages = messages,
@@ -320,96 +320,99 @@ error_t __object_open_pipe(
 		result = UNKNOWN_PIPE;
 	}
 
-	if (process && objectno && result == NO_ERROR)
+	if (result == NO_ERROR)
 	{
-		__object_table_t * table = __process_get_object_table(process);
-		if (table)
+		if (process && objectno)
 		{
-			__mem_pool_info_t * const pool = __process_get_mem_pool(process);
-			uint8_t * memory = NULL;
-			pipe_list_t * queue = NULL;
-			switch (direction)
+			__object_table_t * table = __process_get_object_table(process);
+			if (table)
 			{
-			case PIPE_DIRECTION_UNKNOWN:
-				result = PARAMETERS_INVALID;
-				break;
-			case PIPE_SEND_RECEIVE:
-				queue = pipe_list_t_create(pool);
-				if (!queue)
+				__mem_pool_info_t * const pool = __process_get_mem_pool(process);
+				uint8_t * memory = NULL;
+				pipe_list_t * queue = NULL;
+				switch (direction)
 				{
-					result = OUT_OF_MEMORY;
-				}
-				/* no break */
-			case PIPE_RECEIVE:
-			{
-				uint32_t total_size = (message_size * messages);
-				while ((total_size % MMU_PAGE_SIZE) != 0)
-				{
-					total_size++;
-				}
-				memory = (uint8_t*)__mem_alloc_aligned(
-						pool, total_size, MMU_PAGE_SIZE);
-				if (!memory)
-				{
-					result = OUT_OF_MEMORY;
-				}
-			}
-				break;
-			case PIPE_SEND:
-				queue = pipe_list_t_create(pool);
-				if (!queue)
-				{
-					result = OUT_OF_MEMORY;
-				}
-				break;
-			}
-			if (result == NO_ERROR)
-			{
-				no = (__object_pipe_t*)__mem_alloc(pool, sizeof(__object_pipe_t));
-				object_number_t objno;
-				result = __obj_add_object(table, (__object_t*)no, &objno);
-				if ( result == NO_ERROR )
-				{
-					__obj_initialise_object(&no->object, objno, SEMAPHORE_OBJ);
-					no->direction = direction;
-					no->pool = pool;
-					no->memory = memory;
-					no->tx_data.listening_readers = queue;
-					memset(no->name, 0, sizeof(no->name));
-					__util_memcpy(no->name, name, __util_strlen(name, sizeof(name)));
-					const rx_data_t counter = {
-							.free_messages = messages,
-							.total_messages = messages,
-							.message_size = message_size,
-							.current_message = 0,
-							.current_message_ptr = no->memory};
-					no->rx_data = counter;
-					switch(direction)
+				case PIPE_DIRECTION_UNKNOWN:
+					result = PARAMETERS_INVALID;
+					break;
+				case PIPE_SEND_RECEIVE:
+					queue = pipe_list_t_create(pool);
+					if (!queue)
 					{
-					case PIPE_DIRECTION_UNKNOWN:
-						break;
-					case PIPE_SEND:
-						break;
-					case PIPE_SEND_RECEIVE:
-					case PIPE_RECEIVE:
-						pipe_list_t_add(other_pipe->tx_data.listening_readers, no);
-						break;
+						result = OUT_OF_MEMORY;
 					}
+					/* no break */
+				case PIPE_RECEIVE:
+				{
+					uint32_t total_size = (message_size * messages);
+					while ((total_size % MMU_PAGE_SIZE) != 0)
+					{
+						total_size++;
+					}
+					memory = (uint8_t*)__mem_alloc_aligned(
+							pool, total_size, MMU_PAGE_SIZE);
+					if (!memory)
+					{
+						result = OUT_OF_MEMORY;
+					}
+				}
+					break;
+				case PIPE_SEND:
+					queue = pipe_list_t_create(pool);
+					if (!queue)
+					{
+						result = OUT_OF_MEMORY;
+					}
+					break;
+				}
+				if (result == NO_ERROR)
+				{
+					no = (__object_pipe_t*)__mem_alloc(pool, sizeof(__object_pipe_t));
+					object_number_t objno;
+					result = __obj_add_object(table, (__object_t*)no, &objno);
+					if ( result == NO_ERROR )
+					{
+						__obj_initialise_object(&no->object, objno, PIPE_OBJ);
+						no->direction = direction;
+						no->pool = pool;
+						no->memory = memory;
+						no->tx_data.listening_readers = queue;
+						memset(no->name, 0, sizeof(registry_key_t));
+						__util_memcpy(no->name, name, __util_strlen(name, sizeof(registry_key_t)));
+						const rx_data_t counter = {
+								.free_messages = messages,
+								.total_messages = messages,
+								.message_size = message_size,
+								.current_message = 0,
+								.current_message_ptr = no->memory};
+						no->rx_data = counter;
+						switch(direction)
+						{
+						case PIPE_DIRECTION_UNKNOWN:
+							break;
+						case PIPE_SEND:
+							break;
+						case PIPE_SEND_RECEIVE:
+						case PIPE_RECEIVE:
+							pipe_list_t_add(other_pipe->tx_data.listening_readers, no);
+							break;
+						}
+					}
+				}
+				else
+				{
+					result = OUT_OF_MEMORY;
 				}
 			}
 			else
 			{
-				result = OUT_OF_MEMORY;
+				result = PARAMETERS_OUT_OF_RANGE;
 			}
 		}
 		else
 		{
-			result = PARAMETERS_OUT_OF_RANGE;
+			result = PARAMETERS_NULL;
 		}
-	}
-	else
-	{
-		result = PARAMETERS_NULL;
 	}
 
 	return result;
