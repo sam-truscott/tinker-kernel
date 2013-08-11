@@ -318,6 +318,13 @@ error_t __obj_set_thread_waiting(
 	return result;
 }
 
+bool_t __obj_thread_is_waiting_on(
+		const __object_thread_t * const o,
+		const __object_t * const waiting_on)
+{
+	return __thread_get_waiting_on(o->thread) == waiting_on;
+}
+
 error_t __obj_set_thread_ready(__object_thread_t * const o)
 {
 	error_t result = NO_ERROR;

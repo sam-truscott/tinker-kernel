@@ -143,6 +143,7 @@
 	{ \
 		ITERATOR_T * item = ITERATOR_T##_create(NULL); \
 		ITERATOR_T##_next(item, NULL); \
+		ITERATOR_T##_reset(item); \
 		ITERATOR_T##_delete(item); \
 	} \
 	\

@@ -44,15 +44,16 @@ error_t __obj_delete_pipe(__object_pipe_t * const pipe);
 error_t __obj_pipe_send_message(
 		__object_pipe_t * const pipe,
 		__object_thread_t * const thread,
+		const sos_pipe_send_kind_t send_kind,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block);
 
 error_t __obj_pipe_receive_message(
 		__object_pipe_t * const pipe,
-		void * const message,
+		__object_thread_t * const thread,
+		void ** const message,
 		uint32_t * const message_size,
-		const uint32_t max_message_size,
 		const bool_t block);
 
 error_t __obj_pipe_received_message(__object_pipe_t * const pipe);

@@ -48,6 +48,10 @@ error_t __obj_set_thread_waiting(
 		__object_thread_t * const o,
 		const __object_t * const waiting_on);
 
+bool_t __obj_thread_is_waiting_on(
+		const __object_thread_t * const o,
+		const __object_t * const waiting_on);
+
 error_t __obj_set_thread_ready(
 		__object_thread_t * const o);
 

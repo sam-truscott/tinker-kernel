@@ -56,9 +56,8 @@ error_t sos_send_message(
 
 error_t sos_receive_message(
 		sos_pipe_t * pipe,
-		void * const message,
-		uint32_t * message_size,
-		const uint32_t max_message_size,
+		const void ** message,
+		const uint32_t * const message_size,
 		const bool_t block);
 
 error_t sos_received_message(sos_pipe_t * pipe);
