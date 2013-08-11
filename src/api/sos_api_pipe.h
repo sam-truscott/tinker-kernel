@@ -44,23 +44,23 @@ error_t sos_open_pipe(
 		const uint32_t message_size,
 		const uint32_t messages) SOS_API_SUFFIX;
 
-error_t sos_close_pipe(sos_pipe_t * pipe) SOS_API_SUFFIX;
+error_t sos_close_pipe(sos_pipe_t pipe) SOS_API_SUFFIX;
 
-error_t sos_delete_pipe(sos_pipe_t * pipe) SOS_API_SUFFIX;
+error_t sos_delete_pipe(sos_pipe_t pipe) SOS_API_SUFFIX;
 
 error_t sos_send_message(
-		sos_pipe_t * pipe,
+		sos_pipe_t pipe,
 		const sos_pipe_send_kind_t send_kend,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block) SOS_API_SUFFIX;
 
 error_t sos_receive_message(
-		sos_pipe_t * pipe,
+		sos_pipe_t pipe,
 		const void ** message,
 		const uint32_t * const message_size,
 		const bool_t block) SOS_API_SUFFIX;
 
-error_t sos_received_message(sos_pipe_t * pipe) SOS_API_SUFFIX;
+error_t sos_received_message(sos_pipe_t pipe) SOS_API_SUFFIX;
 
 #endif /* SOS_API_PIPE_H_ */

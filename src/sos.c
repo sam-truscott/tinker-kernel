@@ -67,7 +67,7 @@ static void my_initial_thread(void)
 	error = sos_create_pipe(&tx_pipe, "transmit", PIPE_SEND, 1024, 1);
 	if (error == NO_ERROR)
 	{
-
+		error = sos_send_message(tx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
 	}
 
 	error = sos_get_thread_priority(

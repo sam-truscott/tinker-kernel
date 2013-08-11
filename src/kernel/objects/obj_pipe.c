@@ -174,6 +174,7 @@ error_t __obj_create_pipe(
 
 	if (process && objectno)
 	{
+		*objectno = INVALID_OBJECT_ID;
 		__object_table_t * const table = __process_get_object_table(process);
 		if (table)
 		{
@@ -222,6 +223,7 @@ error_t __obj_create_pipe(
 				result = __obj_add_object(table, (__object_t*)no, &objno);
 				if ( result == NO_ERROR )
 				{
+					*objectno = objno;
 					__obj_initialise_object(&no->object, objno, PIPE_OBJ);
 					no->direction = direction;
 					no->pool = pool;
@@ -372,6 +374,7 @@ error_t __object_open_pipe(
 					result = __obj_add_object(table, (__object_t*)no, &objno);
 					if ( result == NO_ERROR )
 					{
+						*objectno = objno;
 						__obj_initialise_object(&no->object, objno, PIPE_OBJ);
 						no->direction = direction;
 						no->pool = pool;
