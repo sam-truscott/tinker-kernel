@@ -37,19 +37,26 @@ static void my_other_thread(void)
 {
 	error_t error = NO_ERROR;
 
+	//FIXME: This needs to block
+	error = sos_open_pipe(&rx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 10);
+	if (error == NO_ERROR)
+	{
+		error = sos_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
+		const char * message = NULL;
+		uint32_t size = 0;
+		error = sos_receive_message(tx_pipe, (const void**)(&message), &size, true);
+		if (error)
+		{
+			int i = 0;
+			i++;
+		}
+	}
+
 	error = sos_sem_get(sem);
 
 	if ( error == NO_ERROR )
 	{
 		error = sos_sem_release(sem);
-	}
-
-	//FIXME: This needs to block
-	error = sos_open_pipe(&rx_pipe, "transmit", PIPE_RECEIVE, 1024, 10);
-
-	if (error == NO_ERROR)
-	{
-
 	}
 }
 
@@ -64,12 +71,6 @@ static void my_initial_thread(void)
 	if (tmp) {}
 	error = sos_get_thread_object(&my_thread);
 
-	error = sos_create_pipe(&tx_pipe, "transmit", PIPE_SEND, 1024, 1);
-	if (error == NO_ERROR)
-	{
-		error = sos_send_message(tx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
-	}
-
 	error = sos_get_thread_priority(
 			my_thread,
 			&my_priority);
@@ -83,6 +84,8 @@ static void my_initial_thread(void)
 		error = sos_sem_release(sem);
 
 		error = sos_sem_get(sem);
+
+		error = sos_create_pipe(&tx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 1);
 
 		error = sos_create_thread(
 				"other thread",
@@ -113,4 +116,9 @@ static void my_initial_thread(void)
 	error = sos_get_thread_priority(
 				my_thread,
 				&my_priority);
+
+	const char * message = NULL;
+	uint32_t size = 0;
+	error = sos_receive_message(tx_pipe, (const void**)(&message), &size, true);
+	error = sos_send_message(tx_pipe, PIPE_TX_SEND_ALL, "olleh\0", 6, true);
 }

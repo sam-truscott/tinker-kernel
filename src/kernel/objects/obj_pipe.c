@@ -42,7 +42,7 @@ typedef struct rx_data
 typedef struct tx_data
 {
 	__object_thread_t * sending_thread;
-	pipe_list_t * listening_readers;
+	pipe_list_t * readers;
 } tx_data_t;
 
 typedef struct __object_pipe_t
@@ -143,17 +143,18 @@ static bool_t __pipe_can_send_to_all(
 	__object_pipe_t * receiver = NULL;
 	bool_t can_send_all = true;
 
-	pipe_list_it_t_initialise(&it, pipe->tx_data.listening_readers);
+	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
 	const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 	if (has_any_receivers)
 	{
 		while(receiver)
 		{
-			can_send_all = __pipe_can_receive(receiver);
-			if (!can_send_all && blocking)
+			const bool_t can_send_pipe = __pipe_can_receive(receiver);
+			if (!can_send_pipe && blocking)
 			{
 				pipe_list_t_add(receiver->rx_data.senders, (__object_pipe_t*)pipe);
 			}
+			can_send_all = (!can_send_all) ? can_send_all : can_send_pipe;
 			pipe_list_it_t_next(&it, &receiver);
 		}
 	}
@@ -188,6 +189,12 @@ error_t __obj_create_pipe(
 				result = PARAMETERS_INVALID;
 				break;
 			case PIPE_SEND_RECEIVE:
+				tx_queue = pipe_list_t_create(pool);
+				if (!tx_queue)
+				{
+					result = OUT_OF_MEMORY;
+				}
+				/* no break */
 			case PIPE_RECEIVE:
 			{
 				uint32_t total_size = (message_size * messages) + (messages * 4);
@@ -228,17 +235,22 @@ error_t __obj_create_pipe(
 					no->direction = direction;
 					no->pool = pool;
 					no->memory = memory;
-					no->tx_data.listening_readers = rx_queue;
+					no->tx_data.readers = rx_queue;
 					no->rx_data.senders = tx_queue;
 					memset(no->name, 0, sizeof(registry_key_t));
 					__util_memcpy(no->name, name, __util_strlen(name, sizeof(registry_key_t)));
-					const rx_data_t counter = {
+					const rx_data_t rx_data = {
+							.senders = rx_queue,
 							.free_messages = messages,
 							.total_messages = messages,
 							.message_size = message_size,
 							.current_message = 0,
 							.current_message_ptr = no->memory};
-					no->rx_data = counter;
+					const tx_data_t tx_data = {
+							.readers = tx_queue,
+							.sending_thread = NULL};
+					no->rx_data = rx_data;
+					no->tx_data = tx_data;
 					// register it - create
 					result = __regsitery_add(name, process, no->object.object_number);
 				}
@@ -331,15 +343,16 @@ error_t __object_open_pipe(
 			{
 				__mem_pool_info_t * const pool = __process_get_mem_pool(process);
 				uint8_t * memory = NULL;
-				pipe_list_t * queue = NULL;
+				pipe_list_t * tx_queue = NULL;
+				pipe_list_t * rx_queue = NULL;
 				switch (direction)
 				{
 				case PIPE_DIRECTION_UNKNOWN:
 					result = PARAMETERS_INVALID;
 					break;
 				case PIPE_SEND_RECEIVE:
-					queue = pipe_list_t_create(pool);
-					if (!queue)
+					tx_queue = pipe_list_t_create(pool);
+					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
 					}
@@ -357,11 +370,16 @@ error_t __object_open_pipe(
 					{
 						result = OUT_OF_MEMORY;
 					}
+					rx_queue = pipe_list_t_create(pool);
+					if (!rx_queue)
+					{
+						result = OUT_OF_MEMORY;
+					}
 				}
 					break;
 				case PIPE_SEND:
-					queue = pipe_list_t_create(pool);
-					if (!queue)
+					tx_queue = pipe_list_t_create(pool);
+					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
 					}
@@ -379,25 +397,37 @@ error_t __object_open_pipe(
 						no->direction = direction;
 						no->pool = pool;
 						no->memory = memory;
-						no->tx_data.listening_readers = queue;
 						memset(no->name, 0, sizeof(registry_key_t));
 						__util_memcpy(no->name, name, __util_strlen(name, sizeof(registry_key_t)));
-						const rx_data_t counter = {
+						const rx_data_t rx_data = {
+								.senders = rx_queue,
 								.free_messages = messages,
 								.total_messages = messages,
 								.message_size = message_size,
 								.current_message = 0,
 								.current_message_ptr = no->memory};
-						no->rx_data = counter;
+						const tx_data_t tx_data = {
+								.readers = tx_queue,
+								.sending_thread = NULL};
+						no->rx_data = rx_data;
+						no->tx_data = tx_data;
 						switch(direction)
 						{
 						case PIPE_DIRECTION_UNKNOWN:
 							break;
 						case PIPE_SEND:
+							pipe_list_t_add(other_pipe->rx_data.senders, no);
+							pipe_list_t_add(no->tx_data.readers, other_pipe);
 							break;
 						case PIPE_SEND_RECEIVE:
+							pipe_list_t_add(other_pipe->tx_data.readers, no);
+							pipe_list_t_add(other_pipe->rx_data.senders, no);
+							pipe_list_t_add(no->tx_data.readers, other_pipe);
+							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							break;
 						case PIPE_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.listening_readers, no);
+							pipe_list_t_add(other_pipe->tx_data.readers, no);
+							pipe_list_t_add(no->rx_data.senders, other_pipe);
 							break;
 						}
 					}
@@ -451,19 +481,26 @@ error_t __obj_pipe_send_message(
 
 	if (pipe)
 	{
-		if (send_kind == PIPE_TX_SEND_ALL && !__pipe_can_send_to_all(pipe, block))
+		if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 		{
-			// we can't send to everyone
-			if (block)
+			if (send_kind == PIPE_TX_SEND_ALL && !__pipe_can_send_to_all(pipe, block))
 			{
-				pipe->tx_data.sending_thread = thread;
-				__obj_set_thread_waiting(thread, (__object_t*)pipe);
-				result = PIPE_SEND_BLOCKED;
+				// we can't send to everyone
+				if (block)
+				{
+					pipe->tx_data.sending_thread = thread;
+					__obj_set_thread_waiting(thread, (__object_t*)pipe);
+					result = PIPE_SEND_BLOCKED;
+				}
+				else
+				{
+					result = PIPE_RECEIVERS_FULL;
+				}
 			}
-			else
-			{
-				result = PIPE_RECEIVERS_FULL;
-			}
+		}
+		else
+		{
+			result = PIPE_POLARITY_WRONG;
 		}
 	}
 	else
@@ -476,7 +513,8 @@ error_t __obj_pipe_send_message(
 		pipe_list_it_t it;
 		__object_pipe_t * receiver = NULL;
 
-		pipe_list_it_t_initialise(&it, pipe->tx_data.listening_readers);
+		pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
+		// FIXME: This is empty on the send
 		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 		if (has_any_receivers)
 		{
@@ -506,28 +544,35 @@ error_t __obj_pipe_receive_message(
 	{
 		if (message && message_size)
 		{
-			*message = NULL;
-			*message_size = 0;
-
-			const bool_t messages_in_buffer =
-					pipe->rx_data.free_messages < pipe->rx_data.total_messages;
-			if (!messages_in_buffer)
+			if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 			{
-				if (block)
+				*message = NULL;
+				*message_size = 0;
+
+				const bool_t messages_in_buffer =
+						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
+				if (!messages_in_buffer)
 				{
-					*message = pipe->rx_data.current_message_ptr + 4;
-					*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
-					__obj_set_thread_waiting(thread, (__object_t*)pipe);
+					if (block)
+					{
+						*message = pipe->rx_data.current_message_ptr + 4;
+						*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
+						__obj_set_thread_waiting(thread, (__object_t*)pipe);
+					}
+					else
+					{
+						result = PIPE_EMPTY;
+					}
 				}
 				else
 				{
-					result = PIPE_EMPTY;
+					*message = pipe->rx_data.current_message_ptr + 4;
+					*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
 				}
 			}
 			else
 			{
-				*message = pipe->rx_data.current_message_ptr + 4;
-				*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
+				result = PIPE_POLARITY_WRONG;
 			}
 		}
 		else

@@ -114,8 +114,9 @@
 	{ \
 		 bool_t ok = false; \
 		 \
-		 if ( it && item ) \
+		 if (it && item) \
 		 { \
+			memset(item, 0, sizeof(ITEM_T)); \
 			\
 			 if ( it->current ) \
 			 { \

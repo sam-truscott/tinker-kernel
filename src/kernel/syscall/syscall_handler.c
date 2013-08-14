@@ -348,20 +348,20 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 							table,
 							(object_number_t)param[0]));
 
-			void ** msg = (void**)param[1];
+			uint8_t ** msg = (uint8_t**)param[1];
 			uint32_t * msg_size = (uint32_t*)param[2];
 			ret = __obj_pipe_receive_message(
 					pipe,
 					__syscall_get_thread_object(),
-					msg,
+					(void**)msg,
 					msg_size,
 					(const bool_t)param[3]);
 
 			const uint32_t pool_start = __mem_get_start_addr(
 					__process_get_mem_pool(
 							__thread_get_parent(this_thread)));
-			msg += VIRTUAL_ADDRESS_SPACE;
-			msg -= pool_start;
+			*msg += VIRTUAL_ADDRESS_SPACE;
+			*msg -= pool_start;
 			msg_size += VIRTUAL_ADDRESS_SPACE;
 			msg_size -= pool_start;
 		}
