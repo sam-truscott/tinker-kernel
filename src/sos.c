@@ -44,7 +44,7 @@ static void my_other_thread(void)
 		error = sos_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
 		const char * message = NULL;
 		uint32_t size = 0;
-		error = sos_receive_message(tx_pipe, (const void**)(&message), &size, true);
+		error = sos_receive_message(rx_pipe, (const void**)(&message), &size, true);
 		if (error)
 		{
 			int i = 0;

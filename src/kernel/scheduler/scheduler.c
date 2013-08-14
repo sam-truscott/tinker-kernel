@@ -64,7 +64,7 @@ static thread_queue_t * __sch_active_queue;
 
 static thread_queue_t __sch_thread_queues[__MAX_PRIORITY + 1];
 
-static uint8_t __sch_current_priority;
+static priority_t __sch_current_priority;
 
 static queue_stack_t __sch_queue_stack;
 
@@ -101,6 +101,10 @@ void __sch_notify_new_thread(__thread_t * const t)
 		const priority_t thread_priority = __thread_get_priority(t);
 		thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
 		thread_queue_t_push(queue, t);
+
+#if defined(__PROCESS_DEBUGGING)
+		__debug_print("scheduler: new thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
+#endif
 
 		if ( thread_priority > __sch_current_priority )
 		{
@@ -170,6 +174,9 @@ void __sch_notify_new_thread(__thread_t * const t)
 			}
 		}
 	}
+#if defined(__PROCESS_DEBUGGING)
+		__debug_print("scheduler: new priority, now (%d)\n", __sch_current_priority);
+#endif
 }
 
 void __sch_notify_exit_thread(__thread_t * const t)
@@ -179,6 +186,10 @@ void __sch_notify_exit_thread(__thread_t * const t)
 		const priority_t thread_priority = __thread_get_priority(t);
 		thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
 		thread_queue_t_remove(queue, t);
+
+#if defined(__PROCESS_DEBUGGING)
+		__debug_print("scheduler: exit thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
+#endif
 
 		if (thread_queue_t_size(__sch_active_queue) == 0)
 		{
@@ -190,8 +201,20 @@ void __sch_notify_exit_thread(__thread_t * const t)
 			{
 				__sch_priority_find_next_queue(t);
 			}
+			else
+			{
+				__thread_t * first_thread = NULL;
+				if (thread_queue_t_front(__sch_active_queue, &first_thread))
+				{
+					const priority_t tp = __thread_get_priority(first_thread);
+					__sch_current_priority = tp;
+				}
+			}
 		}
 	}
+#if defined(__PROCESS_DEBUGGING)
+		__debug_print("scheduler: exit priority, now (%d)\n", __sch_current_priority);
+#endif
 }
 
 void __sch_notify_pause_thread(__thread_t * const t)
@@ -211,6 +234,10 @@ void __sch_notify_change_priority(
 	if ( t )
 	{
 		const priority_t thread_priority = __thread_get_priority(t);
+
+#if defined(__PROCESS_DEBUGGING)
+		__debug_print("scheduler: change thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
+#endif
 
 		/* remove it from the old list */
 		thread_queue_t * queue = &(__sch_thread_queues[original_priority]);
@@ -234,6 +261,9 @@ void __sch_notify_change_priority(
 			}
 		}
 	}
+#if defined(__PROCESS_DEBUGGING)
+		__debug_print("scheduler: change priority, now (%d)\n", __sch_current_priority);
+#endif
 }
 
 void __sch_terminate_current_thread(

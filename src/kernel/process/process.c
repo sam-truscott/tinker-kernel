@@ -93,6 +93,11 @@ uint32_t __process_get_pid(const __process_t * const process)
 	return process->process_id;
 }
 
+const char * __process_get_image(const __process_t * const process)
+{
+	return process->image;
+}
+
 object_number_t __process_get_oid(const __process_t * const process)
 {
 	return process->object_number;

@@ -29,6 +29,8 @@ __thread_t * __thread_create(
 
 uint32_t __thread_get_tid(const __thread_t * const thread);
 
+const char * __thread_get_name(const __thread_t * const thread);
+
 void __thread_set_tid(
 		__thread_t * const thread,
 		const uint32_t tid);

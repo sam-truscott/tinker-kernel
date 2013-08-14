@@ -87,7 +87,7 @@ void __obj_process_thread(
 	__kernel_assert("__obj_process_thread - check thread object exists\n", thread != NULL);
 
 #if defined(__PROCESS_DEBUGGING)
-		__debug_print("proc %d is exiting\n", o->pid);
+		__debug_print("proc %d (%s) is exiting\n", o->pid, __process_get_image(o->process));
 #endif
 
 	__process_thread_exit(o->process, __obj_get_thread(thread));

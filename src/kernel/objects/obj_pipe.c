@@ -93,7 +93,6 @@ static bool_t __pipe_can_receive(const __object_pipe_t * const pipe)
 }
 
 static void __pipe_receive_message(
-		const __object_pipe_t * const sender,
 		__object_pipe_t * const receiver,
 		const void * message,
 		const uint32_t message_size)
@@ -112,7 +111,7 @@ static void __pipe_receive_message(
 		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+4);
 	}
 	receiver->rx_data.free_messages--;
-	if (__obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (__object_t*)sender))
+	if (__obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (__object_t*)receiver))
 	{
 
 		__obj_set_thread_ready(receiver->rx_data.blocked_owner);
@@ -514,7 +513,6 @@ error_t __obj_pipe_send_message(
 		__object_pipe_t * receiver = NULL;
 
 		pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-		// FIXME: This is empty on the send
 		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 		if (has_any_receivers)
 		{
@@ -522,7 +520,7 @@ error_t __obj_pipe_send_message(
 			{
 				if (__pipe_can_receive(receiver))
 				{
-					__pipe_receive_message(pipe, receiver, message, message_size);
+					__pipe_receive_message(receiver, message, message_size);
 				}
 				pipe_list_it_t_next(&it, &receiver);
 			}
@@ -558,6 +556,7 @@ error_t __obj_pipe_receive_message(
 						*message = pipe->rx_data.current_message_ptr + 4;
 						*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
 						__obj_set_thread_waiting(thread, (__object_t*)pipe);
+						pipe->rx_data.blocked_owner = thread;
 					}
 					else
 					{

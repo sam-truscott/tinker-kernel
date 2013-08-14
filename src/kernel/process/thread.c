@@ -107,6 +107,11 @@ uint32_t __thread_get_tid(const __thread_t * const thread)
 	return thread->thread_id;
 }
 
+const char * __thread_get_name(const __thread_t * const thread)
+{
+	return thread->name;
+}
+
 void __thread_set_tid(
 		__thread_t * const thread,
 		const uint32_t tid)

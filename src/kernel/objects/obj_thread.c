@@ -200,7 +200,7 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 		t = o->thread;
 
 #if defined(__PROCESS_DEBUGGING)
-		__debug_print("proc %d thread %d is exiting\n", o->pid, o->tid);
+		__debug_print("proc %d thread %d (%s) is exiting\n", o->pid, o->tid, __thread_get_name(o->thread));
 #endif
 
 		const __thread_state_t state = __thread_get_state(t);

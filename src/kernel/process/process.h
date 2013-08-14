@@ -26,6 +26,8 @@ error_t __process_create(
 
 uint32_t __process_get_pid(const __process_t * const process);
 
+const char * __process_get_image(const __process_t * const process);
+
 bool_t __process_is_kernel(const __process_t * const process);
 
 object_number_t __process_get_oid(const __process_t * const process);
