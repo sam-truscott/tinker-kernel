@@ -57,58 +57,21 @@ issues / todo
 
 these are the things I need to address in a rough order
 
-* pipes, shms and timers aren't implemented yet - use the mmu for performance
-* mmu code on ppc isn't finished, e.g. no flushing out when process dies
+* option to make pipes zero-copy via mmu (memory is already aligned)
+* shms and timers aren't implemented yet - use the mmu for performance
+* break up the syscalls into seperate static/inline functions
 * makefile
 * replace the mempool implementation with dlmalloc (?)
-* no way to load usermode elfs in
-* no crt / newlib code for userland yet
-* bootstrap code for kernel + services
-* ARM support!
+* add mechanism to load elfs
+* create static library for api/syscalls 
+* create newlib port
+* create bootstrap for kernel + services
+* ARM support
 * x86 support
 * need to review it all head to toe since refactor
-* doc it more with doxygen
+* doc it with doxygen
 
 toolchain
 =========
 
 a standard stage 1 gcc compiler will work (i.e. C compiler without libc support)
-
- arm
- ===
- 
-  binutils
-  ========
-  
-  ../binutils-2.23.2/configure --target=arm-none-eabi --prefix=/usr/local/xtools/arm-none-eabi
-  
-  gcc
-  ===
-  
-  ../gcc-4.8.1/configure --target=arm-none-eabi --prefix=/usr/local/xtools/arm-none-eabi --enable-languages=c,lto --disable-multilib --enable-lto --disable-libquadmath --without-headers --with-newlib --disable-libssp
-  
-  gdb
-  ===
-  
-  ../gdb-7.6/configure --target=arm-none-eabi --prefix=/usr/local/xtools/arm-none-eabi --enable-sim --enable-sim-bswap --enable-sim-stdio --enable-sim-trace
-
- powerpc
- =======
-
-  binutils
-  ========
-
-  ../binutils-2.23.2/configure --target=powerpc-none-eabi --prefix=/usr/local/xtools/powerpc-none-eabi
- 
-  gcc
-  ===
-
-  ../gcc-4.8.1/configure --target=powerpc-none-eabi --prefix=/usr/local/xtools/powerpc-none-eabi --enable-languages=c,lto --disable-multilib --enable-lto --disable-libquadmath --without-headers --with-newlib --disable-libssp
-
-  gdb
-  ===
-
-  Need to add a weak reference to option_mpc... to get it to compile with inline turned on
-  
-  ../gdb-7.6/configure --prefix=/usr/local/xtools/powerpc-none-eabi --target=powerpc-none-eabi --enable-sim --enable-sim-powerpc --enable-sim-bitsize=32 --enable-sim-bswap --enable-sim-duplicate --enable-sim-endian=big --enable-sim-env=operating --enable-sim-float --disable-sim-reserved-bits --disable-sim-smp --enable-sim-timebase --enable-sim-trace --enable-sim-inline --disable-sim-xor-endian --disable-sim-assert --enable-sim-switch --disable-sim-icache --enable-sim-clfags='-g0,-O3,-fno-strength-reduce,-fomit-frame-pointer'
-
