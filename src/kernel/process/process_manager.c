@@ -84,7 +84,7 @@ error_t __proc_create_process(
 	 */
 	const __thread_t * const curr_thread = __sch_get_current_thread();
 	__mem_pool_info_t * parent_pool;
-	if (curr_thread == NULL )
+	if (curr_thread == NULL)
 	{
 #if defined (__PROCESS_DEBUGGING)
 		__debug_print("proc: create process from default pool\n");
@@ -121,26 +121,26 @@ error_t __proc_create_process(
 		if (ret == NO_ERROR)
 		{
 			__object_t * process_obj = NULL;
-			__object_t * thread_obj = NULL;
-			ret = __proc_create_thread(
-									proc,
-									initial_task_name,
-									entry_point,
-									priority,
-									stack,
-									flags,
-									&thread_obj,
-									NULL);
+			ret = __obj_create_process(
+					__process_get_mem_pool(proc),
+					__process_get_object_table(proc),
+					__process_get_pid(proc),
+					proc,
+					&process_obj);
+			__process_set_oid(proc, __obj_get_number(process_obj));
 
 			if ( ret == NO_ERROR )
 			{
-				ret = __obj_create_process(
-						__process_get_mem_pool(proc),
-						__process_get_object_table(proc),
-						__process_get_pid(proc),
+				__object_t * thread_obj = NULL;
+				ret = __proc_create_thread(
 						proc,
-						&process_obj);
-				__process_set_oid(proc, __obj_get_number(process_obj));
+						initial_task_name,
+						entry_point,
+						priority,
+						stack,
+						flags,
+						&thread_obj,
+						NULL);
 
 				if ( ret == NO_ERROR )
 				{
