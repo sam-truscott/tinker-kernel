@@ -57,7 +57,15 @@ issues / todo
 
 these are the things I need to address in a rough order
 
-** fix the problem with mem pools not freeing memory they've allocated
+* fix the problem with mem pools not freeing memory they've allocated
+* re-write the memory pools, it's from the original sos2 code and poor
+
+1. don't allocate all the memory up front
+2. get the os to store a free page stack
+3. the new memory pool simply tracks memory usage mapped onto the page pool
+4. re-write the pool, block-struct for each alloc prior to the alloc rather
+than a table of them at the end
+
 * option to make pipes zero-copy via mmu (memory is already aligned)
 * shms and timers aren't implemented yet - use the mmu for performance
 * break up the syscalls into seperate static/inline functions
