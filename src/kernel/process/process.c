@@ -15,6 +15,7 @@
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_semaphore.h"
 #include "kernel/objects/obj_process.h"
+#include "kernel/objects/obj_pipe.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/hashed_map.h"
 
@@ -37,6 +38,7 @@ typedef struct __process_t
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
 	uint32_t 				next_thread_id;
 	__thread_t * 			initial_thread;
+	__mem_pool_info_t * 	parent;
 } __process_internal_t;
 
 error_t __process_create(
@@ -58,6 +60,7 @@ error_t __process_create(
 				mempool);
 		p->process_id = pid;
 		p->kernel_process = is_kernel;
+		p->parent = mempool;
 		p->memory_pool = (__mem_pool_info_t *)pool;
 		const uint32_t length = __util_strlen(name,__MAX_PROCESS_IMAGE_LEN);
 		__util_memcpy(p->image, name, length);
@@ -258,6 +261,17 @@ void __process_exit(__process_t * const process)
 								process->object_table,
 								__obj_process_get_oid(process_obj));
 					}
+					else
+					{
+						__object_pipe_t * const pipe_obj = __obj_cast_pipe(object);
+						if (pipe_obj)
+						{
+							__obj_delete_pipe(pipe_obj);
+							__obj_remove_object(
+									process->object_table,
+									__obj_pipe_get_oid(pipe_obj));
+						}
+					}
 				}
 				/* TODO: Support the other object types */
 			}
@@ -276,4 +290,6 @@ void __process_exit(__process_t * const process)
 		__mem_sec_delete(section);
 		section = __mem_sec_get_next(section);
 	}
+
+	__mem_free(process->parent, process->memory_pool);
 }
