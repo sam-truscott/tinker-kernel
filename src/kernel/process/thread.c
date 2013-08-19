@@ -233,7 +233,7 @@ void __thread_exit(__thread_t * const thread)
 	__mem_pool_info_t * const pool = __process_get_mem_pool(thread->parent);
 
 	// stack
-	__mem_free(pool, __thread_get_stack_memory(thread->stack));
+	__mem_free(pool, thread->stack);
 	// contact
 	__tgt_destroy_context(thread, thread->context);
 	// thread itself
