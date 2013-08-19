@@ -79,7 +79,7 @@ error_t __obj_create_process(
 	return result;
 }
 
-void __obj_process_thread(
+void __obj_process_thread_exit(
 		__object_process_t * const o,
 		const __object_thread_t * const thread)
 {
@@ -105,7 +105,6 @@ void __obj_process_thread(
 void __obj_process_exit(__object_process_t * const o)
 {
 	__kernel_assert("__obj_process_exit - check process object exists\n", o != NULL);
-	__process_exit(o->process);
 	__obj_remove_object(
 			__process_get_object_table(o->process),
 			o->object.object_number);
@@ -113,6 +112,7 @@ void __obj_process_exit(__object_process_t * const o)
 	__debug_print("process %d exit\n", o->pid);
 #endif
 	__obj_delete_process(o);
+	__process_exit(o->process);
 }
 
 void __obj_delete_process(__object_process_t * const o)

@@ -29,7 +29,7 @@ error_t __obj_create_process(
 		__process_t * const process,
 		__object_t ** object);
 
-void __obj_process_thread(
+void __obj_process_thread_exit(
 		__object_process_t * const o,
 		const __object_thread_t * const thread);
 
