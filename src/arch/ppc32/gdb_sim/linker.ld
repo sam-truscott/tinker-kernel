@@ -39,6 +39,12 @@ SECTIONS{
         *(.sbss)
     }>RAM
     
+        /* Block Started by Symbol */
+    .bss ALIGN (0x1000) : {
+        *(COMMON)
+        *(.bss)
+    }>RAM
+    
     /* read only data */
     .rodata ALIGN (0x1000) : {
         *(.rodata)
@@ -46,27 +52,21 @@ SECTIONS{
         *(.eh_frame)
         *(.eh_frame_hdr)
     }>RAM
-
-    /* Block Started by Symbol */
-    .bss ALIGN (0x1000) : {
-        *(COMMON)
-        *(.bss)
-    }>RAM
     
     /* static data */
-    .sdata ALIGN (0x1000) : {
+    .sdata ALIGN (0x4) : {
         *(.sdata)
     }>RAM
     
     /* data */
-    .data ALIGN (0x1000) : {
+    .data ALIGN (0x4) : {
         *(.data.*)
         *(.got2)
         *(.fixup)
     }>RAM
    
 	/* code */
-    .text ALIGN (0x1000) : {
+    .text ALIGN (0x4) : {
         __text = .;
     	*(.boot)
     	*(.vector_code)
@@ -82,7 +82,7 @@ SECTIONS{
         _euser_text = ALIGN(0x1000);
     }
         
-    .user_data ALIGN (0x1000) :
+    .user_data ALIGN (0x4) :
     {
         __user_data = .;
         *(.user_data)
