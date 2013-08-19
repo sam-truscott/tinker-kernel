@@ -127,7 +127,7 @@ bool_t 	__mem_init_memory_pool(
 
 	pool_info->first_block = first_block;
 
-	if ( pool )
+	if (pool)
 	{
 		*pool = pool_info;
 	}
@@ -482,6 +482,13 @@ void __mem_free(
 		}
 
 		pool_info = pool_info->next_pool_info;
+	}
+
+	if (!found)
+	{
+#if defined (__MEMORY_DEBUGGING)
+		__debug_print("mem: free - couldn't find %x in pool %x\n", base, pool);
+#endif
 	}
 }
 
