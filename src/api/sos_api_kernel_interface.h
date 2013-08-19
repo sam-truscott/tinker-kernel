@@ -40,9 +40,7 @@ typedef enum __syscall_function
 	syscall_receive_message,
 	syscall_received_message,
 
-	syscall_malloc,
-	syscall_mfree,
-	syscall_memset,
+	syscall_debug,
 
 	syscall_load_thread
 
