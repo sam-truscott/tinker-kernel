@@ -322,8 +322,8 @@ static void fake_debug(char* msg,...) {}
 					 DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i); \
 					 ok = true; \
 					 map->size--; \
-					 bucket->entries[i] = NULL; \
 					 __mem_free(map->pool, bucket->entries[i]); \
+					 bucket->entries[i] = NULL; \
 				 } \
 			 } \
 		 } \

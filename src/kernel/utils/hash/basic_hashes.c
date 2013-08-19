@@ -39,7 +39,8 @@ int32_t __hash_basic_string(const void * ptr, const uint32_t size)
 	int32_t off = 0;
 	char * val = (char*)ptr;
 
-	for (uint32_t i = 0; i < size; i++) {
+	for (uint32_t i = 0; i < size; i++)
+	{
 		h = 31*h + val[off++];
 	}
 	return h;

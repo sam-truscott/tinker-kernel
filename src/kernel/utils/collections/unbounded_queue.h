@@ -107,9 +107,9 @@
 	\
 	PREFIX void QUEUE_T##_delete(QUEUE_T * queue) \
 	{ \
-		if ( queue ) \
+		if (queue) \
 		{ \
-			if ( queue->list ) \
+			if (queue->list) \
 			{ \
 				QUEUE_T##_list_t_delete(queue->list);\
 			} \

@@ -221,7 +221,7 @@
 			if (list->size > index) \
 			{ \
 				LIST_T##_element_t * e = list->head; \
-				LIST_T##_element_t * p = NULL; \
+				LIST_T##_element_t * p = e; \
 				uint32_t c = 0; \
 				/*
 				 * find the right element, keeping track
