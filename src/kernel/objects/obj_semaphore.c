@@ -252,6 +252,8 @@ error_t __obj_release_semaphore(
 			semaphore->sem_count++;
 			semaphore->sem_alloc--;
 
+			thread_obj_queue_t_remove(semaphore->owners, thread);
+
 			/* the thread was a lower priority thread that had
 			 * its priority temporarily elevated to avoid priority
 			 * inversion so the original thread priority is restored
@@ -259,7 +261,6 @@ error_t __obj_release_semaphore(
 			const priority_t thread_orig_priority = __obj_get_thread_original_priority_ex(thread);
 			if ( semaphore->highest_priority != thread_orig_priority)
 			{
-				thread_obj_queue_t_remove(semaphore->owners, thread);
 				__obj_reset_thread_original_priority(thread);
 			}
 			/* need to keep the highest priority at the right level */
