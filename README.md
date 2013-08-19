@@ -57,6 +57,7 @@ issues / todo
 
 these are the things I need to address in a rough order
 
+** fix the problem with mem pools not freeing memory they've allocated
 * option to make pipes zero-copy via mmu (memory is already aligned)
 * shms and timers aren't implemented yet - use the mmu for performance
 * break up the syscalls into seperate static/inline functions
