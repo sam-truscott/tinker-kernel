@@ -83,3 +83,8 @@ error_t sos_exit_thread(void)
 {
 	return SOS_API_CALL_0(syscall_exit_thread);
 }
+
+void sos_debug(const char * const str)
+{
+	SOS_API_CALL_1(syscall_debug, (uint32_t)str);
+}

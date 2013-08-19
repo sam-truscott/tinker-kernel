@@ -148,6 +148,16 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
+		case syscall_debug:
+		{
+			const char * const msg = (const char * const)param[0];
+			if (msg)
+			{
+				__print_out(msg);
+			}
+		}
+			break;
+
 		case syscall_thread_priority:
 			{
 				object_number_t thread_no = (object_number_t)param[0];
@@ -202,28 +212,14 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					// get the object for the process
 					__object_process_t * const proc_obj =
 							__obj_cast_process(
-									__obj_get_object(table,
+								__obj_get_object(table,
 									__obj_thread_get_proc_oid(thread_obj)));
 
 					if (ret == NO_ERROR && proc_obj)
 					{
-						__obj_process_thread(proc_obj, thread_obj);
+						__obj_process_thread_exit(proc_obj, thread_obj);
 					}
 				}
-			}
-			break;
-
-		case syscall_malloc:
-            if ( param[0] && !param[1] && !param[2] && !param[3] && !param[4] && !param[5])
-            {
-            	ret = (uint32_t)__util_malloc(param[0]);
-            }
-			break;
-
-		case syscall_mfree:
-			if ( param[0] )
-			{
-				__util_free((void *)param[0]);
 			}
 			break;
 

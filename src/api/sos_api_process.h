@@ -53,4 +53,6 @@ error_t	sos_get_thread_priority(
 
 error_t sos_exit_thread(void) SOS_API_SUFFIX;
 
+void sos_debug(const char * const str) SOS_API_SUFFIX;
+
 #endif /* SOS_API_PROCESS_H_ */

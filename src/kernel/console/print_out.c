@@ -84,6 +84,11 @@ void __debug_print(const char * const msg, ...)
 #endif
 }
 
+void __print_out(const char * const msg)
+{
+	__print_out_print_string(msg);
+}
+
 void __print_out_process(va_list * const arguments, const char ** const ptr)
 {
 	char * rptr = (char*)(*ptr);

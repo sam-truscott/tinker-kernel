@@ -13,4 +13,6 @@ void __error_print(const char * const msg, ...);
 
 void __debug_print(const char * const msg, ...);
 
+void __print_out(const char * const msg);
+
 #endif /* DEBUG_PRINT_H_ */
