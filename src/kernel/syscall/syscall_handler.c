@@ -209,17 +209,15 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					const __object_table_t * const table =
 							__process_get_object_table(__thread_get_parent(this_thread));
 
-					ret = __obj_exit_thread(thread_obj);
-
 					// get the object for the process
 					__object_process_t * const proc_obj =
 							__obj_cast_process(
 								__obj_get_object(table,
 									__obj_thread_get_proc_oid(thread_obj)));
 
-					if (ret == NO_ERROR && proc_obj)
+					if (proc_obj)
 					{
-						__obj_process_thread_exit(proc_obj, thread_obj);
+						ret = __obj_process_thread_exit(proc_obj, thread_obj);
 					}
 				}
 			}

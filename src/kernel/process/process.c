@@ -236,40 +236,42 @@ void __process_exit(__process_t * const process)
 			__object_thread_t * const thread = __obj_cast_thread(object);
 			if (thread)
 			{
+				const object_number_t oid = __obj_thread_get_oid(thread);
 				__obj_exit_thread(thread);
-				__obj_remove_object(
-						process->object_table,
-						__obj_thread_get_oid(thread));
+				__obj_remove_object(process->object_table, oid);
 			}
 			else
 			{
 				__object_sema_t * const sema = __obj_cast_semaphore(object);
 				if (sema)
 				{
+					const object_number_t oid = __obj_semaphore_get_oid(sema);
 					__object_delete_semaphore(sema);
 					__obj_remove_object(
 							process->object_table,
-							__obj_semaphore_get_oid(sema));
+							oid);
 				}
 				else
 				{
 					__object_process_t * const process_obj = __obj_cast_process(object);
 					if (process_obj)
 					{
+						const object_number_t oid = __obj_process_get_oid(process_obj);
 						__obj_delete_process(process_obj);
 						__obj_remove_object(
 								process->object_table,
-								__obj_process_get_oid(process_obj));
+								oid);
 					}
 					else
 					{
 						__object_pipe_t * const pipe_obj = __obj_cast_pipe(object);
 						if (pipe_obj)
 						{
+							const object_number_t oid = __obj_pipe_get_oid(pipe_obj);
 							__obj_delete_pipe(pipe_obj);
 							__obj_remove_object(
 									process->object_table,
-									__obj_pipe_get_oid(pipe_obj));
+									oid);
 						}
 					}
 				}
@@ -292,4 +294,5 @@ void __process_exit(__process_t * const process)
 	}
 
 	__mem_free(process->parent, process->memory_pool);
+	__mem_free(process->parent, process);
 }
