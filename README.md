@@ -3,8 +3,6 @@ sos3
 
 microkernel written in c and asm.
 
-* currently broken as i've just pulled in dlmalloc and integrating it
-
 supported targets:
 - powerpc32 (gdb simulator)
 
@@ -59,17 +57,10 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* fix the problem with mem pools not freeing memory they've allocated
-* re-write the memory pools, it's from the original sos2 code and poor
-
-1. [done  ] import dlmalloc and configure it
-2. [broken] change mempool to use dlmalloc (mspace)
-
 * option to make pipes zero-copy via mmu (memory is already aligned)
 * shms and timers aren't implemented yet - use the mmu for performance
 * break up the syscalls into seperate static/inline functions
 * makefile
-* replace the mempool implementation with dlmalloc (?)
 * add mechanism to load elfs
 * create static library for api/syscalls 
 * create newlib port
