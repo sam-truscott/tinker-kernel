@@ -9,7 +9,7 @@
 typedef uint32_t size_t;
 typedef int32_t ptrdiff_t;
 
-static inline void memcpy(void * dst, const void * src, const uint32_t size)
+extern void memcpy(void * dst, const void * src, const uint32_t size)
 {
 	__util_memcpy(dst, src, size);
 }
