@@ -49,7 +49,7 @@ error_t __process_create(
 		const __mem_pool_info_t * pool,
 		__process_t ** process)
 {
-	__process_t * p = (__process_t*)__mem_alloc_aligned(mempool, sizeof(__process_t), MMU_PAGE_SIZE);
+	__process_t * p = (__process_t*)__mem_alloc(mempool, sizeof(__process_t));
 	error_t ret = NO_ERROR;
 	if (p)
 	{
