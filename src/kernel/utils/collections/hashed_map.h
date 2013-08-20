@@ -61,13 +61,13 @@
 #define BUCKET_SIZE 10
 
 #if defined(__DEBUG_COLLECTIONS)
-#define DEBUG __debug_print
+#define HASH_MAP_DEBUG __debug_print
 #else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 static void fake_debug(char* msg,...) __attribute__((used));
 static void fake_debug(char* msg,...) {}
-#define DEBUG fake_debug
+#define HASH_MAP_DEBUG fake_debug
 #pragma GCC diagnostic pop
 #endif
 
@@ -186,7 +186,7 @@ static void fake_debug(char* msg,...) {}
 		map->key_equal = hash_key_equal; \
 		map->pool = pool; \
 		map->key_is_value = key_is_value; \
-		DEBUG("hashed_map: Creating %d buckets\n", MAP_CAPACITY/BUCKET_SIZE); \
+		HASH_MAP_DEBUG("hashed_map: Creating %d buckets\n", MAP_CAPACITY/BUCKET_SIZE); \
 		for ( uint32_t tmp = 0 ; tmp < MAP_CAPACITY/BUCKET_SIZE ; tmp++ ) \
 		{ \
 			map->buckets[tmp] = NULL; \
@@ -256,7 +256,7 @@ static void fake_debug(char* msg,...) {}
 				{ \
 					if (map->key_equal(bucket->entries[i]->key,key)) \
 					{ \
-						DEBUG("hashed_map: get entry in bucket %d entry %d\n", index, i); \
+						HASH_MAP_DEBUG("hashed_map: get entry in bucket %d entry %d\n", index, i); \
 						*value = bucket->entries[i]->value; \
 						found = true; \
 					} \
@@ -288,7 +288,7 @@ static void fake_debug(char* msg,...) {}
 				{ \
 					if (!bucket->entries[i]) \
 					{ \
-						DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, i); \
+						HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, i); \
 						bucket->entries[i] = __mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
 						memset(bucket->entries[i], 0, sizeof(HASH_MAP_T##_entry_t)); \
 						HASH_MAP_T##_copy_key(bucket->entries[i], key); \
@@ -319,7 +319,7 @@ static void fake_debug(char* msg,...) {}
 			 { \
 				 if (map->key_equal(bucket->entries[i]->key,key)) \
 				 { \
-					 DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i); \
+					 HASH_MAP_DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i); \
 					 ok = true; \
 					 map->size--; \
 					 __mem_free(map->pool, bucket->entries[i]); \
@@ -354,7 +354,7 @@ static void fake_debug(char* msg,...) {}
 		if (map) \
 		{ \
 			const int32_t index = HASH_MAP_T##_index_of(map, key); \
-			DEBUG("hashed_map: checking for key in bucket %d\n", index); \
+			HASH_MAP_DEBUG("hashed_map: checking for key in bucket %d\n", index); \
 			if (map->buckets[index]) \
 			{ \
 				uint32_t i; \

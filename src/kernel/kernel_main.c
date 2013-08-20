@@ -12,7 +12,7 @@
 #include "kernel_initialise.h"
 #include "kernel_version.h"
 #include "kernel_assert.h"
-#include "../arch/tgt.h"
+#include "arch/tgt.h"
 #include "console/print_out.h"
 #include "kernel/shell/kshell.h"
 #include "kernel/process/process_manager.h"
