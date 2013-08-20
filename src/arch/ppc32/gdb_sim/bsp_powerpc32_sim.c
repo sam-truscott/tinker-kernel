@@ -341,7 +341,8 @@ static void __bsp_external_interrupt(
 		__tgt_context_t * context,
 		bool_t fp_enabled)
 {
-	if ( vector && context && fp_enabled ) {}
+	if (fp_enabled) {}
+	if (vector && context) {}
 	const uint32_t external_vector = opic_ack(&opic_intc);
 	__int_handle_external_vector(external_vector);
 	opic_end_isr(&opic_intc, external_vector);
@@ -372,7 +373,8 @@ static void __bsp_fatal_program_error(
 		__tgt_context_t * context,
 		bool_t fp_enabled)
 {
-	if ( vector && fp_enabled )
+	if (fp_enabled) {}
+	if (vector)
 	{
 		char id[2] = {0,0};
 		char * name = bsp_vector_names[vector];
@@ -430,6 +432,7 @@ static void __bsp_system_call_request(
 		__tgt_context_t * context,
 		bool_t fp_enabled)
 {
+	__ppc_set_msr(__ppc_get_msr() | MSR_FLAG_RI);
 	if ( fp_enabled ) {}
 	if ( vector == __ppc32_vector_syscall )
 	{

@@ -34,7 +34,7 @@ bool_t 	__mem_init_memory_pool(
 	__mem_pool_info_t * pool_info = NULL;
 
 #if defined (__MEMORY_DEBUGGING)
-	__debug_print("mem: creating new pool at %x for %d bytes\n", base_addr, pool_size);
+	__debug_print("mem: creating new pool at 0x%x for %d bytes\n", base_addr, pool_size);
 #endif
 
 	/*
@@ -102,7 +102,7 @@ void* __mem_alloc_aligned(
 	void* new_base = NULL;
 
 #if defined (__MEMORY_DEBUGGING)
-	__debug_print("mem: looking for %d bytes in pool %x\n", size, pool);
+	__debug_print("mem: looking for %d bytes in pool 0x%x\n", size, pool);
 #endif
 
 	if ( pool != NULL )
@@ -115,7 +115,7 @@ void* __mem_alloc_aligned(
 	}
 
 #if defined (__MEMORY_DEBUGGING)
-	__debug_print("mem: base at %x, size %x\n", new_base, size);
+	__debug_print("mem: base at 0x%x, size 0x%x\n", new_base, size);
 #endif
 
 	return new_base;
@@ -130,7 +130,7 @@ void __mem_free(
 
 uint32_t __mem_get_start_addr(const __mem_pool_info_t * const pool)
 {
-	return (uint32_t)(pool + sizeof(__mem_pool_info_t));
+	return (uint32_t)(pool);
 }
 
 uint32_t __mem_get_alloc_size(const __mem_pool_info_t * const pool)
