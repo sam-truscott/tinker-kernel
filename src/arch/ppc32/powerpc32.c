@@ -228,11 +228,11 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enable
 		 * of the ISR code following the interrupt vector.
 		 */
 		uint32_t tmp_lr = vector_info->restore_lr;
-		if ( registers )
+		if (registers)
 		{
 			__ppc_isr_get_isr(vector)(vector, vector_info, fp_enabled);
 		}
-		if ( vector_info->restore_lr == 0 )
+		if (vector_info->restore_lr == 0)
 		{
 			vector_info->restore_lr = tmp_lr;
 		}
@@ -484,6 +484,7 @@ void __tgt_initialise_context(
 		ppc_context->cr = 0;
 		ppc_context->ctr = 0;
 		ppc_context->lr = exit_function;
+		ppc_context->restore_lr = 0;
 	}
 }
 
