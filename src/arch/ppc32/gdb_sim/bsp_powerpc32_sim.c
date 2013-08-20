@@ -396,31 +396,48 @@ static void __bsp_fatal_program_error(
 
 		switch(vector)
 		{
-			case __ppc32_vector_data_storage:
-				{
-					uint32_t dsisr;
-					uint32_t srr0;
-					uint32_t srr1;
+		case __ppc32_vector_program_error:
+		{
+			uint32_t srr0;
+			uint32_t srr1;
 
-					__bsp_print_str("\n\0");
+			srr0 = __ppc_get_srr0();
+			srr1 = __ppc_get_srr1();
 
-					dsisr = __ppc_get_dsisr();
-					srr0 = __ppc_get_srr0();
-					srr1 = __ppc_get_srr1();
+			__bsp_print_str("SRR0 = ");
+			__bsp_print_hex(srr0);
+			__bsp_print_str("\n\0");
 
-					__bsp_print_str("SRR0 = ");
-					__bsp_print_hex(srr0);
-					__bsp_print_str("\n\0");
+			__bsp_print_str("SRR1 = ");
+			__bsp_print_hex(srr1);
+			__bsp_print_str("\n\0");
+		}
+		break;
+		case __ppc32_vector_data_storage:
+			{
+				uint32_t dsisr;
+				uint32_t srr0;
+				uint32_t srr1;
 
-					__bsp_print_str("SRR1 = ");
-					__bsp_print_hex(srr1);
-					__bsp_print_str("\n\0");
+				__bsp_print_str("\n\0");
 
-					__bsp_print_str("DSISR = ");
-					__bsp_print_hex(dsisr);
-					__bsp_print_str("\n\n\0");
-				}
-				break;
+				dsisr = __ppc_get_dsisr();
+				srr0 = __ppc_get_srr0();
+				srr1 = __ppc_get_srr1();
+
+				__bsp_print_str("SRR0 = ");
+				__bsp_print_hex(srr0);
+				__bsp_print_str("\n\0");
+
+				__bsp_print_str("SRR1 = ");
+				__bsp_print_hex(srr1);
+				__bsp_print_str("\n\0");
+
+				__bsp_print_str("DSISR = ");
+				__bsp_print_hex(dsisr);
+				__bsp_print_str("\n\n\0");
+			}
+			break;
 		}
 
 		__int_fatal_program_error_interrupt(context);
