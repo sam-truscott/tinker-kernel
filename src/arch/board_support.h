@@ -27,6 +27,8 @@ void __bsp_setup(void);
  */
 void __bsp_enable_schedule_timer(void);
 
+void __bsp_check_timers_and_alarms(void);
+
 uint32_t __bsp_get_usable_memory_start();
 
 uint32_t __bsp_get_usable_memory_end();

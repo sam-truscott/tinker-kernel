@@ -64,3 +64,8 @@ void __util_memcpy(void * dst, const void * src, const uint32_t size)
 	}
 }
 #pragma weak __util_memcpy
+
+extern void memcpy(void * dst, const void * src, const uint32_t size)
+{
+	__util_memcpy(dst, src, size);
+}

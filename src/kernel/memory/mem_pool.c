@@ -66,7 +66,7 @@ bool_t	__mem_init_process_memory(
 	bool_t ret = false;
 
 	/* allocate that from RAM */
-	uint32_t proc_memory_pool = (uint32_t)__mem_alloc_aligned(
+	const uint32_t proc_memory_pool = (uint32_t)__mem_alloc_aligned(
 			pool,
 			size,
 			MMU_PAGE_SIZE);
@@ -105,14 +105,8 @@ void* __mem_alloc_aligned(
 	__debug_print("mem: looking for %d bytes in pool 0x%x\n", size, pool);
 #endif
 
-	if ( pool != NULL )
-	{
-		new_base = mspace_memalign(pool->space, alignment, size);
-	}
-	else
-	{
-		__kernel_assert("mem: attempt to allocate to a null pool\n", false);
-	}
+	__kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
+	new_base = mspace_memalign(pool->space, alignment, size);
 
 #if defined (__MEMORY_DEBUGGING)
 	__debug_print("mem: base at 0x%x, size 0x%x\n", new_base, size);

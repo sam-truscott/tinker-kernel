@@ -13,6 +13,7 @@
 #include "arch/ppc32/powerpc_clock.h"
 #include "arch/ppc32/powerpc32_7400.h"
 #include "arch/ppc32/powerpc32_mmu.h"
+#include "arch/ppc32/generic/ppc32_generic_bsp.h"
 
 #include "kernel/kernel_initialise.h"
 #include "kernel/interrupts/interrupt_manager.h"
@@ -20,8 +21,6 @@
 #include "kernel/process/process_manager.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"
-#include "kernel/utils/util_strlen.h"
-#include "kernel/utils/util_i_to_h.h"
 
 #include "devices/serial/uart16550/uart16550.h"
 #include "devices/interrupt_controller/opic/opic_intc.h"
@@ -29,50 +28,6 @@
 
 #define UART_1_BASE_ADDRESS (void*)(0xf40002F8)
 #define UART_2_BASE_ADDRESS (void*)(0xf40003F8)
-
-static void __bsp_print_str(char * str);
-
-static void __bsp_print_hex(uint32_t i);
-
-/**
- * External Interrupt by a Hardware Device
- * @param vector The interrupt vector from the controller
- * @param context The saved context from the interruption
- */
-static void __bsp_external_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
-
-/**
- * Decrementer Interrupt by the PowerPC
- * @param vector The interrupt vector from the controller
- * @param context The saved context from the interruption
- */
-static void __bsp_decrementer_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
-
-/**
- * All program error interrupts
- * @param vector The interrupt vector from the controller
- * @param context The saved context from the interruption
- */
-static void __bsp_fatal_program_error(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
-
-/**
- * Requests from programs to perform system operations
- * @param vector The interrupt vector from the controller
- * @param context The saved context from the interruption
- */
-static void __bsp_system_call_request(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
 
 /**
  * The device information for port 1 of the UART 16550
@@ -87,22 +42,16 @@ static __ppc32_pteg_t ptegs[16 * 1024] __attribute__((section(".page_table"))); 
 
 static __ppc32_pt_t page_table;
 
-static char bsp_vector_names[15][27] =
-{
-		"\0",
-		"SYSTEM RESET\0",
-		"MACHINE CHECK\0",
-		"DATA STORAGE\0",
-		"INSTRUCTION STORAGE\0",
-		"EXTERNAL INTERRUPT\0",
-		"ALIGNMENT\0",
-		"PROGRAM ERROR\0",
-		"FLOATING POINT UNAVAILABLE\0",
-		"DECREMENTER\0",
-		"SYSCALL\0",
-		"TRACE\0",
-		"FLOATING POINT ASSIST\0"
-};
+
+/**
+ * External Interrupt by a Hardware Device
+ * @param vector The interrupt vector from the controller
+ * @param context The saved context from the interruption
+ */
+static void __bsp_external_interrupt(
+		uint32_t vector,
+		__tgt_context_t * context,
+		bool_t fp_enabled);
 
 void __bsp_initialise(void)
 {
@@ -305,6 +254,23 @@ void __bsp_enable_schedule_timer(void)
 	__ppc_set_decrementer(100000);
 }
 
+static void __bsp_external_interrupt(
+		uint32_t vector,
+		__tgt_context_t * context,
+		bool_t fp_enabled)
+{
+	if (fp_enabled) {}
+	if (vector && context) {}
+	const uint32_t external_vector = opic_ack(&opic_intc);
+	__int_handle_external_vector(external_vector);
+	opic_end_isr(&opic_intc, external_vector);
+}
+
+void __bsp_check_timers_and_alarms(void)
+{
+	__ppc_check_timer(&ppc32_time_base_timer);
+}
+
 uint32_t __bsp_get_usable_memory_start()
 {
 	extern uint32_t end;
@@ -325,147 +291,9 @@ void __bsp_write_debug_char(const char c)
 char __bsp_read_debug_char(void)
 {
 	char c = 0;
-	while (c == 0 )
+	while (c == 0)
 	{
 		rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
 	}
 	return c;
-}
-
-/*
- * Internal stuff
- */
-
-static void __bsp_external_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
-{
-	if (fp_enabled) {}
-	if (vector && context) {}
-	const uint32_t external_vector = opic_ack(&opic_intc);
-	__int_handle_external_vector(external_vector);
-	opic_end_isr(&opic_intc, external_vector);
-}
-
-static void __bsp_decrementer_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
-{
-	__asm__("mfdec %r10");
-	if ( vector == __ppc32_vector_decrementer )
-	{
-		/* check for any timers that may have expired */
-		__ppc_check_timer(&ppc32_time_base_timer);
-
-		/* FIXME context_size should depend on bool fp_enabled */
-		if ( fp_enabled ) {}
-
-		/* switch the context afterwards as what we change to may
-		 * have changed because of any alarms/timers */
-		__int_context_switch_interrupt(context);
-	}
-}
-
-static void __bsp_fatal_program_error(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
-{
-	if (fp_enabled) {}
-	if (vector)
-	{
-		char id[2] = {0,0};
-		char * name = bsp_vector_names[vector];
-
-		__bsp_print_str("BSP FATAL EXCEPTION \0");
-
-		if ( vector < 10 )
-		{
-			id[0] = vector + '0';
-		}
-		else
-		{
-			/* TODO Support debugging of fatal interrupts >= 10 vector ID */
-		}
-		__bsp_print_str(id);
-		__bsp_print_str(" \0");
-		__bsp_print_str(name);
-		__bsp_print_str("\n\0");
-
-		switch(vector)
-		{
-		case __ppc32_vector_program_error:
-		{
-			uint32_t srr0;
-			uint32_t srr1;
-
-			srr0 = __ppc_get_srr0();
-			srr1 = __ppc_get_srr1();
-
-			__bsp_print_str("SRR0 = ");
-			__bsp_print_hex(srr0);
-			__bsp_print_str("\n\0");
-
-			__bsp_print_str("SRR1 = ");
-			__bsp_print_hex(srr1);
-			__bsp_print_str("\n\0");
-		}
-		break;
-		case __ppc32_vector_data_storage:
-			{
-				uint32_t dsisr;
-				uint32_t srr0;
-				uint32_t srr1;
-
-				__bsp_print_str("\n\0");
-
-				dsisr = __ppc_get_dsisr();
-				srr0 = __ppc_get_srr0();
-				srr1 = __ppc_get_srr1();
-
-				__bsp_print_str("SRR0 = ");
-				__bsp_print_hex(srr0);
-				__bsp_print_str("\n\0");
-
-				__bsp_print_str("SRR1 = ");
-				__bsp_print_hex(srr1);
-				__bsp_print_str("\n\0");
-
-				__bsp_print_str("DSISR = ");
-				__bsp_print_hex(dsisr);
-				__bsp_print_str("\n\n\0");
-			}
-			break;
-		}
-
-		__int_fatal_program_error_interrupt(context);
-	}
-}
-
-static void __bsp_system_call_request(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
-{
-	__ppc_set_msr(__ppc_get_msr() | MSR_FLAG_RI);
-	if ( fp_enabled ) {}
-	if ( vector == __ppc32_vector_syscall )
-	{
-		__int_syscall_request_interrupt(context);
-	}
-}
-
-static void __bsp_print_str(char * str)
-{
-	uint32_t len = __util_strlen(str, 255);
-	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, str, len);
-}
-
-static void __bsp_print_hex(uint32_t i)
-{
-	char reg_str[11] = {'0','x',0,0,0,0,0,0,0,0,0};
-	__util_i_to_h(i, reg_str + 2, 8);
-	__bsp_print_str(reg_str);
 }

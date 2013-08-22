@@ -44,6 +44,10 @@
 #define HAVE_MMAP 0
 #define HAVE_MREMAP 0
 
+#define USE_LOCKS 0
+#define USE_SPIN_LOCKS 0
+#define USE_RECURSIVE_LOCKS 0
+
 #define USE_BUILTIN_FFS 0
 
 //void * __sbrk(int size);

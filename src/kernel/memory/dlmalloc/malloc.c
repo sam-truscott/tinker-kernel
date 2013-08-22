@@ -9,10 +9,9 @@
 typedef uint32_t size_t;
 typedef int32_t ptrdiff_t;
 
-extern void memcpy(void * dst, const void * src, const uint32_t size)
-{
-	__util_memcpy(dst, src, size);
-}
+extern void memcpy(void * dst, const void * src, const uint32_t size);
+
+#pragma GCC optimize ("-O3")
 
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
