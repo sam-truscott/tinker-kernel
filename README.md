@@ -57,7 +57,8 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* option to make pipes zero-copy via mmu (memory is already aligned)
+* opening a pipe should block
+* time outs on pipe (open/read/write)
 * shms and timers aren't implemented yet - use the mmu for performance
 * break up the syscalls into seperate static/inline functions
 * makefile
@@ -65,6 +66,7 @@ these are the things I need to address in a rough order:
 * create static library for api/syscalls 
 * create newlib port
 * create bootstrap for kernel + services
+* option to make pipes zero-copy via mmu (memory is already aligned)
 * ARM support
 * x86 support
 * need to review it all head to toe since refactor

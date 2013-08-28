@@ -58,7 +58,6 @@
  * The hash-map is *NOT* synchronised and is therefore not thread safe.
  *
  */
-#define BUCKET_SIZE 10
 
 #if defined(__DEBUG_COLLECTIONS)
 #define HASH_MAP_DEBUG __debug_print
@@ -75,11 +74,11 @@ static void fake_debug(char* msg,...) {}
 	\
 	typedef struct HASH_MAP_T HASH_MAP_T; \
 
-#define HASH_MAP_INTERNAL_TYPE_T(HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
+#define HASH_MAP_INTERNAL_TYPE_T(HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY, BUCKET_SIZE) \
 	\
-	typedef bool_t(__hash_key_equal)(KEY_T l, KEY_T r); \
+	typedef bool_t(HASH_MAP_T##__hash_key_equal)(KEY_T l, KEY_T r); \
 	\
-	typedef int32_t(__hash_create_hash)(const void * data, const uint32_t size);\
+	typedef int32_t(HASH_MAP_T##__hash_create_hash)(const void * data, const uint32_t size);\
 	\
 	typedef struct HASH_MAP_T##_entry \
 	{ \
@@ -90,6 +89,7 @@ static void fake_debug(char* msg,...) {}
 	typedef struct HASH_MAP_T##_bucket \
 	{ \
 		HASH_MAP_T##_entry_t * entries[BUCKET_SIZE]; \
+		uint8_t size; \
 	} HASH_MAP_T##_bucket_t; \
 	\
 	typedef struct HASH_MAP_T \
@@ -97,8 +97,8 @@ static void fake_debug(char* msg,...) {}
 		uint32_t size; \
 		uint32_t capacity; \
 		HASH_MAP_T##_bucket_t * buckets[MAP_CAPACITY/BUCKET_SIZE]; \
-		__hash_create_hash * hashing_algorithm; \
-		__hash_key_equal * key_equal; \
+		HASH_MAP_T##__hash_create_hash * hashing_algorithm; \
+		HASH_MAP_T##__hash_key_equal * key_equal; \
 		__mem_pool_info_t * pool; \
 		bool_t key_is_value; \
 	} HASH_MAP_T##_internal_t;\
@@ -142,14 +142,14 @@ static void fake_debug(char* msg,...) {}
 	\
 	PREFIX void HASH_MAP_T##_initialise( \
 			HASH_MAP_T * map, \
-			__hash_create_hash * hashing_algorithm, \
-			__hash_key_equal * hash_key_equal, \
+			HASH_MAP_T##__hash_create_hash * hashing_algorithm, \
+			HASH_MAP_T##__hash_key_equal * hash_key_equal, \
 			bool_t key_is_value, \
 			__mem_pool_info_t * pool); \
 	\
 	PREFIX HASH_MAP_T * HASH_MAP_T##_create( \
-			__hash_create_hash * hashing_algorithm, \
-			__hash_key_equal * hash_key_equal, \
+			HASH_MAP_T##__hash_create_hash * hashing_algorithm, \
+			HASH_MAP_T##__hash_key_equal * hash_key_equal, \
 			bool_t key_is_value, \
 			__mem_pool_info_t * pool); \
 	\
@@ -168,15 +168,15 @@ static void fake_debug(char* msg,...) {}
 	PREFIX bool_t HASH_MAP_T##_contains_key(const HASH_MAP_T * map, KEY_T key); \
 	\
 
-#define HASH_MAP_BODY_T(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
+#define HASH_MAP_BODY_T(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY, BUCKET_SIZE) \
 	\
 	/*
 	 * Initialise an instance that is already declared (i.e. on the stack/bss)
 	 */ \
 	PREFIX void HASH_MAP_T##_initialise( \
 			HASH_MAP_T * map, \
-			__hash_create_hash * hashing_algorithm, \
-			__hash_key_equal * hash_key_equal, \
+			HASH_MAP_T##__hash_create_hash * hashing_algorithm, \
+			HASH_MAP_T##__hash_key_equal * hash_key_equal, \
 			bool_t key_is_value, \
 			__mem_pool_info_t * pool) \
 	{ \
@@ -198,8 +198,8 @@ static void fake_debug(char* msg,...) {}
 	 * if the allocation failed.
 	 */ \
 	PREFIX HASH_MAP_T * HASH_MAP_T##_create( \
-			__hash_create_hash * hashing_algorithm, \
-			__hash_key_equal * hash_key_equal, \
+			HASH_MAP_T##__hash_create_hash * hashing_algorithm, \
+			HASH_MAP_T##__hash_key_equal * hash_key_equal, \
 			bool_t key_is_value, \
 			__mem_pool_info_t * pool) \
 	{ \
@@ -279,6 +279,13 @@ static void fake_debug(char* msg,...) {}
 			{ \
 				map->buckets[index] = \
 					__mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
+				uint32_t i; \
+				HASH_MAP_T##_bucket_t * bucket = map->buckets[index]; \
+				for (i = 0 ; i < BUCKET_SIZE; i++) \
+				{ \
+					bucket->entries[i] = NULL; \
+					bucket->size = 0; \
+				} \
 			} \
 			HASH_MAP_T##_bucket_t * bucket = map->buckets[index]; \
 			if (bucket) \
@@ -293,6 +300,7 @@ static void fake_debug(char* msg,...) {}
 						memset(bucket->entries[i], 0, sizeof(HASH_MAP_T##_entry_t)); \
 						HASH_MAP_T##_copy_key(bucket->entries[i], key); \
 						bucket->entries[i]->value = value; \
+						bucket->size++; \
 						put_ok = true; \
 						map->size++; \
 					} \
@@ -312,19 +320,28 @@ static void fake_debug(char* msg,...) {}
 		 \
 		 const int32_t index = HASH_MAP_T##_index_of(map, key); \
 		 bucket = map->buckets[index]; \
-		 if ( bucket ) \
+		 if (bucket) \
 		 { \
 			 uint32_t i; \
 			 for (i = 0 ; i < BUCKET_SIZE && !ok; i++) \
 			 { \
-				 if (map->key_equal(bucket->entries[i]->key,key)) \
+				 if (bucket->entries[i]) \
 				 { \
-					 HASH_MAP_DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i); \
-					 ok = true; \
-					 map->size--; \
-					 __mem_free(map->pool, bucket->entries[i]); \
-					 bucket->entries[i] = NULL; \
+					 if (map->key_equal(bucket->entries[i]->key,key)) \
+					 { \
+						 HASH_MAP_DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i); \
+						 ok = true; \
+						 map->size--; \
+						 bucket->size--; \
+						 __mem_free(map->pool, bucket->entries[i]); \
+						 bucket->entries[i] = NULL; \
+					 } \
 				 } \
+			 } \
+			 if (!bucket->size) \
+			 { \
+				 __mem_free(map->pool, bucket); \
+				 map->buckets[index] = NULL; \
 			 } \
 		 } \
 		 \

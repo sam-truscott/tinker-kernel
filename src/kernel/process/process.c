@@ -20,10 +20,10 @@
 #include "kernel/utils/collections/hashed_map.h"
 
 HASH_MAP_TYPE_T(thread_map_t)
-HASH_MAP_INTERNAL_TYPE_T(thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
+HASH_MAP_INTERNAL_TYPE_T(thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
 HASH_MAP_SPEC_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
 HASH_FUNCS_VALUE(thread_map_t, uint32_t)
-HASH_MAP_BODY_T(static, thread_map_t, uint32_t,__thread_t*, __MAX_THREADS)
+HASH_MAP_BODY_T(static, thread_map_t, uint32_t,__thread_t*, __MAX_THREADS, 16)
 
 typedef struct __process_t
 {
@@ -295,4 +295,19 @@ void __process_exit(__process_t * const process)
 
 	__mem_free(process->parent, process->memory_pool);
 	__mem_free(process->parent, process);
+}
+
+uint32_t __process_virt_to_real(
+		const __process_t * const process,
+		const uint32_t virt)
+{
+	uint32_t real = virt;
+	if (process)
+	{
+		/* FIXME TODO should scan the sections rather than assume */
+		const uint32_t pool_start = __mem_get_start_addr(process->memory_pool);
+		real -= VIRTUAL_ADDRESS_SPACE;
+		real += pool_start;
+	}
+	return real;
 }

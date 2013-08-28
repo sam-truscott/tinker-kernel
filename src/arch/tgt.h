@@ -37,7 +37,7 @@ void __tgt_initialise_context(
 		const uint32_t exit_function);
 
 void __tgt_destroy_context(
-		const __thread_t * thread,
+		__mem_pool_info_t * const pool,
 		__tgt_context_t * const context);
 
 void __tgt_prepare_context(

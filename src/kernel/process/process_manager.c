@@ -13,8 +13,6 @@
 #include "kernel/kernel_initialise.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/utils/util_strlen.h"
-#include "kernel/utils/util_malloc.h"
-#include "kernel/utils/util_free.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_thread.h"
@@ -146,7 +144,7 @@ error_t __proc_create_process(
 				{
 					if ( process_list_t_add(__process_list, proc) == false )
 					{
-						__util_free(proc);
+						__process_exit(proc);
 						ret = OUT_OF_MEMORY;
 					}
 					else

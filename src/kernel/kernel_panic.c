@@ -22,12 +22,13 @@ void __kernel_panic(void)
 
 	__error_print("KERNEL PANIC\n");
 	__print_current_stack_trace();
+	volatile int crash = 0;
 
 	/*
 	 * Sit in a tight loop
 	 * TODO talk to the BSP/Target
 	 */
-	while(1!=2)
+	while(crash!=1)
 	{
 		/*
 		 * Sit here, quietly, waiting...

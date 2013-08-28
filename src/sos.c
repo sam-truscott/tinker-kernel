@@ -111,9 +111,6 @@ static void my_initial_thread(void)
 		sos_debug("sos: initial thread: get semaphore\n");
 		error = sos_sem_get(sem);
 
-		sos_debug("sos: initial thread: create a pipe\n");
-		error = sos_create_pipe(&tx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 1);
-
 		sos_debug("sos: initial thread: create the other thread\n");
 		error = sos_create_thread(
 				"other thread",
@@ -122,6 +119,9 @@ static void my_initial_thread(void)
 				0x1000,
 				0,
 				&other_thread);
+
+		sos_debug("sos: initial thread: create a pipe\n");
+		error = sos_create_pipe(&tx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 1);
 	}
 
 	sos_debug("sos: initial thread: delay...\n");

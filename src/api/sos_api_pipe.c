@@ -34,13 +34,18 @@ error_t sos_open_pipe(
 		const uint32_t message_size,
 		const uint32_t messages)
 {
-	return SOS_API_CALL_5(
+	error_t result = BLOCKED_RETRY;
+	while(result == BLOCKED_RETRY)
+	{
+		result = SOS_API_CALL_5(
 			syscall_open_pipe,
 			(uint32_t)pipe,
 			(uint32_t)name,
 			direction,
 			message_size,
 			messages);
+	}
+	return result;
 }
 
 error_t sos_close_pipe(sos_pipe_t pipe)
@@ -64,8 +69,8 @@ error_t sos_send_message(
 		const uint32_t message_size,
 		const bool_t block)
 {
-	error_t result = PIPE_SEND_BLOCKED;
-	while(result == PIPE_SEND_BLOCKED)
+	error_t result = BLOCKED_RETRY;
+	while(result == BLOCKED_RETRY)
 	{
 		result = SOS_API_CALL_5(
 				syscall_send_message,

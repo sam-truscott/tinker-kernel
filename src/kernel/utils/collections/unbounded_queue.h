@@ -109,11 +109,12 @@
 	{ \
 		if (queue) \
 		{ \
+			__mem_pool_info_t * pool = queue->list->pool; \
 			if (queue->list) \
 			{ \
 				QUEUE_T##_list_t_delete(queue->list);\
 			} \
-			__mem_free(queue->list->pool, queue); \
+			__mem_free(pool, queue); \
 		} \
 	}
 #define UNBOUNDED_QUEUE_BODY_PUSH(PREFIX, QUEUE_T, ITEM_T) \

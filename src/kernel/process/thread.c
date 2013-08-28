@@ -235,7 +235,7 @@ void __thread_exit(__thread_t * const thread)
 	// stack
 	__mem_free(pool, thread->stack);
 	// contact
-	__tgt_destroy_context(thread, thread->context);
+	__tgt_destroy_context(pool, thread->context);
 	// thread itself
 	__mem_free(pool, thread);
 }

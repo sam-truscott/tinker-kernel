@@ -489,12 +489,12 @@ void __tgt_initialise_context(
 }
 
 void __tgt_destroy_context(
-		const __thread_t * thread,
+		__mem_pool_info_t * const pool,
 		__tgt_context_t * const context)
 {
 	if (context)
 	{
-		__mem_free(__process_get_mem_pool(__thread_get_parent(thread)), context);
+		__mem_free(pool, context);
 	}
 }
 

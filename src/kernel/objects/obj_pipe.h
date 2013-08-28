@@ -33,6 +33,7 @@ error_t __obj_create_pipe(
 
 error_t __object_open_pipe(
 		__process_t * const process,
+		__object_thread_t * const thread,
 		object_number_t * objectno,
 		const char * const name,
 		const sos_pipe_direction_t direction,

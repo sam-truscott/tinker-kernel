@@ -8,14 +8,12 @@
  */
 #include "syscall_handler.h"
 
+#include "arch/tgt.h"
 #include "arch/board_support.h"
 #include "sos_api_kernel_interface.h"
 #include "kernel/kernel_initialise.h"
 #include "kernel/kernel_main.h"
-#include "arch/tgt.h"
-
 #include "kernel/process/process_manager.h"
-
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_semaphore.h"
@@ -23,9 +21,6 @@
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_pipe.h"
-
-#include "kernel/utils/util_malloc.h"
-#include "kernel/utils/util_free.h"
 #include "kernel/utils/util_memcpy.h"
 
 static inline object_number_t __syscall_get_thread_oid(void)
@@ -100,11 +95,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	{
 		if ( param[i] >= VIRTUAL_ADDRESS_SPACE )
 		{
-			const uint32_t pool_start = __mem_get_start_addr(
-					__process_get_mem_pool(
-							__thread_get_parent(this_thread)));
-			param[i] -= VIRTUAL_ADDRESS_SPACE;
-			param[i] += pool_start;
+			param[i] = __process_virt_to_real(__thread_get_parent(this_thread), param[i]);
 		}
 	}
 
@@ -299,6 +290,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case syscall_open_pipe:
 			ret = __object_open_pipe(
 					__thread_get_parent(this_thread),
+					__syscall_get_thread_object(),
 					(object_number_t*)param[0],
 					(const char*)param[1],
 					(const sos_pipe_direction_t)param[2],

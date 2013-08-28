@@ -274,6 +274,7 @@ error_t __obj_create_pipe(
 
 error_t __object_open_pipe(
 		__process_t * const process,
+		__object_thread_t * const thread,
 		object_number_t * objectno,
 		const char * const name,
 		const sos_pipe_direction_t direction,
@@ -294,43 +295,51 @@ error_t __object_open_pipe(
 		const __object_t * const other_obj = __obj_get_object(table, other_pipe_no);
 		other_pipe = __obj_cast_pipe(other_obj);
 
-		// check that the named object actually is a pipe
-		if (other_pipe)
+		if (other_obj)
 		{
-			// we have a pipe! check that the direction is correct
-			switch(direction)
+			// check that the named object actually is a pipe
+			if (other_pipe)
 			{
-			case PIPE_DIRECTION_UNKNOWN:
-				result = PARAMETERS_INVALID;
-				break;
-			case PIPE_SEND:
-				if (!__pipe_is_receiver(other_pipe))
+				// we have a pipe! check that the direction is correct
+				switch(direction)
 				{
-					result = PIPE_POLARITY_WRONG;
+				case PIPE_DIRECTION_UNKNOWN:
+					result = PARAMETERS_INVALID;
+					break;
+				case PIPE_SEND:
+					if (!__pipe_is_receiver(other_pipe))
+					{
+						result = PIPE_POLARITY_WRONG;
+					}
+					break;
+				case PIPE_RECEIVE:
+					if (!__pipe_is_sender(other_pipe))
+					{
+						result = PIPE_POLARITY_WRONG;
+					}
+					break;
+				case PIPE_SEND_RECEIVE:
+					if (!__pipe_is_receiver_sender(other_pipe))
+					{
+						result = PIPE_POLARITY_WRONG;
+					}
+					break;
 				}
-				break;
-			case PIPE_RECEIVE:
-				if (!__pipe_is_sender(other_pipe))
-				{
-					result = PIPE_POLARITY_WRONG;
-				}
-				break;
-			case PIPE_SEND_RECEIVE:
-				if (!__pipe_is_receiver_sender(other_pipe))
-				{
-					result = PIPE_POLARITY_WRONG;
-				}
-				break;
+			}
+			else
+			{
+				result = WRONG_OBJ_TYPE;
 			}
 		}
 		else
 		{
-			result = WRONG_OBJ_TYPE;
+			result = INVALID_OBJECT;
 		}
 	}
 	else
 	{
-		result = UNKNOWN_PIPE;
+		__registry_wait_for(thread, name);
+		result = BLOCKED_RETRY;
 	}
 
 	if (result == NO_ERROR)
@@ -489,7 +498,7 @@ error_t __obj_pipe_send_message(
 				{
 					pipe->tx_data.sending_thread = thread;
 					__obj_set_thread_waiting(thread, (__object_t*)pipe);
-					result = PIPE_SEND_BLOCKED;
+					result = BLOCKED_RETRY;
 				}
 				else
 				{

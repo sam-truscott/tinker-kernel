@@ -13,16 +13,15 @@
 #include "obj_thread.h"
 #include "kernel/kernel_assert.h"
 #include "kernel/process/process.h"
-#include "kernel/utils/util_malloc.h"
 #include "kernel/memory/memory_manager.h"
 
-HASH_MAP_INTERNAL_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_INTERNAL_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
 HASH_MAP_SPEC_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
 HASH_FUNCS_VALUE(object_map_t, object_number_t)
-HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
 
 HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(object_table_it_t, object_map_t)
-HASH_MAP_TYPE_ITERATOR_BODY(extern, object_table_it_t, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_TYPE_ITERATOR_BODY(extern, object_table_it_t, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
 
 typedef struct __object_table_t
 {

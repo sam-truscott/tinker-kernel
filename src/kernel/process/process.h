@@ -63,4 +63,8 @@ void __process_thread_exit(__process_t * const process, __thread_t * const threa
 
 void __process_exit(__process_t * const process);
 
+uint32_t __process_virt_to_real(
+		const __process_t * const process,
+		const uint32_t virt);
+
 #endif /* PROCESS_H_ */

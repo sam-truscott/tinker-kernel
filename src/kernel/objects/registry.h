@@ -13,6 +13,7 @@
 #include "sos_api_errors.h"
 #include "config.h"
 #include "kernel/process/process.h"
+#include "kernel/objects/obj_thread.h"
 
 typedef char registry_key_t[__MAX_SHARED_OBJECT_NAME_LENGTH];
 
@@ -27,6 +28,10 @@ error_t __registry_get(
 		const char * const name,
 		__process_t ** process,
 		object_number_t * objno);
+
+void __registry_wait_for(
+		__object_thread_t * const thread,
+		const char * const name);
 
 error_t __registry_remove(const char * const name);
 
