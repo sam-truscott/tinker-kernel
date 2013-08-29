@@ -32,15 +32,6 @@ object_number_t __obj_thread_get_oid(const __object_thread_t * const o);
 
 object_number_t __obj_thread_get_proc_oid(const __object_thread_t * const o);
 
-error_t __obj_pause_thread(
-		__object_thread_t * const o);
-
-error_t __obj_resume_thread(
-		__object_thread_t * const o);
-
-error_t __obj_terminate_thread(
-		__object_thread_t * const o);
-
 error_t __obj_exit_thread(
 		__object_thread_t * const o);
 
@@ -75,13 +66,7 @@ error_t __obj_reset_thread_original_priority(
 error_t __obj_set_thread_original_priority(
 		__object_thread_t * const o);
 
-error_t __obj_get_thread_original_priority(
-		__object_thread_t * const o,
-		priority_t * const p);
-
 priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o);
-
-object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o);
 
 __thread_t * __obj_get_thread(const __object_thread_t * const o);
 

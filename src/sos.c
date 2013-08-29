@@ -45,7 +45,7 @@ int kmain(void)
 
 static void my_other_thread(void)
 {
-	error_t error = NO_ERROR;
+	error_t error;
 
 	//FIXME: This needs to block#
 	sos_debug("sos: other thread: opening pipe\n");
@@ -85,7 +85,7 @@ static void my_initial_thread(void)
 	uint8_t my_priority;
 	sos_thread_t my_thread = INVALID_OBJECT_ID;
 	sos_thread_t other_thread = INVALID_OBJECT_ID;
-	error_t error = NO_ERROR;
+	error_t error;
 
 	sos_thread_t * tmp = &my_thread;
 	if (tmp) {}

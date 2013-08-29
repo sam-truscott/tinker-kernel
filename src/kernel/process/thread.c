@@ -158,12 +158,6 @@ void __thread_set_state(
 	thread->state = new_state;
 }
 
-uint32_t __thread_get_stack_size(
-		const __thread_t * const thread)
-{
-	return thread->stack_size;
-}
-
 void __thread_load_context(
 		const __thread_t * const thread,
 		__tgt_context_t * const context)
@@ -184,22 +178,10 @@ object_number_t __thread_get_object_no(
 	return thread->object_number;
 }
 
-void * __thread_get_stack_memory(
-		const __thread_t * const thread)
-{
-	return thread->stack;
-}
-
 uint32_t __thread_get_virt_stack_base(
 		const __thread_t * const thread)
 {
 	return thread->v_stack_base;
-}
-
-uint32_t __thread_get_real_stack_base(
-		const __thread_t * const thread)
-{
-	return thread->r_stack_base;
 }
 
 thread_entry_point * __thread_get_entry_point(

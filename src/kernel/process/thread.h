@@ -49,9 +49,6 @@ void __thread_set_state(
 		__thread_t * const thread,
 		const __thread_state_t new_state);
 
-uint32_t __thread_get_stack_size(
-		const __thread_t * const thread);
-
 priority_t __thread_get_priority(
 		const __thread_t * const thread);
 
@@ -70,13 +67,7 @@ void __thread_save_context(
 object_number_t __thread_get_object_no(
 		const __thread_t * const thread);
 
-void * __thread_get_stack_memory(
-		const __thread_t * const thread);
-
 uint32_t __thread_get_virt_stack_base(
-		const __thread_t * const thread);
-
-uint32_t __thread_get_real_stack_base(
 		const __thread_t * const thread);
 
 thread_entry_point * __thread_get_entry_point(

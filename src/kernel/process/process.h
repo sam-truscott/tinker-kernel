@@ -55,8 +55,6 @@ __thread_t * __process_get_main_thread(const __process_t * process);
 
 uint32_t __process_get_thread_count(const __process_t * process);
 
-__thread_t * __process_get_thread(const __process_t * process, const uint32_t tid);
-
 const mem_section_t * __process_get_first_section(const __process_t * const process);
 
 void __process_thread_exit(__process_t * const process, __thread_t * const thread);

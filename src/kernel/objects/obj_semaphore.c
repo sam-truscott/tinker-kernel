@@ -63,8 +63,7 @@ __object_sema_t * __obj_cast_semaphore(__object_t * o)
 	if(o)
 	{
 		const __object_sema_t * const tmp = (const __object_sema_t*)o;
-		if (tmp->object.initialised == OBJECT_INITIALISED
-			&& tmp->object.type == SEMAPHORE_OBJ)
+		if (tmp->object.type == SEMAPHORE_OBJ)
 		{
 			result = (__object_sema_t*)tmp;
 		}
@@ -78,10 +77,7 @@ object_number_t __obj_semaphore_get_oid
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
 	{
-		if (o->object.initialised == OBJECT_INITIALISED)
-		{
-			oid = o->object.object_number;
-		}
+		oid = o->object.object_number;
 	}
 	return oid;
 }

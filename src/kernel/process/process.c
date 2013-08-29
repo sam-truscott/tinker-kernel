@@ -181,11 +181,14 @@ bool_t __process_add_thread(
 				process->object_number,
 				 objno);
 
-		__thread_set_oid(thread, *objno);
-
-		thread_map_t_put(process->threads, thread_id, thread);
-
-		ret = true;
+		if (ret)
+		{
+			__thread_set_oid(thread, *objno);
+			if(!thread_map_t_put(process->threads, thread_id, thread))
+			{
+				ret = OUT_OF_MEMORY;
+			}
+		}
 	}
 	return ret;
 }
@@ -198,13 +201,6 @@ __thread_t * __process_get_main_thread(const __process_t * process)
 uint32_t __process_get_thread_count(const __process_t * process)
 {
 	return thread_map_t_size(process->threads);
-}
-
-__thread_t * __process_get_thread(const __process_t * process, const uint32_t tid)
-{
-	__thread_t * t = NULL;
-	thread_map_t_get(process->threads, tid, &t);
-	return t;
 }
 
 const mem_section_t * __process_get_first_section(const __process_t * const process)

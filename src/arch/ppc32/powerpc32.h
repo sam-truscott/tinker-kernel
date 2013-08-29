@@ -114,11 +114,6 @@ void __ppc_isr_attach(const uint32_t vector, __ppc_isr * isr);
 __ppc_isr * __ppc_isr_get_isr(const uint32_t vector);
 
 /**
- * Detach an Interrupt Service Routine from a Vector
- */
-void __ppc_isr_detach(const uint32_t vector);
-
-/**
  * Set the Machine State Register
  */
 void __ppc_set_msr(uint32_t msr);

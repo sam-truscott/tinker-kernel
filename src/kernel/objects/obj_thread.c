@@ -92,10 +92,7 @@ object_number_t __obj_thread_get_oid
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
 	{
-		if (o->object.initialised == OBJECT_INITIALISED)
-		{
-			oid = o->object.object_number;
-		}
+		oid = o->object.object_number;
 	}
 	return oid;
 }
@@ -105,10 +102,7 @@ object_number_t __obj_thread_get_proc_oid(const __object_thread_t * const o)
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
 	{
-		if (o->object.initialised == OBJECT_INITIALISED)
-		{
-			oid = o->process_obj_no;
-		}
+		oid = o->process_obj_no;
 	}
 	return oid;
 }
@@ -119,72 +113,11 @@ __object_thread_t * __obj_cast_thread(__object_t * o)
 	if(o)
 	{
 		const __object_thread_t * const tmp = (const __object_thread_t*)o;
-		if (tmp->object.initialised == OBJECT_INITIALISED
-			&& tmp->object.type == THREAD_OBJ)
+		if (tmp->object.type == THREAD_OBJ)
 		{
 			result = (__object_thread_t*)tmp;
 		}
 	}
-	return result;
-}
-
-error_t __obj_pause_thread(__object_thread_t * const o)
-{
-	error_t result = NO_ERROR;
-
-	if ( o )
-	{
-		__obj_lock(&o->object);
-
-		const __thread_state_t thread_state = __thread_get_state(o->thread);
-		if ( thread_state != thread_not_created &&
-				thread_state != thread_terminated )
-		{
-			__thread_set_state(o->thread, thread_paused);
-			__sch_notify_pause_thread(o->thread);
-		}
-		else
-		{
-			result = OBJECT_IN_INVALID_STATE;
-		}
-
-		__obj_release(&o->object);
-	}
-	else
-	{
-		result = INVALID_OBJECT;
-	}
-
-	return result;
-}
-
-error_t __obj_resume_thread(__object_thread_t * const o)
-{
-	error_t result = NO_ERROR;
-
-	if ( o )
-	{
-		__obj_lock(&o->object);
-
-		const __thread_state_t thread_state = __thread_get_state(o->thread);
-
-		if ( thread_state == thread_paused)
-		{
-			__thread_set_state(o->thread, thread_ready);
-			__sch_notify_resume_thread(o->thread);
-		}
-		else
-		{
-			result = OBJECT_IN_INVALID_STATE;
-		}
-
-		__obj_release(&o->object);
-	}
-	else
-	{
-		result = INVALID_OBJECT;
-	}
-
 	return result;
 }
 
@@ -222,39 +155,6 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 
 		__obj_release(&o->object);
 		__obj_delete_thread(o);
-	}
-	else
-	{
-		result = INVALID_OBJECT;
-	}
-
-	return result;
-}
-
-error_t __obj_terminate_thread(__object_thread_t * const o)
-{
-	error_t result = NO_ERROR;
-
-	if ( o )
-	{
-		__thread_t * t = o->thread;
-
-		__obj_lock(&o->object);
-
-		const __thread_state_t state = __thread_get_state(t);
-
-		if ( state != thread_terminated
-				&& state != thread_not_created)
-		{
-			__thread_set_state(t, thread_terminated);
-			__sch_notify_exit_thread(t);
-		}
-		else
-		{
-			result = OBJECT_IN_INVALID_STATE;
-		}
-
-		__obj_release(&o->object);
 	}
 	else
 	{
@@ -478,24 +378,6 @@ error_t __obj_set_thread_original_priority(__object_thread_t * const o)
 	return result;
 }
 
-error_t __obj_get_thread_original_priority(
-		__object_thread_t * const o,
-		priority_t * const p)
-{
-	error_t result = NO_ERROR;
-
-	if ( o )
-	{
-		*p = __obj_get_thread_original_priority_ex(o);
-	}
-	else
-	{
-		result = INVALID_OBJECT;
-	}
-
-	return result;
-}
-
 priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
 {
 	priority_t p;
@@ -505,11 +387,6 @@ priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
 	__obj_release(&o->object);
 
 	return p;
-}
-
-object_number_t __obj_get_thread_obj_no(const __object_thread_t * const o)
-{
-	return o->object.object_number;
 }
 
 __thread_t * __obj_get_thread(const __object_thread_t * const o)

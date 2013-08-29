@@ -279,15 +279,6 @@ void __sch_terminate_current_thread(
 	}
 }
 
-void __sch_scheduler(void)
-{
-	while(1==1)
-	{
-
-		SOS_API_CALL_0(syscall_load_thread);
-	}
-}
-
 __thread_t * __sch_get_current_thread(void)
 {
 	return __sch_current_thread;

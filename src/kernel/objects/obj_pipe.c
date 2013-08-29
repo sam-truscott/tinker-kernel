@@ -62,8 +62,7 @@ __object_pipe_t * __obj_cast_pipe(const __object_t * const o)
 	if(o)
 	{
 		const __object_pipe_t * const tmp = (const __object_pipe_t*)o;
-		if (tmp->object.initialised == OBJECT_INITIALISED
-			&& tmp->object.type == PIPE_OBJ)
+		if (tmp->object.type == PIPE_OBJ)
 		{
 			result = (__object_pipe_t*)tmp;
 		}
@@ -77,10 +76,7 @@ object_number_t __obj_pipe_get_oid
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
 	{
-		if (o->object.initialised == OBJECT_INITIALISED)
-		{
-			oid = o->object.object_number;
-		}
+		oid = o->object.object_number;
 	}
 	return oid;
 }
@@ -282,7 +278,7 @@ error_t __object_open_pipe(
 		const uint32_t messages)
 {
 	__object_pipe_t * no = NULL;
-	error_t result = NO_ERROR;
+	error_t result;
 
 	__process_t * other_proc = NULL;
 	__object_pipe_t * other_pipe = NULL;

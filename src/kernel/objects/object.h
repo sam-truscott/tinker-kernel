@@ -32,22 +32,10 @@ void __obj_initialise_object(
 		const object_number_t id,
 		const __object_type_t type);
 
-bool_t __obj_is_initialised(__object_t * const o);
-
-bool_t __obj_is_allocated(__object_t * const o);
-
 uint32_t __obj_get_number(__object_t * const o);
-
-__object_type_t __obj_get_type(__object_t * const o);
 
 void __obj_lock(__object_t * const o);
 
 void __obj_release(__object_t * const o);
-
-void __obj_increase_ref_count(__object_t * const o);
-
-void __obj_decrease_ref_count(__object_t * const o);
-
-uint32_t __obj_get_ref_count(const __object_t * const o);
 
 #endif /* OBJECT_H_ */

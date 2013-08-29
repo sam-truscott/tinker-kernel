@@ -100,14 +100,6 @@ __ppc_isr * __ppc_isr_get_isr(const uint32_t vector)
 	return the_isr;
 }
 
-void __ppc_isr_detach(const uint32_t vector)
-{
-	if ( vector < MAX_PPC_IVECT )
-	{
-		__ppc_isr_table[vector] = &__ppc_isr_default_handler;
-	}
-}
-
 void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t * context, bool_t fp_enabled)
 {
 	/**

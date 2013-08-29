@@ -397,6 +397,7 @@ static void fake_debug(char* msg,...) {}
 		HASH_MAP_T * map = HASH_MAP_T##_create(NULL, NULL, 1, NULL); \
 		HASH_MAP_T##_capacity(map); \
 		HASH_MAP_T##_size(map); \
+		HASH_MAP_T##_get(map, 0, 0); \
 		HASH_MAP_T##_delete(map); \
 	} \
 

@@ -29,8 +29,7 @@ __object_process_t * __obj_cast_process(__object_t * o)
 	if(o)
 	{
 		const __object_process_t * const tmp = (const __object_process_t*)o;
-		if (tmp->object.initialised == OBJECT_INITIALISED
-			&& tmp->object.type == PROCESS_OBJ)
+		if (tmp->object.type == PROCESS_OBJ)
 		{
 			result = (__object_process_t*)tmp;
 		}
@@ -83,7 +82,7 @@ error_t __obj_process_thread_exit(
 		__object_process_t * const o,
 		__object_thread_t * const thread)
 {
-	error_t ret = NO_ERROR;
+	error_t ret;
 	__kernel_assert("__obj_process_thread - check process object exists\n", o != NULL);
 	__kernel_assert("__obj_process_thread - check thread object exists\n", thread != NULL);
 
@@ -132,10 +131,7 @@ object_number_t __obj_process_get_oid
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
 	{
-		if (o->object.initialised == OBJECT_INITIALISED)
-		{
-			oid = o->object.object_number;
-		}
+		oid = o->object.object_number;
 	}
 	return oid;
 }

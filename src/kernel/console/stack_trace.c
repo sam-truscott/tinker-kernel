@@ -29,7 +29,7 @@ void __print_stack_trace(const uint32_t frame_pointer)
 		sp = (uint32_t*)*sp;
 		if ((uint32_t)sp >= VIRTUAL_ADDRESS_SPACE)
 		{
-			const uint32_t * real_sp = sp;
+			const uint32_t * real_sp;
 			real_sp = (const uint32_t*)__process_virt_to_real(proc, (uint32_t)sp);
 			__error_print("0x%X -> 0x%X: ", sp, real_sp);
 			sp = real_sp;
