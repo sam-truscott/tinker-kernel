@@ -80,7 +80,7 @@
 	\
 	PREFIX void QUEUE_T##_initialise(QUEUE_T * queue, __mem_pool_info_t * pool) \
 	{ \
-		if ( queue ) \
+		if (queue) \
 		{ \
 			queue->list = QUEUE_T##_list_t_create(pool); \
 		} \
@@ -90,10 +90,10 @@
 	{ \
 		QUEUE_T * queue = NULL; \
 		\
-		if ( pool ) \
+		if (pool) \
 		{ \
 			queue = (QUEUE_T*)__mem_alloc(pool, sizeof(QUEUE_T)); \
-			if ( queue ) \
+			if (queue) \
 			{ \
 				QUEUE_T##_initialise(queue, pool); \
 			} \
@@ -124,7 +124,7 @@
 	PREFIX bool_t QUEUE_T##_push(QUEUE_T * queue, ITEM_T item) \
 	{ \
 		bool_t ok = false; \
-		if ( queue && queue->list ) \
+		if (queue && queue->list) \
 		{ \
 			ok = QUEUE_T##_list_t_add(queue->list, item); \
 		} \
@@ -137,7 +137,7 @@
 	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * queue)\
 	{ \
 		bool_t ok = false; \
-		if ( queue && queue->list ) \
+		if (queue && queue->list) \
 		{ \
 			ok = QUEUE_T##_list_t_remove(queue->list, 0); \
 		} \
@@ -150,7 +150,7 @@
 	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr) \
 	{ \
 		bool_t ok = false; \
-		if ( queue && queue->list ) \
+		if (queue && queue->list) \
 		{ \
 			ok = QUEUE_T##_list_t_get(queue->list, 0, item_ptr); \
 		} \
@@ -177,7 +177,7 @@
 	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * queue) \
 	{ \
 		uint32_t size = 0; \
-		if ( queue && queue->list ) \
+		if (queue && queue->list) \
 		{ \
 			size = QUEUE_T##_list_t_size(queue->list); \
 		} \
@@ -191,12 +191,13 @@
 	{ \
 		bool_t ret = false; \
 		\
-		if ( queue && queue->list ) \
+		if (queue && queue->list) \
 		{ \
 			ret = QUEUE_T##_list_t_remove_item(queue->list, item); \
 		} \
 		\
 		return ret; \
-	}
+	} \
+	\
 
 #endif /* UNBOUNDED_QUEUE_H_ */
