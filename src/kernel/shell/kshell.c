@@ -102,6 +102,10 @@ static void __kshell_execute_command(const char* command)
 	{
 		__kshell_object_table();
 	}
+	else
+	{
+		__print_out("?\n");
+	}
 }
 
 static bool_t __kshell_strcmp(const char * a, const char * b)
