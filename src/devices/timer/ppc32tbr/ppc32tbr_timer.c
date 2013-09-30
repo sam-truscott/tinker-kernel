@@ -26,7 +26,7 @@ static void __ppc_timer_setup(
 
 static void __ppc_timer_cancel(const void * const usr_data);
 
-void __ppc_get_timer(__process_t * parent, __timer_t * timer)
+void __ppc_get_timer(const __process_t * const parent, __timer_t * const timer)
 {
 	if ( parent && timer )
 	{
@@ -47,7 +47,7 @@ void __ppc_get_timer(__process_t * parent, __timer_t * timer)
 	}
 }
 
-void __ppc_check_timer(__timer_t * timer)
+void __ppc_check_timer(__timer_t * const timer)
 {
 	if ( timer )
 	{
