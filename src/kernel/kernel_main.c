@@ -60,9 +60,9 @@ void __kernel_main(void)
 
 	kmain();
 
-#if defined ( __KERNEL_SHELL )
+#if defined (__KERNEL_SHELL)
 	__proc_create_thread(
-			idle_thread->parent, /* kernel process */
+			__thread_get_parent(idle_thread),
 			"kshell",
 			__kshell_start,
 			1,

@@ -25,6 +25,9 @@ HASH_MAP_SPEC_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
 HASH_FUNCS_VALUE(thread_map_t, uint32_t)
 HASH_MAP_BODY_T(static, thread_map_t, uint32_t,__thread_t*, __MAX_THREADS, 16)
 
+HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(thread_it_t, thread_map_t)
+HASH_MAP_TYPE_ITERATOR_BODY(extern, thread_it_t, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
+
 typedef struct __process_t
 {
 	uint32_t				process_id;
@@ -306,4 +309,9 @@ uint32_t __process_virt_to_real(
 		real += pool_start;
 	}
 	return real;
+}
+
+thread_it_t * __process_iterator(const __process_t * const process)
+{
+	return thread_it_t_create(process->threads);
 }

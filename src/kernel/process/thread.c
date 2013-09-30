@@ -210,6 +210,11 @@ void __thread_set_waiting_on(
 	thread->waiting_on = object;
 }
 
+uint32_t __thread_get_stack_size(const __thread_t * const thread)
+{
+	return thread->stack_size;
+}
+
 void __thread_exit(__thread_t * const thread)
 {
 	__mem_pool_info_t * const pool = __process_get_mem_pool(thread->parent);

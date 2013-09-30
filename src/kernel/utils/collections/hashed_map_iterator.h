@@ -28,11 +28,7 @@
 		uint32_t entry; \
 	} ITERATOR_T##_internal_t;\
 
-#define HASH_MAP_TYPE_ITERATOR_SPEC(PREFIX, ITERATOR_T, HASH_MAP_T, VALUE_T) \
-	\
-	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, HASH_MAP_T * map); \
-	\
-	PREFIX ITERATOR_T * ITERATOR_T##_create(HASH_MAP_T * map); \
+#define HASH_MAP_TYPE_ITERATOR_SPEC(PREFIX, ITERATOR_T, VALUE_T) \
 	\
 	PREFIX void ITERATOR_T##_delete(ITERATOR_T * it); \
 	\
@@ -44,6 +40,10 @@
 	\
 
 #define HASH_MAP_TYPE_ITERATOR_BODY(PREFIX, ITERATOR_T, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY, BUCKET_SIZE)\
+	\
+	PREFIX ITERATOR_T * ITERATOR_T##_create(HASH_MAP_T * map); \
+	\
+	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, HASH_MAP_T * map); \
 	\
 	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, HASH_MAP_T * map) \
 	{ \

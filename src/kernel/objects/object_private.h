@@ -14,7 +14,6 @@
 typedef struct __object_t
 {
 	object_number_t object_number;
-	__spinlock_t lock;
 	__object_type_t type;
 } __object_internal_t;
 

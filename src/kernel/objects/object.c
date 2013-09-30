@@ -16,32 +16,27 @@ void __obj_initialise_object(
 		const object_number_t id,
 		const __object_type_t type)
 {
-	__tgt_acquire_lock(&o->lock);
 	o->object_number = id;
 	o->type = type;
-	__tgt_release_lock(&o->lock);
 }
 
-uint32_t __obj_get_number(__object_t * const o)
+__object_type_t __obj_get_type(const __object_t * const o)
 {
-	__tgt_acquire_lock(&o->lock);
-	uint32_t on = o->object_number;
-	__tgt_release_lock(&o->lock);
-	return on;
+	__object_type_t type = UNKNOWN_OBJ;
+	if (o)
+	{
+		type = o->type;
+	}
+	return type;
 }
 
-/*
- * MANUAL LOCK: USE WITH CAUTION
- */
-void __obj_lock(__object_t * const o)
+uint32_t __obj_get_number(const __object_t * const o)
 {
-	__tgt_acquire_lock(&o->lock);
+	uint32_t no = 0;
+	if (o)
+	{
+		no = o->object_number;
+	}
+	return no;
 }
 
-/*
- * MANUAL RELEASE: USE WITH CAUTION
- */
-void __obj_release(__object_t * const o)
-{
-	__tgt_release_lock(&o->lock);
-}

@@ -37,4 +37,6 @@ void __obj_process_exit(__object_process_t * const o);
 
 void __obj_delete_process(__object_process_t * const o);
 
+uint32_t __obj_process_pid(const __object_process_t * const o);
+
 #endif /* OBJ_PROCESS_H_ */

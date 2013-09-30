@@ -52,7 +52,6 @@ error_t __obj_create_thread(
 		if ( result == NO_ERROR )
 		{
 			__obj_initialise_object(&no->object, objno, THREAD_OBJ);
-			__obj_lock(&no->object);
 			no->pool = pool;
 			no->process_obj_no = proc_obj_no;
 			no->pid = process_id;
@@ -60,7 +59,6 @@ error_t __obj_create_thread(
 			no->thread = thread;
 			no->original_priority = __thread_get_priority(thread);
 			no->priority_inheritance = 0;
-			__obj_release(&no->object);
 
 			__sch_notify_new_thread(thread);
 
@@ -129,7 +127,6 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 	{
 		__thread_t * t = NULL;
 
-		__obj_lock(&o->object);
 		t = o->thread;
 
 #if defined(__PROCESS_DEBUGGING)
@@ -153,7 +150,6 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 			result = OBJECT_IN_INVALID_STATE;
 		}
 
-		__obj_release(&o->object);
 		__obj_delete_thread(o);
 	}
 	else
@@ -175,9 +171,7 @@ error_t __obj_get_thread_state(
 	{
 		const __thread_t * t = o->thread;
 
-		__obj_lock(&o->object);
 		*state = __thread_get_state(t);
-		__obj_release(&o->object);
 	}
 	else
 	{
@@ -197,8 +191,6 @@ error_t __obj_set_thread_waiting(
 	{
 		__thread_t * t = o->thread;
 
-		__obj_lock(&o->object);
-
 		const __thread_state_t state = __thread_get_state(t);
 
 		if ( state == thread_running )
@@ -207,8 +199,6 @@ error_t __obj_set_thread_waiting(
 			__thread_set_waiting_on(t, waiting_on);
 			__sch_notify_pause_thread(t);
 		}
-
-		__obj_release(&o->object);
 	}
 	else
 	{
@@ -233,8 +223,6 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 	{
 		__thread_t * t = o->thread;
 
-		__obj_lock(&o->object);
-
 		const __thread_state_t state = __thread_get_state(t);
 
 		if ( state == thread_waiting )
@@ -243,8 +231,6 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 			__thread_set_waiting_on(t, NULL);
 			__sch_notify_resume_thread(t);
 		}
-
-		__obj_release(&o->object);
 	}
 	else
 	{
@@ -257,11 +243,12 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 priority_t __obj_get_thread_priority_ex(__object_thread_t * const o)
 {
 	const __thread_t * t = o->thread;
-	priority_t p;
+	priority_t p = 0;
 
-	__obj_lock(&o->object);
-	p = __thread_get_priority(t);
-	__obj_release(&o->object);
+	if (p)
+	{
+		p = __thread_get_priority(t);
+	}
 
 	return p;
 }
@@ -303,8 +290,6 @@ error_t __obj_set_thread_priority(
 		{
 			__thread_t * t = o->thread;
 
-			__obj_lock(&o->object);
-
 			const uint8_t old_pri = __thread_get_priority(t);
 			__thread_set_priority(t, priority);
 
@@ -312,8 +297,6 @@ error_t __obj_set_thread_priority(
 			{
 				o->original_priority = priority;
 			}
-
-			__obj_release(&o->object);
 
 			__sch_notify_change_priority(t, old_pri);
 		}
@@ -340,13 +323,9 @@ error_t __obj_reset_thread_original_priority(__object_thread_t * const o)
 
 		const uint8_t old_pri = __thread_get_priority(t);
 
-		__obj_lock(&o->object);
-
 		__thread_set_priority(t, o->original_priority);
 		o->priority_inheritance = 0;
 		__sch_notify_change_priority(t, old_pri);
-
-		__obj_release(&o->object);
 	}
 	else
 	{
@@ -364,11 +343,9 @@ error_t __obj_set_thread_original_priority(__object_thread_t * const o)
 	{
 		__thread_t * t = o->thread;
 
-		__obj_lock(&o->object);
 		o->original_priority =
 				__thread_get_priority(t);
 		o->priority_inheritance = 1;
-		__obj_release(&o->object);
 	}
 	else
 	{
@@ -380,16 +357,22 @@ error_t __obj_set_thread_original_priority(__object_thread_t * const o)
 
 priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
 {
-	priority_t p;
+	priority_t p = 0;
 
-	__obj_lock(&o->object);
-	p = o->original_priority;
-	__obj_release(&o->object);
+	if (o)
+	{
+		p = o->original_priority;
+	}
 
 	return p;
 }
 
 __thread_t * __obj_get_thread(const __object_thread_t * const o)
 {
-	return o->thread;
+	__thread_t * t = NULL;
+	if (o)
+	{
+		t = o->thread;
+	}
+	return t;
 }

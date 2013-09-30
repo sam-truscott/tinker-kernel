@@ -161,8 +161,6 @@ error_t __obj_get_semaphore(
 		{
 			__object_thread_t * first_owner_obj = NULL;
 
-			__obj_lock(&semaphore->object);
-
 			thread_obj_queue_t_front(semaphore->owners, &first_owner_obj);
 
 			const priority_t thread_priority =
@@ -218,8 +216,6 @@ error_t __obj_get_semaphore(
 				semaphore->sem_count--;
 				semaphore->sem_alloc++;
 			}
-
-			__obj_release(&semaphore->object);
 		}
 		else
 		{
@@ -242,7 +238,6 @@ error_t __obj_release_semaphore(
 
 	if ( semaphore )
 	{
-		__obj_lock(&semaphore->object);
 		if ( semaphore->sem_alloc > 0)
 		{
 			semaphore->sem_count++;
@@ -273,8 +268,6 @@ error_t __obj_release_semaphore(
 		{
 			result = SEMAPHORE_EMPTY;
 		}
-
-		__obj_release(&semaphore->object);
 	}
 	else
 	{
@@ -340,4 +333,34 @@ static void __obj_notify_semaphore_listener(
 			}
 		}
 	}
+}
+
+uint32_t __obj_get_sema_count(const __object_sema_t * const sema)
+{
+	uint32_t count = 0;
+	if (sema)
+	{
+		count = sema->sem_count;
+	}
+	return count;
+}
+
+uint32_t __obj_get_sema_alloc(const __object_sema_t * const sema)
+{
+	uint32_t alloc = 0;
+	if (sema)
+	{
+		alloc = sema->sem_alloc;
+	}
+	return alloc;
+}
+
+priority_t __obj_get_sema_highest_priority(const __object_sema_t * const sema)
+{
+	priority_t pri = 0;
+	if (sema)
+	{
+		pri = sema->highest_priority;
+	}
+	return pri;
 }

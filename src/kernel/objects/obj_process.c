@@ -13,6 +13,7 @@
 #include "kernel/kernel_assert.h"
 #include "kernel/console/print_out.h"
 #include "kernel/process/thread.h"
+#include "kernel/process/process_manager.h"
 #include "kernel/memory/memory_manager.h"
 
 typedef struct __object_process_t
@@ -57,11 +58,9 @@ error_t __obj_create_process(
 			if ( result == NO_ERROR )
 			{
 				__obj_initialise_object(&no->object, objno, PROCESS_OBJ);
-				__obj_lock(&no->object);
 				no->pid = process_id;
 				no->pool = pool;
 				no->process = process;
-				__obj_release(&no->object);
 				*object = (__object_t*)no;
 			}
 		}
@@ -117,6 +116,7 @@ void __obj_process_exit(__object_process_t * const o)
 #endif
 	__process_t * const proc = o->process;
 	__obj_delete_process(o);
+	__proc_delete_proc(proc);
 	__process_exit(proc);
 }
 
@@ -134,4 +134,9 @@ object_number_t __obj_process_get_oid
 		oid = o->object.object_number;
 	}
 	return oid;
+}
+
+uint32_t __obj_process_pid(const __object_process_t * const o)
+{
+	return o->pid;
 }

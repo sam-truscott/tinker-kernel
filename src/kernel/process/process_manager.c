@@ -22,7 +22,6 @@
 /**
  * A linked list of processes
  */
-UNBOUNDED_LIST_TYPE(process_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, __process_t*)
 UNBOUNDED_LIST_SPEC_CREATE(static, process_list_t, __process_t*)
 UNBOUNDED_LIST_SPEC_INITIALISE(static, process_list_t, __process_t*)
@@ -32,6 +31,11 @@ UNBOUNDED_LIST_BODY_CREATE(static, process_list_t, __process_t*)
 UNBOUNDED_LIST_BODY_INITIALISE(static, process_list_t, __process_t*)
 UNBOUNDED_LIST_BODY_GET(static, process_list_t, __process_t*)
 UNBOUNDED_LIST_BODY_ADD(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_REMOVE(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, process_list_t, __process_t*)
+
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, __process_t*)
+UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, __process_t*)
 
 /**
  * The static list of processes in the system
@@ -223,4 +227,15 @@ error_t __proc_create_thread(
 	}
 
 	return ret;
+}
+
+void __proc_delete_proc(const __process_t * const process)
+{
+	process_list_t_remove_item(__process_list, (__process_t*const)process);
+}
+
+process_list_it_t * __proc_list_procs(void)
+{
+	process_list_it_t * it = process_list_it_t_create(__process_list);
+	return it;
 }

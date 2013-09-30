@@ -63,11 +63,4 @@ uint32_t __tgt_get_syscall_param(const void * context, uint8_t param);
 
 void __tgt_set_syscall_return(void * context, uint32_t value);
 
-/*
- * Locks
- */
-void __tgt_acquire_lock(__spinlock_t * lock);
-
-void __tgt_release_lock(__spinlock_t * lock);
-
 #endif /* TGT_H_ */

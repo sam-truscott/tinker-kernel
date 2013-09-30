@@ -16,6 +16,9 @@
 
 typedef struct __process_t __process_t;
 
+HASH_MAP_TYPE_ITERATOR_TYPE(thread_it_t)
+HASH_MAP_TYPE_ITERATOR_SPEC(extern, thread_it_t, __thread_t*)
+
 error_t __process_create(
 		__mem_pool_info_t * const mempool,
 		const uint32_t pid,
@@ -64,5 +67,7 @@ void __process_exit(__process_t * const process);
 uint32_t __process_virt_to_real(
 		const __process_t * const process,
 		const uint32_t virt);
+
+thread_it_t * __process_iterator(const __process_t * const process);
 
 #endif /* PROCESS_H_ */

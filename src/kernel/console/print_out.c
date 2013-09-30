@@ -84,6 +84,30 @@ void __debug_print(const char * const msg, ...)
 #endif
 }
 
+void __printp_out(const char * const msg, ...)
+{
+	va_list arguments;
+	const char * ptr = msg;
+
+	va_start (arguments, msg);
+
+	while(*ptr)
+	{
+		if(*ptr == '%')
+		{
+			__print_out_process(&arguments, &ptr);
+			ptr++;
+		}
+		else
+		{
+			__print_out_print_char(*ptr);
+		}
+		ptr++;
+	}
+
+	va_end(arguments);
+}
+
 void __print_out(const char * const msg)
 {
 	__print_out_print_string(msg);

@@ -9,12 +9,16 @@
 #include "kshell.h"
 #if defined(__KERNEL_SHELL)
 #include "api/sos_api_types.h"
-#include "kernel/debug/debug_print.h"
-#include "kernel/debug/debug_read.h"
+#include "kernel/console/print_out.h"
+#include "kernel/console/read_in.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/objects/object_table.h"
+#include "kernel/objects/obj_semaphore.h"
+#include "kernel/objects/obj_process.h"
+#include "kernel/objects/obj_thread.h"
+#include "kernel/objects/obj_pipe.h"
 #include "kernel/utils/collections/hashed_map.h"
 #include "kernel/utils/collections/hashed_map_iterator.h"
 
@@ -24,7 +28,7 @@ static char __ksh_input_buffer[MAX_LINE_INPUT];
 
 static uint8_t __ksh_input_pointer;
 
-static bool __kshell_strcmp(const char * a, const char * b);
+static bool_t __kshell_strcmp(const char * a, const char * b);
 
 static void __kshell_execute_command(const char* command);
 
@@ -74,7 +78,7 @@ void __kshell_start(void)
 			{
 				__kshell_execute_command(__ksh_input_buffer);
 				__ksh_input_pointer = 0;
-				__util_memset(__ksh_input_buffer, 0, MAX_LINE_INPUT);
+				memset(__ksh_input_buffer, 0, MAX_LINE_INPUT);
 			}
 		}
 		else
@@ -100,7 +104,7 @@ static void __kshell_execute_command(const char* command)
 	}
 }
 
-static bool __kshell_strcmp(const char * a, const char * b)
+static bool_t __kshell_strcmp(const char * a, const char * b)
 {
 	const uint32_t l = __util_strlen(a, 65535);
 
@@ -110,7 +114,7 @@ static bool __kshell_strcmp(const char * a, const char * b)
 	}
 
 	uint32_t p;
-	bool ok = true;
+	bool_t ok = true;
 
 	for(p = 0 ; p < l && p < 65535 && ok ; p++) {
 		if ( a[p] != b[p])
@@ -127,17 +131,17 @@ static void __kshell_process_list(void)
 	process_list_it_t * list = NULL;
 	__process_t * proc = NULL;
 
-	list = __proc_get_new_process_iterator();
+	list = __proc_list_procs();
 	process_list_it_t_get(list, &proc);
 
-	__debug_print("ProcessId\tThreads\tName\n");
-	__debug_print("---------\t-------\t----\n");
+	__print_out("ProcessId\tThreads\tName\n");
+	__print_out("---------\t-------\t----\n");
 
 	while( proc )
 	{
-		__debug_print("\t%d", proc->process_id);
-		__debug_print("\t%d", proc->thread_count);
-		__debug_print("\t%s\n", proc->image);
+		__printp_out("\t%d", __process_get_pid(proc));
+		__printp_out("\t%d", __process_get_thread_count(proc));
+		__printp_out("\t%s\n", __process_get_image(proc));
 		if ( !process_list_it_t_next(list, &proc) )
 		{
 			proc = NULL;
@@ -152,39 +156,39 @@ static void __kshell_task_list(void)
 	process_list_it_t * list = NULL;
 	__process_t * proc = NULL;
 
-	list = __proc_get_new_process_iterator();
+	list = __proc_list_procs();
 	process_list_it_t_get(list, &proc);
 
 	while( proc )
 	{
-		thread_list_it_t * tlist = NULL;
+		thread_it_t * tlist = NULL;
 		__thread_t  * t = NULL;
 
-		tlist = thread_list_it_t_create(proc->threads);
-		thread_list_it_t_get(tlist, &t);
+		tlist = __process_iterator(proc);
+		thread_it_t_get(tlist, &t);
 
-		__debug_print("Process:\t%s\n", proc->image);
-		__debug_print("Thread ID\tStack\tPri\tState\tEntry\tName\n");
-		__debug_print("---------\t-----\t---\t-----\t-----\t----\n");
+		__printp_out("Process:\t%s\n", __process_get_image(proc));
+		__print_out("Thread ID\tStack\tPri\tState\tEntry\tName\n");
+		__print_out("---------\t-----\t---\t-----\t-----\t----\n");
 
 		while ( t )
 		{
-			__debug_print("\t%d", t->thread_id);
-			__debug_print("\t0x%X", t->stack_size);
-			__debug_print("\t%d", t->priority);
-			__debug_print("\t%s", __ksh_thread_states[t->state]);
-			__debug_print("\t%x", t->entry_point);
-			__debug_print("\t%s", t->name);
-			__debug_print("\n");
+			__printp_out("\t%d", __thread_get_tid(t));
+			__printp_out("\t0x%X", __thread_get_stack_size(t));
+			__printp_out("\t%d", __thread_get_priority(t));
+			__printp_out("\t%s", __ksh_thread_states[__thread_get_state(t)]);
+			__printp_out("\t%x", __thread_get_entry_point(t));
+			__printp_out("\t%s", __thread_get_name(t));
+			__print_out("\n");
 
-			if ( !thread_list_it_t_next(tlist, &t))
+			if ( !thread_it_t_next(tlist, &t))
 			{
 				t = NULL;
 			}
 		}
-		__debug_print("\n");
+		__print_out("\n");
 
-		thread_list_it_t_delete(tlist);
+		thread_it_t_delete(tlist);
 
 		if ( !process_list_it_t_next(list, &proc) )
 		{
@@ -200,52 +204,84 @@ static void __kshell_object_table(void)
 	process_list_it_t * list = NULL;
 	__process_t * proc = NULL;
 
-	list = __proc_get_new_process_iterator();
+	list = __proc_list_procs();
 	process_list_it_t_get(list, &proc);
 
 	while( proc )
 	{
-		__object_table_t * tbl = &proc->object_table;
+		object_table_it_t * const it = __obj_iterator(__process_get_object_table(proc));
 
-		__debug_print("Process:\t%s\n", proc->image);
-		__debug_print("ObjNo.\tInit\tAlloc\tType\t\n");
-		__debug_print("------\t----\t-----\t----\t\n");
+		__printp_out("Process:\t%s\n", __process_get_image(proc));
+		__print_out("ObjNo.\tType\t\n");
+		__print_out("------\t----\t\n");
 
-		if ( tbl )
+		if ( it )
 		{
 			__object_t * obj = NULL;
 
-			obj_tbl_it_t * it = obj_tbl_it_t_create(tbl->the_map);
-
-			obj_tbl_it_t_get(it, &obj);
+			object_table_it_t_get(it, &obj);
 
 			while( obj )
 			{
-				__debug_print("%d\t", obj->object_number);
-				__debug_print("%x\t", obj->initialised);
-				__debug_print("%x\t", obj->allocated);
-				__debug_print("%s\t", __ksh_object_types[obj->type]);
+				__object_type_t type = __obj_get_type(obj);
 
-				switch( obj->type )
+				__printp_out("%d\t", __obj_get_number(obj));
+				__printp_out("%s\t", __ksh_object_types[type]);
+
+				switch( type )
 				{
 					case UNKNOWN_OBJ:
 					case OBJECT:
 						break;
 
 					case PROCESS_OBJ:
-						__debug_print("PId:\t%d", obj->specifics.process.pid);
+					{
+						__object_process_t * const p = __obj_cast_process(obj);
+						if (p)
+						{
+							__printp_out("PId:\t%d", __obj_process_pid(p));
+						}
+						else
+						{
+							__print_out("Invalid Object");
+						}
+					}
 						break;
 					case THREAD_OBJ:
-						__debug_print("Tid:\t%d\t", obj->specifics.thread.tid);
-						__debug_print("PriInherit: %d", obj->specifics.thread.priority_inheritance);
+					{
+						__object_thread_t * const t = __obj_cast_thread(obj);
+						if (t)
+						{
+							__thread_t * thread = __obj_get_thread(t);
+							if (thread)
+							{
+								__printp_out("Tid:\t%d\t", __thread_get_tid(thread));
+								__printp_out("PriInherit: %d", __thread_get_priority(thread));
+							}
+						}
+						else
+						{
+							__print_out("Invalid Object");
+						}
+					}
 						break;
 					case PIPE_OBJ:
 						/* TODO KSHELL dump for Pipe */
 						break;
 					case SEMAPHORE_OBJ:
-						__debug_print("Count:\t%d\t", obj->specifics.semaphore.sem_count);
-						__debug_print("Alloc:\t%d\t", obj->specifics.semaphore.sem_alloc);
-						__debug_print("HighPri:%d", obj->specifics.semaphore.highest_priority);
+					{
+						__object_sema_t * const s = __obj_cast_semaphore(obj);
+						if (s)
+						{
+							__printp_out("Count:\t%d\t", __obj_get_sema_count(s));
+							__printp_out("Alloc:\t%d\t", __obj_get_sema_alloc(s));
+							__printp_out("HighPri:%d", __obj_get_sema_highest_priority(s));
+						}
+						else
+						{
+							__print_out("Invalid Object");
+						}
+					}
 						break;
 					case SHARED_MEMORY_OBJ:
 						/* TODO KSHELL dump for Shared Memory */
@@ -258,17 +294,17 @@ static void __kshell_object_table(void)
 						break;
 				}
 
-				__debug_print("\n");
+				__print_out("\n");
 
-				if ( !obj_tbl_it_t_next(it, &obj))
+				if ( !object_table_it_t_next(it, &obj))
 				{
 					obj = NULL;
 				}
 			}
 
-			__debug_print("\n");
+			__print_out("\n");
 
-			obj_tbl_it_t_delete(it);
+			object_table_it_t_delete(it);
 		}
 
 		if ( !process_list_it_t_next(list, &proc) )

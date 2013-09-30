@@ -39,4 +39,10 @@ error_t __obj_release_semaphore(
 		__object_thread_t * const thread,
 		__object_sema_t * const semaphore);
 
+uint32_t __obj_get_sema_count(const __object_sema_t * const sema);
+
+uint32_t __obj_get_sema_alloc(const __object_sema_t * const sema);
+
+priority_t __obj_get_sema_highest_priority(const __object_sema_t * const sema);
+
 #endif /* OBJ_SEMAPHORE_H_ */

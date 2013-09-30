@@ -32,10 +32,8 @@ void __obj_initialise_object(
 		const object_number_t id,
 		const __object_type_t type);
 
-uint32_t __obj_get_number(__object_t * const o);
+__object_type_t __obj_get_type(const __object_t * const o);
 
-void __obj_lock(__object_t * const o);
-
-void __obj_release(__object_t * const o);
+uint32_t __obj_get_number(const __object_t * const o);
 
 #endif /* OBJECT_H_ */

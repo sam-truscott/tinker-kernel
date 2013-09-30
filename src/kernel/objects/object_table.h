@@ -17,7 +17,7 @@
 
 HASH_MAP_TYPE_T(object_map_t)
 HASH_MAP_TYPE_ITERATOR_TYPE(object_table_it_t)
-HASH_MAP_TYPE_ITERATOR_SPEC(extern, object_table_it_t, object_map_t, __object_t*)
+HASH_MAP_TYPE_ITERATOR_SPEC(extern, object_table_it_t, __object_t*)
 
 typedef struct __object_table_t __object_table_t;
 
