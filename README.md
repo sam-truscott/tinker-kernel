@@ -57,11 +57,11 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* opening a pipe should block
-* time outs on pipe (open/read/write)
+* fix the external interrupt handlers
 * shms and timers aren't implemented yet - use the mmu for performance
+* time outs on pipe (open/read/write)
 * break up the syscalls into seperate static/inline functions
-* makefile
+* makefile (or smake)
 * add mechanism to load elfs
 * create static library for api/syscalls 
 * create newlib port
