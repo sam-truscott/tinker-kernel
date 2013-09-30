@@ -60,11 +60,6 @@
 #define __MAX_SHARED_OBJECT_NAME_LENGTH 64
 
 /**
- * The maximum number of hardware devices in the system
- */
-#define __MAX_DEVICES 1024
-
-/**
  * The maximum number of external interrupt vectors handled
  * by the master/slave interrupt controllers
  */

@@ -231,14 +231,6 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enable
 	}
 }
 
-void __tgt_disable_thread_interrupts(__tgt_context_t * const context)
-{
-	if (context)
-	{
-		context->srr1 &= (uint32_t)(~MSR_FLAG_EE);
-	}
-}
-
 static error_t __ppc_setup_paged_area(
 		const tgt_mem_t * const segment_info,
 		const mem_section_t * const mem_sec)
@@ -576,26 +568,6 @@ void __tgt_prepare_context(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[15]));
 	}
-}
-
-/*
- * These two procedures need to be re-written in
- * assembly but as long as the system remains
- * single process it isn't too bad.
- *
- * TODO switch to atomic check/set operations
- */
-void __tgt_acquire_lock(__spinlock_t * lock)
-{
-	while ( ! *lock )
-	{
-		*lock = LOCK_ON;
-	}
-}
-
-void __tgt_release_lock(__spinlock_t * lock)
-{
-	*lock = LOCK_OFF;
 }
 
 void __tgt_load_context(
