@@ -63,7 +63,7 @@
  * The maximum number of external interrupt vectors handled
  * by the master/slave interrupt controllers
  */
-#define __MAX_ISRS 1024
+#define __MAX_ISRS 256
 
 /**
  * The maximum number of alarms the system can support

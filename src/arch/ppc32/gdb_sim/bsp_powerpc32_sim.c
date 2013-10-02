@@ -23,7 +23,7 @@
 #include "kernel/time/alarm_manager.h"
 
 #include "devices/serial/uart16550/uart16550.h"
-#include "devices/interrupt_controller/opic/opic_intc.h"
+#include "devices/intc/opic/opic_intc.h"
 #include "devices/timer/ppc32tbr/ppc32tbr_timer.h"
 
 #define UART_1_BASE_ADDRESS (void*)(0xf40002F8)
@@ -34,7 +34,7 @@
  */
 static __kernel_device_t rs232_port_1;
 
-static __kernel_device_t opic_intc;
+static __intc_t * opic_intc;
 
 static __timer_t ppc32_time_base_timer;
 
@@ -234,7 +234,8 @@ void __bsp_setup(void)
 {
 	rs232_port_1.initialise(&rs232_port_1, NULL, 0);
 
-	opic_intc_get_device((void*)0x80000000, &opic_intc);
+	opic_intc = opic_intc_create(__mem_get_default_pool(), (void*)0x80000000);
+	__int_install_isr(opic_intc);
 
 	/* 1Ghz clock with 64 time-base ticks per clock.
 	 * This doesn't match the PSIM simulation but it doesn't
@@ -261,9 +262,7 @@ static void __bsp_external_interrupt(
 {
 	if (fp_enabled) {}
 	if (vector && context) {}
-	const uint32_t external_vector = opic_ack(&opic_intc);
-	__int_handle_external_vector(external_vector);
-	opic_end_isr(&opic_intc, external_vector);
+	__int_handle_external_vector();
 }
 
 void __bsp_check_timers_and_alarms(void)

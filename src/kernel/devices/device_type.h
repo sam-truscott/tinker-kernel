@@ -67,4 +67,18 @@ typedef struct __kernel_device
 	const void * user_data;
 } __kernel_device_t;
 
+typedef bool_t __kernel_intc_get_cause(uint32_t * const cause, const void * const user_data);
+typedef void   __kernel_intc_ack_cause(uint32_t const cause, const void * const user_data);
+typedef void   __kernel_intc_enable_cause(const uint32_t cause, const void * const user_data);
+typedef void   __kernel_intc_mask_cause(const uint32_t cause, const void * const user_data);
+
+typedef struct __kernel_intc
+{
+	__kernel_intc_get_cause *		get_cause;
+	__kernel_intc_ack_cause * 		ack_cause;
+	__kernel_intc_enable_cause *	enable_cause;
+	__kernel_intc_mask_cause * 		mask_cause;
+	const void * user_data;
+} __kernel_intc_t;
+
 #endif /* DEVICE_TYPE_H_ */

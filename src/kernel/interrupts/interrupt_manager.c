@@ -18,41 +18,16 @@
 #include "kernel/utils/util_memcpy.h"
 #include "arch/tgt.h"
 
-static const __kernel_device_t * __int_isrs[__MAX_ISRS];
+const __intc_t * __interrupt_manager_root = NULL;
 
-void __int_initialise(void)
+void __int_install_isr(const __intc_t * const intc)
 {
-	for ( uint32_t i = 0 ; i < __MAX_ISRS ; i++ )
-	{
-		__int_isrs[i] = NULL;
-	}
+	__interrupt_manager_root = intc;
 }
 
-void __int_install_isr(
-		 const uint32_t vector,
-		 const __kernel_device_t * const device)
+error_t __int_handle_external_vector(void)
 {
-	__int_isrs[vector] = device;
-}
-
-void __int_uninstall_isr(const uint32_t vector)
-{
-	__int_isrs[vector] = NULL;
-}
-
-error_t __int_handle_external_vector(const uint32_t vector)
-{
-	error_t ret = NO_ERROR;
-	const __kernel_device_t * const device = __int_isrs[vector];
-	if ( device && device->isr )
-	{
-		device->isr(device->user_data, vector);
-	}
-	else
-	{
-		ret = UNKNOWN_EXTERNAL_INTERRUPT_VECTOR;
-	}
-	return ret;
+	return __intc_handle(__interrupt_manager_root);
 }
 
 void __int_context_switch_interrupt(

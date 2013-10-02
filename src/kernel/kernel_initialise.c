@@ -36,9 +36,6 @@ void __kernel_initialise(void)
 	const uint32_t memory_start = __bsp_get_usable_memory_start();
 	const uint32_t memory_end = __bsp_get_usable_memory_end();
 
-	__debug_print("Interrupts: Initialising services...\n");
-	__int_initialise();
-
 	__debug_print("Time: Initialising services...\n");
 	__time_initialise();
 	__alarm_initialse();

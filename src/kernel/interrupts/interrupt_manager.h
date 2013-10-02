@@ -10,21 +10,11 @@
 #define INTERRUPT_MANAGER_H_
 
 #include "kernel/devices/device_type.h"
+#include "intc.h"
 
-/**
- * Initialise the Interrupt Services
- */
- void __int_initialise(void);
+ void __int_install_isr(const __intc_t * const intc);
 
- void __int_install_isr(
-		 const uint32_t vector,
-		 const __kernel_device_t * const device);
-
- void __int_uninstall_isr(
-		 const uint32_t vector);
-
- error_t __int_handle_external_vector(
-		 const uint32_t vector);
+ error_t __int_handle_external_vector(void);
 
 /**
  * Interrupt that occurs when a the BSP requests a context

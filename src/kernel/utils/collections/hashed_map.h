@@ -399,6 +399,7 @@ static void fake_debug(char* msg,...) {}
 		HASH_MAP_T##_size(map); \
 		HASH_MAP_T##_get(map, 0, 0); \
 		HASH_MAP_T##_delete(map); \
+		HASH_MAP_T##_remove(map, 0); \
 	} \
 
 #endif /* HASHED_MAP_H_ */

@@ -7,9 +7,8 @@
  *  All Rights Reserved.
  */
 #include "opic_timer.h"
-#include "devices/interrupt_controller/opic/opic_intc.h"
-
-#define OPIC_BIG_ENDIAN
+#include "sos_api_errors.h"
+#include "devices/intc/opic/opic_private.h"
 
 #define TIMER_DISABLED 0x80000000
 
@@ -18,13 +17,6 @@
  * @param var The variable to swap
  */
 static void opic_swap_endianness(uint32_t* var);
-
-/*
-static error_t __opic_timer_read_register(
-		const void * base_addr,
-		const UINT32 reg,
-		UINT32 *value);
-*/
 
 static error_t __opic_timer_write_register(
 		const void * usr_data,
