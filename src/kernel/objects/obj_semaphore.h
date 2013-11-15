@@ -23,10 +23,14 @@ object_number_t __obj_semaphore_get_oid
 
 error_t __obj_create_semaphore(
 		__process_t * const process,
-		__object_table_t * const table,
 		object_number_t * objectno,
 		const char * name,
 		const uint32_t initial_count);
+
+error_t __obj_open_semaphore(
+		__process_t * const process,
+		object_number_t * objectno,
+		const char * name);
 
 error_t __object_delete_semaphore(
 		__object_sema_t * const semaphore);
