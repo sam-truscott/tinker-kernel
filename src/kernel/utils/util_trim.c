@@ -8,13 +8,15 @@
  */
 #include "util_trim.h"
 
-void __util_trim(char * string, uint32_t * length)
+uint32_t __util_trim(char * const string, const uint32_t length)
 {
-	char * ptr = string + (*length) - 1;
+	char * ptr = string + length - 1;
+	int new_length = length;
 	while(*ptr == '0')
 	{
 		*ptr-- = '\0';
-		(*length)--;
+		new_length--;
 	}
+	return new_length;
 }
 #pragma weak __util_trim
