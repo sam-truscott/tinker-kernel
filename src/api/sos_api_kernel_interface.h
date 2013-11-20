@@ -29,6 +29,7 @@ typedef enum __syscall_function
 	syscall_exit_thread,
 
 	syscall_create_semaphore,
+	syscall_open_semaphore,
 	syscall_get_semaphore,
 	syscall_release_semaphore,
 

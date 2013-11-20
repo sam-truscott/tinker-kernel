@@ -12,7 +12,7 @@
 
 #include "kernel/interrupts/interrupt_manager.h"
 #include "kernel/utils/util_strlen.h"
-#include "kernel/utils/util_i_to_h.h"
+#include "kernel/utils/util_i_to_a.h"
 
 static char bsp_vector_names[15][27] =
 {

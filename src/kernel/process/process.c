@@ -44,6 +44,48 @@ typedef struct __process_t
 	__mem_pool_info_t * 	parent;
 } __process_internal_t;
 
+static void __process_add_mem_sec(
+		__process_t * const process,
+		mem_section_t * const section)
+{
+	if (process)
+	{
+		if (!process->first_section)
+		{
+			process->first_section = section;
+		}
+		else
+		{
+			mem_section_t * s = (mem_section_t*)process->first_section;
+			mem_section_t * p = NULL;
+			bool_t assigned = false;
+			while (s)
+			{
+				if (__mem_sec_get_virt_addr(section) < __mem_sec_get_virt_addr(s))
+				{
+					__mem_sec_set_next(section, s);
+					if (p != NULL)
+					{
+						__mem_sec_set_next(p, section);
+					}
+					if (s == process->first_section)
+					{
+						process->first_section = section;
+					}
+					p = s;
+					__mem_sec_set_next(section,s);
+					assigned = true;
+					break;
+				}
+			}
+			if (!assigned)
+			{
+				__mem_sec_set_next(p, section);
+			}
+		}
+	}
+}
+
 error_t __process_create(
 		__mem_pool_info_t * const mempool,
 		const uint32_t pid,
@@ -72,14 +114,31 @@ error_t __process_create(
 		p->next_thread_id = 0;
 		p->initial_thread = NULL;
 
-		p->first_section = __mem_sec_create(
+		__process_add_mem_sec(
+				p,
+				__mem_sec_invalid_section);
+
+		__process_add_mem_sec(
+				p,
+				__mem_sec_create(
 				p->memory_pool,
 				__mem_get_start_addr(p->memory_pool),
 				VIRTUAL_ADDRESS_SPACE,
 				__mem_get_alloc_size(p->memory_pool),
 				mmu_random_access_memory,
 				mmu_user_access,
-				mmu_read_write);
+				mmu_read_write));
+
+		__process_add_mem_sec(
+				p,
+				__mem_sec_create(
+						p->memory_pool,
+						0,
+						0,
+						0,
+						mmu_random_access_memory,
+						mmu_no_privilege,
+						mmu_no_access));
 
 		ret = __tgt_initialise_process(p);
 		if (ret == NO_ERROR && process)
@@ -309,6 +368,55 @@ uint32_t __process_virt_to_real(
 		real += pool_start;
 	}
 	return real;
+}
+
+uint32_t __process_find_free_vmem(
+		const __process_t * const process,
+		const uint32_t real_address,
+		const uint32_t size,
+		const mmu_memory_t type,
+		const mmu_privilege_t priv,
+		const mmu_access_t access)
+{
+	// find a hole in the memory sections that's large enough
+	// and then allocate a memory section there
+	// note: this is just a virtual allocation to avoid
+	// collisions in the memory address space of this process
+	uint32_t result = 0;
+	if (process)
+	{
+		uint32_t vmem_start = MMU_PAGE_SIZE;
+		const mem_section_t * current = process->first_section;
+		const mem_section_t * prev = NULL;
+		while (current)
+		{
+			if (__mem_sec_get_virt_addr(current) > (vmem_start + size))
+			{
+				// there's room
+				const mem_section_t * const new_section =
+						__mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
+				if (new_section)
+				{
+					// insert into list
+					if (prev)
+					{
+						__mem_sec_set_next(prev, new_section);
+					}
+					__mem_sec_set_next(new_section, current);
+				}
+				break;
+			}
+			else
+			{
+				vmem_start = __mem_sec_get_virt_addr(current);
+
+				// pad each region out by mmu page size
+				vmem_start += MMU_PAGE_SIZE;
+			}
+			prev = current;
+			current = __mem_sec_get_next(current);
+		}
+	}
 }
 
 thread_it_t * __process_iterator(const __process_t * const process)

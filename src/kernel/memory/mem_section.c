@@ -85,3 +85,11 @@ const mem_section_t * __mem_sec_get_next(const mem_section_t * const ms)
 {
 	return ms->next;
 }
+
+void __mem_sec_set_next(mem_section_t * const ms, const mem_section_t * const next)
+{
+	if (ms)
+	{
+		ms->next = (mem_section_t*)next;
+	}
+}
