@@ -8,7 +8,6 @@
  */
 #include "print_out.h"
 #include "kernel/utils/util_i_to_a.h"
-#include "kernel/utils/util_i_to_h.h"
 #include "kernel/utils/util_case.h"
 #include "arch/board_support.h"
 #include <stdarg.h>

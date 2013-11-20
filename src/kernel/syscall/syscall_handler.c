@@ -76,7 +76,7 @@ static error_t __syscall_get_sema(
 void __syscall_handle_system_call(__tgt_context_t * const context)
 {
 	__syscall_function_t api = (__syscall_function_t)__tgt_get_syscall_param(context, 0);
-	error_t ret = 0;
+	error_t ret = UNKNOWN_ERROR;
 	/* FIXME hard coded 7 */
 	uint32_t param[7];
 	param[0] = __tgt_get_syscall_param(context, 1);
@@ -200,7 +200,6 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					const __object_table_t * const table =
 							__process_get_object_table(__thread_get_parent(this_thread));
 
-					// get the object for the process
 					__object_process_t * const proc_obj =
 							__obj_cast_process(
 								__obj_get_object(table,
@@ -217,23 +216,48 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case syscall_create_semaphore:
 			if ( param[0] )
 			{
-				__object_table_t * table = NULL;
-				__process_t * proc = NULL;
-
-				if ( this_thread )
+				if (this_thread)
 				{
-					proc = __thread_get_parent(this_thread);
+					__process_t * const proc = __thread_get_parent(this_thread);
+					if (proc)
+					{
+						ret = __obj_create_semaphore(
+								proc,
+								(object_number_t*)param[0],
+								(char*)param[1],
+								(const uint32_t)param[2]);
+					}
+					else
+					{
+						ret = PARAMETERS_INVALID;
+					}
+				}
+				else
+				{
+					ret = PARAMETERS_INVALID;
 				}
 
-				table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
-
-				ret = __obj_create_semaphore(
-						proc,
-						table,
-						(object_number_t*)param[0],
-						(char*)param[1],
-						(const uint32_t)param[2]);
 			}
+			break;
+
+		case syscall_open_semaphore:
+			if (this_thread)
+			{
+				__process_t * const proc = __thread_get_parent(this_thread);
+				if (proc)
+				{
+					ret = __obj_open_semaphore(proc, (object_number_t*)param[0],(char*)param[1]);
+				}
+				else
+				{
+					ret = PARAMETERS_INVALID;
+				}
+			}
+			else
+			{
+				ret = PARAMETERS_INVALID;
+			}
+
 			break;
 
 		case syscall_get_semaphore:

@@ -179,7 +179,7 @@ error_t __obj_open_semaphore(
 					object_number_t other_obj_no;
 					if (__registry_get(name, &other_process, &other_obj_no) == NO_ERROR)
 					{
-						__object_t * const other_obj = ___obj_get_object(
+						__object_t * const other_obj = __obj_get_object(
 								__process_get_object_table(other_process),
 								other_obj_no);
 						if (other_obj)
