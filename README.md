@@ -57,9 +57,9 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* fix the external interrupt handlers
-* shms and timers aren't implemented yet - use the mmu for performance
-* time outs on pipe (open/read/write)
+* shms timers aren't implemented yet - use the mmu for performance
+* timers aren't implemented yet
+* timeouts on pipe (open/read/write)
 * break up the syscalls into seperate static/inline functions
 * makefile (or smake)
 * add mechanism to load elfs

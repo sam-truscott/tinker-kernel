@@ -37,7 +37,7 @@ typedef struct __process_t
 	object_number_t			object_number;
 	bool_t					kernel_process;
 	tgt_mem_t				segment_info;
-	const mem_section_t *	first_section;
+	mem_section_t *			first_section;
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
 	uint32_t 				next_thread_id;
 	__thread_t * 			initial_thread;
@@ -56,7 +56,7 @@ static void __process_add_mem_sec(
 		}
 		else
 		{
-			mem_section_t * s = (mem_section_t*)process->first_section;
+			mem_section_t * s = process->first_section;
 			mem_section_t * p = NULL;
 			bool_t assigned = false;
 			while (s)
@@ -113,10 +113,6 @@ error_t __process_create(
 		p->object_table = __obj_table_create(p->memory_pool);
 		p->next_thread_id = 0;
 		p->initial_thread = NULL;
-
-		__process_add_mem_sec(
-				p,
-				__mem_sec_invalid_section);
 
 		__process_add_mem_sec(
 				p,
@@ -370,8 +366,8 @@ uint32_t __process_virt_to_real(
 	return real;
 }
 
-uint32_t __process_find_free_vmem(
-		const __process_t * const process,
+uint32_t __process_allocate_vmem(
+		__process_t * const process,
 		const uint32_t real_address,
 		const uint32_t size,
 		const mmu_memory_t type,
@@ -386,14 +382,14 @@ uint32_t __process_find_free_vmem(
 	if (process)
 	{
 		uint32_t vmem_start = MMU_PAGE_SIZE;
-		const mem_section_t * current = process->first_section;
-		const mem_section_t * prev = NULL;
+		mem_section_t * current = process->first_section;
+		mem_section_t * prev = NULL;
 		while (current)
 		{
 			if (__mem_sec_get_virt_addr(current) > (vmem_start + size))
 			{
 				// there's room
-				const mem_section_t * const new_section =
+				mem_section_t * const new_section =
 						__mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
 				if (new_section)
 				{
@@ -402,7 +398,13 @@ uint32_t __process_find_free_vmem(
 					{
 						__mem_sec_set_next(prev, new_section);
 					}
+					if (!prev)
+					{
+						process->first_section = new_section;
+					}
 					__mem_sec_set_next(new_section, current);
+					__tgt_map_memory(process, new_section);
+					result = vmem_start;
 				}
 				break;
 			}
@@ -412,6 +414,34 @@ uint32_t __process_find_free_vmem(
 
 				// pad each region out by mmu page size
 				vmem_start += MMU_PAGE_SIZE;
+			}
+			prev = current;
+			current = __mem_sec_get_next(current);
+		}
+	}
+	return result;
+}
+
+void __process_free_vmem(
+		const __process_t * const process,
+		const uint32_t virt_address)
+{
+	if (process)
+	{
+		mem_section_t * current = process->first_section;
+		mem_section_t * prev = NULL;
+		while (current)
+		{
+			if (__mem_sec_get_virt_addr(current) == virt_address)
+			{
+				// insert into list
+				if (prev)
+				{
+					__mem_sec_set_next(prev, __mem_sec_get_next(current));
+				}
+				__tgt_unmap_memory(process, current);
+				__mem_sec_delete(current);
+				break;
 			}
 			prev = current;
 			current = __mem_sec_get_next(current);

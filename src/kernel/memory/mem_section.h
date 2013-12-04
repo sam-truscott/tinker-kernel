@@ -12,8 +12,6 @@
 
 typedef struct mem_section_t mem_section_t;
 
-static const mem_section_t * const __mem_sec_invalid_section;
-
 typedef enum
 {
 	mmu_device_memory,
@@ -35,7 +33,7 @@ typedef enum
 	mmu_read_write	= 2 //FIXME capitalise
 } mmu_access_t;
 
-const mem_section_t * __mem_sec_create(
+mem_section_t * __mem_sec_create(
 		__mem_pool_info_t * const pool,
 		const uint32_t real_addr,
 		const uint32_t virt_addr,
@@ -52,7 +50,7 @@ uint32_t __mem_sec_get_size(const mem_section_t * const ms);
 mmu_memory_t __mem_sec_get_mem_type(const mem_section_t * const ms);
 mmu_privilege_t __mem_sec_get_priv(const mem_section_t * const ms);
 mmu_access_t __mem_sec_get_access(const mem_section_t * const ms);
-const mem_section_t * __mem_sec_get_next(const mem_section_t * const ms);
+mem_section_t * __mem_sec_get_next(const mem_section_t * const ms);
 void __mem_sec_set_next(mem_section_t * const ms, const mem_section_t * const next);
 
 #endif /* MEM_SECTION_H_ */

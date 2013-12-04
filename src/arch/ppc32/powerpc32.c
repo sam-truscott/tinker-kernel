@@ -12,6 +12,7 @@
 #include "config.h"
 #include "kernel/time/time.h"
 #include "kernel/utils/util_memcpy.h"
+#include "kernel/kernel_assert.h"
 
 /**
  * The maximum number of interrupt service routines supported
@@ -412,6 +413,39 @@ error_t __tgt_initialise_process(__process_t * const process)
 	}
 
 	return ok;
+}
+
+void __tgt_map_memory(
+		const __process_t * const process,
+		const mem_section_t * const section)
+{
+	if (process && section)
+	{
+		const tgt_mem_t * const segment_info = __process_get_segment_info(process);
+		if (segment_info)
+		{
+			const error_t mapped_ok = __ppc_setup_paged_area(
+					segment_info,
+					section);
+			__kernel_assert("Unable to map process section memory", mapped_ok != NO_ERROR);
+		}
+	}
+}
+
+void __tgt_unmap_memory(
+		const __process_t * const process,
+		const mem_section_t * const section)
+{
+	if (process && section)
+	{
+		const tgt_mem_t * const segment_info = __process_get_segment_info(process);
+		if (segment_info)
+		{
+			__ppc_remove_paged_area(
+					segment_info,
+					section);
+		}
+	}
 }
 
 void __tgt_destroy_process(const __process_t * const process)

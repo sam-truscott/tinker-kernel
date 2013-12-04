@@ -68,13 +68,17 @@ uint32_t __process_virt_to_real(
 		const __process_t * const process,
 		const uint32_t virt);
 
-uint32_t __process_find_free_vmem(
-		const __process_t * const process,
+uint32_t __process_allocate_vmem(
+		__process_t * const process,
 		const uint32_t real_address,
 		const uint32_t size,
 		const mmu_memory_t type,
 		const mmu_privilege_t priv,
 		const mmu_access_t access);
+
+void __process_free_vmem(
+		const __process_t * const process,
+		const uint32_t virt_address);
 
 thread_it_t * __process_iterator(const __process_t * const process);
 
