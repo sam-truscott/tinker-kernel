@@ -12,6 +12,8 @@ static sos_sem_t sem __attribute__((section(".user_data")));
 static sos_sem_t sem2 __attribute__((section(".user_data")));
 static sos_pipe_t tx_pipe __attribute__((section(".user_data")));
 static sos_pipe_t rx_pipe __attribute__((section(".user_data")));
+static sos_shm_t shm __attribute__((section(".user_data")));
+static sos_shm_t shm2 __attribute__((section(".user_data")));
 
 static void my_initial_thread(void) __attribute__((section(".user_text")));
 static void my_other_thread(void) __attribute__((section(".user_text")));
@@ -81,6 +83,14 @@ static void my_other_thread(void)
 		error = sos_sem_release(sem2);
 	}
 
+	void * address = 0;
+	error = sos_shm_open(&shm2, "shm", 1024, &address);
+	if (error == NO_ERROR && address)
+	{
+		*((uint32_t*)address) = 0x55aa55aa;
+		error = sos_shm_close(shm2);
+	}
+
 	sos_debug("sos: other thread: done\n");
 }
 
@@ -100,6 +110,13 @@ static void my_initial_thread(void)
 	error = sos_get_thread_priority(
 			my_thread,
 			&my_priority);
+
+	void * address = 0;
+	error = sos_shm_create(&shm, "shm", 1024, &address);
+	if (error == NO_ERROR && address)
+	{
+		*((uint32_t*)address) = 0x55aa55aa;
+	}
 
 	sos_debug("sos: initial thread: creating count semaphore\n");
 	error = sos_sem_create(&sem, 1, "sos_test_1");
@@ -159,5 +176,8 @@ static void my_initial_thread(void)
 	sos_debug(")\n");
 	sos_debug("sos: initial thread: sending message\n");
 	error = sos_send_message(tx_pipe, PIPE_TX_SEND_ALL, "olleh\0", 6, true);
+
+	error = sos_shm_destroy(shm);
+
 	sos_debug("sos: initial thread: done\n");
 }
