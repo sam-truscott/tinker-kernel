@@ -9,6 +9,7 @@
 #include "api/sos_api.h"
 
 static sos_sem_t sem __attribute__((section(".user_data")));
+static sos_sem_t sem2 __attribute__((section(".user_data")));
 static sos_pipe_t tx_pipe __attribute__((section(".user_data")));
 static sos_pipe_t rx_pipe __attribute__((section(".user_data")));
 
@@ -68,13 +69,16 @@ static void my_other_thread(void)
 		}
 	}
 
+	sos_debug("sos: other thread: opening semaphore\n");
+	error = sos_sem_open(&sem2, "sos_test_1");
+
 	sos_debug("sos: other thread: getting semaphore\n");
-	error = sos_sem_get(sem);
+	error = sos_sem_get(sem2);
 
 	if ( error == NO_ERROR )
 	{
 		sos_debug("sos: other thread: releasing semaphore\n");
-		error = sos_sem_release(sem);
+		error = sos_sem_release(sem2);
 	}
 
 	sos_debug("sos: other thread: done\n");
