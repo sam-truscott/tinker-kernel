@@ -16,6 +16,8 @@ typedef object_number_t sos_sem_t;
 
 error_t sos_sem_create(sos_sem_t * semaphore, uint32_t initial_count, char * name) SOS_API_SUFFIX;
 
+error_t sos_sem_open(sos_sem_t * semaphore, char * name) SOS_API_SUFFIX;
+
 error_t sos_sem_get(sos_sem_t semaphore) SOS_API_SUFFIX;
 
 error_t sos_sem_release(sos_sem_t semaphore) SOS_API_SUFFIX;

@@ -21,6 +21,7 @@
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_pipe.h"
+#include "kernel/objects/obj_shared_mem.h"
 #include "kernel/utils/util_memcpy.h"
 
 static inline object_number_t __syscall_get_thread_oid(void)
@@ -214,7 +215,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 
 		case syscall_create_semaphore:
-			if ( param[0] )
+			if (param[0])
 			{
 				if (this_thread)
 				{
@@ -305,7 +306,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
-					(const __object_t *)__obj_get_object(
+					__obj_get_object(
 							table,
 							(object_number_t)param[0]));
 			ret = __obj_delete_pipe(pipe);
@@ -326,7 +327,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
-					(const __object_t *)__obj_get_object(
+					__obj_get_object(
 							table,
 							(object_number_t)param[0]));
 			// FIXME This will release memory but isn't right,
@@ -339,7 +340,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
-					(const __object_t *)__obj_get_object(
+					__obj_get_object(
 							table,
 							(object_number_t)param[0]));
 			ret = __obj_pipe_send_message(
@@ -356,7 +357,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(this_thread));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
-					(const __object_t *)__obj_get_object(
+					__obj_get_object(
 							table,
 							(object_number_t)param[0]));
 
@@ -383,10 +384,50 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
-					(const __object_t *)__obj_get_object(
+					__obj_get_object(
 							table,
 							(object_number_t)param[0]));
 			ret = __obj_pipe_received_message(pipe);
+		}
+			break;
+
+		case syscall_create_shm:
+			ret = __obj_create_shm(
+					__thread_get_parent(__sch_get_current_thread()),
+					(object_number_t*)param[0],
+					(char*)param[1],
+					(uint32_t)param[2],
+					(void**)param[3]);
+			break;
+		case syscall_open_shm:
+			ret = __obj_open_shm(
+					__thread_get_parent(__sch_get_current_thread()),
+					(object_number_t*)param[0],
+					(char*)param[1],
+					(uint32_t)param[2],
+					(void**)param[3]);
+			break;
+
+		case syscall_close_shm:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_shm_t * const shm = __obj_cast_shm(
+					(__object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_close_shm(shm);
+		}
+			break;
+		case syscall_destroy_shm:
+		{
+			__object_table_t * table = NULL;
+			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_shm_t * const shm = __obj_cast_shm(
+					(__object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_delete_shm(shm);
 		}
 			break;
 

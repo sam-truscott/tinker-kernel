@@ -56,7 +56,7 @@ typedef struct __object_pipe_t
 	uint8_t * memory;
 } __object_pipe_internal_t;
 
-__object_pipe_t * __obj_cast_pipe(const __object_t * const o)
+__object_pipe_t * __obj_cast_pipe(__object_t * const o)
 {
 	__object_pipe_t * result = NULL;
 	if(o)
@@ -288,7 +288,7 @@ error_t __object_open_pipe(
 	if (result == NO_ERROR)
 	{
 		const __object_table_t * const table = __process_get_object_table(other_proc);
-		const __object_t * const other_obj = __obj_get_object(table, other_pipe_no);
+		__object_t * const other_obj = __obj_get_object(table, other_pipe_no);
 		other_pipe = __obj_cast_pipe(other_obj);
 
 		if (other_obj)

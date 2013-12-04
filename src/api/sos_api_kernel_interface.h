@@ -41,6 +41,11 @@ typedef enum __syscall_function
 	syscall_receive_message,
 	syscall_received_message,
 
+	syscall_create_shm,
+	syscall_open_shm,
+	syscall_close_shm,
+	syscall_destroy_shm,
+
 	syscall_debug,
 
 	syscall_load_thread

@@ -18,7 +18,7 @@
 
 typedef struct __object_pipe_t __object_pipe_t;
 
-__object_pipe_t * __obj_cast_pipe(const __object_t * const o);
+__object_pipe_t * __obj_cast_pipe(__object_t * const o);
 
 object_number_t __obj_pipe_get_oid
 	(const __object_pipe_t * const o);

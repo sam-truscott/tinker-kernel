@@ -18,6 +18,13 @@ error_t sos_sem_create(sos_sem_t * semaphore, uint32_t initial_count, char * nam
 			(uint32_t) initial_count);
 }
 
+error_t sos_sem_open(sos_sem_t * semaphore, char * name)
+{
+	return SOS_API_CALL_2(
+			syscall_open_semaphore,
+			(uint32_t)semaphore,
+			(uint32_t)name);
+}
 
 error_t sos_sem_get(sos_sem_t semaphore)
 {
