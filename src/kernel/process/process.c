@@ -77,6 +77,7 @@ static void __process_add_mem_sec(
 					break;
 				}
 				p = s;
+				s = __mem_sec_get_next(s);
 			}
 			if (!assigned)
 			{
@@ -124,17 +125,6 @@ error_t __process_create(
 				mmu_random_access_memory,
 				mmu_user_access,
 				mmu_read_write));
-
-		__process_add_mem_sec(
-				p,
-				__mem_sec_create(
-						p->memory_pool,
-						0,
-						0,
-						0,
-						mmu_random_access_memory,
-						mmu_no_privilege,
-						mmu_no_access));
 
 		ret = __tgt_initialise_process(p);
 		if (ret == NO_ERROR && process)
@@ -383,12 +373,13 @@ error_t __process_allocate_vmem(
 	*virt_address = 0;
 	if (process)
 	{
-		uint32_t vmem_start = MMU_PAGE_SIZE;
+		uint32_t vmem_start = VIRTUAL_ADDRESS_SPACE;
 		mem_section_t * current = process->first_section;
 		mem_section_t * prev = NULL;
 		while (current)
 		{
-			if (__mem_sec_get_virt_addr(current) > (vmem_start + size))
+			const uint32_t svt = __mem_sec_get_virt_addr(current);
+			if (svt > VIRTUAL_ADDRESS_SPACE && svt > (vmem_start + size))
 			{
 				// there's room
 				mem_section_t * const new_section =
@@ -412,13 +403,21 @@ error_t __process_allocate_vmem(
 			}
 			else
 			{
-				vmem_start = __mem_sec_get_virt_addr(current);
+				vmem_start = __mem_sec_get_virt_addr(current) + __mem_sec_get_size(current);
 
 				// pad each region out by mmu page size
 				vmem_start += MMU_PAGE_SIZE;
 			}
 			prev = current;
 			current = __mem_sec_get_next(current);
+		}
+		if (!current && prev && !(*virt_address))
+		{
+			mem_section_t * const new_section =
+					__mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
+			__mem_sec_set_next(prev, new_section);
+			*virt_address = vmem_start;
+			result = __tgt_map_memory(process, new_section);
 		}
 	}
 	else

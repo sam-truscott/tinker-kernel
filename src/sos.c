@@ -87,7 +87,10 @@ static void my_other_thread(void)
 	error = sos_shm_open(&shm2, "shm", 0x1000, &address);
 	if (error == NO_ERROR && address)
 	{
-		*((uint32_t*)address) = 0x55aa55aa;
+		if (*((uint32_t*)address) == 0x55aa55aa)
+		{
+			*((uint32_t*)address) = 0xaa55aa55;
+		}
 		error = sos_shm_close(shm2);
 	}
 

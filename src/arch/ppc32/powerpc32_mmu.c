@@ -8,6 +8,7 @@
  */
 #include "powerpc32.h"
 #include "powerpc32_mmu.h"
+#include "kernel/kernel_assert.h"
 
 static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
 {
@@ -43,21 +44,24 @@ void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w
 	if ( pPteg )
 	{
 		uint8_t i;
+		bool_t allocated = false;
 		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
 		{
 			/* TODO needs to be marked as volatile in SMP system?
 			 * TODO locking on the page table in (non?)SMP system? */
 			__ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
-			if ( pte )
+			if (pte)
 			{
-				if ( !(pte->w0 & 0x80000000u) )
+				if (!(pte->w0 & 0x80000000u))
 				{
 					pte->w0 = pte_w0;
 					pte->w1 = pte_w1;
+					allocated = true;
 					break;
 				}
 			}
 		}
+		__kernel_assert("pte allocation failed", allocated);
 	}
 }
 
@@ -74,7 +78,10 @@ void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pt
 			{
 				if (pte->w0 & 0x80000000u)
 				{
-					if ((pte->w0 == pte_w0) && (pte->w1 == pte_w1))
+					uint32_t w1 = pte->w1;
+					w1 &= ~(1 << 7);
+					w1 &= ~(1 << 8);
+					if ((pte->w0 == pte_w0) && (w1 == pte_w1))
 					{
 						pte->w0 = 0;
 						pte->w1 = 0;

@@ -22,6 +22,7 @@ UNBOUNDED_LIST_SPEC_DELETE(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_SPEC_ADD(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_SPEC_GET(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_SPEC_REMOVE(static,shm_client_list_t, __object_shm_t*)
+UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_SPEC_SIZE(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_BODY_CREATE(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_BODY_INITIALISE(static,shm_client_list_t, __object_shm_t*)
@@ -29,6 +30,7 @@ UNBOUNDED_LIST_BODY_DELETE(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_BODY_ADD(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_BODY_GET(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_BODY_REMOVE(static,shm_client_list_t, __object_shm_t*)
+UNBOUNDED_LIST_BODY_REMOVE_ITEM(static,shm_client_list_t, __object_shm_t*)
 UNBOUNDED_LIST_BODY_SIZE(static,shm_client_list_t, __object_shm_t*)
 
 typedef struct __object_shm_t
@@ -40,6 +42,7 @@ typedef struct __object_shm_t
 	uint32_t virt_addr;
 	uint32_t size;
 	shm_client_list_t * client_list;
+	struct __object_shm_t * parent_shm;
 	char name[__MAX_SHARED_OBJECT_NAME_LENGTH];
 } __object_shm_internal_t;
 
@@ -110,6 +113,7 @@ error_t __obj_create_shm(
 						no->real_addr = (uint32_t)memory;
 						no->virt_addr = virt_addr;
 						no->client_list = shm_client_list_t_create(pool);
+						no->parent_shm = NULL;
 						memset(no->name, 0, sizeof(no->name));
 						__util_memcpy(no->name, name, __util_strlen(name, sizeof(name)));
 						__regsitery_add(name, process, no->object.object_number);
@@ -189,6 +193,7 @@ error_t __obj_open_shm(
 									no->process = process;
 									no->real_addr = other_shm_obj->real_addr;
 									no->virt_addr = virt_addr;
+									no->parent_shm = other_shm_obj;
 									shm_client_list_t_add(other_shm_obj->client_list, no);
 									memset(no->name, 0, sizeof(no->name));
 									__util_memcpy(no->name, name, __util_strlen(name, sizeof(name)));
@@ -249,6 +254,10 @@ error_t __obj_close_shm(
 		{
 			__process_free_vmem(shm->process, shm->virt_addr);
 			__obj_remove_object(__process_get_object_table(shm->process), shm->object.object_number);
+			if (shm->parent_shm)
+			{
+				shm_client_list_t_remove_item(shm->parent_shm->client_list, shm);
+			}
 			__mem_free(shm->pool, shm);
 		}
 		else
