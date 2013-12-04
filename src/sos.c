@@ -84,7 +84,7 @@ static void my_other_thread(void)
 	}
 
 	void * address = 0;
-	error = sos_shm_open(&shm2, "shm", 1024, &address);
+	error = sos_shm_open(&shm2, "shm", 0x1000, &address);
 	if (error == NO_ERROR && address)
 	{
 		*((uint32_t*)address) = 0x55aa55aa;
@@ -112,7 +112,7 @@ static void my_initial_thread(void)
 			&my_priority);
 
 	void * address = 0;
-	error = sos_shm_create(&shm, "shm", 1024, &address);
+	error = sos_shm_create(&shm, "shm", 0x1000, &address);
 	if (error == NO_ERROR && address)
 	{
 		*((uint32_t*)address) = 0x55aa55aa;

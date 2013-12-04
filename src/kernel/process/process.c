@@ -72,11 +72,11 @@ static void __process_add_mem_sec(
 					{
 						process->first_section = section;
 					}
-					p = s;
 					__mem_sec_set_next(section,s);
 					assigned = true;
 					break;
 				}
+				p = s;
 			}
 			if (!assigned)
 			{
@@ -366,19 +366,21 @@ uint32_t __process_virt_to_real(
 	return real;
 }
 
-uint32_t __process_allocate_vmem(
+error_t __process_allocate_vmem(
 		__process_t * const process,
 		const uint32_t real_address,
 		const uint32_t size,
 		const mmu_memory_t type,
 		const mmu_privilege_t priv,
-		const mmu_access_t access)
+		const mmu_access_t access,
+		uint32_t * const virt_address)
 {
+	error_t result = NO_ERROR;
 	// find a hole in the memory sections that's large enough
 	// and then allocate a memory section there
 	// note: this is just a virtual allocation to avoid
 	// collisions in the memory address space of this process
-	uint32_t result = 0;
+	*virt_address = 0;
 	if (process)
 	{
 		uint32_t vmem_start = MMU_PAGE_SIZE;
@@ -403,8 +405,8 @@ uint32_t __process_allocate_vmem(
 						process->first_section = new_section;
 					}
 					__mem_sec_set_next(new_section, current);
-					__tgt_map_memory(process, new_section);
-					result = vmem_start;
+					result = __tgt_map_memory(process, new_section);
+					*virt_address = vmem_start;
 				}
 				break;
 			}
@@ -418,6 +420,10 @@ uint32_t __process_allocate_vmem(
 			prev = current;
 			current = __mem_sec_get_next(current);
 		}
+	}
+	else
+	{
+		result = PARAMETERS_NULL;
 	}
 	return result;
 }

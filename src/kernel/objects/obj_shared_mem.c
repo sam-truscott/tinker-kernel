@@ -91,15 +91,17 @@ error_t __obj_create_shm(
 				result = __obj_add_object(table, (__object_t*)no, &objno);
 				if ( result == NO_ERROR )
 				{
-					const uint32_t virt_addr =
+					uint32_t virt_addr;
+					result =
 							__process_allocate_vmem(
 									process,
 									(uint32_t)memory,
 									size,
 									mmu_random_access_memory,
 									mmu_user_access,
-									mmu_read_write);
-					if (virt_addr)
+									mmu_read_write,
+									&virt_addr);
+					if (result == NO_ERROR)
 					{
 						__obj_initialise_object(&no->object, objno, SHARED_MEMORY_OBJ);
 						no->size = size;
@@ -166,15 +168,16 @@ error_t __obj_open_shm(
 					{
 						if (size == other_shm_obj->size)
 						{
-							const uint32_t virt_addr =
-									__process_allocate_vmem(
+							uint32_t virt_addr;
+							result = __process_allocate_vmem(
 											process,
 											other_shm_obj->real_addr,
 											other_shm_obj->size,
 											mmu_random_access_memory,
 											mmu_user_access,
-											mmu_read_write);
-							if (virt_addr)
+											mmu_read_write,
+											&virt_addr);
+							if (result == NO_ERROR)
 							{
 								object_number_t objno;
 								result = __obj_add_object(table, (__object_t*)no, &objno);

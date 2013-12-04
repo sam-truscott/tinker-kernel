@@ -415,21 +415,22 @@ error_t __tgt_initialise_process(__process_t * const process)
 	return ok;
 }
 
-void __tgt_map_memory(
+error_t __tgt_map_memory(
 		const __process_t * const process,
 		const mem_section_t * const section)
 {
+	error_t result = PARAMETERS_INVALID;
 	if (process && section)
 	{
 		const tgt_mem_t * const segment_info = __process_get_segment_info(process);
 		if (segment_info)
 		{
-			const error_t mapped_ok = __ppc_setup_paged_area(
+			result = __ppc_setup_paged_area(
 					segment_info,
 					section);
-			__kernel_assert("Unable to map process section memory", mapped_ok != NO_ERROR);
 		}
 	}
+	return result;
 }
 
 void __tgt_unmap_memory(
