@@ -195,7 +195,7 @@ void __bsp_initialise(void)
 					0),
 			__PPC_PTE_W1(
 					(uint32_t)user_text_pos,
-					0,
+					1,
 					0,
 					__PPC32_WIMG(
 							__ppc32_write_back,
@@ -214,7 +214,7 @@ void __bsp_initialise(void)
 					0),
 			__PPC_PTE_W1(
 					(uint32_t)user_data_pos,
-					0,
+					1,
 					0,
 					__PPC32_WIMG(
 							__ppc32_write_back,

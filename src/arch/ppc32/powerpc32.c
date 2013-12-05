@@ -281,7 +281,7 @@ static error_t __ppc_setup_paged_area(
 			/* RAM can have cache enabled */
 			w1 = __PPC_PTE_W1(
 					page_real_address,
-					0,
+					1,
 					0,
 					__PPC32_WIMG(
 							__ppc32_write_back,
@@ -295,7 +295,7 @@ static error_t __ppc_setup_paged_area(
 			/* hardware needs caching disabled and OoO access disabled */
 			w1 = __PPC_PTE_W1(
 					page_real_address,
-					0,
+					1,
 					0,
 					__PPC32_WIMG(
 							__ppc32_write_through,
@@ -350,7 +350,7 @@ static void __ppc_remove_paged_area(
 			/* RAM can have cache enabled */
 			w1 = __PPC_PTE_W1(
 					page_real_address,
-					0,
+					1,
 					0,
 					__PPC32_WIMG(
 							__ppc32_write_back,
@@ -364,7 +364,7 @@ static void __ppc_remove_paged_area(
 			/* hardware needs caching disabled and OoO access disabled */
 			w1 = __PPC_PTE_W1(
 					page_real_address,
-					0,
+					1,
 					0,
 					__PPC32_WIMG(
 							__ppc32_write_through,

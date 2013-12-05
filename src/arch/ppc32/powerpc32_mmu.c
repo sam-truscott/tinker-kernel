@@ -39,56 +39,64 @@ static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
 
 void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
 {
-	__ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
+	volatile __ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
 
 	if ( pPteg )
 	{
 		uint8_t i;
-		bool_t allocated = false;
+		bool_t mapped = false;
 		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
 		{
 			/* TODO needs to be marked as volatile in SMP system?
 			 * TODO locking on the page table in (non?)SMP system? */
-			__ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
+			volatile __ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
 			if (pte)
 			{
 				if (!(pte->w0 & 0x80000000u))
 				{
 					pte->w0 = pte_w0;
 					pte->w1 = pte_w1;
-					allocated = true;
+					asm volatile("sync");
+					mapped = true;
 					break;
 				}
 			}
 		}
-		__kernel_assert("pte allocation failed", allocated);
+		__kernel_assert("pte mapping failed", mapped);
 	}
 }
 
 void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
 {
-	__ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
+	asm volatile("sync");
+	asm volatile("tlbie %r3");
+	asm volatile("eieio");
+	asm volatile("tlbsync");
+	volatile __ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
 	if ( pPteg )
 	{
 		uint8_t i;
+		bool_t unmapped = false;
 		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
 		{
-			__ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
+			volatile __ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
 			if ( pte )
 			{
 				if (pte->w0 & 0x80000000u)
 				{
 					uint32_t w1 = pte->w1;
-					w1 &= ~(1 << 7);
-					w1 &= ~(1 << 8);
+					w1 &= ~(1 << 7); //C
 					if ((pte->w0 == pte_w0) && (w1 == pte_w1))
 					{
-						pte->w0 = 0;
-						pte->w1 = 0;
+						unmapped = true;
+						pte->w1 &= ~3; 			 // clear access
+						pte->w0 &= ~0x80000000u; // disable
+						asm volatile("sync");
 						break;
 					}
 				}
 			}
 		}
+		__kernel_assert("pte unmapping failed", unmapped);
 	}
 }

@@ -156,8 +156,8 @@ typedef enum __ppc32_pp
 
 #define __PPC_PTE_W1(RPN, R, C, WIMG, PP) \
 	( RPN & 0xFFFFF000u ) \
-	| (R << 8) \
-	| (C << 7) \
+	| (R << 8) /* Referenced / Accessed */ \
+	| (C << 7) /* Changed / Dirty */ \
 	| (WIMG << 3) \
 	| PP
 
