@@ -22,11 +22,19 @@ i've worked on & off on this microkernel for the last few years to help my under
 
 sos3 is:
 * not complete
-* (very) limited
+* limited
 * probably wrong
 
 he is my hobby. the aim is to keep it simple enough for anyone to understand and therefore also
 be simple enough to port and possibly even verify.
+
+features
+========
+
+* semaphores
+* shared memory
+* pipes
+* timers
 
 loading
 =======
@@ -57,7 +65,6 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* shms timers aren't implemented yet - use the mmu for performance
 * timers aren't implemented yet
 * timeouts on pipe (open/read/write)
 * break up the syscalls into seperate static/inline functions
@@ -67,6 +74,7 @@ these are the things I need to address in a rough order:
 * create newlib port
 * create bootstrap for kernel + services
 * option to make pipes zero-copy via mmu (memory is already aligned)
+* review the powerpc page table code
 * ARM support
 * x86 support
 * need to review it all head to toe since refactor
