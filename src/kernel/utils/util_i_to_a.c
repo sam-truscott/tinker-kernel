@@ -59,6 +59,7 @@ void __util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 }
 #pragma weak __util_i_to_a
 
+
 void __util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
 {
 	if ( buffer )
@@ -70,29 +71,29 @@ void __util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length
 		}
 		else
 		{
-			int p = 0;
+			uint32_t rem[buffer_length],length=0;
+			int32_t t=0;
+			uint32_t in = i;
 
-			char rev_buffer[buffer_length];
-			memset(rev_buffer, 0, buffer_length);
-
-			int n = i;
-			while (n > 0)
+			while(in>0)
 			{
-				const int tmp = get_n(&n);
-				if ( tmp <= 9 )
+				rem[t]=in%16;
+				in=in/16;
+				t++;
+				length++;
+			}
+
+			int p = 0;
+			for(t=length-1;t>=0;t--)
+			{
+				if (rem[t]<10)
 				{
-					rev_buffer[p++] = tmp + '0';
+					buffer[p++] = '0' + rem[t];
 				}
 				else
 				{
-					rev_buffer[p++] = (tmp-10) + 'a';
+					buffer[p++] = 'A' + (rem[t]-10);
 				}
-			}
-
-			{
-				const uint32_t number_length = __util_strlen(rev_buffer, buffer_length);
-				const uint32_t new_length = __util_trim(rev_buffer, number_length);
-				__util_reverse_string(rev_buffer, new_length, buffer);
 			}
 		}
 	}
