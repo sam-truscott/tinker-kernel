@@ -28,10 +28,6 @@ typedef struct __thread_t
 	const __object_t *	waiting_on;
 	thread_entry_point * 	entry_point;
 	object_number_t		object_number;
-	/*
-	 * TODO May need other entries for data/bss after
-	 * we've written the ELF importer - list of memory areas?
-	 */
 	__tgt_context_t		* context;
 	char 				name[__MAX_THREAD_NAME_LEN + 1];
 } __thread_internal_t;

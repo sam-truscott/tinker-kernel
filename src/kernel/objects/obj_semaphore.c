@@ -243,7 +243,6 @@ error_t __object_delete_semaphore(
 			thread_obj_queue_t_delete(semaphore->data.owner.listeners);
 			thread_obj_queue_t_delete(semaphore->data.owner.owners);
 			__mem_free(semaphore->pool, semaphore);
-			// TODO: handle all the links
 			break;
 		case sema_type_link:
 			__mem_free(semaphore->pool, semaphore);

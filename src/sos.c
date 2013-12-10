@@ -50,7 +50,6 @@ static void my_other_thread(void)
 {
 	error_t error;
 
-	//FIXME: This needs to block#
 	sos_debug("sos: other thread: opening pipe\n");
 	error = sos_open_pipe(&rx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 10);
 	if (error == NO_ERROR)
@@ -91,7 +90,7 @@ static void my_other_thread(void)
 		{
 			*((uint32_t*)address) = 0xaa55aa55;
 		}
-		error = sos_shm_close(shm2);
+		error = sos_shm_destroy(shm2);
 	}
 
 	sos_debug("sos: other thread: done\n");

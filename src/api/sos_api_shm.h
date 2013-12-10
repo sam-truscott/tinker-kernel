@@ -18,8 +18,6 @@ error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 
 error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr) SOS_API_SUFFIX;
 
-error_t sos_shm_close(sos_shm_t shm) SOS_API_SUFFIX;
-
 error_t sos_shm_destroy(sos_shm_t shm) SOS_API_SUFFIX;
 
 

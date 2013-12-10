@@ -408,17 +408,6 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(void**)param[3]);
 			break;
 
-		case syscall_close_shm:
-		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
-			__object_shm_t * const shm = __obj_cast_shm(
-					(__object_t *)__obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = __obj_close_shm(shm);
-		}
-			break;
 		case syscall_destroy_shm:
 		{
 			__object_table_t * table = NULL;

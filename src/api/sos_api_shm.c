@@ -29,13 +29,6 @@ error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 			(uint32_t)addr);
 }
 
-error_t sos_shm_close(sos_shm_t shm)
-{
-	return SOS_API_CALL_1(
-			syscall_close_shm,
-			(uint32_t)shm);
-}
-
 error_t sos_shm_destroy(sos_shm_t shm)
 {
 	return SOS_API_CALL_1(

@@ -43,7 +43,6 @@ typedef enum __syscall_function
 
 	syscall_create_shm,
 	syscall_open_shm,
-	syscall_close_shm,
 	syscall_destroy_shm,
 
 	syscall_debug,

@@ -243,36 +243,6 @@ error_t __obj_open_shm(
 	return result;
 }
 
-error_t __obj_close_shm(
-		__object_shm_t * const shm)
-{
-	error_t result = NO_ERROR;
-
-	if (shm)
-	{
-		if (!shm->client_list)
-		{
-			__process_free_vmem(shm->process, shm->virt_addr);
-			__obj_remove_object(__process_get_object_table(shm->process), shm->object.object_number);
-			if (shm->parent_shm)
-			{
-				shm_client_list_t_remove_item(shm->parent_shm->client_list, shm);
-			}
-			__mem_free(shm->pool, shm);
-		}
-		else
-		{
-			result = SHM_IS_OWNER;
-		}
-	}
-	else
-	{
-		result = INVALID_OBJECT;
-	}
-
-	return result;
-}
-
 error_t __obj_delete_shm(
 		__object_shm_t * const shm)
 {
@@ -292,7 +262,7 @@ error_t __obj_delete_shm(
 				{
 					if (attached_shm)
 					{
-						__obj_close_shm(attached_shm);
+						__obj_delete_shm(attached_shm);
 					}
 				}
 				shm_client_list_t_remove(shm->client_list, 0);
@@ -307,7 +277,13 @@ error_t __obj_delete_shm(
 		}
 		else
 		{
-			result = SHM_NOT_OWNER;
+			__process_free_vmem(shm->process, shm->virt_addr);
+			__obj_remove_object(__process_get_object_table(shm->process), shm->object.object_number);
+			if (shm->parent_shm)
+			{
+				shm_client_list_t_remove_item(shm->parent_shm->client_list, shm);
+			}
+			__mem_free(shm->pool, shm);
 		}
 	}
 	else

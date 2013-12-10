@@ -35,9 +35,6 @@ error_t __obj_open_shm(
 		const uint32_t size,
 		void ** address);
 
-error_t __obj_close_shm(
-		__object_shm_t * const shm);
-
 error_t __obj_delete_shm(
 		__object_shm_t * const shm);
 

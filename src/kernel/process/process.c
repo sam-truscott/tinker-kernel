@@ -16,6 +16,7 @@
 #include "kernel/objects/obj_semaphore.h"
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_pipe.h"
+#include "kernel/objects/obj_shared_mem.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/hashed_map.h"
 
@@ -316,6 +317,18 @@ void __process_exit(__process_t * const process)
 							__obj_remove_object(
 									process->object_table,
 									oid);
+						}
+						else
+						{
+							__object_shm_t * const shm_obj = __obj_cast_shm(object);
+							if (shm_obj)
+							{
+								const object_number_t oid = __obj_shm_get_oid(shm_obj);
+								__obj_delete_shm(shm_obj);
+								__obj_remove_object(
+										process->object_table,
+										oid);
+							}
 						}
 					}
 				}

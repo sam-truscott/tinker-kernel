@@ -34,8 +34,6 @@ typedef enum error_enum
 	SEMAPHORE_EMPTY,
 
 	SHM_WRONG_SIZE,
-	SHM_NOT_OWNER,
-	SHM_IS_OWNER,
 
 	ALARM_ID_UNKNOWN,
 
