@@ -28,11 +28,11 @@ error_t __tgt_initialise_process(__process_t * const process);
 
 error_t __tgt_map_memory(
 		const __process_t * const process,
-		const mem_section_t * const section);
+		const __mem_section_t * const section);
 
 void __tgt_unmap_memory(
 		const __process_t * const process,
-		const mem_section_t * const section);
+		const __mem_section_t * const section);
 
 void __tgt_destroy_process(const __process_t * const process);
 

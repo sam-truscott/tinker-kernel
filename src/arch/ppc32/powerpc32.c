@@ -66,11 +66,11 @@ static void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint
  */
 static error_t __ppc_setup_paged_area(
 		const tgt_mem_t * const segment_info,
-		const mem_section_t * const mem_sec);
+		const __mem_section_t * const mem_sec);
 
 static void __ppc_remove_paged_area(
 		const tgt_mem_t * const segment_info,
-		const mem_section_t * const mem_sec);
+		const __mem_section_t * const mem_sec);
 
 void __ppc_isr_initialise(void)
 {
@@ -234,7 +234,7 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enable
 
 static error_t __ppc_setup_paged_area(
 		const tgt_mem_t * const segment_info,
-		const mem_section_t * const mem_sec)
+		const __mem_section_t * const mem_sec)
 {
 	uint32_t w0 = 0;
 	uint32_t w1 = 0;
@@ -316,7 +316,7 @@ static error_t __ppc_setup_paged_area(
 
 static void __ppc_remove_paged_area(
 		const tgt_mem_t * const segment_info,
-		const mem_section_t * const mem_sec)
+		const __mem_section_t * const mem_sec)
 {
 	const uint32_t real_addr = __mem_sec_get_real_addr(mem_sec);
 	const uint32_t size = __mem_sec_get_size(mem_sec);
@@ -399,7 +399,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 		__process_set_segment_info(process, &segment_info);
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
-		const mem_section_t * section = __process_get_first_section(process);
+		const __mem_section_t * section = __process_get_first_section(process);
 		while (section && (ok == NO_ERROR))
 		{
 			/* setup virt -> real mapping for size */
@@ -417,7 +417,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 
 error_t __tgt_map_memory(
 		const __process_t * const process,
-		const mem_section_t * const section)
+		const __mem_section_t * const section)
 {
 	error_t result = PARAMETERS_INVALID;
 	if (process && section)
@@ -435,7 +435,7 @@ error_t __tgt_map_memory(
 
 void __tgt_unmap_memory(
 		const __process_t * const process,
-		const mem_section_t * const section)
+		const __mem_section_t * const section)
 {
 	if (process && section)
 	{
@@ -451,7 +451,7 @@ void __tgt_unmap_memory(
 
 void __tgt_destroy_process(const __process_t * const process)
 {
-	const mem_section_t * section = __process_get_first_section(process);
+	const __mem_section_t * section = __process_get_first_section(process);
 	const tgt_mem_t * const segment_info = __process_get_segment_info(process);
 	while (section)
 	{

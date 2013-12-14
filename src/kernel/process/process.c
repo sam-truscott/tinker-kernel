@@ -38,7 +38,7 @@ typedef struct __process_t
 	object_number_t			object_number;
 	bool_t					kernel_process;
 	tgt_mem_t				segment_info;
-	mem_section_t *			first_section;
+	__mem_section_t *			first_section;
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
 	uint32_t 				next_thread_id;
 	__thread_t * 			initial_thread;
@@ -47,7 +47,7 @@ typedef struct __process_t
 
 static void __process_add_mem_sec(
 		__process_t * const process,
-		mem_section_t * const section)
+		__mem_section_t * const section)
 {
 	if (process)
 	{
@@ -57,8 +57,8 @@ static void __process_add_mem_sec(
 		}
 		else
 		{
-			mem_section_t * s = process->first_section;
-			mem_section_t * p = NULL;
+			__mem_section_t * s = process->first_section;
+			__mem_section_t * p = NULL;
 			bool_t assigned = false;
 			while (s)
 			{
@@ -252,7 +252,7 @@ uint32_t __process_get_thread_count(const __process_t * process)
 	return thread_map_t_size(process->threads);
 }
 
-const mem_section_t * __process_get_first_section(const __process_t * const process)
+const __mem_section_t * __process_get_first_section(const __process_t * const process)
 {
 	return process->first_section;
 }
@@ -343,7 +343,7 @@ void __process_exit(__process_t * const process)
 
 	// memory sections
 	__tgt_destroy_process(process);
-	const mem_section_t * section = process->first_section;
+	const __mem_section_t * section = process->first_section;
 	while (section)
 	{
 		__mem_sec_delete(section);
@@ -387,15 +387,15 @@ error_t __process_allocate_vmem(
 	if (process)
 	{
 		uint32_t vmem_start = VIRTUAL_ADDRESS_SPACE;
-		mem_section_t * current = process->first_section;
-		mem_section_t * prev = NULL;
+		__mem_section_t * current = process->first_section;
+		__mem_section_t * prev = NULL;
 		while (current)
 		{
 			const uint32_t svt = __mem_sec_get_virt_addr(current);
 			if (svt > VIRTUAL_ADDRESS_SPACE && svt > (vmem_start + size))
 			{
 				// there's room
-				mem_section_t * const new_section =
+				__mem_section_t * const new_section =
 						__mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
 				if (new_section)
 				{
@@ -426,7 +426,7 @@ error_t __process_allocate_vmem(
 		}
 		if (!current && prev && !(*virt_address))
 		{
-			mem_section_t * const new_section =
+			__mem_section_t * const new_section =
 					__mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
 			__mem_sec_set_next(prev, new_section);
 			*virt_address = vmem_start;
@@ -446,8 +446,8 @@ void __process_free_vmem(
 {
 	if (process)
 	{
-		mem_section_t * current = process->first_section;
-		mem_section_t * prev = NULL;
+		__mem_section_t * current = process->first_section;
+		__mem_section_t * prev = NULL;
 		while (current)
 		{
 			if (__mem_sec_get_virt_addr(current) == virt_address)
