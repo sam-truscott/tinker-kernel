@@ -14,23 +14,23 @@ typedef struct __mem_section_t __mem_section_t;
 
 typedef enum
 {
-	mmu_device_memory,
-	mmu_random_access_memory //FIXME capitalise
+	MMU_DEVICE_MEMORY,
+	MMU_RANDOM_ACCESS_MEMORY
 } mmu_memory_t;
 
 typedef enum
 {
-	mmu_no_privilege,
-	mmu_user_access,
-	mmu_kernel_access,
-	mmu_all_access //FIXME capitalise
+	MMU_NO_PRIVILEGE,
+	MMU_USER_ACCESS,
+	MMU_KERNEL_ACCESS,
+	MMU_ALL_ACCESS
 } mmu_privilege_t;
 
 typedef enum
 {
-	mmu_no_access	= 0,
-	mmu_read_only	= 1,
-	mmu_read_write	= 2 //FIXME capitalise
+	MMU_NO_ACCESS	= 0,
+	MMU_READ_ONLY	= 1,
+	MMU_READ_WRITE	= 2
 } mmu_access_t;
 
 __mem_section_t * __mem_sec_create(

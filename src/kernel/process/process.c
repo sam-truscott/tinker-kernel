@@ -123,9 +123,9 @@ error_t __process_create(
 				__mem_get_start_addr(p->memory_pool),
 				VIRTUAL_ADDRESS_SPACE,
 				__mem_get_alloc_size(p->memory_pool),
-				mmu_random_access_memory,
-				mmu_user_access,
-				mmu_read_write));
+				MMU_RANDOM_ACCESS_MEMORY,
+				MMU_USER_ACCESS,
+				MMU_READ_WRITE));
 
 		ret = __tgt_initialise_process(p);
 		if (ret == NO_ERROR && process)

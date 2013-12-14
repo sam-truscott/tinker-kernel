@@ -276,7 +276,7 @@ static error_t __ppc_setup_paged_area(
 				HASH_PRIMARY,
 				0);
 
-		if ( mem_type == mmu_random_access_memory)
+		if ( mem_type == MMU_RANDOM_ACCESS_MEMORY)
 		{
 			/* RAM can have cache enabled */
 			w1 = __PPC_PTE_W1(
@@ -345,7 +345,7 @@ static void __ppc_remove_paged_area(
 				HASH_PRIMARY,
 				0);
 
-		if ( mem_type == mmu_random_access_memory)
+		if ( mem_type == MMU_RANDOM_ACCESS_MEMORY)
 		{
 			/* RAM can have cache enabled */
 			w1 = __PPC_PTE_W1(

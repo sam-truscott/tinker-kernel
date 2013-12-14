@@ -100,9 +100,9 @@ error_t __obj_create_shm(
 									process,
 									(uint32_t)memory,
 									size,
-									mmu_random_access_memory,
-									mmu_user_access,
-									mmu_read_write,
+									MMU_RANDOM_ACCESS_MEMORY,
+									MMU_USER_ACCESS,
+									MMU_READ_WRITE,
 									&virt_addr);
 					if (result == NO_ERROR)
 					{
@@ -177,9 +177,9 @@ error_t __obj_open_shm(
 											process,
 											other_shm_obj->real_addr,
 											other_shm_obj->size,
-											mmu_random_access_memory,
-											mmu_user_access,
-											mmu_read_write,
+											MMU_RANDOM_ACCESS_MEMORY,
+											MMU_USER_ACCESS,
+											MMU_READ_WRITE,
 											&virt_addr);
 							if (result == NO_ERROR)
 							{

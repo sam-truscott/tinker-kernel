@@ -13,11 +13,6 @@
 
 typedef struct __mem_pool_info_t __mem_pool_info_t;
 
-#define MMU_NO_ACCESS	0
-#define MMU_R_ACCESS	1
-#define MMU_W_ACCESS	2
-#define MMU_E_ACCESS	4
-
 typedef uint32_t seg_id_t;
 
 /**
