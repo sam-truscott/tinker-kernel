@@ -19,7 +19,7 @@ error_t sos_create_pipe(
 		const uint32_t messages)
 {
 	return SOS_API_CALL_5(
-			syscall_create_pipe,
+			SYSCALL_CREATE_PIPE,
 			(uint32_t)pipe,
 			(uint32_t)name,
 			direction,
@@ -38,7 +38,7 @@ error_t sos_open_pipe(
 	while(result == BLOCKED_RETRY)
 	{
 		result = SOS_API_CALL_5(
-			syscall_open_pipe,
+			SYSCALL_OPEN_PIPE,
 			(uint32_t)pipe,
 			(uint32_t)name,
 			direction,
@@ -51,14 +51,14 @@ error_t sos_open_pipe(
 error_t sos_close_pipe(sos_pipe_t pipe)
 {
 	return SOS_API_CALL_1(
-			syscall_close_pipe,
+			SYSCALL_CLOSE_PIPE,
 			(uint32_t)pipe);
 }
 
 error_t sos_delete_pipe(sos_pipe_t pipe)
 {
 	return SOS_API_CALL_1(
-			syscall_delete_pipe,
+			SYSCALL_DELETE_PIPE,
 			(uint32_t)pipe);
 }
 
@@ -73,7 +73,7 @@ error_t sos_send_message(
 	while(result == BLOCKED_RETRY)
 	{
 		result = SOS_API_CALL_5(
-				syscall_send_message,
+				SYSCALL_SEND_MESSAGE,
 				(uint32_t)pipe,
 				send_kend,
 				(uint32_t)message,
@@ -90,7 +90,7 @@ error_t sos_receive_message(
 		const bool_t block)
 {
 	return SOS_API_CALL_4(
-			syscall_receive_message,
+			SYSCALL_RECEIVE_MESSAGE,
 			(uint32_t)pipe,
 			(uint32_t)message,
 			(uint32_t)message_size,
@@ -100,7 +100,7 @@ error_t sos_receive_message(
 error_t sos_received_message(sos_pipe_t pipe)
 {
 	return SOS_API_CALL_1(
-			syscall_received_message,
+			SYSCALL_RECEIVED_MESSAGE,
 			(uint32_t)pipe);
 }
 

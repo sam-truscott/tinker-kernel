@@ -73,7 +73,7 @@ void __kernel_main(void)
 #endif /* HAS_CONSOLE */
 
 	__tgt_enter_usermode();
-	SOS_API_CALL_0(syscall_load_thread);
+	SOS_API_CALL_0(SYSCALL_LOAD_THREAD);
 }
 
 

@@ -12,7 +12,7 @@
 error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 {
 	return SOS_API_CALL_4(
-			syscall_create_shm,
+			SYSCALL_CREATE_SHM,
 			(uint32_t)shm,
 			(uint32_t)name,
 			(uint32_t)size,
@@ -22,7 +22,7 @@ error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 {
 	return SOS_API_CALL_4(
-			syscall_open_shm,
+			SYSCALL_OPEN_SHM,
 			(uint32_t)shm,
 			(uint32_t)name,
 			(uint32_t)size,
@@ -32,6 +32,6 @@ error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 error_t sos_shm_destroy(sos_shm_t shm)
 {
 	return SOS_API_CALL_1(
-			syscall_destroy_shm,
+			SYSCALL_DESTROY_SHM,
 			(uint32_t)shm);
 }

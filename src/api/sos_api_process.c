@@ -34,7 +34,7 @@ error_t sos_create_process(
 		sos_process_t * process)
 {
 	return SOS_API_CALL_7(
-			syscall_create_process,
+			SYSCALL_CREATE_PROCESS,
 			(uint32_t)image_name,
 			(uint32_t)entry,
 			(uint32_t)priority,
@@ -53,7 +53,7 @@ error_t sos_create_thread(
 		sos_thread_t * thread)
 {
 	return SOS_API_CALL_6(
-			syscall_create_thread,
+			SYSCALL_CREATE_THREAD,
 			(uint32_t)thread_name,
 			(uint32_t)entry,
 			(uint32_t)priority,
@@ -65,7 +65,7 @@ error_t sos_create_thread(
 error_t sos_get_thread_object(sos_thread_t * thread)
 {
 	return SOS_API_CALL_1(
-			syscall_thread_object,
+			SYSCALL_THREAD_OBJECT,
 			(uint32_t)thread);
 }
 
@@ -74,17 +74,17 @@ error_t	sos_get_thread_priority(
 		uint8_t * priority)
 {
 	return SOS_API_CALL_2(
-			syscall_thread_priority,
+			SYSCALL_THREAD_PRIORITY,
 			(uint32_t)thread,
 			(uint32_t)priority);
 }
 
 error_t sos_exit_thread(void)
 {
-	return SOS_API_CALL_0(syscall_exit_thread);
+	return SOS_API_CALL_0(SYSCALL_EXIT_THREAD);
 }
 
 void sos_debug(const char * const str)
 {
-	SOS_API_CALL_1(syscall_debug, (uint32_t)str);
+	SOS_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
 }

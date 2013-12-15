@@ -15,39 +15,35 @@
 
 typedef enum __syscall_function
 {
-	syscall_unknown,
+	SYSCALL_UNKNOWN,
 
-	syscall_create_process,
+	SYSCALL_CREATE_PROCESS,
 
-	syscall_create_thread,
-	syscall_pause_thread,
-	syscall_resume_thread,
-	syscall_yield_thread,
-	syscall_thread_stack_size,
-	syscall_thread_priority,
-	syscall_thread_object,
-	syscall_exit_thread,
+	SYSCALL_CREATE_THREAD,
+	SYSCALL_THREAD_PRIORITY,
+	SYSCALL_THREAD_OBJECT,
+	SYSCALL_EXIT_THREAD,
 
-	syscall_create_semaphore,
-	syscall_open_semaphore,
-	syscall_get_semaphore,
-	syscall_release_semaphore,
+	SYSCALL_CREATE_SEMAPHORE,
+	SYSCALL_OPEN_SEMAPHORE,
+	SYSCALL_GET_SEMAPHORE,
+	SYSCALL_RELEASE_SEMAPHORE,
 
-	syscall_create_pipe,
-	syscall_delete_pipe,
-	syscall_open_pipe,
-	syscall_close_pipe,
-	syscall_send_message,
-	syscall_receive_message,
-	syscall_received_message,
+	SYSCALL_CREATE_PIPE,
+	SYSCALL_DELETE_PIPE,
+	SYSCALL_OPEN_PIPE,
+	SYSCALL_CLOSE_PIPE,
+	SYSCALL_SEND_MESSAGE,
+	SYSCALL_RECEIVE_MESSAGE,
+	SYSCALL_RECEIVED_MESSAGE,
 
-	syscall_create_shm,
-	syscall_open_shm,
-	syscall_destroy_shm,
+	SYSCALL_CREATE_SHM,
+	SYSCALL_OPEN_SHM,
+	SYSCALL_DESTROY_SHM,
 
-	syscall_debug,
+	SYSCALL_DEBUG,
 
-	syscall_load_thread
+	SYSCALL_LOAD_THREAD
 
 } __syscall_function_t;
 

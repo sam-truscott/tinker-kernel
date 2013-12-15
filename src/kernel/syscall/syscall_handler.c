@@ -106,7 +106,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	 */
 	switch ( api )
 	{
-		case syscall_create_process:
+		case SYSCALL_CREATE_PROCESS:
 			{
 				__process_t * process;
 				ret = __proc_create_process(
@@ -122,7 +122,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
-		case syscall_create_thread:
+		case SYSCALL_CREATE_THREAD:
 			{
 				__process_t * process;
 				__thread_t * thread;
@@ -142,7 +142,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
-		case syscall_debug:
+		case SYSCALL_DEBUG:
 		{
 			const char * const msg = (const char * const)param[0];
 			if (msg)
@@ -152,7 +152,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 			break;
 
-		case syscall_thread_priority:
+		case SYSCALL_THREAD_PRIORITY:
 			{
 				object_number_t thread_no = (object_number_t)param[0];
 				priority_t * priority = (priority_t*)param[1];
@@ -185,7 +185,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
-		case syscall_thread_object:
+		case SYSCALL_THREAD_OBJECT:
 			{
 				const object_number_t objno = __syscall_get_thread_oid();
 				*((object_number_t*)param[0]) = objno;
@@ -193,7 +193,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
-		case syscall_exit_thread:
+		case SYSCALL_EXIT_THREAD:
 			{
 				__object_thread_t * const thread_obj =__syscall_get_thread_object();
 				if ( thread_obj )
@@ -214,7 +214,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
-		case syscall_create_semaphore:
+		case SYSCALL_CREATE_SEMAPHORE:
 			if (param[0])
 			{
 				if (this_thread)
@@ -241,7 +241,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 
-		case syscall_open_semaphore:
+		case SYSCALL_OPEN_SEMAPHORE:
 			if (this_thread)
 			{
 				__process_t * const proc = __thread_get_parent(this_thread);
@@ -261,7 +261,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 			break;
 
-		case syscall_get_semaphore:
+		case SYSCALL_GET_SEMAPHORE:
 		{
 			__object_thread_t * const thread_obj = __syscall_get_thread_object();
 			__object_sema_t * sema_obj;
@@ -279,7 +279,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			/* TODO check the return vector if the current thread isn't right */
 			break;
 		}
-		case syscall_release_semaphore:
+		case SYSCALL_RELEASE_SEMAPHORE:
 		{
 			__object_thread_t * const thread_obj = __syscall_get_thread_object();
 			__object_sema_t * sema_obj;
@@ -292,7 +292,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 		}
-		case syscall_create_pipe:
+		case SYSCALL_CREATE_PIPE:
 			ret = __obj_create_pipe(
 					__thread_get_parent(this_thread),
 					(object_number_t*)param[0],
@@ -301,7 +301,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(const uint32_t)param[3],
 					(const uint32_t)param[4]);
 			break;
-		case syscall_delete_pipe:
+		case SYSCALL_DELETE_PIPE:
 		{
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
@@ -312,7 +312,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			ret = __obj_delete_pipe(pipe);
 		}
 			break;
-		case syscall_open_pipe:
+		case SYSCALL_OPEN_PIPE:
 			ret = __object_open_pipe(
 					__thread_get_parent(this_thread),
 					__syscall_get_thread_object(),
@@ -322,7 +322,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(const uint32_t)param[3],
 					(const uint32_t)param[4]);
 			break;
-		case syscall_close_pipe:
+		case SYSCALL_CLOSE_PIPE:
 		{
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
@@ -335,7 +335,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			ret = __obj_delete_pipe(pipe);
 		}
 			break;
-		case syscall_send_message:
+		case SYSCALL_SEND_MESSAGE:
 		{
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
@@ -352,7 +352,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(const bool_t)param[4]);
 		}
 			break;
-		case syscall_receive_message:
+		case SYSCALL_RECEIVE_MESSAGE:
 		{
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(this_thread));
@@ -379,7 +379,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			msg_size -= pool_start;
 		}
 			break;
-		case syscall_received_message:
+		case SYSCALL_RECEIVED_MESSAGE:
 		{
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
@@ -391,7 +391,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 			break;
 
-		case syscall_create_shm:
+		case SYSCALL_CREATE_SHM:
 			ret = __obj_create_shm(
 					__thread_get_parent(__sch_get_current_thread()),
 					(object_number_t*)param[0],
@@ -399,7 +399,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(uint32_t)param[2],
 					(void**)param[3]);
 			break;
-		case syscall_open_shm:
+		case SYSCALL_OPEN_SHM:
 			ret = __obj_open_shm(
 					__thread_get_parent(__sch_get_current_thread()),
 					(object_number_t*)param[0],
@@ -408,7 +408,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(void**)param[3]);
 			break;
 
-		case syscall_destroy_shm:
+		case SYSCALL_DESTROY_SHM:
 		{
 			__object_table_t * table = NULL;
 			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
@@ -420,19 +420,19 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 			break;
 
-		case syscall_load_thread:
+		case SYSCALL_LOAD_THREAD:
 			__tgt_prepare_context(context, this_thread);
 			break;
 
 		default:
 			/* setup the error_number and add associated error number utilities */
-			ret = syscall_unknown;
+			ret = SYSCALL_UNKNOWN;
 			break;
 	}
 
 	/* This will over-ride the result of a system-call
 	 * if the exception occurs just after the system call has been made. */
-	if ( api != syscall_load_thread )
+	if ( api != SYSCALL_LOAD_THREAD )
 	{
 		__tgt_set_syscall_return(context, ret);
 	}
