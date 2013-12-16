@@ -15,29 +15,6 @@
  * Operations for the 7400 MMU
  */
 
-typedef enum __ppc32_bl
-{
-	__ppc32_kb_128	= 0,
-	__ppc32_kb_256	= 1,
-	__ppc32_kb_512	= 3,
-	__ppc32_mb_1	= 7,
-	__ppc32_mb_2	= 15,
-	__ppc32_mb_4	= 31,
-	__ppc32_mb_8	= 63,
-	__ppc32_mb_16	= 127,
-	__ppc32_mb_32	= 255,
-	__ppc32_mb_64	= 511,
-	__ppc32_mb_128	= 1023,
-	__ppc32_mb_256	= 2047
-} __ppc32_bl_t;
-
-typedef enum __ppc32_pp
-{
-	__ppc32_no_access	= 0,
-	__ppc32_read_only	= 1,
-	__ppc32_read_write	= 2
-} __ppc32_pp_t;
-
 #define __ppc32_no_user_access			0
 #define __ppc32_user_access				1
 #define __ppc32_no_supervisor_access	0
