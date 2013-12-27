@@ -36,60 +36,60 @@
 	UNBOUNDED_LIST_SPEC_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX void QUEUE_T##_initialise(QUEUE_T * queue, __mem_pool_info_t * pool); \
+	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, __mem_pool_info_t * const pool); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_CREATE(PREFIX, QUEUE_T, ITEM_T) \
-	PREFIX QUEUE_T * QUEUE_T##_create(__mem_pool_info_t * pool); \
+	PREFIX QUEUE_T * QUEUE_T##_create(__mem_pool_info_t * const pool); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_DELETE(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_DELETE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX void QUEUE_T##_delete(QUEUE_T * queue); \
+	PREFIX void QUEUE_T##_delete(QUEUE_T * const queue); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_PUSH(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_ADD(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_push(QUEUE_T * queue, ITEM_T item); \
+	PREFIX bool_t QUEUE_T##_push(QUEUE_T * const queue, ITEM_T item); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_POP(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_REMOVE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * queue) __attribute((used)); \
+	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * const queue) __attribute((used)); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_FRONT(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_GET(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr); \
+	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * const queue, ITEM_T * const item_ptr); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_REORDER_FIRST(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_HEAD_TO_TAIL(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * queue); \
+	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * const queue); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_SIZE(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_SIZE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * queue); \
+	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * const queue); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_REMOVE(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_SPEC_REMOVE_ITEM(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item); \
+	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * const queue, ITEM_T item); \
 	\
 
 #define UNBOUNDED_QUEUE_BODY_INITIALISE(PREFIX, QUEUE_T, ITEM_T) \
@@ -97,7 +97,7 @@
 	UNBOUNDED_LIST_BODY_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX void QUEUE_T##_initialise(QUEUE_T * queue, __mem_pool_info_t * pool) \
+	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, __mem_pool_info_t * const pool) \
 	{ \
 		if (queue) \
 		{ \
@@ -107,7 +107,7 @@
 	\
 
 #define UNBOUNDED_QUEUE_BODY_CREATE(PREFIX, QUEUE_T, ITEM_T) \
-	PREFIX QUEUE_T * QUEUE_T##_create(__mem_pool_info_t * pool) \
+	PREFIX QUEUE_T * QUEUE_T##_create(__mem_pool_info_t * const pool) \
 	{ \
 		QUEUE_T * queue = NULL; \
 		\
@@ -128,16 +128,16 @@
 	\
 	UNBOUNDED_LIST_BODY_DELETE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX void QUEUE_T##_delete(QUEUE_T * queue) \
+	PREFIX void QUEUE_T##_delete(QUEUE_T * const queue) \
 	{ \
 		if (queue) \
 		{ \
-			__mem_pool_info_t * pool = queue->list->pool; \
 			if (queue->list) \
 			{ \
+				__mem_pool_info_t * const pool = queue->list->pool; \
 				QUEUE_T##_list_t_delete(queue->list);\
+				__mem_free(pool, queue); \
 			} \
-			__mem_free(pool, queue); \
 		} \
 	} \
 	\
@@ -146,7 +146,7 @@
 	\
 	UNBOUNDED_LIST_BODY_ADD(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_push(QUEUE_T * queue, ITEM_T item) \
+	PREFIX bool_t QUEUE_T##_push(QUEUE_T * const queue, ITEM_T item) \
 	{ \
 		bool_t ok = false; \
 		if (queue && queue->list) \
@@ -161,7 +161,7 @@
 	\
 	UNBOUNDED_LIST_BODY_REMOVE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * queue)\
+	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * const queue)\
 	{ \
 		bool_t ok = false; \
 		if (queue && queue->list) \
@@ -176,7 +176,7 @@
 	\
 	UNBOUNDED_LIST_BODY_GET(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * queue, ITEM_T * item_ptr) \
+	PREFIX bool_t QUEUE_T##_front(const QUEUE_T * const queue, ITEM_T * const item_ptr) \
 	{ \
 		bool_t ok = false; \
 		if (queue && queue->list) \
@@ -191,7 +191,7 @@
 	\
 	UNBOUNDED_LIST_BODY_HEAD_TO_TAIL(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * queue) \
+	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * const queue) \
 	{ \
 		bool_t ok = false; \
 		if (queue && queue->list) \
@@ -207,7 +207,7 @@
 	\
 	UNBOUNDED_LIST_BODY_SIZE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * queue) \
+	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * const queue) \
 	{ \
 		uint32_t size = 0; \
 		if (queue && queue->list) \
@@ -222,7 +222,7 @@
 	\
 	UNBOUNDED_LIST_BODY_REMOVE_ITEM(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * queue, ITEM_T item) \
+	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * const queue, ITEM_T item) \
 	{ \
 		bool_t ret = false; \
 		\

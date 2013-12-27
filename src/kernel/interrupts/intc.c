@@ -50,6 +50,14 @@ __intc_t * __intc_create(__mem_pool_info_t * const pool, __kernel_intc_t * const
 	return intc;
 }
 
+void __intc_delete(__intc_t * const intc)
+{
+	if (intc && intc->isr_map)
+	{
+		isr_map_t_delete(intc->isr_map);
+	}
+}
+
 void __intc_add_child(__intc_t * const intc, const uint32_t cause, const __intc_t * child)
 {
 	if (intc)

@@ -57,36 +57,36 @@
  * to free the memory on the heap.
  */
 #define UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX void LIST_T##_initialise(LIST_T * list, __mem_pool_info_t * pool);
+	PREFIX void LIST_T##_initialise(LIST_T * const list, __mem_pool_info_t * const pool);
 #define UNBOUNDED_LIST_SPEC_CREATE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * pool);
+	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * const pool);
 #define UNBOUNDED_LIST_SPEC_DELETE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX void LIST_T##_delete(LIST_T * list);
+	PREFIX void LIST_T##_delete(LIST_T * const list);
 #define UNBOUNDED_LIST_SPEC_ADD(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_add(LIST_T * list, ITEM_T item);
+	PREFIX bool_t LIST_T##_add(LIST_T * const list, ITEM_T item);
 #define UNBOUNDED_LIST_SPEC_INSERT(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item);
+	PREFIX bool_t LIST_T##_insert(LIST_T * const list, const uint32_t index, ITEM_T item);
 #define UNBOUNDED_LIST_SPEC_REMOVE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_remove(LIST_T * list, const uint32_t index);
+	PREFIX bool_t LIST_T##_remove(LIST_T * const list, const uint32_t index);
 #define UNBOUNDED_LIST_SPEC_REMOVE_ITEM(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_remove_item(LIST_T * list, ITEM_T item);
+	PREFIX bool_t LIST_T##_remove_item(LIST_T * const list, ITEM_T item);
 #define UNBOUNDED_LIST_SPEC_HEAD_TO_TAIL(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list);
+	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * const list);
 #define UNBOUNDED_LIST_SPEC_GET(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr);
+	PREFIX bool_t LIST_T##_get(const LIST_T * const list, const uint32_t index, ITEM_T * const item_ptr);
 #define UNBOUNDED_LIST_SPEC_NEXT(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr);
+	PREFIX bool_t LIST_T##_next(const LIST_T * const list, const ITEM_T current, ITEM_T * const next_ptr);
 #define UNBOUNDED_LIST_SPEC_SIZE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list);
+	PREFIX inline uint32_t LIST_T##_size(const LIST_T * const list);
 
 #define UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, LIST_T, ITEM_T) \
 	\
 	/**
 	 * Initialise the data structure
 	 */ \
-	PREFIX void LIST_T##_initialise(LIST_T * list, __mem_pool_info_t * pool) \
+	PREFIX void LIST_T##_initialise(LIST_T * const list, __mem_pool_info_t * const pool) \
 	{ \
-		 if ( list != NULL ) \
+		 if (list) \
 		 { \
 			 list-> pool = pool; \
 			 list->size = 0; \
@@ -98,11 +98,10 @@
 	 * Constructor, returns a list on the heap or
 	 * NULL if it failed.
 	 */ \
-	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * pool) \
+	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * const pool) \
 	{ \
-		LIST_T * lst = NULL; \
-		lst = __mem_alloc(pool, sizeof(LIST_T)); \
-		if ( lst != NULL ) \
+		LIST_T * const lst = __mem_alloc(pool, sizeof(LIST_T)); \
+		if (lst) \
 		{ \
 			LIST_T##_initialise(lst, pool); \
 		} \
@@ -112,42 +111,44 @@
 	/**
 	 * Delete the list and every element
 	 */ \
-	PREFIX void LIST_T##_delete(LIST_T * list) \
+	PREFIX void LIST_T##_delete(LIST_T * const list) \
 	{ \
-		if ( list && list->pool ) \
+		if (list && list->pool) \
 		{ \
-			while(list->size > 0) \
+			while(list->size) \
 			{ \
-				LIST_T##_element_t * e = list->head; \
+				LIST_T##_element_t * const e = list->head; \
 				list->head = e->next; \
-				__mem_free( list->pool, e ); \
+				__mem_free(list->pool, e); \
 				list->size--; \
 			} \
-			__mem_free( list-> pool, list ); \
+			__mem_free(list->pool, list); \
 		} \
 	}
 #define UNBOUNDED_LIST_BODY_ADD(PREFIX, LIST_T, ITEM_T) \
 	/**
 	 * Add an entry to the list
 	 */ \
-	PREFIX bool_t LIST_T##_add(LIST_T * list, ITEM_T item) \
+	PREFIX bool_t LIST_T##_add(LIST_T * const list, ITEM_T item) \
 	{ \
 		bool_t ret = false; \
 		\
-		if ( list ) \
+		if (list) \
 		{ \
-			LIST_T##_element_t * element = __mem_alloc( \
+			LIST_T##_element_t * const element = __mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
 			\
 			/* initialise the new item */ \
-			if ( element != NULL ) \
+			if (element) \
 			{ \
 				element->item = item; \
 				element->next = NULL; \
-				if ( list->tail == NULL ) \
+				if (!list->tail) \
 				{ \
 					list->head = list->tail = element; \
-				} else { \
+				} \
+				else \
+				{ \
 					list->tail->next = element; \
 					list->tail = element; \
 				} \
@@ -159,16 +160,17 @@
 		return ret; \
 	}
 #define UNBOUNDED_LIST_BODY_INSERT(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_insert(LIST_T * list, uint32_t index, ITEM_T item) \
+	\
+	PREFIX bool_t LIST_T##_insert(LIST_T * const list, const uint32_t index, ITEM_T item) \
 	{ \
 		bool_t ok = false; \
 		\
-		if ( list ) \
+		if (list) \
 		{ \
-			LIST_T##_element_t * element = __mem_alloc( \
+			LIST_T##_element_t * const element = __mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
 			\
-			if ( element ) \
+			if (element) \
 			{ \
 				/* get the head of the list */ \
 				LIST_T##_element_t * e = list->head; \
@@ -178,23 +180,31 @@
 				element->item = item; \
 				element->next = NULL; \
 				\
-				if ( index ) \
+				if (index) \
 				{ \
 					/* get the index we need */ \
 					for ( ; p < index - 1; p++ ) \
 					{ \
-						e = e->next; \
+						if (e->next) \
+						{ \
+							e = e->next; \
+						} \
+						else \
+						{ \
+							e = NULL; \
+							break; \
+						} \
 					} \
 				} \
 				/* setup our pointers correctly */ \
-				if ( e ) \
+				if (e) \
 				{ \
-					if ( e->next ) \
+					if (e->next) \
 					{ \
 						element->next = e->next; \
 					} \
 					\
-					if ( e == list->tail ) \
+					if (e == list->tail) \
 					{ \
 						list->tail = element; \
 					} \
@@ -212,7 +222,7 @@
 	/**
 	 * Delete an entry from the list
 	 */ \
-	PREFIX bool_t LIST_T##_remove(LIST_T * list, const uint32_t index) \
+	PREFIX bool_t LIST_T##_remove(LIST_T * const list, const uint32_t index) \
 	{ \
 		bool_t ret = false; \
 		\
@@ -229,14 +239,21 @@
 				 */ \
 				for ( ; c < index ; c++ ) \
 				{ \
-					p = e; \
-					e = e->next; \
+					if (e && e->next) \
+					{ \
+						p = e; \
+						e = e->next; \
+					} \
+					else \
+					{ \
+						e = NULL; p = NULL; break; \
+					} \
 				} \
 				/*
 				 * if the previous node isnt this node we
 				 * need to update the previous node
 				 */ \
-				if ( p && p != e) \
+				if (p && p != e) \
 				{ \
 					/*
 					 * if the next node is empty we need to
@@ -247,7 +264,9 @@
 					if ( e->next != NULL )\
 					{ \
 						p->next = e->next; \
-					} else { \
+					} \
+					else \
+					{ \
 						p->next = NULL; \
 					} \
 				} \
@@ -255,17 +274,17 @@
 				/*
 				 * Update the tail of the list
 				 */ \
-				if ( list->size == 1 ) \
+				if (list->size == 1) \
 				{ \
 					list->tail = list->head = NULL; \
 				} \
 				else \
 				{ \
-					if ( e == list->tail ) \
+					if (e == list->tail) \
 					{ \
 						list->tail = p; \
 					} \
-					if ( e == list->head) \
+					if (e == list->head) \
 					{ \
 						list->head = e->next; \
 					} \
@@ -283,17 +302,17 @@
 	/**
 	 * Remove an item from the list
 	 */ \
-	PREFIX bool_t LIST_T##_remove_item(LIST_T * list, ITEM_T item) \
+	PREFIX bool_t LIST_T##_remove_item(LIST_T * const list, ITEM_T item) \
 	{ \
 		bool_t ret = false; \
 		\
-		if ( list && list->size ) \
+		if (list && list->size) \
 		{ \
 			LIST_T##_element_t * e = list->head; \
 			uint32_t p = 0; \
 			for ( ; p < list->size ; p++ ) \
 			{ \
-				if ( e->item == item ) \
+				if (e->item == item) \
 				{ \
 					ret = LIST_T##_remove(list, p); \
 					break; \
@@ -304,7 +323,7 @@
 		return ret; \
 	}
 #define UNBOUNDED_LIST_BODY_HEAD_TO_TAIL(PREFIX, LIST_T, ITEM_T) \
-	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * list) \
+	PREFIX bool_t LIST_T##_head_to_tail(LIST_T * const list) \
 	{ \
 		bool_t ret = false; \
 		\
@@ -316,8 +335,8 @@
 			} \
 			else if (list->size > 1) \
 			{ \
-				LIST_T##_element_t * oldHead = list->head; \
-				LIST_T##_element_t * oldTail = list->tail; \
+				LIST_T##_element_t * const oldHead = list->head; \
+				LIST_T##_element_t * const oldTail = list->tail; \
 				list->head = oldHead->next; \
 				oldHead->next = NULL; \
 				oldTail->next = oldHead; \
@@ -332,19 +351,26 @@
 	/**
 	 * Get an entry from the list
 	 */ \
-	PREFIX bool_t LIST_T##_get(const LIST_T * list, const uint32_t index, ITEM_T * item_ptr) \
+	PREFIX bool_t LIST_T##_get(const LIST_T * const list, const uint32_t index, ITEM_T * const item_ptr) \
 	{ \
 		bool_t ret = false; \
 		\
-		if ( list->size > index ) \
+		if (list->size > index) \
 		{ \
 			LIST_T##_element_t * e = list->head; \
 			uint32_t p = 0; \
 			for ( ; p < index ; p++ ) \
 			{ \
-				e = e->next; \
+				if (e->next) \
+				{ \
+					e = e->next; \
+				} \
+				else \
+				{ \
+					e = NULL; break; \
+				} \
 			} \
-			if ( item_ptr != NULL ) \
+			if (e && item_ptr) \
 			{ \
 				__util_memcpy(item_ptr, &e->item, sizeof(ITEM_T)); \
 				ret = true; \
@@ -356,7 +382,7 @@
 	/**
 	 * Return the next element, if one, or return NULL if there isn't
 	 */ \
-	PREFIX bool_t LIST_T##_next(const LIST_T * list, const ITEM_T current, ITEM_T * next_ptr) \
+	PREFIX bool_t LIST_T##_next(const LIST_T * const list, const ITEM_T current, ITEM_T * const next_ptr) \
 	{ \
 		bool_t ret = false; \
 		\
@@ -364,7 +390,7 @@
 		uint32_t p = 0; \
 		for ( ; p < list->size ; p++ ) \
 		{ \
-			if ( e->item == current ) \
+			if (e->item == current) \
 			{ \
 				break; \
 			} \
@@ -373,10 +399,10 @@
 				e = e->next; \
 			} \
 		} \
-		if ( e->next ) \
+		if (e->next) \
 		{ \
 			e = e->next; \
-			if ( next_ptr != NULL ) \
+			if (next_ptr) \
 			{ \
 				__util_memcpy(next_ptr, &e->item, sizeof(ITEM_T)); \
 				ret = true; \
@@ -388,7 +414,7 @@
 	/**
 	 * Get the size of the list
 	 */ \
-	PREFIX inline uint32_t LIST_T##_size(const LIST_T * list) \
+	PREFIX inline uint32_t LIST_T##_size(const LIST_T * const list) \
 	{ \
 		return list->size; \
 	} \

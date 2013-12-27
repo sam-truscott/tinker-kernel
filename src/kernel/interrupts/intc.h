@@ -30,6 +30,8 @@ typedef enum
 
 __intc_t * __intc_create(__mem_pool_info_t * const pool, __kernel_intc_t * const kernel_intc);
 
+void __intc_delete(__intc_t * const intc);
+
 void __intc_add_child(__intc_t * const intc, const uint32_t cause, const __intc_t * child);
 
 void __intc_add_device(__intc_t * const intc, const uint32_t cause, const __kernel_device_t * device);

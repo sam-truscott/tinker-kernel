@@ -46,12 +46,12 @@ int32_t __hash_basic_string(const void * ptr, const uint32_t size)
 	return h;
 }
 
-bool_t __hash_equal_integer(uint32_t l, uint32_t r)
+bool_t __hash_equal_integer(const uint32_t l, const uint32_t r)
 {
 	return (l == r);
 }
 
-bool_t __hash_equal_string(char * const l, char * const r)
+bool_t __hash_equal_string(const char * const l, const char * const r)
 {
 	return __util_streq(l, r, MAX_HASH_KEY_LEN);
 }

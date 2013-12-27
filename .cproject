@@ -258,7 +258,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743.1274635676.1552094248" name="sos3" rcbsApplicability="disable" resourcePath="release_ppc_7400/sos3" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="kernel/utils/third_party/udivdi3.c|kernel/utils/third_party/udivmoddi4.c|kernel/utils/third_party/divdi3.c|arch/arm32|kernel/scheduler/round_robin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
