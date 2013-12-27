@@ -56,6 +56,10 @@ static void my_other_thread(void)
 	{
 		sos_debug("sos: other thread: sending message\n");
 		error = sos_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
+		if (error != NO_ERROR)
+		{
+			sos_debug("sos: error sending on pipe\n");
+		}
 		const char * message = NULL;
 		uint32_t size = 0;
 		sos_debug("sos: other thread: receiving message\n");
@@ -249,11 +253,11 @@ static void my_initial_thread(void)
 
 	const char * message = NULL;
 	uint32_t size = 0;
-	sos_debug("sos: initial thread: reciving message from other thread\n");
+	sos_debug("sos: initial thread: receiving message from other thread\n");
 	error = sos_receive_message(tx_pipe, (const void**)(&message), &size, true);
 	if (error != NO_ERROR)
 	{
-		sos_debug("sos: failed to receive a mesage\n");
+		sos_debug("sos: failed to receive a message\n");
 	}
 	sos_debug("sos: initial thread: received (");
 	sos_debug(message);
