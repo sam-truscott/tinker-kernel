@@ -6,12 +6,11 @@
 
 #include "malloc_config.h"
 
-typedef uint32_t size_t;
-typedef int32_t ptrdiff_t;
+#include <stddef.h>   /* for size_t */
 
 extern void memcpy(void * dst, const void * src, const uint32_t size);
 
-#pragma GCC optimize ("-O0")
+#pragma GCC optimize ("-O3")
 
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by

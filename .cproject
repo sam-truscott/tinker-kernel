@@ -194,7 +194,7 @@
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.97827247" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="powerpc-none-eabi-" valueType="string"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.1001708120" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" value="" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1493560645" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder autoBuildTarget="all" buildPath="${workspace_loc:/sos3/Debug}" cleanBuildTarget="clean" enableAutoBuild="false" id="org.eclipse.cdt.build.core.internal.builder.1026019482" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
+							<builder autoBuildTarget="all" buildPath="${workspace_loc:/sos3}/release_ppc_7400" cleanBuildTarget="clean" command="mingw32-make" id="org.eclipse.cdt.build.core.internal.builder.619057340" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1385974469" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.2060483983" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" value="gnu.c.optimization.level.more" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.124192386" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
@@ -258,6 +258,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1871918743.1274635676.1552094248" name="sos3" rcbsApplicability="disable" resourcePath="release_ppc_7400/sos3" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="kernel/utils/third_party/udivdi3.c|kernel/utils/third_party/udivmoddi4.c|kernel/utils/third_party/divdi3.c|arch/arm32|kernel/scheduler/round_robin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
