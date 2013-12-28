@@ -22,29 +22,29 @@
 /**
  * A linked list of processes
  */
-UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, __process_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_SPEC_GET(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY_GET(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY_ADD(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY_REMOVE(static, process_list_t, __process_t*)
-UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, process_list_t, __process_t*)
+UNBOUNDED_LIST_INTERNAL_TYPE(__process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_CREATE(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_INITIALISE(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_GET(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_SPEC_ADD(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_CREATE(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_INITIALISE(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_GET(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_ADD(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_REMOVE(static, __process_list_t, __process_t*)
+UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, __process_list_t, __process_t*)
 
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, __process_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, __process_t*)
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(__process_list_it_t, __process_list_t, __process_t*)
+UNBOUNDED_LIST_ITERATOR_BODY(extern, __process_list_it_t, __process_list_t, __process_t*)
 
 /**
  * The static list of processes in the system
  */
-static process_list_t * __process_list = NULL;
+static __process_list_t * __process_list = NULL;
 
 void __proc_initialise(void)
 {
-	__process_list = process_list_t_create(__mem_get_default_pool());
+	__process_list = __process_list_t_create(__mem_get_default_pool());
 }
 
 error_t __proc_create_process(
@@ -70,7 +70,7 @@ error_t __proc_create_process(
 	uint32_t proc_id = 0;
 	for ( uint32_t i = 0 ; i < __MAX_PROCESSES ; i++ )
 	{
-		if ( !process_list_t_get(__process_list, i, &tmp) )
+		if ( !__process_list_t_get(__process_list, i, &tmp) )
 		{
 			proc_id = i;
 			break;
@@ -146,7 +146,7 @@ error_t __proc_create_process(
 
 				if ( ret == NO_ERROR )
 				{
-					if ( process_list_t_add(__process_list, proc) == false )
+					if (__process_list_t_add(__process_list, proc) == false )
 					{
 						__process_exit(proc);
 						ret = OUT_OF_MEMORY;
@@ -231,11 +231,10 @@ error_t __proc_create_thread(
 
 void __proc_delete_proc(const __process_t * const process)
 {
-	process_list_t_remove_item(__process_list, (__process_t*const)process);
+	__process_list_t_remove_item(__process_list, (__process_t*const)process);
 }
 
-process_list_it_t * __proc_list_procs(void)
+__process_list_it_t * __proc_list_procs(void)
 {
-	process_list_it_t * it = process_list_it_t_create(__process_list);
-	return it;
+	return __process_list_it_t_create(__process_list);
 }

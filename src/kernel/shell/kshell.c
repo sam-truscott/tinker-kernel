@@ -132,11 +132,11 @@ static bool_t __kshell_strcmp(const char * a, const char * b)
 
 static void __kshell_process_list(void)
 {
-	process_list_it_t * list = NULL;
+	__process_list_it_t * list = NULL;
 	__process_t * proc = NULL;
 
 	list = __proc_list_procs();
-	process_list_it_t_get(list, &proc);
+	__process_list_it_t_get(list, &proc);
 
 	__print_out("ProcessId\tThreads\tName\n");
 	__print_out("---------\t-------\t----\n");
@@ -146,22 +146,22 @@ static void __kshell_process_list(void)
 		__printp_out("\t%d", __process_get_pid(proc));
 		__printp_out("\t%d", __process_get_thread_count(proc));
 		__printp_out("\t%s\n", __process_get_image(proc));
-		if ( !process_list_it_t_next(list, &proc) )
+		if ( !__process_list_it_t_next(list, &proc) )
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	__process_list_it_t_delete(list);
 }
 
 static void __kshell_task_list(void)
 {
-	process_list_it_t * list = NULL;
+	__process_list_it_t * list = NULL;
 	__process_t * proc = NULL;
 
 	list = __proc_list_procs();
-	process_list_it_t_get(list, &proc);
+	__process_list_it_t_get(list, &proc);
 
 	while( proc )
 	{
@@ -193,22 +193,22 @@ static void __kshell_task_list(void)
 
 		__thread_it_t_delete(tlist);
 
-		if ( !process_list_it_t_next(list, &proc) )
+		if ( !__process_list_it_t_next(list, &proc) )
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	__process_list_it_t_delete(list);
 }
 
 static void __kshell_object_table(void)
 {
-	process_list_it_t * list = NULL;
+	__process_list_it_t * list = NULL;
 	__process_t * proc = NULL;
 
 	list = __proc_list_procs();
-	process_list_it_t_get(list, &proc);
+	__process_list_it_t_get(list, &proc);
 
 	while( proc )
 	{
@@ -310,12 +310,12 @@ static void __kshell_object_table(void)
 			__object_table_it_t_delete(it);
 		}
 
-		if ( !process_list_it_t_next(list, &proc) )
+		if ( !__process_list_it_t_next(list, &proc) )
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	__process_list_it_t_delete(list);
 }
 #endif /* __KERNEL_SHELL */
