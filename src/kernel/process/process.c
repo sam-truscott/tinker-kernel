@@ -20,19 +20,31 @@
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/hashed_map.h"
 
-HASH_MAP_TYPE_T(thread_map_t)
-HASH_MAP_INTERNAL_TYPE_T(thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
-HASH_MAP_SPEC_T(static, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
-HASH_FUNCS_VALUE(thread_map_t, uint32_t)
-HASH_MAP_BODY_T(static, thread_map_t, uint32_t,__thread_t*, __MAX_THREADS, 16)
+HASH_MAP_TYPE_T(__thread_map_t)
+HASH_MAP_INTERNAL_TYPE_T(__thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
+HASH_MAP_SPEC_CREATE(static, __thread_map_t)
+HASH_MAP_SPEC_INITALISE(static, __thread_map_t)
+HASH_MAP_SPEC_SIZE(static, __thread_map_t, uint32_t, __thread_t*, __MAX_THREADS)
+HASH_MAP_SPEC_CONTAINS_KEY(static, __thread_map_t, uint32_t)
+HASH_MAP_SPEC_PUT(static, __thread_map_t, uint32_t, __thread_t*)
+HASH_MAP_SPEC_REMOVE(static, __thread_map_t, uint32_t, __thread_t*)
+HASH_MAP_SPEC_DELETE(static, __thread_map_t)
+HASH_FUNCS_VALUE(__thread_map_t, uint32_t)
+HASH_MAP_BODY_CREATE(static, __thread_map_t)
+HASH_MAP_BODY_INITALISE(static, __thread_map_t, __MAX_THREADS, 16)
+HASH_MAP_BODY_SIZE(static, __thread_map_t)
+HASH_MAP_BODY_CONTAINS_KEY(static, __thread_map_t, uint32_t, 16)
+HASH_MAP_BODY_PUT(static, __thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
+HASH_MAP_BODY_REMOVE(static, __thread_map_t, uint32_t, 16)
+HASH_MAP_BODY_DELETE(static, __thread_map_t)
 
-HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(thread_it_t, thread_map_t)
-HASH_MAP_TYPE_ITERATOR_BODY(extern, thread_it_t, thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
+HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(__thread_it_t, __thread_map_t)
+HASH_MAP_TYPE_ITERATOR_BODY(extern, __thread_it_t, __thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
 
 typedef struct __process_t
 {
 	uint32_t				process_id;
-	thread_map_t	*		threads;
+	__thread_map_t	*		threads;
 	__mem_pool_info_t * 	memory_pool;
 	__object_table_t *		object_table;
 	object_number_t			object_number;
@@ -100,7 +112,7 @@ error_t __process_create(
 	error_t ret = NO_ERROR;
 	if (p)
 	{
-		p->threads = thread_map_t_create(
+		p->threads = __thread_map_t_create(
 				__hash_basic_integer,
 				__hash_equal_integer,
 				true,
@@ -198,13 +210,13 @@ bool_t __process_add_thread(
 		object_number_t * const objno)
 {
 	bool_t ret = false;
-	const uint32_t thread_count = thread_map_t_size(process->threads);
+	const uint32_t thread_count = __thread_map_t_size(process->threads);
 	if ( thread_count < __MAX_THREADS )
 	{
 		uint32_t thread_id = (process->next_thread_id % __MAX_THREADS);
 		for ( uint32_t i = thread_id ; i < __MAX_THREADS ; i++ )
 		{
-			if ( !thread_map_t_contains_key(process->threads, thread_id) )
+			if ( !__thread_map_t_contains_key(process->threads, thread_id) )
 			{
 				thread_id = i;
 				break;
@@ -233,7 +245,7 @@ bool_t __process_add_thread(
 		if (ret)
 		{
 			__thread_set_oid(thread, *objno);
-			if(!thread_map_t_put(process->threads, thread_id, thread))
+			if(!__thread_map_t_put(process->threads, thread_id, thread))
 			{
 				ret = OUT_OF_MEMORY;
 			}
@@ -249,7 +261,7 @@ __thread_t * __process_get_main_thread(const __process_t * process)
 
 uint32_t __process_get_thread_count(const __process_t * process)
 {
-	return thread_map_t_size(process->threads);
+	return __thread_map_t_size(process->threads);
 }
 
 const __mem_section_t * __process_get_first_section(const __process_t * const process)
@@ -261,20 +273,20 @@ void __process_thread_exit(__process_t * const process, __thread_t * const threa
 {
 	__kernel_assert("__process_thread_exit - check process is not null", process != NULL);
 	__kernel_assert("__process_thread_exit - check thread is not null", thread != NULL);
-	thread_map_t_remove(process->threads, __thread_get_tid(thread));
+	__thread_map_t_remove(process->threads, __thread_get_tid(thread));
 }
 
 void __process_exit(__process_t * const process)
 {
 	__kernel_assert("process_exit - check process is not null", process != NULL);
 	// thread list
-	thread_map_t_delete(process->threads);
+	__thread_map_t_delete(process->threads);
 	// object table
-	object_table_it_t * const it = __obj_iterator(process->object_table);
+	__object_table_it_t * const it = __obj_iterator(process->object_table);
 	if (it)
 	{
 		__object_t * object = NULL;
-		bool_t objects_exist = object_table_it_t_get(it, &object);
+		bool_t objects_exist = __object_table_it_t_get(it, &object);
 		while (objects_exist)
 		{
 			// delete it
@@ -334,10 +346,10 @@ void __process_exit(__process_t * const process)
 				}
 				/* TODO: Support the other object types */
 			}
-			object_table_it_t_reset(it);
-			objects_exist = object_table_it_t_get(it, &object);
+			__object_table_it_t_reset(it);
+			objects_exist = __object_table_it_t_get(it, &object);
 		}
-		object_table_it_t_delete(it);
+		__object_table_it_t_delete(it);
 	}
 	__obj_table_delete(process->object_table);
 
@@ -467,7 +479,7 @@ void __process_free_vmem(
 	}
 }
 
-thread_it_t * __process_iterator(const __process_t * const process)
+__thread_it_t * __process_iterator(const __process_t * const process)
 {
-	return thread_it_t_create(process->threads);
+	return __thread_it_t_create(process->threads);
 }

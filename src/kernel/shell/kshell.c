@@ -165,11 +165,10 @@ static void __kshell_task_list(void)
 
 	while( proc )
 	{
-		thread_it_t * tlist = NULL;
+		__thread_it_t * tlist = __process_iterator(proc);
 		__thread_t  * t = NULL;
 
-		tlist = __process_iterator(proc);
-		thread_it_t_get(tlist, &t);
+		__thread_it_t_get(tlist, &t);
 
 		__printp_out("Process:\t%s\n", __process_get_image(proc));
 		__print_out("Thread ID\tStack\tPri\tState\tEntry\tName\n");
@@ -185,14 +184,14 @@ static void __kshell_task_list(void)
 			__printp_out("\t%s", __thread_get_name(t));
 			__print_out("\n");
 
-			if ( !thread_it_t_next(tlist, &t))
+			if ( !__thread_it_t_next(tlist, &t))
 			{
 				t = NULL;
 			}
 		}
 		__print_out("\n");
 
-		thread_it_t_delete(tlist);
+		__thread_it_t_delete(tlist);
 
 		if ( !process_list_it_t_next(list, &proc) )
 		{
@@ -213,7 +212,7 @@ static void __kshell_object_table(void)
 
 	while( proc )
 	{
-		object_table_it_t * const it = __obj_iterator(__process_get_object_table(proc));
+		__object_table_it_t * const it = __obj_iterator(__process_get_object_table(proc));
 
 		__printp_out("Process:\t%s\n", __process_get_image(proc));
 		__print_out("ObjNo.\tType\t\n");
@@ -223,7 +222,7 @@ static void __kshell_object_table(void)
 		{
 			__object_t * obj = NULL;
 
-			object_table_it_t_get(it, &obj);
+			__object_table_it_t_get(it, &obj);
 
 			while( obj )
 			{
@@ -300,7 +299,7 @@ static void __kshell_object_table(void)
 
 				__print_out("\n");
 
-				if ( !object_table_it_t_next(it, &obj))
+				if ( !__object_table_it_t_next(it, &obj))
 				{
 					obj = NULL;
 				}
@@ -308,7 +307,7 @@ static void __kshell_object_table(void)
 
 			__print_out("\n");
 
-			object_table_it_t_delete(it);
+			__object_table_it_t_delete(it);
 		}
 
 		if ( !process_list_it_t_next(list, &proc) )

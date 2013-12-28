@@ -73,6 +73,11 @@ static void my_other_thread(void)
 			sos_debug("sos: other thread: got (");
 			sos_debug(message);
 			sos_debug(")\n");
+			error = sos_received_message(rx_pipe);
+			if (error != NO_ERROR)
+			{
+				sos_debug("sos: error marking pipe message as received\n");
+			}
 		}
 		error = sos_close_pipe(rx_pipe);
 		if (error != NO_ERROR)

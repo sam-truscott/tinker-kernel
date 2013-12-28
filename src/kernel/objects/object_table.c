@@ -15,18 +15,32 @@
 #include "kernel/process/process.h"
 #include "kernel/memory/memory_manager.h"
 
-HASH_MAP_INTERNAL_TYPE_T(object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
-HASH_MAP_SPEC_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE)
-HASH_FUNCS_VALUE(object_map_t, object_number_t)
-HASH_MAP_BODY_T(static, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
+HASH_MAP_INTERNAL_TYPE_T(__object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
+HASH_MAP_SPEC_CREATE(static, __object_map_t)
+HASH_MAP_SPEC_INITALISE(static, __object_map_t)
+HASH_MAP_SPEC_DELETE(static, __object_map_t)
+HASH_MAP_SPEC_CAPACITY(static, __object_map_t)
+HASH_MAP_SPEC_CONTAINS_KEY(static, __object_map_t, object_number_t)
+HASH_MAP_SPEC_PUT(static, __object_map_t, object_number_t, __object_t*)
+HASH_MAP_SPEC_GET(static, __object_map_t, object_number_t, __object_t*)
+HASH_MAP_SPEC_REMOVE(static, __object_map_t, object_number_t, __object_t*)
+HASH_FUNCS_VALUE(__object_map_t, object_number_t)
+HASH_MAP_BODY_CREATE(static, __object_map_t)
+HASH_MAP_BODY_INITALISE(static, __object_map_t, __MAX_OBJECT_TABLE_SIZE, 16)
+HASH_MAP_BODY_DELETE(static, __object_map_t)
+HASH_MAP_BODY_CAPACITY(static, __object_map_t, __MAX_OBJECT_TABLE_SIZE)
+HASH_MAP_BODY_CONTAINS_KEY(static, __object_map_t, object_number_t, 16)
+HASH_MAP_BODY_PUT(static, __object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
+HASH_MAP_BODY_GET(static, __object_map_t, object_number_t, __object_t*, 16)
+HASH_MAP_BODY_REMOVE(static, __object_map_t, object_number_t, 16)
 
-HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(object_table_it_t, object_map_t)
-HASH_MAP_TYPE_ITERATOR_BODY(extern, object_table_it_t, object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
+HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(__object_table_it_t, __object_map_t)
+HASH_MAP_TYPE_ITERATOR_BODY(extern, __object_table_it_t, __object_map_t, object_number_t, __object_t*, __MAX_OBJECT_TABLE_SIZE, 16)
 
 typedef struct __object_table_t
 {
 	__mem_pool_info_t * pool;
-	object_map_t * the_map;
+	__object_map_t * the_map;
 	object_number_t next_id;
 } __object_table_internal_t;
 
@@ -43,7 +57,7 @@ __object_table_t * __obj_table_create(__mem_pool_info_t * const pool)
 void __obj_table_delete(const __object_table_t * const table)
 {
 	__kernel_assert("__obj_table_delete - check that the object table is present", table != NULL);
-	object_map_t_delete(table->the_map);
+	__object_map_t_delete(table->the_map);
 	__mem_free(table->pool, table);
 }
 
@@ -62,7 +76,7 @@ error_t __obj_initialse_table(
 	if ( table )
 	{
 		table->pool = pool;
-		table->the_map = object_map_t_create(
+		table->the_map = __object_map_t_create(
 				__hash_basic_integer,
 				__hash_equal_object_number,
 				true,
@@ -89,13 +103,12 @@ error_t __obj_add_object(
 
 	if (t && obj)
 	{
-		object_map_t * const map = (object_map_t*)t->the_map;
 		/* find the next suitable object id to use */
 		object_number_t id = t->next_id;
-		const uint32_t tc = object_map_t_capacity(map);
+		const uint32_t tc = __object_map_t_capacity(t->the_map);
 		for ( ; id != tc ; id++ )
 		{
-			if ( !object_map_t_contains_key(map, id) )
+			if ( !__object_map_t_contains_key(t->the_map, id) )
 			{
 				id_ok = true;
 				break;
@@ -106,7 +119,7 @@ error_t __obj_add_object(
 		if (id_ok)
 		{
 			t->next_id++;
-			if ( !object_map_t_put(((object_map_t*)t->the_map), id, obj))
+			if ( !__object_map_t_put((t->the_map), id, obj))
 			{
 				ret = OBJECT_ADD_FAILED;
 			}
@@ -129,10 +142,9 @@ error_t __obj_remove_object(
 
 	if (t)
 	{
-		object_map_t * const map = (object_map_t*)t->the_map;
-		if (object_map_t_contains_key(map, objno))
+		if (__object_map_t_contains_key(t->the_map, objno))
 		{
-			if(!object_map_t_remove(map, objno))
+			if(!__object_map_t_remove(t->the_map, objno))
 			{
 				ret = UNKNOWN_OBJ;
 			}
@@ -149,12 +161,10 @@ error_t __obj_remove_object(
 __object_t * __obj_get_object(const __object_table_t * t, object_number_t oid)
 {
 	__object_t * o = NULL;
-	if ( t )
+	if (t)
 	{
 		__object_t * tmp_object = NULL;
-		object_map_t * map = (object_map_t*)t->the_map;
-
-		if ( object_map_t_get(map, oid, &tmp_object) )
+		if (__object_map_t_get(t->the_map, oid, &tmp_object))
 		{
 			o = tmp_object;
 		}
@@ -162,7 +172,7 @@ __object_t * __obj_get_object(const __object_table_t * t, object_number_t oid)
 	return o;
 }
 
-object_table_it_t * __obj_iterator(const __object_table_t * t)
+__object_table_it_t * __obj_iterator(const __object_table_t * t)
 {
-	return object_table_it_t_create(t->the_map);
+	return __object_table_it_t_create(t->the_map);
 }

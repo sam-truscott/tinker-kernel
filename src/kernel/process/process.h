@@ -16,8 +16,8 @@
 
 typedef struct __process_t __process_t;
 
-HASH_MAP_TYPE_ITERATOR_TYPE(thread_it_t)
-HASH_MAP_TYPE_ITERATOR_SPEC(extern, thread_it_t, __thread_t*)
+HASH_MAP_TYPE_ITERATOR_TYPE(__thread_it_t)
+HASH_MAP_TYPE_ITERATOR_SPEC(extern, __thread_it_t, __thread_t*)
 
 error_t __process_create(
 		__mem_pool_info_t * const mempool,
@@ -81,6 +81,6 @@ void __process_free_vmem(
 		const __process_t * const process,
 		const uint32_t virt_address);
 
-thread_it_t * __process_iterator(const __process_t * const process);
+__thread_it_t * __process_iterator(const __process_t * const process);
 
 #endif /* PROCESS_H_ */

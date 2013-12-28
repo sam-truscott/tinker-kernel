@@ -136,37 +136,44 @@ static inline void fake_debug(char* msg,...) {}
 	} \
 	\
 
-#define HASH_MAP_SPEC_T(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
+#define HASH_MAP_SPEC_INITALISE(PREFIX, HASH_MAP_T) \
 	\
 	PREFIX void HASH_MAP_T##_initialise( \
 			HASH_MAP_T * const map, \
 			HASH_MAP_T##__hash_create_hash * const hashing_algorithm, \
 			HASH_MAP_T##__hash_key_equal * const hash_key_equal, \
 			const bool_t key_is_value, \
-			__mem_pool_info_t * const pool); \
+			__mem_pool_info_t * const pool);
+#define HASH_MAP_SPEC_CREATE(PREFIX, HASH_MAP_T) \
 	\
 	PREFIX HASH_MAP_T * HASH_MAP_T##_create( \
 			HASH_MAP_T##__hash_create_hash * const hashing_algorithm, \
 			HASH_MAP_T##__hash_key_equal * const hash_key_equal, \
 			const bool_t key_is_value, \
-			__mem_pool_info_t * const pool); \
+			__mem_pool_info_t * const pool);
+#define HASH_MAP_SPEC_DELETE(PREFIX, HASH_MAP_T) \
 	\
-	PREFIX void HASH_MAP_T##_delete(HASH_MAP_T * const map); \
+	PREFIX void HASH_MAP_T##_delete(HASH_MAP_T * const map);
+#define HASH_MAP_SPEC_GET(PREFIX, HASH_MAP_T, KEY_T, VALUE_T) \
 	\
-	PREFIX bool_t HASH_MAP_T##_get(const HASH_MAP_T * const map, const KEY_T key, VALUE_T * const value); \
+	PREFIX bool_t HASH_MAP_T##_get(const HASH_MAP_T * const map, const KEY_T key, VALUE_T * const value);
+#define HASH_MAP_SPEC_PUT(PREFIX, HASH_MAP_T, KEY_T, VALUE_T) \
 	\
 	PREFIX bool_t HASH_MAP_T##_put(HASH_MAP_T * const map, const KEY_T key, VALUE_T value); \
+	PREFIX int32_t HASH_MAP_T##_index_of(const HASH_MAP_T * const map, const KEY_T key);
+#define HASH_MAP_SPEC_REMOVE(PREFIX, HASH_MAP_T, KEY_T, VALUE_T) \
 	\
-	PREFIX bool_t HASH_MAP_T##_remove(HASH_MAP_T * const map, const KEY_T key); \
+	PREFIX bool_t HASH_MAP_T##_remove(HASH_MAP_T * const map, const KEY_T key);
+#define HASH_MAP_SPEC_SIZE(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
 	\
-	PREFIX inline uint32_t HASH_MAP_T##_size(const HASH_MAP_T * const map); \
+	PREFIX inline uint32_t HASH_MAP_T##_size(const HASH_MAP_T * const map);
+#define HASH_MAP_SPEC_CAPACITY(PREFIX, HASH_MAP_T) \
 	\
-	PREFIX inline uint32_t HASH_MAP_T##_capacity(); \
+	PREFIX inline uint32_t HASH_MAP_T##_capacity();
+#define HASH_MAP_SPEC_CONTAINS_KEY(PREFIX, HASH_MAP_T, KEY_T) \
 	\
-	PREFIX bool_t HASH_MAP_T##_contains_key(const HASH_MAP_T * const map, const KEY_T key); \
-	\
-
-#define HASH_MAP_BODY_T(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY, BUCKET_SIZE) \
+	PREFIX bool_t HASH_MAP_T##_contains_key(const HASH_MAP_T * const map, const KEY_T key);
+#define HASH_MAP_BODY_INITALISE(PREFIX, HASH_MAP_T, MAP_CAPACITY, BUCKET_SIZE) \
 	\
 	/*
 	 * Initialise an instance that is already declared (i.e. on the stack/bss)
@@ -188,8 +195,8 @@ static inline void fake_debug(char* msg,...) {}
 		{ \
 			map->buckets[tmp] = NULL; \
 		} \
-	} \
-	\
+	}
+#define HASH_MAP_BODY_CREATE(PREFIX, HASH_MAP_T) \
 	/*
 	 * Constructor for the map, returns a pointer to the new MAP or NULL
 	 * if the allocation failed.
@@ -207,32 +214,20 @@ static inline void fake_debug(char* msg,...) {}
 			HASH_MAP_T##_initialise(new_map, hashing_algorithm, hash_key_equal, key_is_value, pool); \
 		} \
 		return new_map; \
-	} \
-	\
+	}
+#define HASH_MAP_BODY_DELETE(PREFIX, HASH_MAP_T) \
 	/*
 	 * Delete the hash map
 	 */ \
 	PREFIX void HASH_MAP_T##_delete(HASH_MAP_T * const map) \
 	{ \
 		/* TODO : delete all buckets */ \
-		if (map != NULL && map->pool != NULL) \
+		if (map && map->pool) \
 		{ \
 			__mem_free (map->pool, map); \
 		} \
-	} \
-	\
-	/*
-	 * Internal function to return the index of a key
-	 */ \
-	PREFIX inline int32_t HASH_MAP_T##_index_of(const HASH_MAP_T * const map, const KEY_T key) \
-	{ \
-		/*
-		 * normalise the hashed value to be a suitable index within
-		 * the range of the tables index
-		 */ \
-		return HASH_MAP_T##_hash(map, key) & ((MAP_CAPACITY/BUCKET_SIZE) - 1); \
-	} \
-	\
+	}
+#define HASH_MAP_BODY_GET(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, BUCKET_SIZE) \
 	/*
 	 * Get an element from the map
 	 */ \
@@ -262,8 +257,8 @@ static inline void fake_debug(char* msg,...) {}
 			} \
 		} \
 		return found; \
-	} \
-	\
+	}
+#define HASH_MAP_BODY_PUT(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY, BUCKET_SIZE) \
 	/*
 	 * Put an element in the map
 	 */ \
@@ -303,6 +298,18 @@ static inline void fake_debug(char* msg,...) {}
 	} \
 	\
 	/*
+	 * Internal function to return the index of a key
+	 */ \
+	PREFIX int32_t HASH_MAP_T##_index_of(const HASH_MAP_T * const map, const KEY_T key) \
+	{ \
+		/*
+		 * normalise the hashed value to be a suitable index within
+		 * the range of the tables index
+		 */ \
+		return HASH_MAP_T##_hash(map, key) & ((MAP_CAPACITY/BUCKET_SIZE) - 1); \
+	}
+#define HASH_MAP_BODY_REMOVE(PREFIX, HASH_MAP_T, KEY_T, BUCKET_SIZE) \
+	/*
 	 * Remove an element from the map
 	 */ \
 	PREFIX bool_t HASH_MAP_T##_remove(HASH_MAP_T * const map, const KEY_T key) \
@@ -339,22 +346,24 @@ static inline void fake_debug(char* msg,...) {}
 		 } \
 		 \
 		 return ok; \
-	} \
+	}
+#define HASH_MAP_BODY_SIZE(PREFIX, HASH_MAP_T) \
 	/*
 	 * Get the number of elements in the map
 	 */ \
 	PREFIX inline uint32_t HASH_MAP_T##_size(const HASH_MAP_T * const map) \
 	{ \
 		return map->size; \
-	} \
+	}
+#define HASH_MAP_BODY_CAPACITY(PREFIX, HASH_MAP_T, MAP_CAPACITY) \
 	/*
 	 * Get the total capacity of the map
 	 */ \
 	PREFIX inline uint32_t HASH_MAP_T##_capacity() \
 	{ \
 		 return MAP_CAPACITY; \
-	} \
-	\
+	}
+#define HASH_MAP_BODY_CONTAINS_KEY(PREFIX, HASH_MAP_T, KEY_T, BUCKET_SIZE) \
 	/*
 	 * Does the map contain a given key?
 	 */ \

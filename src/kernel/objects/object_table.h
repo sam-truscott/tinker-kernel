@@ -15,9 +15,9 @@
 #include "kernel/utils/collections/hashed_map.h"
 #include "kernel/utils/collections/hashed_map_iterator.h"
 
-HASH_MAP_TYPE_T(object_map_t)
-HASH_MAP_TYPE_ITERATOR_TYPE(object_table_it_t)
-HASH_MAP_TYPE_ITERATOR_SPEC(extern, object_table_it_t, __object_t*)
+HASH_MAP_TYPE_T(__object_map_t)
+HASH_MAP_TYPE_ITERATOR_TYPE(__object_table_it_t)
+HASH_MAP_TYPE_ITERATOR_SPEC(extern, __object_table_it_t, __object_t*)
 
 typedef struct __object_table_t __object_table_t;
 
@@ -40,6 +40,6 @@ error_t __obj_remove_object(
 
 __object_t * __obj_get_object(const __object_table_t * t, object_number_t oid);
 
-object_table_it_t * __obj_iterator(const __object_table_t * t);
+__object_table_it_t * __obj_iterator(const __object_table_t * t);
 
 #endif /* OBJECT_TABLE_H_ */
