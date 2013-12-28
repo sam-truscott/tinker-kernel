@@ -18,24 +18,24 @@
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/unbounded_queue.h"
 
-UNBOUNDED_QUEUE_TYPE(thread_obj_queue_t)
-UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_CREATE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_INITIALISE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_DELETE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_FRONT(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_PUSH(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_POP(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_REMOVE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_SIZE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_CREATE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_INITIALISE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_DELETE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_FRONT(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_PUSH(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_POP(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_REMOVE(static,thread_obj_queue_t, __object_thread_t*)
-UNBOUNDED_QUEUE_BODY_SIZE(static,thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_TYPE(__thread_obj_queue_t)
+UNBOUNDED_QUEUE_INTERNAL_TYPE(__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_CREATE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_INITIALISE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_DELETE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_FRONT(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_PUSH(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_POP(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_REMOVE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_SIZE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_CREATE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_INITIALISE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_DELETE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_FRONT(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_PUSH(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_POP(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_REMOVE(static,__thread_obj_queue_t, __object_thread_t*)
+UNBOUNDED_QUEUE_BODY_SIZE(static,__thread_obj_queue_t, __object_thread_t*)
 
 typedef enum
 {
@@ -55,8 +55,8 @@ typedef struct __object_sema_t
 		{
 			uint32_t sem_count;
 			uint32_t sem_alloc;
-			thread_obj_queue_t * listeners;
-			thread_obj_queue_t * owners;
+			__thread_obj_queue_t * listeners;
+			__thread_obj_queue_t * owners;
 			priority_t highest_priority;
 			char name[__MAX_SHARED_OBJECT_NAME_LENGTH];
 		} owner;
@@ -68,12 +68,12 @@ typedef struct __object_sema_t
 } __object_sema_internal_t;
 
 static void __obj_push_semaphore_listener(
-		thread_obj_queue_t * const list,
+		__thread_obj_queue_t * const list,
 		__object_thread_t * const object);
 
 static void __obj_notify_semaphore_listener(
 		__object_sema_t * const semaphore,
-		thread_obj_queue_t * const list);
+		__thread_obj_queue_t * const list);
 
 __object_sema_t * __obj_cast_semaphore(__object_t * o)
 {
@@ -126,8 +126,8 @@ error_t __obj_create_semaphore(
 					no->sema_type = sema_type_owner;
 					no->data.owner.sem_count = initial_count;
 					no->data.owner.sem_alloc = 0;
-					no->data.owner.listeners = thread_obj_queue_t_create(pool);
-					no->data.owner.owners = thread_obj_queue_t_create(pool);
+					no->data.owner.listeners = __thread_obj_queue_t_create(pool);
+					no->data.owner.owners = __thread_obj_queue_t_create(pool);
 					no->data.owner.highest_priority = 0;
 					no->pool = pool;
 					memset(no->data.owner.name, 0, sizeof(no->data.owner.name));
@@ -240,8 +240,8 @@ error_t __object_delete_semaphore(
 			break;
 		case sema_type_owner:
 			__registry_remove(semaphore->data.owner.name);
-			thread_obj_queue_t_delete(semaphore->data.owner.listeners);
-			thread_obj_queue_t_delete(semaphore->data.owner.owners);
+			__thread_obj_queue_t_delete(semaphore->data.owner.listeners);
+			__thread_obj_queue_t_delete(semaphore->data.owner.owners);
 			__mem_free(semaphore->pool, semaphore);
 			break;
 		case sema_type_link:
@@ -280,7 +280,7 @@ error_t __obj_get_semaphore(
 				sema = semaphore->data.link.link;
 			}
 
-			thread_obj_queue_t_front(sema->data.owner.owners, &first_owner_obj);
+			__thread_obj_queue_t_front(sema->data.owner.owners, &first_owner_obj);
 
 			const priority_t thread_priority =
 					__obj_get_thread_priority_ex(thread);
@@ -317,7 +317,7 @@ error_t __obj_get_semaphore(
 				/* not a priority inversion, just update the numbers to ensure
 				 * that when the semaphore is released we don't accidently change
 				 * a threads priority level*/
-				thread_obj_queue_t_push(sema->data.owner.owners, thread);
+				__thread_obj_queue_t_push(sema->data.owner.owners, thread);
 
 				sema->data.owner.highest_priority = thread_priority;
 			}
@@ -371,7 +371,7 @@ error_t __obj_release_semaphore(
 			sema->data.owner.sem_count++;
 			sema->data.owner.sem_alloc--;
 
-			thread_obj_queue_t_remove(sema->data.owner.owners, thread);
+			__thread_obj_queue_t_remove(sema->data.owner.owners, thread);
 
 			/* the thread was a lower priority thread that had
 			 * its priority temporarily elevated to avoid priority
@@ -406,28 +406,28 @@ error_t __obj_release_semaphore(
 }
 
 static void __obj_push_semaphore_listener(
-		thread_obj_queue_t * const list,
+		__thread_obj_queue_t * const list,
 		__object_thread_t * const thread)
 {
 	if (list && thread)
 	{
-		thread_obj_queue_t_push(list, thread);
+		__thread_obj_queue_t_push(list, thread);
 	}
 }
 
 static void __obj_notify_semaphore_listener(
 		__object_sema_t * const semaphore,
-		thread_obj_queue_t * const list)
+		__thread_obj_queue_t * const list)
 {
 	if (list)
 	{
-		const uint32_t listener_count = thread_obj_queue_t_size(list);
+		const uint32_t listener_count = __thread_obj_queue_t_size(list);
 		if (listener_count > 0)
 		{
 			__object_thread_t * next_thread = NULL;
 			bool_t ok;
 
-			ok = thread_obj_queue_t_front(list, &next_thread);
+			ok = __thread_obj_queue_t_front(list, &next_thread);
 
 			if (ok && next_thread)
 			{
@@ -453,11 +453,11 @@ static void __obj_notify_semaphore_listener(
 					semaphore->data.owner.highest_priority = thread_priority;
 				}
 
-				thread_obj_queue_t_push(
+				__thread_obj_queue_t_push(
 						semaphore->data.owner.owners,
 						next_thread);
 
-				thread_obj_queue_t_pop(list);
+				__thread_obj_queue_t_pop(list);
 			}
 		}
 	}
