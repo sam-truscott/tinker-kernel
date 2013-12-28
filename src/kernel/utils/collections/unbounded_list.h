@@ -18,9 +18,9 @@
 #else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-static inline void fake_debug(char* msg,...) __attribute__((used));
-static inline void fake_debug(char* msg,...) {}
-#define UNBOUNDED_LIST_DEBUG fake_debug
+static inline void fake_debug2(char* msg,...) __attribute__((used));
+static inline void fake_debug2(char* msg,...) {}
+#define UNBOUNDED_LIST_DEBUG fake_debug2
 #pragma GCC diagnostic pop
 #endif
 

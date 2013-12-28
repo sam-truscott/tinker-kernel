@@ -14,19 +14,19 @@
 #include "kernel/utils/collections/unbounded_list.h"
 #include "kernel/utils/collections/unbounded_list_iterator.h"
 
-UNBOUNDED_LIST_TYPE(pipe_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_BODY_ADD(static, pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_TYPE(__pipe_list_t)
+UNBOUNDED_LIST_INTERNAL_TYPE(__pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_SPEC_CREATE(static, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_SPEC_INITIALISE(static, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_SPEC_ADD(static, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_BODY_CREATE(static, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_BODY_INITIALISE(static, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_BODY_ADD(static, __pipe_list_t, __object_pipe_t*)
 
-UNBOUNDED_LIST_ITERATOR_TYPE(pipe_list_it_t)
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(pipe_list_it_t, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_SPEC(static, pipe_list_it_t, pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(static, pipe_list_it_t, pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_ITERATOR_TYPE(__pipe_list_it_t)
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(__pipe_list_it_t, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_ITERATOR_SPEC(static, __pipe_list_it_t, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_ITERATOR_BODY(static, __pipe_list_it_t, __pipe_list_t, __object_pipe_t*)
 
 typedef struct rx_data
 {
@@ -36,13 +36,13 @@ typedef struct rx_data
 	uint32_t message_size;
 	__object_thread_t * blocked_owner;
 	uint8_t* current_message_ptr;
-	pipe_list_t * senders;
+	__pipe_list_t * senders;
 } rx_data_t;
 
 typedef struct tx_data
 {
 	__object_thread_t * sending_thread;
-	pipe_list_t * readers;
+	__pipe_list_t * readers;
 } tx_data_t;
 
 typedef struct __object_pipe_t
@@ -134,12 +134,12 @@ static bool_t __pipe_can_send_to_all(
 		const __object_pipe_t * const pipe,
 		const bool_t blocking)
 {
-	pipe_list_it_t it;
+	__pipe_list_it_t it;
 	__object_pipe_t * receiver = NULL;
 	bool_t can_send_all = true;
 
-	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-	const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
+	__pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
+	const bool_t has_any_receivers = __pipe_list_it_t_get(&it, &receiver);
 	if (has_any_receivers)
 	{
 		while(receiver)
@@ -147,10 +147,10 @@ static bool_t __pipe_can_send_to_all(
 			const bool_t can_send_pipe = __pipe_can_receive(receiver);
 			if (!can_send_pipe && blocking)
 			{
-				pipe_list_t_add(receiver->rx_data.senders, (__object_pipe_t*)pipe);
+				__pipe_list_t_add(receiver->rx_data.senders, (__object_pipe_t*)pipe);
 			}
 			can_send_all = (!can_send_all) ? can_send_all : can_send_pipe;
-			pipe_list_it_t_next(&it, &receiver);
+			__pipe_list_it_t_next(&it, &receiver);
 		}
 	}
 	// if there's no one to send to then in pub/sub we're good
@@ -176,15 +176,15 @@ error_t __obj_create_pipe(
 		{
 			__mem_pool_info_t * const pool = __process_get_mem_pool(process);
 			uint8_t * memory = NULL;
-			pipe_list_t * tx_queue = NULL;
-			pipe_list_t * rx_queue = NULL;
+			__pipe_list_t * tx_queue = NULL;
+			__pipe_list_t * rx_queue = NULL;
 			switch (direction)
 			{
 			case PIPE_DIRECTION_UNKNOWN:
 				result = PARAMETERS_INVALID;
 				break;
 			case PIPE_SEND_RECEIVE:
-				tx_queue = pipe_list_t_create(pool);
+				tx_queue = __pipe_list_t_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -203,7 +203,7 @@ error_t __obj_create_pipe(
 				{
 					result = OUT_OF_MEMORY;
 				}
-				rx_queue = pipe_list_t_create(pool);
+				rx_queue = __pipe_list_t_create(pool);
 				if (!rx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -211,7 +211,7 @@ error_t __obj_create_pipe(
 			}
 				break;
 			case PIPE_SEND:
-				tx_queue = pipe_list_t_create(pool);
+				tx_queue = __pipe_list_t_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -347,15 +347,15 @@ error_t __object_open_pipe(
 			{
 				__mem_pool_info_t * const pool = __process_get_mem_pool(process);
 				uint8_t * memory = NULL;
-				pipe_list_t * tx_queue = NULL;
-				pipe_list_t * rx_queue = NULL;
+				__pipe_list_t * tx_queue = NULL;
+				__pipe_list_t * rx_queue = NULL;
 				switch (direction)
 				{
 				case PIPE_DIRECTION_UNKNOWN:
 					result = PARAMETERS_INVALID;
 					break;
 				case PIPE_SEND_RECEIVE:
-					tx_queue = pipe_list_t_create(pool);
+					tx_queue = __pipe_list_t_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -374,7 +374,7 @@ error_t __object_open_pipe(
 					{
 						result = OUT_OF_MEMORY;
 					}
-					rx_queue = pipe_list_t_create(pool);
+					rx_queue = __pipe_list_t_create(pool);
 					if (!rx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -382,7 +382,7 @@ error_t __object_open_pipe(
 				}
 					break;
 				case PIPE_SEND:
-					tx_queue = pipe_list_t_create(pool);
+					tx_queue = __pipe_list_t_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -420,18 +420,18 @@ error_t __object_open_pipe(
 						case PIPE_DIRECTION_UNKNOWN:
 							break;
 						case PIPE_SEND:
-							pipe_list_t_add(other_pipe->rx_data.senders, no);
-							pipe_list_t_add(no->tx_data.readers, other_pipe);
+							__pipe_list_t_add(other_pipe->rx_data.senders, no);
+							__pipe_list_t_add(no->tx_data.readers, other_pipe);
 							break;
 						case PIPE_SEND_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.readers, no);
-							pipe_list_t_add(other_pipe->rx_data.senders, no);
-							pipe_list_t_add(no->tx_data.readers, other_pipe);
-							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							__pipe_list_t_add(other_pipe->tx_data.readers, no);
+							__pipe_list_t_add(other_pipe->rx_data.senders, no);
+							__pipe_list_t_add(no->tx_data.readers, other_pipe);
+							__pipe_list_t_add(no->rx_data.senders, other_pipe);
 							break;
 						case PIPE_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.readers, no);
-							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							__pipe_list_t_add(other_pipe->tx_data.readers, no);
+							__pipe_list_t_add(no->rx_data.senders, other_pipe);
 							break;
 						}
 					}
@@ -514,11 +514,11 @@ error_t __obj_pipe_send_message(
 
 	if (result == NO_ERROR)
 	{
-		pipe_list_it_t it;
+		__pipe_list_it_t it;
 		__object_pipe_t * receiver = NULL;
 
-		pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
+		__pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
+		const bool_t has_any_receivers = __pipe_list_it_t_get(&it, &receiver);
 		if (has_any_receivers)
 		{
 			while(receiver)
@@ -527,7 +527,7 @@ error_t __obj_pipe_send_message(
 				{
 					__pipe_receive_message(receiver, message, message_size);
 				}
-				pipe_list_it_t_next(&it, &receiver);
+				__pipe_list_it_t_next(&it, &receiver);
 			}
 		}
 	}
@@ -601,16 +601,16 @@ error_t __obj_pipe_received_message(__object_pipe_t * const pipe)
 		pipe->rx_data.free_messages++;
 
 		// notify any senders
-		pipe_list_it_t it;
+		__pipe_list_it_t it;
 		__object_pipe_t * sender = NULL;
-		pipe_list_it_t_initialise(&it, pipe->rx_data.senders);
-		const bool_t has_any_senders = pipe_list_it_t_get(&it, &sender);
+		__pipe_list_it_t_initialise(&it, pipe->rx_data.senders);
+		const bool_t has_any_senders = __pipe_list_it_t_get(&it, &sender);
 		if (has_any_senders)
 		{
 			while(sender)
 			{
 				__obj_set_thread_ready(sender->tx_data.sending_thread);
-				pipe_list_it_t_next(&it, &sender);
+				__pipe_list_it_t_next(&it, &sender);
 			}
 		}
 	}
