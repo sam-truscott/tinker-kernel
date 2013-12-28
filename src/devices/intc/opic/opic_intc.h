@@ -11,7 +11,7 @@
 
 #include "kernel/interrupts/intc.h"
 
-__intc_t* opic_intc_create(
+__intc_t* __opic_intc_create(
 		__mem_pool_info_t * const pool,
 		const uint8_t * const base_address);
 

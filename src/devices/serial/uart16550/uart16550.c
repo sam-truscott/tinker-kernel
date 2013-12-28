@@ -41,7 +41,7 @@ typedef struct
 	bool_t tx_holding_register;
 	bool_t tx_empty;
 	bool_t rx_fifo_error;
-} uart_16550_line_status_t;
+} __uart_16550_line_status_t;
 
 typedef struct
 {
@@ -53,7 +53,7 @@ typedef struct
 	bool_t data_set_ready;
 	bool_t ring_indicator;
 	bool_t data_carrier_detect;
-} uart_16550_modem_status_t;
+} __uart_16550_modem_status_t;
 
 /* Interrupt causes */
 #define INT_RECV_LINE_STATUS 6
@@ -74,35 +74,35 @@ typedef struct
 	uint8_t reg5_lsr;
 	uint8_t reg6_msr;
 	uint8_t reg7_scratch;
-} uart_16550_device_map_t;
+} __uart_16550_device_map_t;
 #pragma pack(pop)
 
-static error_t uart16550_initialise(
+static error_t __uart16550_initialise(
 		__kernel_device_t * device_info,
 		void * param,
 		const uint32_t param_size);
 
-static error_t uart16550_write_register(const void * const usr_data, const uint32_t id, const uint32_t val);
+static error_t __uart16550_write_register(const void * const usr_data, const uint32_t id, const uint32_t val);
 
-static error_t uart16550_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val);
+static error_t __uart16550_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val);
 
-static error_t uart16650_write_buffer(
+static error_t __uart16650_write_buffer(
 		const void * const usr_data,
 		const uint32_t dst,
 		const void * const src,
 		const uint32_t src_size);
 
-static error_t uart16550_read_buffer(
+static error_t __uart16550_read_buffer(
 		const void * const usr_data,
 		const uint32_t src,
 		void * const dst,
 		const uint32_t dst_size);
 
-static error_t uart16550_isr(
+static error_t __uart16550_isr(
 		const void * const usr_data,
 		const uint32_t vector);
 
-static const __kernel_device_t UART16550_DEVICE_INFO =
+static const __kernel_device_t __UART16550_DEVICE_INFO =
 {
 		.info = {
 				.major_version = 1,
@@ -110,31 +110,31 @@ static const __kernel_device_t UART16550_DEVICE_INFO =
 				.revision = 0,
 				.build = 0
 		},
-		.initialise = uart16550_initialise,
-		.write_register = uart16550_write_register,
-		.read_register = uart16550_read_register,
-		.write_buffer = uart16650_write_buffer,
-		.read_buffer = uart16550_read_buffer,
-		.isr = uart16550_isr,
+		.initialise = __uart16550_initialise,
+		.write_register = __uart16550_write_register,
+		.read_register = __uart16550_read_register,
+		.write_buffer = __uart16650_write_buffer,
+		.read_buffer = __uart16550_read_buffer,
+		.isr = __uart16550_isr,
 };
 
 static void __serial_process_lsr(
-		uart_16550_line_status_t * info,
+		__uart_16550_line_status_t * info,
 		uint8_t val);
 
 static void __serial_process_msr(
-		uart_16550_modem_status_t *info,
+		__uart_16550_modem_status_t *info,
 		uint8_t val);
 
-void uart16550_get_device(
+void __uart16550_get_device(
 		const void * const base_address,
 		__kernel_device_t * const device)
 {
 	__kernel_device_t new_device;
 	__util_memcpy(
 			&new_device,
-			&UART16550_DEVICE_INFO,
-			sizeof(UART16550_DEVICE_INFO));
+			&__UART16550_DEVICE_INFO,
+			sizeof(__UART16550_DEVICE_INFO));
 
 	new_device.user_data = base_address;
 
@@ -147,18 +147,18 @@ void uart16550_get_device(
 	}
 }
 
-error_t uart16550_initialise(
+error_t __uart16550_initialise(
 		__kernel_device_t * device_info,
 		void * param,
 		const uint32_t param_size)
 {
 	error_t ret = NO_ERROR;
-	uart_16550_device_map_t *raw_com_port = NULL;
+	__uart_16550_device_map_t *raw_com_port = NULL;
 
-	raw_com_port = (uart_16550_device_map_t*)device_info->user_data;
+	raw_com_port = (__uart_16550_device_map_t*)device_info->user_data;
 
 	/* check the device exists - params should be empty*/
-	if ( raw_com_port == NULL || param || param_size)
+	if (raw_com_port == NULL || param || param_size)
 	{
 		ret = DEVICE_USER_DATA_INVALID;
 	}
@@ -189,12 +189,12 @@ error_t uart16550_initialise(
 	return ret;
 }
 
-error_t uart16550_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val)
+error_t __uart16550_read_register(const void * const usr_data, const uint32_t id, uint32_t * const val)
 {
 	error_t ret = NO_ERROR;
-	uart_16550_device_map_t *raw_com_port = NULL;
+	__uart_16550_device_map_t *raw_com_port = NULL;
 
-	raw_com_port = (uart_16550_device_map_t*)usr_data;
+	raw_com_port = (__uart_16550_device_map_t*)usr_data;
 
 	/* check the device exists */
 	if ( raw_com_port == NULL)
@@ -239,12 +239,12 @@ error_t uart16550_read_register(const void * const usr_data, const uint32_t id, 
 	return ret;
 }
 
-error_t uart16550_write_register(const void * const usr_data, const uint32_t id, const uint32_t val)
+error_t __uart16550_write_register(const void * const usr_data, const uint32_t id, const uint32_t val)
 {
 	error_t ret = NO_ERROR;
-	uart_16550_device_map_t *raw_com_port = NULL;
+	__uart_16550_device_map_t *raw_com_port = NULL;
 
-	raw_com_port = (uart_16550_device_map_t*)usr_data;
+	raw_com_port = (__uart_16550_device_map_t*)usr_data;
 
 	/* check the device exists */
 	if ( raw_com_port == NULL)
@@ -289,14 +289,14 @@ error_t uart16550_write_register(const void * const usr_data, const uint32_t id,
 	return ret;
 }
 
-error_t uart16650_write_buffer(
+error_t __uart16650_write_buffer(
 		const void * const usr_data,
 		const uint32_t dst,
 		const void * const src,
 		const uint32_t src_size)
 {
 	error_t retval = NO_ERROR;
-	uart_16550_device_map_t *raw_com_port = NULL;
+	__uart_16550_device_map_t *raw_com_port = NULL;
 	uint32_t counter;
 
 	/* check that we're intending to read
@@ -306,7 +306,7 @@ error_t uart16650_write_buffer(
 		retval = DEVICE_WRITE_BAD_ADDRESS;
 	}
 
-	raw_com_port = (uart_16550_device_map_t*)usr_data;
+	raw_com_port = (__uart_16550_device_map_t*)usr_data;
 
 	/* check the device exists */
 	if ( raw_com_port == NULL)
@@ -334,14 +334,14 @@ error_t uart16650_write_buffer(
 	return retval;
 }
 
-error_t uart16550_read_buffer(
+error_t __uart16550_read_buffer(
 		const void * const usr_data,
 		const uint32_t src,
 		void * const dst,
 		const uint32_t dst_size)
 {
 	error_t retval = NO_ERROR;
-	uart_16550_device_map_t *raw_com_port = NULL;
+	__uart_16550_device_map_t *raw_com_port = NULL;
 	uint32_t counter;
 
 	/* check that we're intending to read
@@ -351,7 +351,7 @@ error_t uart16550_read_buffer(
 		retval = DEVICE_READ_BAD_ADDRESS;
 	}
 
-	raw_com_port = (uart_16550_device_map_t*)usr_data;
+	raw_com_port = (__uart_16550_device_map_t*)usr_data;
 
 	/* check the device exists */
 	if ( raw_com_port == NULL)
@@ -383,14 +383,14 @@ error_t uart16550_read_buffer(
 	return retval;
 }
 
-error_t uart16550_isr(
+error_t __uart16550_isr(
 		const void * const usr_data,
 		const uint32_t vector)
 {
 	error_t retval = NO_ERROR;
-	uart_16550_device_map_t *raw_com_port = NULL;
+	__uart_16550_device_map_t *raw_com_port = NULL;
 
-	raw_com_port = (uart_16550_device_map_t*)usr_data;
+	raw_com_port = (__uart_16550_device_map_t*)usr_data;
 
 	/* check the device exists */
 	if ( raw_com_port == NULL && vector)
@@ -408,7 +408,7 @@ error_t uart16550_isr(
 			if ( (ir_iden & INT_RECV_LINE_STATUS) == INT_RECV_LINE_STATUS)
 			{
 				/* Read the line status register */
-				uart_16550_line_status_t lsr;
+				__uart_16550_line_status_t lsr;
 				__serial_process_lsr(&lsr,raw_com_port->reg5_lsr);
 			}
 			else if ( (ir_iden & INT_RECV_DATA_AVAIL) == INT_RECV_DATA_AVAIL)
@@ -426,7 +426,7 @@ error_t uart16550_isr(
 			else if ( (ir_iden & INT_STATUS) == INT_STATUS)
 			{
 				/* Read Modem status register */
-				uart_16550_modem_status_t msr;
+				__uart_16550_modem_status_t msr;
 				__serial_process_msr(&msr,raw_com_port->reg6_msr);
 			}
 			else
@@ -440,7 +440,7 @@ error_t uart16550_isr(
 }
 
 void __serial_process_lsr(
-		uart_16550_line_status_t * lsr,
+		__uart_16550_line_status_t * lsr,
 		uint8_t val)
 {
 	if ( lsr )
@@ -457,7 +457,7 @@ void __serial_process_lsr(
 }
 
 void __serial_process_msr(
-		uart_16550_modem_status_t *info,
+		__uart_16550_modem_status_t *info,
 		uint8_t val)
 {
 	if ( info )

@@ -11,6 +11,6 @@
 
 #include "kernel/time/time.h"
 
-void opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer);
+void __opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer);
 
 #endif /* OPIC_TIMER_H_ */

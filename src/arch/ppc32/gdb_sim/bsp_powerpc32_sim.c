@@ -32,15 +32,15 @@
 /**
  * The device information for port 1 of the UART 16550
  */
-static __kernel_device_t rs232_port_1;
+static __kernel_device_t __rs232_port_1;
 
-static __intc_t * opic_intc;
+static __intc_t * __opic_intc;
 
-static __timer_t ppc32_time_base_timer;
+static __timer_t __ppc32_time_base_timer;
 
-static __ppc32_pteg_t ptegs[16 * 1024] __attribute__((section(".page_table"))); /* 16k of entries */
+static __ppc32_pteg_t __ptegs[16 * 1024] __attribute__((section(".page_table"))); /* 16k of entries */
 
-static __ppc32_pt_t page_table;
+static __ppc32_pt_t __page_table;
 
 
 /**
@@ -81,10 +81,10 @@ void __bsp_initialise(void)
 	/* Not supported __ppc_isr_attach(__ppc32_vector_trace); */
 	/* Not supported __ppc_isr_attach(__ppc32_vector_floating_point_assist); */
 
-	uart16550_get_device(UART_1_BASE_ADDRESS, &rs232_port_1);
+	__uart16550_get_device(UART_1_BASE_ADDRESS, &__rs232_port_1);
 
 #if defined(__KERNEL_DEBUGGING)
-	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
+	__rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
 #endif
 
 	/* IBAT0 Setup for RAM */
@@ -173,12 +173,12 @@ void __bsp_initialise(void)
 	__ppc32_set_sr14(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 	__ppc32_set_sr15(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 
-	page_table = ptegs; /* pointer to page table */;
+	__page_table = __ptegs; /* pointer to page table */;
 
 	/* setup the SDR1 for the page table - based on
 	 * Minimum Recommended Page Table Sizes from PowerPC
 	 * Programming Environments Manual  */
-	__ppc32_set_sdr1(__PPC_SDR(page_table, 0xF));
+	__ppc32_set_sdr1(__PPC_SDR(__page_table, 0xF));
 
 	extern char * __user_text;
 	extern char * __user_data;
@@ -232,10 +232,10 @@ void __bsp_initialise(void)
 
 void __bsp_setup(void)
 {
-	rs232_port_1.initialise(&rs232_port_1, NULL, 0);
+	__rs232_port_1.initialise(&__rs232_port_1, NULL, 0);
 
-	opic_intc = opic_intc_create(__mem_get_default_pool(), (void*)0x80000000);
-	__int_install_isr(opic_intc);
+	__opic_intc = __opic_intc_create(__mem_get_default_pool(), (void*)0x80000000);
+	__int_install_isr(__opic_intc);
 
 	/* 1Ghz clock with 64 time-base ticks per clock.
 	 * This doesn't match the PSIM simulation but it doesn't
@@ -243,8 +243,8 @@ void __bsp_setup(void)
 	__ppc_setup_timebase_details(1 * 1000 * 1000 * 1000, 64);
 	__time_set_system_clock( __ppc_get_ppc_timebase_clock() );
 
-	__ppc_get_timer(__kernel_get_process(), &ppc32_time_base_timer);
-	__alarm_set_timer(&ppc32_time_base_timer);
+	__ppc_get_timer(__kernel_get_process(), &__ppc32_time_base_timer);
+	__alarm_set_timer(&__ppc32_time_base_timer);
 }
 
 void __bsp_enable_schedule_timer(void)
@@ -267,7 +267,7 @@ static void __bsp_external_interrupt(
 
 void __bsp_check_timers_and_alarms(void)
 {
-	__ppc_check_timer(&ppc32_time_base_timer);
+	__ppc_check_timer(&__ppc32_time_base_timer);
 }
 
 uint32_t __bsp_get_usable_memory_start()
@@ -284,7 +284,7 @@ uint32_t __bsp_get_usable_memory_end()
 
 void __bsp_write_debug_char(const char c)
 {
-	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
+	__rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
 }
 
 char __bsp_read_debug_char(void)
@@ -292,7 +292,7 @@ char __bsp_read_debug_char(void)
 	char c = 0;
 	while (c == 0)
 	{
-		rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
+		__rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
 	}
 	return c;
 }

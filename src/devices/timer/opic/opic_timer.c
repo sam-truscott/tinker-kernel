@@ -16,37 +16,37 @@
  * Endian swap routine
  * @param var The variable to swap
  */
-static void opic_swap_endianness(uint32_t* var);
+static void __opic_swap_endianness(uint32_t* var);
 
 static error_t __opic_timer_write_register(
 		const void * usr_data,
 		const uint32_t reg,
 		const uint32_t value);
 
-static void opic_tmr_timer_setup(
+static void __opic_tmr_timer_setup(
 		const void * const usr_data,
 		const __time_t timeout,
 		__timer_callback * const call_back);
 
-static void opic_tmr_timer_cancel(const void * const usr_data);
+static void __opic_tmr_timer_cancel(const void * const usr_data);
 
-void opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer)
+void __opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer)
 {
-	if ( base_address && timer )
+	if (base_address && timer)
 	{
-		timer->timer_setup = opic_tmr_timer_setup;
-		timer->timer_cancel = opic_tmr_timer_cancel;
+		timer->timer_setup = __opic_tmr_timer_setup;
+		timer->timer_cancel = __opic_tmr_timer_cancel;
 		timer->usr_data = (void*)base_address;
 		timer->usr_data_size = (uint32_t)sizeof(uint32_t*);
 	}
 }
 
-void opic_tmr_timer_setup(
+void __opic_tmr_timer_setup(
 		const void * const usr_data,
 		const __time_t timeout,
 		__timer_callback * const call_back)
 {
-	if ( usr_data && call_back )
+	if (usr_data && call_back)
 	{
 		__opic_timer_write_register(
 				usr_data,
@@ -70,7 +70,7 @@ void opic_tmr_timer_setup(
 	}
 }
 
-void opic_tmr_timer_cancel(const void * const usr_data)
+void __opic_tmr_timer_cancel(const void * const usr_data)
 {
 	__opic_timer_write_register(
 			usr_data,
@@ -102,7 +102,7 @@ error_t __opic_timer_write_register(
 	}
 
 #if defined(OPIC_BIG_ENDIAN)
-	opic_swap_endianness(&new_value);
+	__opic_swap_endianness(&new_value);
 #endif
 
 	if ( err == NO_ERROR )
@@ -114,7 +114,7 @@ error_t __opic_timer_write_register(
 	return err;
 }
 
-static void opic_swap_endianness(uint32_t* var)
+static void __opic_swap_endianness(uint32_t* var)
 {
 	uint32_t new_val = 0;
 	uint8_t* overlay = (uint8_t*)var;

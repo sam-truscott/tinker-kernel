@@ -24,14 +24,14 @@ typedef enum
 	REG_5_LSR = 5,
 	REG_6_MSR = 6,
 	REG_7_SCRATCH = 7
-} uart_16550_register_t;
+} __uart_16550_register_t;
 
 /**
  * Get the kernel device instance for a given base address
  * @param base_address The base address of the device
  * @param device The new kernel device
  */
-void uart16550_get_device(
+void __uart16550_get_device(
 		const void * const base_address,
 		__kernel_device_t * const device);
 

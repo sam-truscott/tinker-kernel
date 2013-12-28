@@ -14,7 +14,7 @@
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/util_i_to_a.h"
 
-static char bsp_vector_names[15][27] =
+static char __bsp_vector_names[15][27] =
 {
 		"\0",
 		"SYSTEM RESET\0",
@@ -82,7 +82,7 @@ void __bsp_fatal_program_error(
 	if (vector)
 	{
 		char id[2] = {0,0};
-		char * name = bsp_vector_names[vector];
+		char * name = __bsp_vector_names[vector];
 
 		__bsp_print_str("BSP FATAL EXCEPTION \0");
 
