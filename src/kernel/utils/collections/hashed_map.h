@@ -208,7 +208,6 @@ static inline void fake_debug(char* msg,...) {}
 			__mem_pool_info_t * const pool) \
 	{ \
 		HASH_MAP_T * const new_map = __mem_alloc(pool, sizeof(HASH_MAP_T)); \
-		/* initialise the data */ \
 		if (new_map) \
 		{ \
 			HASH_MAP_T##_initialise(new_map, hashing_algorithm, hash_key_equal, key_is_value, pool); \

@@ -13,6 +13,17 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
+#if defined(__DEBUG_COLLECTIONS)
+#define UNBOUNDED_LIST_DEBUG __debug_print
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+static inline void fake_debug(char* msg,...) __attribute__((used));
+static inline void fake_debug(char* msg,...) {}
+#define UNBOUNDED_LIST_DEBUG fake_debug
+#pragma GCC diagnostic pop
+#endif
+
 #define UNBOUNDED_LIST_TYPE(LIST_T) \
 	\
 	typedef struct LIST_T LIST_T; \
@@ -88,6 +99,7 @@
 	{ \
 		 if (list) \
 		 { \
+			 UNBOUNDED_LIST_DEBUG("unbounded list: initialising list %x, with pool %x\n", list, pool); \
 			 list-> pool = pool; \
 			 list->size = 0; \
 			 list->head = list->tail = NULL; \
@@ -113,8 +125,10 @@
 	 */ \
 	PREFIX void LIST_T##_delete(LIST_T * const list) \
 	{ \
+	UNBOUNDED_LIST_DEBUG("unbounded list: deleting %x\n, list"); \
 		if (list && list->pool) \
 		{ \
+			UNBOUNDED_LIST_DEBUG("unbounded list: deleting %x from pool %x\n", list, list->pool); \
 			while(list->size) \
 			{ \
 				LIST_T##_element_t * const e = list->head; \
@@ -165,6 +179,7 @@
 	{ \
 		bool_t ok = false; \
 		\
+		UNBOUNDED_LIST_DEBUG("unbounded list: insert in list %x at index %d\n", list, index); \
 		if (list) \
 		{ \
 			LIST_T##_element_t * const element = __mem_alloc( \
@@ -226,6 +241,7 @@
 	{ \
 		bool_t ret = false; \
 		\
+		UNBOUNDED_LIST_DEBUG("unbounded list: removing index %d from list %x\n", index, list); \
 		if (list) \
 		{ \
 			if (list->size > index) \
