@@ -13,16 +13,7 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
-#if defined(__DEBUG_COLLECTIONS)
 #define UNBOUNDED_LIST_DEBUG __debug_print
-#else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-static inline void fake_debug2(char* msg,...) __attribute__((used));
-static inline void fake_debug2(char* msg,...) {}
-#define UNBOUNDED_LIST_DEBUG fake_debug2
-#pragma GCC diagnostic pop
-#endif
 
 #define UNBOUNDED_LIST_TYPE(LIST_T) \
 	\

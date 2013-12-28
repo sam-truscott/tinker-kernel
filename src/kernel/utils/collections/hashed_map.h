@@ -59,16 +59,7 @@
  *
  */
 
-#if defined(__DEBUG_COLLECTIONS)
 #define HASH_MAP_DEBUG __debug_print
-#else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-static inline void fake_debug(char* msg,...) __attribute__((used));
-static inline void fake_debug(char* msg,...) {}
-#define HASH_MAP_DEBUG fake_debug
-#pragma GCC diagnostic pop
-#endif
 
 #define HASH_MAP_TYPE_T(HASH_MAP_T) \
 	\
