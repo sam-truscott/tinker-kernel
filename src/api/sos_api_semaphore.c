@@ -40,3 +40,10 @@ error_t sos_sem_release(sos_sem_t semaphore)
 			SYSCALL_RELEASE_SEMAPHORE,
 			(uint32_t)semaphore);
 }
+
+error_t sos_sem_close(sos_sem_t semaphore)
+{
+	return SOS_API_CALL_1(
+			SYSCALL_CLOSE_SEMAPHORE,
+			(uint32_t)semaphore);
+}

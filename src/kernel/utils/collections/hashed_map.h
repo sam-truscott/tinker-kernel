@@ -325,13 +325,19 @@
 						 map->size--; \
 						 __mem_free(map->pool, bucket->entries[i]); \
 						 bucket->entries[i] = NULL; \
+						 c--; \
 					 } \
 				 } \
 			 } \
 			 if (!c) \
 			 { \
+				 HASH_MAP_DEBUG("hashed_map: bucket %d is empty, removing it\n", index); \
 				 __mem_free(map->pool, bucket); \
 				 map->buckets[index] = NULL; \
+			 } \
+			 else \
+			 { \
+				 HASH_MAP_DEBUG("hashed_map: bucket %d has %d elements left\n", index, c); \
 			 } \
 		 } \
 		 \

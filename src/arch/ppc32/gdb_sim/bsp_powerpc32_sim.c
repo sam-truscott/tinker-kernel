@@ -38,7 +38,7 @@ static __intc_t * __opic_intc;
 
 static __timer_t __ppc32_time_base_timer;
 
-static __ppc32_pteg_t __ptegs[16 * 1024] __attribute__((section(".page_table"))); /* 16k of entries */
+static __ppc32_pteg_t __ptegs[16 * 1024] __attribute__((section(".ptbl"))); /* 16k of entries */
 
 static __ppc32_pt_t __page_table;
 
@@ -180,10 +180,10 @@ void __bsp_initialise(void)
 	 * Programming Environments Manual  */
 	__ppc32_set_sdr1(__PPC_SDR(__page_table, 0xF));
 
-	extern char * __user_text;
-	extern char * __user_data;
-	char * user_text_pos = (char*)&__user_text;
-	char * user_data_pos = (char*)&__user_data;
+	extern char * __utext;
+	extern char * __udata;
+	char * user_text_pos = (char*)&__utext;
+	char * user_data_pos = (char*)&__udata;
 
 	__ppc32_add_pte(
 			(uint32_t)user_text_pos,

@@ -28,10 +28,10 @@ SECTIONS{
         . += __VECTOR_SIZE;
     } > RAM
     
-    .ivt_stack 0x1000 (NOLOAD) : {
-        __ivt_stack = .;
+    .ivts 0x1000 (NOLOAD) : {
+        __ivts = .;
         . += __VECTOR_STACK_SIZE;
-        __ivt_stack_end = .;
+        __ivtse = .;
     } > RAM
     
     /* Small Block Started by Symbol */
@@ -75,17 +75,17 @@ SECTIONS{
         __text_end = .;
     }>RAM
     
-    .user_text ALIGN (0x1000) :
+    .utext ALIGN (0x1000) :
     {
-        __user_text = .;
-        *(.user_text)
+        __utext = .;
+        *(.utext)
         _euser_text = ALIGN(0x1000);
     }
         
-    .user_data ALIGN (0x4) :
+    .udata ALIGN (0x4) :
     {
-        __user_data = .;
-        *(.user_data)
+        __udata = .;
+        *(.udata)
         __euser = ALIGN(0x1000);
     }>RAM
     
@@ -97,7 +97,7 @@ SECTIONS{
     	end = .;
     }>RAM
     
-    .page_table 0x7F00000 (NOLOAD) : {
-        *(.page_table)
+    .ptbl 0x7F00000 (NOLOAD) : {
+        *(.ptbl)
     }>RAM
 }

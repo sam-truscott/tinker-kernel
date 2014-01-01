@@ -123,18 +123,16 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		__thread_t * t = NULL;
-
-		t = o->thread;
+		__thread_t * const t = o->thread;
 
 #if defined(__PROCESS_DEBUGGING)
 		__debug_print("proc %d thread %d (%s) is exiting\n", o->pid, o->tid, __thread_get_name(o->thread));
 #endif
 
 		const __thread_state_t state = __thread_get_state(t);
-		if ( state != thread_terminated
+		if (state != thread_terminated
 				&& state != thread_not_created)
 		{
 			/* update the reason for the exit and

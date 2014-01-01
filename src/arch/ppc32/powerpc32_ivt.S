@@ -88,7 +88,7 @@ __SPR_LR_OFFSET = __FPR_OFFSET + __FPR_SIZE
     mtlr   %r30
 .endm
 
-.global __ivt_stack
+.global __ivts
 
 .global __ivt_backup_fpr
 __ivt_backup_fpr:
@@ -199,8 +199,8 @@ __fp_restore_disabled:
 
     /* store the stack pointer away and switch to the ivt stack */
     /* FIXME bug? LI falls over which could be because SRs are wrong */
-    stw     %sp,    (__ivt_stack_end - __IVT_FRAME_SIZE)(%r0)
-    li      %sp,    __ivt_stack_end@l - __IVT_FRAME_SIZE
+    stw     %sp,    (__ivtse - __IVT_FRAME_SIZE)(%r0)
+    li      %sp,    __ivtse@l - __IVT_FRAME_SIZE
 
     /* Backup the GPRs */
     backup_gprs

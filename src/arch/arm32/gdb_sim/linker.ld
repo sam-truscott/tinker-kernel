@@ -28,10 +28,10 @@ SECTIONS{
         . += __VECTOR_SIZE;
     } > RAM
     
-    .ivt_stack 0x1000 : {
-        __ivt_stack = .;
+    .ivts 0x1000 : {
+        __ivts = .;
         . += __VECTOR_STACK_SIZE;
-        __ivt_stack_end = .;
+        __ivtse = .;
     } > RAM
     
     /* Small Block Started by Symbol */
@@ -98,7 +98,7 @@ SECTIONS{
     }>RAM
     
     /* .page_table ALIGN(0x1000) : { */
-    .page_table 0x7F00000 : {
-        *(.page_table)
+    .ptbl 0x7F00000 : {
+        *(.ptbl)
     }>RAM
 }

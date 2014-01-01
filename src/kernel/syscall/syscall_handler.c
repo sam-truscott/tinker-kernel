@@ -36,6 +36,15 @@ static inline __object_thread_t * __syscall_get_thread_object(void)
 	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid());
 }
 
+static error_t __syscall_delete_object(
+		const object_number_t obj_no)
+{
+	return __obj_remove_object(
+			__process_get_object_table(
+					__thread_get_parent(__sch_get_current_thread())),
+					obj_no);
+}
+
 static error_t __syscall_get_sema(
 		const object_number_t sema_no,
 		__object_sema_t ** sema)
@@ -282,13 +291,28 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_RELEASE_SEMAPHORE:
 		{
 			__object_thread_t * const thread_obj = __syscall_get_thread_object();
-			__object_sema_t * sema_obj;
+			__object_sema_t * sema_obj = NULL;
 
 			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
 
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
 				ret = __obj_release_semaphore( thread_obj, sema_obj);
+			}
+			break;
+		}
+		case SYSCALL_CLOSE_SEMAPHORE:
+		{
+			__object_sema_t * sema_obj = NULL;
+
+			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
+			if (ret == NO_ERROR && sema_obj)
+			{
+				ret = __object_delete_semaphore(sema_obj);
+				if (ret == NO_ERROR)
+				{
+					ret = __syscall_delete_object((object_number_t)param[0]);
+				}
 			}
 			break;
 		}
@@ -310,6 +334,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 							table,
 							(object_number_t)param[0]));
 			ret = __obj_delete_pipe(pipe);
+			if (ret == NO_ERROR)
+			{
+				ret = __syscall_delete_object((object_number_t)param[0]);
+			}
 		}
 			break;
 		case SYSCALL_OPEN_PIPE:
@@ -333,6 +361,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			// FIXME This will release memory but isn't right,
 			// close needs to remove the item from the senders list etc
 			ret = __obj_delete_pipe(pipe);
+			if (ret == NO_ERROR)
+			{
+				ret = __syscall_delete_object((object_number_t)param[0]);
+			}
 		}
 			break;
 		case SYSCALL_SEND_MESSAGE:
@@ -417,6 +449,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 							table,
 							(object_number_t)param[0]));
 			ret = __obj_delete_shm(shm);
+			if (ret == NO_ERROR)
+			{
+				ret = __syscall_delete_object((object_number_t)param[0]);
+			}
 		}
 			break;
 

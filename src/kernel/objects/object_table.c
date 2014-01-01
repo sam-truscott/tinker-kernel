@@ -61,7 +61,7 @@ void __obj_table_delete(const __object_table_t * const table)
 	__mem_free(table->pool, table);
 }
 
-static bool_t __hash_equal_object_number(object_number_t l, object_number_t r)
+static bool_t __hash_equal_object_number(const object_number_t l, const object_number_t r)
 {
 	return (l == r);
 }

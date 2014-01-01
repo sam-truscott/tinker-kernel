@@ -8,15 +8,15 @@
  */
 #include "api/sos_api.h"
 
-static sos_sem_t sem __attribute__((section(".user_data")));
-static sos_sem_t sem2 __attribute__((section(".user_data")));
-static sos_pipe_t tx_pipe __attribute__((section(".user_data")));
-static sos_pipe_t rx_pipe __attribute__((section(".user_data")));
-static sos_shm_t shm __attribute__((section(".user_data")));
-static sos_shm_t shm2 __attribute__((section(".user_data")));
+static sos_sem_t sem __attribute__((section(".udata")));
+static sos_sem_t sem2 __attribute__((section(".udata")));
+static sos_pipe_t tx_pipe __attribute__((section(".udata")));
+static sos_pipe_t rx_pipe __attribute__((section(".udata")));
+static sos_shm_t shm __attribute__((section(".udata")));
+static sos_shm_t shm2 __attribute__((section(".udata")));
 
-static void my_initial_thread(void) __attribute__((section(".user_text")));
-static void my_other_thread(void) __attribute__((section(".user_text")));
+static void my_initial_thread(void) __attribute__((section(".utext")));
+static void my_other_thread(void) __attribute__((section(".utext")));
 
 int kmain(void)
 {       

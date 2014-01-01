@@ -22,5 +22,6 @@ error_t sos_sem_get(sos_sem_t semaphore) SOS_API_SUFFIX;
 
 error_t sos_sem_release(sos_sem_t semaphore) SOS_API_SUFFIX;
 
+error_t sos_sem_close(sos_sem_t semaphore) SOS_API_SUFFIX;
 
 #endif /* SOS_API_SEMAPHORE_H_ */
