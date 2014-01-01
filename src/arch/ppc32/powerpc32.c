@@ -449,21 +449,6 @@ void __tgt_unmap_memory(
 	}
 }
 
-void __tgt_destroy_process(const __process_t * const process)
-{
-	const __mem_section_t * section = __process_get_first_section(process);
-	const tgt_mem_t * const segment_info = __process_get_segment_info(process);
-	while (section)
-	{
-		__ppc_remove_paged_area(
-				segment_info,
-				section);
-
-		/* next section */
-		section = __mem_sec_get_next(section);
-	}
-}
-
 void __tgt_initialise_context(
 		const __thread_t * thread,
 		__tgt_context_t ** const context,

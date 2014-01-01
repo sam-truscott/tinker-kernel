@@ -354,10 +354,10 @@ void __process_exit(__process_t * const process)
 	__obj_table_delete(process->object_table);
 
 	// memory sections
-	__tgt_destroy_process(process);
 	const __mem_section_t * section = process->first_section;
 	while (section)
 	{
+		__tgt_unmap_memory(process, section);
 		__mem_sec_delete(section);
 		section = __mem_sec_get_next(section);
 	}

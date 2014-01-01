@@ -49,7 +49,7 @@ void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w
 		{
 			/* TODO needs to be marked as volatile in SMP system?
 			 * TODO locking on the page table in (non?)SMP system? */
-			volatile __ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
+			volatile __ppc32_pte_t * const pte = (__ppc32_pte_t*)&pPteg[i];
 			if (pte)
 			{
 				if (!(pte->w0 & 0x80000000u))
@@ -79,7 +79,7 @@ void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pt
 		bool_t unmapped = false;
 		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
 		{
-			volatile __ppc32_pte_t * pte = (__ppc32_pte_t*)&pPteg[i];
+			volatile __ppc32_pte_t * const pte = (__ppc32_pte_t*)&pPteg[i];
 			if ( pte )
 			{
 				if (pte->w0 & 0x80000000u)

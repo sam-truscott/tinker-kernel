@@ -34,8 +34,6 @@ void __tgt_unmap_memory(
 		const __process_t * const process,
 		const __mem_section_t * const section);
 
-void __tgt_destroy_process(const __process_t * const process);
-
 void __tgt_initialise_context(
 		const __thread_t * thread,
 		__tgt_context_t ** const context,
