@@ -9,6 +9,7 @@
 #include "mem_section.h"
 
 #include "kernel/kernel_assert.h"
+#include "kernel/utils/util_memset.h"
 
 typedef struct __mem_section_t
 {
@@ -31,9 +32,10 @@ __mem_section_t * __mem_sec_create(
 		const mmu_privilege_t mem_priv,
 		const mmu_access_t mem_access)
 {
-	__mem_section_t * ms = __mem_alloc(pool, sizeof(__mem_section_t));
+	__mem_section_t * const ms = __mem_alloc(pool, sizeof(__mem_section_t));
 	if (ms)
 	{
+		memset(ms, 0, sizeof(__mem_section_t));
 		ms->real_address = real_addr;
 		ms->virt_address = virt_addr;
 		ms->size = size;
