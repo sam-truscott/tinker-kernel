@@ -73,7 +73,7 @@ error_t __obj_initialse_table(
 	error_t ret = NO_ERROR;
 
 	/* create the hashmap for the object table */
-	if ( table )
+	if (table)
 	{
 		table->pool = pool;
 		table->the_map = __object_map_t_create(
@@ -118,16 +118,23 @@ error_t __obj_add_object(
 		/* now create an allocate the object */
 		if (id_ok)
 		{
-			t->next_id++;
 			if ( !__object_map_t_put((t->the_map), id, obj))
 			{
 				ret = OBJECT_ADD_FAILED;
 			}
-			*objno = id;
-		} else {
+			else
+			{
+				t->next_id = id + 1;
+				*objno = id;
+			}
+		}
+		else
+		{
 			ret = OBJECT_TABLE_FULL;
 		}
-	} else {
+	}
+	else
+	{
 		ret = PARAMETERS_INVALID;
 	}
 

@@ -101,9 +101,9 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	/* TODO FIXME This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
 	 * at some weird virtual address */
-	for ( uint8_t i = 0 ; i < 7 ; i++ )
+	for (uint8_t i = 0 ; i < 7 ; i++)
 	{
-		if ( param[i] >= VIRTUAL_ADDRESS_SPACE )
+		if (param[i] >= VIRTUAL_ADDRESS_SPACE)
 		{
 			param[i] = __process_virt_to_real(__thread_get_parent(this_thread), param[i]);
 		}
@@ -113,7 +113,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	 * This could use a jump table but I think in this
 	 * case this is a bit more readable.
 	 */
-	switch ( api )
+	switch (api)
 	{
 		case SYSCALL_CREATE_PROCESS:
 			{
@@ -442,8 +442,9 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_DESTROY_SHM:
 		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			__object_table_t * const table =
+					__process_get_object_table(
+							__thread_get_parent(__sch_get_current_thread()));
 			__object_shm_t * const shm = __obj_cast_shm(
 					(__object_t *)__obj_get_object(
 							table,

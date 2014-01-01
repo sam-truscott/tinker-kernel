@@ -108,6 +108,14 @@ static void my_other_thread(void)
 			{
 				sos_debug("sos: failed to release the semaphore\n");
 			}
+			else
+			{
+				error = sos_sem_close(sem2);
+				if (error != NO_ERROR)
+				{
+					sos_debug("sos: failed to close the semaphore\n");
+				}
+			}
 		}
 	}
 
@@ -284,6 +292,12 @@ static void my_initial_thread(void)
 	if (error != NO_ERROR)
 	{
 		sos_debug("sos: failed delete tx pipe\n");
+	}
+
+	error = sos_sem_close(sem);
+	if (error != NO_ERROR)
+	{
+		sos_debug("sos: failed to close the semaphore\n");
 	}
 
 	sos_debug("sos: initial thread: done\n");

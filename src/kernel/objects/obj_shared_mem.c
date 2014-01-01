@@ -92,7 +92,7 @@ error_t __obj_create_shm(
 			{
 				object_number_t objno;
 				result = __obj_add_object(table, (__object_t*)no, &objno);
-				if ( result == NO_ERROR )
+				if (result == NO_ERROR)
 				{
 					uint32_t virt_addr;
 					result =
@@ -114,8 +114,8 @@ error_t __obj_create_shm(
 						no->virt_addr = virt_addr;
 						no->client_list = shm_client_list_t_create(pool);
 						no->parent_shm = NULL;
-						memset(no->name, 0, sizeof(no->name));
-						__util_memcpy(no->name, name, __util_strlen(name, sizeof(name)));
+						memset(no->name, 0, __MAX_SHARED_OBJECT_NAME_LENGTH);
+						__util_memcpy(no->name, name, __util_strlen(name, __MAX_SHARED_OBJECT_NAME_LENGTH));
 						__regsitery_add(name, process, no->object.object_number);
 						*objectno = no->object.object_number;
 						*address = (void*)virt_addr;
@@ -185,7 +185,7 @@ error_t __obj_open_shm(
 							{
 								object_number_t objno;
 								result = __obj_add_object(table, (__object_t*)no, &objno);
-								if ( result == NO_ERROR )
+								if (result == NO_ERROR)
 								{
 									__obj_initialise_object(&no->object, objno, SHARED_MEMORY_OBJ);
 									no->size = size;
@@ -272,13 +272,11 @@ error_t __obj_delete_shm(
 			__process_free_vmem(shm->process, shm->virt_addr);
 			__mem_free(shm->pool, (void*)shm->real_addr);
 			__registry_remove(shm->name);
-			__obj_remove_object(__process_get_object_table(shm->process), shm->object.object_number);
 			__mem_free(shm->pool, shm);
 		}
 		else
 		{
 			__process_free_vmem(shm->process, shm->virt_addr);
-			__obj_remove_object(__process_get_object_table(shm->process), shm->object.object_number);
 			if (shm->parent_shm)
 			{
 				shm_client_list_t_remove_item(shm->parent_shm->client_list, shm);

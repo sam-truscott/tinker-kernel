@@ -131,7 +131,7 @@ error_t __obj_create_semaphore(
 					no->data.owner.highest_priority = 0;
 					no->pool = pool;
 					memset(no->data.owner.name, 0, sizeof(no->data.owner.name));
-					__util_memcpy(no->data.owner.name, name, __util_strlen(name, sizeof(name)));
+					__util_memcpy(no->data.owner.name, name, __util_strlen(name,__MAX_SHARED_OBJECT_NAME_LENGTH));
 					__regsitery_add(name, process, no->object.object_number);
 					*objectno = no->object.object_number;
 				}
@@ -167,25 +167,25 @@ error_t __obj_open_semaphore(
 		__object_table_t * const table = __process_get_object_table(process);
 		if (table && process)
 		{
-			__mem_pool_info_t * const pool = __process_get_mem_pool(process);
-			no = (__object_sema_t*)__mem_alloc(pool, sizeof(__object_sema_t));
-			if (no)
+			__process_t * other_process;
+			object_number_t other_obj_no;
+			if (__registry_get(name, &other_process, &other_obj_no) == NO_ERROR)
 			{
-				object_number_t objno;
-				result = __obj_add_object(table, (__object_t*)no, &objno);
-				if ( result == NO_ERROR )
+				__object_t * const other_obj = __obj_get_object(
+						__process_get_object_table(other_process),
+						other_obj_no);
+				if (other_obj)
 				{
-					__process_t * other_process;
-					object_number_t other_obj_no;
-					if (__registry_get(name, &other_process, &other_obj_no) == NO_ERROR)
+					__object_sema_t * const other_sema = __obj_cast_semaphore(other_obj);
+					if (other_sema)
 					{
-						__object_t * const other_obj = __obj_get_object(
-								__process_get_object_table(other_process),
-								other_obj_no);
-						if (other_obj)
+						__mem_pool_info_t * const pool = __process_get_mem_pool(process);
+						no = (__object_sema_t*)__mem_alloc(pool, sizeof(__object_sema_t));
+						if (no)
 						{
-							__object_sema_t * const other_sema = __obj_cast_semaphore(other_obj);
-							if (other_sema)
+							object_number_t objno;
+							result = __obj_add_object(table, (__object_t*)no, &objno);
+							if (result == NO_ERROR)
 							{
 								__obj_initialise_object(&no->object, objno, SEMAPHORE_OBJ);
 								no->sema_type = sema_type_link;
@@ -195,23 +195,27 @@ error_t __obj_open_semaphore(
 							}
 							else
 							{
-								result = WRONG_OBJ_TYPE;
+								result = OUT_OF_MEMORY;
 							}
 						}
 						else
 						{
-							result = OBJECT_NOT_IN_REGISTRY;
+							result = OUT_OF_MEMORY;
 						}
 					}
 					else
 					{
-						result = OBJECT_NOT_IN_REGISTRY;
+						result = WRONG_OBJ_TYPE;
 					}
+				}
+				else
+				{
+					result = OBJECT_NOT_IN_REGISTRY;
 				}
 			}
 			else
 			{
-				result = OUT_OF_MEMORY;
+				result = OBJECT_NOT_IN_REGISTRY;
 			}
 		}
 		else
