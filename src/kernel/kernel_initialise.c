@@ -36,10 +36,6 @@ void __kernel_initialise(void)
 	const uint32_t memory_start = __bsp_get_usable_memory_start();
 	const uint32_t memory_end = __bsp_get_usable_memory_end();
 
-	__debug_print("Time: Initialising services...\n");
-	__time_initialise();
-	__alarm_initialse();
-
 	__debug_print("Memory: Initialising Pool, start %X, end %x\n",
 			memory_start,
 			memory_end);
@@ -52,6 +48,10 @@ void __kernel_initialise(void)
 			memory_end);
 
 	__kernel_assert("Failed to Initialise Memory Manager", mem_init_ok);
+
+	__debug_print("Time: Initialising services...\n");
+	__time_initialise();
+	__alarm_initialse(__mem_get_default_pool());
 
 	__debug_print("Process: Initialising Management...\n");
 

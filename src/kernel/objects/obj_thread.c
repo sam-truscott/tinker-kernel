@@ -49,7 +49,7 @@ error_t __obj_create_thread(
 		no = __mem_alloc(pool, sizeof(__object_thread_t));
 		object_number_t objno;
 		result = __obj_add_object(table, (__object_t *)no, &objno);
-		if ( result == NO_ERROR )
+		if (result == NO_ERROR)
 		{
 			__obj_initialise_object(&no->object, objno, THREAD_OBJ);
 			no->pool = pool;
@@ -66,6 +66,10 @@ error_t __obj_create_thread(
 			{
 				*object_no = no->object.object_number;
 			}
+		}
+		else
+		{
+			__mem_free(pool, no);
 		}
 	}
 	else

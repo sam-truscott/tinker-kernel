@@ -17,6 +17,7 @@
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_pipe.h"
 #include "kernel/objects/obj_shared_mem.h"
+#include "kernel/objects/obj_timer.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/hashed_map.h"
 
@@ -36,7 +37,7 @@ HASH_MAP_BODY_SIZE(static, __thread_map_t)
 HASH_MAP_BODY_CONTAINS_KEY(static, __thread_map_t, uint32_t, 16)
 HASH_MAP_BODY_PUT(static, __thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
 HASH_MAP_BODY_REMOVE(static, __thread_map_t, uint32_t, 16)
-HASH_MAP_BODY_DELETE(static, __thread_map_t)
+HASH_MAP_BODY_DELETE(static, __thread_map_t, __MAX_THREADS, 16)
 
 HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(__thread_it_t, __thread_map_t)
 HASH_MAP_TYPE_ITERATOR_BODY(extern, __thread_it_t, __thread_map_t, uint32_t, __thread_t*, __MAX_THREADS, 16)
@@ -341,10 +342,21 @@ void __process_exit(__process_t * const process)
 										process->object_table,
 										oid);
 							}
+							else
+							{
+								__object_timer_t * const timer_obj = __obj_cast_timer(object);
+								if (timer_obj)
+								{
+									const object_number_t oid = __obj_timer_get_oid(timer_obj);
+									__obj_delete_timer(timer_obj);
+									__obj_remove_object(
+											process->object_table,
+											oid);
+								}
+							}
 						}
 					}
 				}
-				/* TODO: Support the other object types */
 			}
 			__object_table_it_t_reset(it);
 			objects_exist = __object_table_it_t_get(it, &object);

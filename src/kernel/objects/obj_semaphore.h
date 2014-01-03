@@ -12,7 +12,6 @@
 #include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_thread.h"
-#include "kernel/objects/object_table.h"
 
 typedef struct __object_sema_t __object_sema_t;
 

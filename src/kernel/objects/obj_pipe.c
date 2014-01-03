@@ -223,7 +223,7 @@ error_t __obj_create_pipe(
 				no = (__object_pipe_t*)__mem_alloc(pool, sizeof(__object_pipe_t));
 				object_number_t objno;
 				result = __obj_add_object(table, (__object_t*)no, &objno);
-				if ( result == NO_ERROR )
+				if (result == NO_ERROR)
 				{
 					*objectno = objno;
 					__obj_initialise_object(&no->object, objno, PIPE_OBJ);
@@ -248,6 +248,10 @@ error_t __obj_create_pipe(
 					no->tx_data = tx_data;
 					// register it - create
 					result = __regsitery_add(name, process, no->object.object_number);
+				}
+				else
+				{
+					__mem_free(pool, no);
 				}
 			}
 			else
@@ -394,7 +398,7 @@ error_t __object_open_pipe(
 					no = (__object_pipe_t*)__mem_alloc(pool, sizeof(__object_pipe_t));
 					object_number_t objno;
 					result = __obj_add_object(table, (__object_t*)no, &objno);
-					if ( result == NO_ERROR )
+					if (result == NO_ERROR)
 					{
 						*objectno = objno;
 						__obj_initialise_object(&no->object, objno, PIPE_OBJ);
@@ -434,6 +438,10 @@ error_t __object_open_pipe(
 							__pipe_list_t_add(no->rx_data.senders, other_pipe);
 							break;
 						}
+					}
+					else
+					{
+						__mem_free(pool, no);
 					}
 				}
 				else

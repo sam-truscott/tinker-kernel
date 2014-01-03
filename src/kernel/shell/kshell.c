@@ -289,9 +289,6 @@ static void __kshell_object_table(void)
 					case SHARED_MEMORY_OBJ:
 						/* TODO KSHELL dump for Shared Memory */
 						break;
-					case CLOCK_OBJ:
-						/* TODO KSHELL dump for Clock */
-						break;
 					case TIMER_OBJ:
 						/* TODO KSHELL dump for Timer */
 						break;

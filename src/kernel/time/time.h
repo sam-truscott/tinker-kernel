@@ -49,6 +49,7 @@ typedef struct
 } __timer_t;
 
 typedef void(__alarm_call_back)(
+		const uint32_t alarm_id,
 		const void * const usr_data,
 		const uint32_t usr_data_param);
 

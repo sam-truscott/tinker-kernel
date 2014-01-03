@@ -12,7 +12,7 @@
 #include "kernel/time/time.h"
 #include "kernel/process/thread.h"
 
-void __alarm_initialse(void);
+void __alarm_initialse(__mem_pool_info_t * const pool);
 
 void __alarm_set_timer(__timer_t * const timer);
 
@@ -26,7 +26,7 @@ void __alarm_set_timer(__timer_t * const timer);
  * @return Errors
  */
 error_t __alarm_set_alarm(
-		const __thread_t * const thread,
+		__mem_pool_info_t * const pool,
 		const __time_t * const timeout,
 		__alarm_call_back * const call_back,
 		const void * const usr_data,

@@ -15,5 +15,6 @@
 #include "sos_api_semaphore.h"
 #include "sos_api_pipe.h"
 #include "sos_api_shm.h"
+#include "sos_api_timer.h"
 
 #endif /* SOS_API_H_ */

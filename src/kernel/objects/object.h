@@ -21,8 +21,7 @@ typedef enum __object_type
 	PIPE_OBJ = 4,
 	SEMAPHORE_OBJ = 5,
 	SHARED_MEMORY_OBJ = 6,
-	CLOCK_OBJ = 7,
-	TIMER_OBJ = 8
+	TIMER_OBJ = 7
 } __object_type_t;
 
 typedef struct __object_t __object_t;

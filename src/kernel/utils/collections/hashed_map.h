@@ -29,6 +29,7 @@
 #include "kernel/console/print_out.h"
 #include "kernel/utils/hash/basic_hashes.h"
 #include "kernel/utils/util_memset.h"
+#include "kernel/kernel_panic.h"
 
 /*
  * This abstract data type is used to model a hash-map.
@@ -205,13 +206,20 @@
 		} \
 		return new_map; \
 	}
-#define HASH_MAP_BODY_DELETE(PREFIX, HASH_MAP_T) \
+#define HASH_MAP_BODY_DELETE(PREFIX, HASH_MAP_T, MAP_CAPACITY, BUCKET_SIZE) \
 	/*
 	 * Delete the hash map
 	 */ \
 	PREFIX void HASH_MAP_T##_delete(HASH_MAP_T * const map) \
 	{ \
-		/* TODO : delete all buckets */ \
+		for (int i = 0 ; i < MAP_CAPACITY/BUCKET_SIZE ; i++) \
+		{ \
+			if (map->buckets[i]) \
+			{ \
+				__kernel_panic(); \
+			} \
+		} \
+		\
 		if (map && map->pool) \
 		{ \
 			__mem_free (map->pool, map); \

@@ -53,15 +53,26 @@ error_t __obj_create_process(
 		if ( table)
 		{
 			no = (__object_process_t*)__mem_alloc(pool, sizeof(__object_process_t));
-			object_number_t objno;
-			result = __obj_add_object(table, (__object_t*)no, &objno);
-			if ( result == NO_ERROR )
+			if (no)
 			{
-				__obj_initialise_object(&no->object, objno, PROCESS_OBJ);
-				no->pid = process_id;
-				no->pool = pool;
-				no->process = process;
-				*object = (__object_t*)no;
+				object_number_t objno;
+				result = __obj_add_object(table, (__object_t*)no, &objno);
+				if (result == NO_ERROR)
+				{
+					__obj_initialise_object(&no->object, objno, PROCESS_OBJ);
+					no->pid = process_id;
+					no->pool = pool;
+					no->process = process;
+					*object = (__object_t*)no;
+				}
+				else
+				{
+					__mem_free(pool, no);
+				}
+			}
+			else
+			{
+				result = OUT_OF_MEMORY;
 			}
 		}
 		else

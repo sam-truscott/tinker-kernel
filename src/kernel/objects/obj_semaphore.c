@@ -138,6 +138,7 @@ error_t __obj_create_semaphore(
 			}
 			else
 			{
+				__mem_free(pool, no);
 				result = OUT_OF_MEMORY;
 			}
 		}
@@ -195,6 +196,7 @@ error_t __obj_open_semaphore(
 							}
 							else
 							{
+								__mem_free(pool, no);
 								result = OUT_OF_MEMORY;
 							}
 						}

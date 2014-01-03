@@ -22,6 +22,7 @@
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_pipe.h"
 #include "kernel/objects/obj_shared_mem.h"
+#include "kernel/objects/obj_timer.h"
 #include "kernel/utils/util_memcpy.h"
 
 static inline object_number_t __syscall_get_thread_oid(void)
@@ -454,9 +455,45 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			{
 				ret = __syscall_delete_object((object_number_t)param[0]);
 			}
-		}
 			break;
-
+		}
+		case SYSCALL_CREATE_TIMER:
+			ret = __obj_create_timer(
+					__thread_get_parent(__sch_get_current_thread()),
+					(object_number_t*)param[0],
+					(const uint32_t)param[1],
+					(const uint32_t)param[2],
+					(sos_timer_callback_t*)param[3],
+					(void*)param[4]);
+			break;
+		case SYSCALL_CANCEL_TIMER:
+		{
+			__object_table_t * const table =
+					__process_get_object_table(
+							__thread_get_parent(__sch_get_current_thread()));
+			__object_timer_t * const timer = __obj_cast_timer(
+					(__object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_cancel_timer(timer);
+			break;
+		}
+		case SYSCALL_DELETE_TIMER:
+		{
+			__object_table_t * const table =
+					__process_get_object_table(
+							__thread_get_parent(__sch_get_current_thread()));
+			__object_timer_t * const timer = __obj_cast_timer(
+					(__object_t *)__obj_get_object(
+							table,
+							(object_number_t)param[0]));
+			ret = __obj_delete_timer(timer);
+			if (ret == NO_ERROR)
+			{
+				ret = __syscall_delete_object((object_number_t)param[0]);
+			}
+			break;
+		}
 		case SYSCALL_LOAD_THREAD:
 			__tgt_prepare_context(context, this_thread);
 			break;

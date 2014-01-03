@@ -128,6 +128,7 @@ error_t __obj_create_shm(
 			}
 			else
 			{
+				__mem_free(pool, no);
 				result = OUT_OF_MEMORY;
 			}
 		}
