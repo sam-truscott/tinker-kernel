@@ -66,6 +66,11 @@ void __thread_save_context(
 		__thread_t * const thread,
 		const __tgt_context_t * const context);
 
+void __thread_set_context_param(
+		__thread_t * const thread,
+		const uint8_t index,
+		const uint32_t parameter);
+
 object_number_t __thread_get_object_no(
 		const __thread_t * const thread);
 

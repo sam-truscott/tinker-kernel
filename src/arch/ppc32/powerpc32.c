@@ -220,7 +220,7 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enable
 		 * should should set the LR value up correctly to jump to the line
 		 * of the ISR code following the interrupt vector.
 		 */
-		uint32_t tmp_lr = vector_info->restore_lr;
+		const uint32_t tmp_lr = vector_info->restore_lr;
 		if (registers)
 		{
 			__ppc_isr_get_isr(vector)(vector, vector_info, fp_enabled);
@@ -602,4 +602,19 @@ void __tgt_save_context(
 		const __tgt_context_t * const context)
 {
 	__util_memcpy(thread, context, sizeof(__tgt_context_t));
+}
+
+void __tgt_set_context_param(
+		__tgt_context_t * const context,
+		const uint8_t index,
+		const uint32_t parameter)
+{
+	switch (index) {
+	case 0:
+		context->gpr_2_31[1] = parameter;
+		break;
+	case 1:
+		context->gpr_2_31[2] = parameter;
+		break;
+	}
 }

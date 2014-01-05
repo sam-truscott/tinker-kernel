@@ -60,6 +60,10 @@ void __tgt_save_context(
 		__tgt_context_t * const thread,
 		const __tgt_context_t * const context);
 
+void __tgt_set_context_param(
+		__tgt_context_t * const context,
+		const uint8_t index,
+		const uint32_t parameter);
 /*
  * Syscall TODO remove
  */

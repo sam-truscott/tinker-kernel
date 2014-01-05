@@ -306,7 +306,7 @@ static void my_initial_thread(void)
 			.seconds = 0,
 			.nanoseconds = 10000
 	};
-	error = sos_timer_create(&sos_timer, 128, &timeout, timer_timeout, 0);
+	error = sos_timer_create(&sos_timer, 200, &timeout, timer_timeout, 0);
 	sos_debug("sos: initial thread: delay2...\n");
 	timer = 500000000;
 	while(timer--){}

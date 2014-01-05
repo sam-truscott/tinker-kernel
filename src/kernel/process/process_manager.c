@@ -194,7 +194,7 @@ error_t __proc_create_thread(
 			name);
 
 	/* initialise the thread */
-	if ( thread != NULL )
+	if (thread)
 	{
 		/* add the thread to the process list */
 		object_number_t objno = INVALID_OBJECT_ID;
@@ -210,14 +210,14 @@ error_t __proc_create_thread(
 			ret = OUT_OF_MEMORY;
 		}
 
-		if ( ret == NO_ERROR )
+		if (ret == NO_ERROR)
 		{
-			if ( new_thread )
+			if (new_thread)
 			{
 				*new_thread = thread;
 			}
 
-			if ( thread_object )
+			if (thread_object)
 			{
 				*thread_object = __obj_get_object(
 						__process_get_object_table(process),

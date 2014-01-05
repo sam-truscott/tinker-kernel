@@ -168,6 +168,14 @@ void __thread_save_context(
 	__tgt_save_context(thread->context, context);
 }
 
+void __thread_set_context_param(
+		__thread_t * const thread,
+		const uint8_t index,
+		const uint32_t parameter)
+{
+	__tgt_set_context_param(thread->context, parameter);
+}
+
 object_number_t __thread_get_object_no(
 		const __thread_t * const thread)
 {

@@ -89,7 +89,7 @@ error_t __alarm_set_alarm(
 			/* find the next valid alarm ID TODO this should be an operation
 			 * of the unbound_list as the process manager also needs to do it
 			 */
-			uint32_t new_alarm_id = ((alarm_list_size == 0) ? 1 : 0);
+			uint32_t new_alarm_id = 0;
 			for (uint32_t i = 0 ; i < alarm_list_size ; i++)
 			{
 				if ( !alarm_list_t_get(__alarm_list, i, &tmp) )
@@ -152,7 +152,7 @@ error_t __alarm_unset_alarm(const uint32_t alarm_id)
 
 	__alarm_t * alarm = NULL;
 	alarm_list_t_get(__alarm_list, alarm_id, &alarm);
-	if ( alarm )
+	if (alarm)
 	{
 		alarm_list_t_remove_item(__alarm_list, alarm);
 		if ( alarm == __alarm_next_alarm)
@@ -173,7 +173,7 @@ error_t __alarm_unset_alarm(const uint32_t alarm_id)
 
 void __alarm_calculate_next_alarm(__alarm_t * new_alarm)
 {
-	if ( new_alarm )
+	if (new_alarm)
 	{
 		if ( __alarm_next_alarm == NULL )
 		{
@@ -188,7 +188,7 @@ void __alarm_calculate_next_alarm(__alarm_t * new_alarm)
 	}
 	else
 	{
-		if ( alarm_list_t_size(__alarm_list) > 0 )
+		if (alarm_list_t_size(__alarm_list) > 0)
 		{
 			alarm_list_t_get(__alarm_list, 0, &__alarm_next_alarm);
 			__alarm_enable_timer();

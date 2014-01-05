@@ -91,12 +91,12 @@ void __sch_initialise_scheduler(void)
 
 void __sch_notify_new_thread(__thread_t * const t)
 {
-	if ( !__sch_initialised )
+	if (!__sch_initialised)
 	{
 		__sch_initialise_scheduler();
 	}
 
-	if ( t )
+	if (t)
 	{
 		const __priority_t thread_priority = __thread_get_priority(t);
 		__thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
@@ -106,7 +106,7 @@ void __sch_notify_new_thread(__thread_t * const t)
 		__debug_print("scheduler: new thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
 #endif
 
-		if ( thread_priority > __sch_current_priority )
+		if (thread_priority > __sch_current_priority)
 		{
 				__sch_current_priority = thread_priority;
 				__sch_active_queue = &(__sch_thread_queues[__sch_current_priority]);
@@ -327,12 +327,12 @@ void __sch_set_context_for_next_thread(
 	/* once we're either back at the start or we've
 	 * selected a new thread check its running and
 	 * then use it */
-	if ( __sch_current_thread )
+	if (__sch_current_thread)
 	{
 		const bool_t reorder_ok = __thread_queue_t_reorder_first(__sch_active_queue);
 		__kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const __thread_state_t state = __thread_get_state(__sch_current_thread);
-		if ( state == THREADY_READY)
+		if (state == THREADY_READY)
 		{
 			__thread_set_state(__sch_current_thread, THREAD_RUNNING);
 		}
@@ -342,7 +342,7 @@ void __sch_set_context_for_next_thread(
 		}
 	}
 
-	if ( __sch_current_thread == NULL )
+	if (__sch_current_thread == NULL)
 	{
 		__sch_current_thread = __kernel_get_idle_thread();
 	}
