@@ -15,6 +15,7 @@ static sos_pipe_t rx_pipe __attribute__((section(".udata")));
 static sos_shm_t shm __attribute__((section(".udata")));
 static sos_shm_t shm2 __attribute__((section(".udata")));
 static sos_timer_t sos_timer __attribute__((section(".udata")));
+static uint8_t timer_expired __attribute__((section(".udata")));
 
 static void my_initial_thread(void) __attribute__((section(".utext")));
 static void my_other_thread(void) __attribute__((section(".utext")));
@@ -304,12 +305,21 @@ static void my_initial_thread(void)
 
 	const sos_timeout_time_t timeout = {
 			.seconds = 0,
-			.nanoseconds = 10000
+			.nanoseconds = 50000000
 	};
-	error = sos_timer_create(&sos_timer, 200, &timeout, timer_timeout, 0);
+	timer_expired = 0;
+	error = sos_timer_create(&sos_timer, 200, &timeout, timer_timeout, (void*)72);
 	sos_debug("sos: initial thread: delay2...\n");
-	timer = 500000000;
-	while(timer--){}
+	timer = 5000000;
+	while(timer-- && !timer_expired)
+	{
+		sos_debug("sos: waiting for timer...\n");
+	}
+
+	if (!timer_expired)
+	{
+		sos_debug("sos: initial thread: timer didn't fire\n");
+	}
 
 	sos_debug("sos: initial thread: done\n");
 }
@@ -317,8 +327,9 @@ static void my_initial_thread(void)
 static void timer_timeout(const void * const usr_data)
 {
 	sos_debug("sos: timeout fired\n");
-	if (usr_data)
+	if ((int)usr_data != 72)
 	{
 		sos_debug("sos: error - unexpected callback present\n");
 	}
+	timer_expired = 1;
 }

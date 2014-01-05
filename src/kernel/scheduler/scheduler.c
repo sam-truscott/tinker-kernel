@@ -181,7 +181,7 @@ void __sch_notify_new_thread(__thread_t * const t)
 
 void __sch_notify_exit_thread(__thread_t * const t)
 {
-	if ( t )
+	if (t)
 	{
 		const __priority_t thread_priority = __thread_get_priority(t);
 		__thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);

@@ -173,7 +173,7 @@ void __thread_set_context_param(
 		const uint8_t index,
 		const uint32_t parameter)
 {
-	__tgt_set_context_param(thread->context, parameter);
+	__tgt_set_context_param(thread->context, index, parameter);
 }
 
 object_number_t __thread_get_object_no(

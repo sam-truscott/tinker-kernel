@@ -71,7 +71,7 @@ static void __obj_timer_timeout(
 	{
 		__thread_set_state(timer->callback_thread, THREADY_READY);
 		__thread_set_waiting_on(timer->callback_thread, NULL);
-		__sch_notify_new_thread(timer->callback_thread);
+		__sch_notify_resume_thread(timer->callback_thread);
 		__thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
 		__thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
 	}
@@ -108,26 +108,34 @@ error_t __obj_create_timer(
 						0,
 						NULL,
 						&no->callback_thread);
-				__thread_set_state(no->callback_thread, THREAD_WAITING);
-				__thread_set_waiting_on(no->callback_thread, (__object_t*)no);
-				__obj_initialise_object(&no->object, objno, TIMER_OBJ);
-				no->timeout.seconds = seconds;
-				no->timeout.nanoseconds = nanoseconds;
-				no->callback = callback;
-				no->parameter = parameter;
-				no->pool = pool;
-				*objectno = no->object.object_number;
-				const __time_t timeout = {
-						.seconds = seconds,
-						.nanoseconds = nanoseconds
-				};
-				result = __alarm_set_alarm(
-						pool,
-						&timeout,
-						__obj_timer_timeout,
-						no,
-						sizeof(__object_timer_t*),
-						&no->alarm_id);
+				if (result == NO_ERROR)
+				{
+					__thread_set_state(no->callback_thread, THREAD_WAITING);
+					__thread_set_waiting_on(no->callback_thread, (__object_t*)no);
+					__obj_initialise_object(&no->object, objno, TIMER_OBJ);
+					__sch_notify_pause_thread(no->callback_thread);
+					no->timeout.seconds = seconds;
+					no->timeout.nanoseconds = nanoseconds;
+					no->callback = callback;
+					no->parameter = parameter;
+					no->pool = pool;
+					*objectno = no->object.object_number;
+					const __time_t timeout = {
+							.seconds = seconds,
+							.nanoseconds = nanoseconds
+					};
+					result = __alarm_set_alarm(
+							pool,
+							&timeout,
+							__obj_timer_timeout,
+							no,
+							sizeof(__object_timer_t*),
+							&no->alarm_id);
+				}
+				else
+				{
+
+				}
 			}
 			else
 			{
