@@ -11,13 +11,15 @@
 
 error_t sos_timer_create(
 		sos_timer_t * const timer,
+		const uint8_t priority,
 		const sos_timeout_time_t * const timeout,
 		sos_timer_callback_t * const callback,
 		const void * const data)
 {
-	return SOS_API_CALL_5(
+	return SOS_API_CALL_6(
 			SYSCALL_CREATE_TIMER,
 			(uint32_t)timer,
+			(uint32_t)priority,
 			(uint32_t)timeout->seconds,
 			(uint32_t)timeout->nanoseconds,
 			(uint32_t)callback,

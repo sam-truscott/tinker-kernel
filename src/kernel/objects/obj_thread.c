@@ -19,26 +19,22 @@
 typedef struct __object_thread_t
 {
 	__object_internal_t object;
-	uint32_t pid;
 	uint32_t tid;
 	__thread_t * thread;
 	/**
 	 * This field is used to store the original priority
 	 * of a thread during the use-case of priority inheritance
 	 */
-	priority_t priority_inheritance;
-	priority_t original_priority;
+	__priority_t priority_inheritance;
+	__priority_t original_priority;
 	__mem_pool_info_t * pool;
-	object_number_t process_obj_no;
 } __object_thread_internal_t;
 
 error_t __obj_create_thread(
 		__mem_pool_info_t * const pool,
 		__object_table_t * const table,
-	 	const uint32_t process_id,
 		const uint32_t thread_id,
 		__thread_t * const thread,
-		const object_number_t proc_obj_no,
 		object_number_t * const object_no)
 {
 	__object_thread_t * no = NULL;
@@ -53,8 +49,6 @@ error_t __obj_create_thread(
 		{
 			__obj_initialise_object(&no->object, objno, THREAD_OBJ);
 			no->pool = pool;
-			no->process_obj_no = proc_obj_no;
-			no->pid = process_id;
 			no->tid = thread_id;
 			no->thread = thread;
 			no->original_priority = __thread_get_priority(thread);
@@ -99,16 +93,6 @@ object_number_t __obj_thread_get_oid
 	return oid;
 }
 
-object_number_t __obj_thread_get_proc_oid(const __object_thread_t * const o)
-{
-	object_number_t oid = INVALID_OBJECT_ID;
-	if (o)
-	{
-		oid = o->process_obj_no;
-	}
-	return oid;
-}
-
 __object_thread_t * __obj_cast_thread(__object_t * o)
 {
 	__object_thread_t * result = NULL;
@@ -132,16 +116,17 @@ error_t __obj_exit_thread(__object_thread_t * const o)
 		__thread_t * const t = o->thread;
 
 #if defined(__PROCESS_DEBUGGING)
-		__debug_print("proc %d thread %d (%s) is exiting\n", o->pid, o->tid, __thread_get_name(o->thread));
+		const uint32_t pid = __process_get_pid(__thread_get_parent(t));
+		__debug_print("proc %d thread %d (%s) is exiting\n", pid, o->tid, __thread_get_name(o->thread));
 #endif
 
 		const __thread_state_t state = __thread_get_state(t);
-		if (state != thread_terminated
-				&& state != thread_not_created)
+		if (state != THREAD_TERMINATED
+				&& state != THREAD_NOT_CREATED)
 		{
 			/* update the reason for the exit and
 			 * notify the scheduler so it can do something else*/
-			__thread_set_state(t, thread_terminated);
+			__thread_set_state(t, THREAD_TERMINATED);
 			__sch_notify_exit_thread(t);
 
 			/* free up the stack space used by the thread*/
@@ -195,9 +180,9 @@ error_t __obj_set_thread_waiting(
 
 		const __thread_state_t state = __thread_get_state(t);
 
-		if ( state == thread_running )
+		if ( state == THREAD_RUNNING )
 		{
-			__thread_set_state(t, thread_waiting);
+			__thread_set_state(t, THREAD_WAITING);
 			__thread_set_waiting_on(t, waiting_on);
 			__sch_notify_pause_thread(t);
 		}
@@ -227,9 +212,9 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 
 		const __thread_state_t state = __thread_get_state(t);
 
-		if ( state == thread_waiting )
+		if ( state == THREAD_WAITING )
 		{
-			__thread_set_state(t, thread_ready);
+			__thread_set_state(t, THREADY_READY);
 			__thread_set_waiting_on(t, NULL);
 			__sch_notify_resume_thread(t);
 		}
@@ -242,10 +227,10 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 	return result;
 }
 
-priority_t __obj_get_thread_priority_ex(__object_thread_t * const o)
+__priority_t __obj_get_thread_priority_ex(__object_thread_t * const o)
 {
 	const __thread_t * t = o->thread;
-	priority_t p = 0;
+	__priority_t p = 0;
 
 	if (p)
 	{
@@ -357,9 +342,9 @@ error_t __obj_set_thread_original_priority(__object_thread_t * const o)
 	return result;
 }
 
-priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
+__priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o)
 {
-	priority_t p = 0;
+	__priority_t p = 0;
 
 	if (o)
 	{

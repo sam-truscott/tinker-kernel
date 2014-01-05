@@ -12,16 +12,16 @@
 #include "sos_api_process.h"
 #include "kernel/memory/mem_pool.h"
 
-typedef uint8_t priority_t;
+typedef uint8_t __priority_t;
 
 typedef struct __thread_t __thread_t;
 
-typedef struct __fwd_process_t  __fwd_process_t;
+typedef struct __fwd_process_t __fwd_process_t;
 
 __thread_t * __thread_create(
 		__mem_pool_info_t * const pool,
 		const __fwd_process_t * const parent,
-		const priority_t priority,
+		const __priority_t priority,
 		thread_entry_point * entry_point,
 		const uint32_t flags,
 		const uint32_t stack,
@@ -51,12 +51,12 @@ void __thread_set_state(
 		__thread_t * const thread,
 		const __thread_state_t new_state);
 
-priority_t __thread_get_priority(
+__priority_t __thread_get_priority(
 		const __thread_t * const thread);
 
 void __thread_set_priority(
 		__thread_t * const thread,
-		const priority_t priority);
+		const __priority_t priority);
 
 void __thread_load_context(
 		const __thread_t * const thread,

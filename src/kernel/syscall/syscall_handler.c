@@ -25,16 +25,16 @@
 #include "kernel/objects/obj_timer.h"
 #include "kernel/utils/util_memcpy.h"
 
-static inline object_number_t __syscall_get_thread_oid(void)
+static inline object_number_t __syscall_get_thread_oid(const __thread_t * const thread)
 {
-	return __thread_get_object_no(__sch_get_current_thread());
+	return __thread_get_object_no(thread);
 }
 
-static inline __object_thread_t * __syscall_get_thread_object(void)
+static inline __object_thread_t * __syscall_get_thread_object(const __thread_t * const thread)
 {
-	const __process_t * const proc =  __thread_get_parent(__sch_get_current_thread());
+	const __process_t * const proc =  __thread_get_parent(thread);
 	const __object_table_t * const table = __process_get_object_table(proc);
-	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid());
+	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid(thread));
 }
 
 static error_t __syscall_delete_object(
@@ -47,6 +47,7 @@ static error_t __syscall_delete_object(
 }
 
 static error_t __syscall_get_sema(
+		const __thread_t * const thread,
 		const object_number_t sema_no,
 		__object_sema_t ** sema)
 {
@@ -55,7 +56,7 @@ static error_t __syscall_get_sema(
 	const __object_table_t * const table =
 			__process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
 
-	__object_thread_t * const thread_obj = __syscall_get_thread_object();
+	__object_thread_t * const thread_obj = __syscall_get_thread_object(thread);
 	if (table && thread_obj)
 	{
 		__object_t * const possible_sema = __obj_get_object(table,sema_no);
@@ -97,7 +98,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	param[4] = __tgt_get_syscall_param(context, 5);
 	param[5] = __tgt_get_syscall_param(context, 6);
 	param[6] = __tgt_get_syscall_param(context, 7);
-	__thread_t * this_thread = __sch_get_current_thread();
+	__thread_t * const this_thread = __sch_get_current_thread();
 
 	/* TODO FIXME This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
@@ -165,14 +166,14 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_THREAD_PRIORITY:
 			{
 				object_number_t thread_no = (object_number_t)param[0];
-				priority_t * priority = (priority_t*)param[1];
+				__priority_t * priority = (__priority_t*)param[1];
 				if ( thread_no && priority)
 				{
 					__object_table_t * table = NULL;
 					__object_t * obj = NULL;
 					__object_thread_t * thread_obj = NULL;
 
-					table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+					table = __process_get_object_table(__thread_get_parent(this_thread));
 
 					obj = __obj_get_object(table, thread_no);
 					if (obj)
@@ -197,7 +198,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_THREAD_OBJECT:
 			{
-				const object_number_t objno = __syscall_get_thread_oid();
+				const object_number_t objno = __syscall_get_thread_oid(this_thread);
 				*((object_number_t*)param[0]) = objno;
 				ret = NO_ERROR;
 			}
@@ -205,16 +206,17 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_EXIT_THREAD:
 			{
-				__object_thread_t * const thread_obj =__syscall_get_thread_object();
-				if ( thread_obj )
+				__object_thread_t * const thread_obj =__syscall_get_thread_object(this_thread);
+				if (thread_obj)
 				{
+					__process_t * const parent = __thread_get_parent(this_thread);
 					const __object_table_t * const table =
-							__process_get_object_table(__thread_get_parent(this_thread));
+							__process_get_object_table(parent);
 
 					__object_process_t * const proc_obj =
 							__obj_cast_process(
 								__obj_get_object(table,
-									__obj_thread_get_proc_oid(thread_obj)));
+									__process_get_oid(parent)));
 
 					if (proc_obj)
 					{
@@ -273,10 +275,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_GET_SEMAPHORE:
 		{
-			__object_thread_t * const thread_obj = __syscall_get_thread_object();
+			__object_thread_t * const thread_obj = __syscall_get_thread_object(this_thread);
 			__object_sema_t * sema_obj;
 
-			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
+			ret = __syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
 
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
@@ -291,10 +293,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 		case SYSCALL_RELEASE_SEMAPHORE:
 		{
-			__object_thread_t * const thread_obj = __syscall_get_thread_object();
+			__object_thread_t * const thread_obj = __syscall_get_thread_object(this_thread);
 			__object_sema_t * sema_obj = NULL;
 
-			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
+			ret = __syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
 
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
@@ -306,7 +308,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		{
 			__object_sema_t * sema_obj = NULL;
 
-			ret = __syscall_get_sema((object_number_t)param[0], &sema_obj);
+			ret = __syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj)
 			{
 				ret = __object_delete_semaphore(sema_obj);
@@ -329,7 +331,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_DELETE_PIPE:
 		{
 			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			table = __process_get_object_table(__thread_get_parent(this_thread));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
 					__obj_get_object(
 							table,
@@ -344,7 +346,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_OPEN_PIPE:
 			ret = __object_open_pipe(
 					__thread_get_parent(this_thread),
-					__syscall_get_thread_object(),
+					__syscall_get_thread_object(this_thread),
 					(object_number_t*)param[0],
 					(const char*)param[1],
 					(const sos_pipe_direction_t)param[2],
@@ -354,7 +356,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_CLOSE_PIPE:
 		{
 			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			table = __process_get_object_table(__thread_get_parent(this_thread));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
 					__obj_get_object(
 							table,
@@ -371,14 +373,14 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_SEND_MESSAGE:
 		{
 			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			table = __process_get_object_table(__thread_get_parent(this_thread));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
 					__obj_get_object(
 							table,
 							(object_number_t)param[0]));
 			ret = __obj_pipe_send_message(
 					pipe,
-					__syscall_get_thread_object(),
+					__syscall_get_thread_object(this_thread),
 					(sos_pipe_send_kind_t)param[1],
 					(void*)param[2],
 					(const uint32_t)param[3],
@@ -398,7 +400,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			uint32_t * msg_size = (uint32_t*)param[2];
 			ret = __obj_pipe_receive_message(
 					pipe,
-					__syscall_get_thread_object(),
+					__syscall_get_thread_object(this_thread),
 					(void**)msg,
 					msg_size,
 					(const bool_t)param[3]);
@@ -415,7 +417,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_RECEIVED_MESSAGE:
 		{
 			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+			table = __process_get_object_table(__thread_get_parent(this_thread));
 			__object_pipe_t * const pipe = __obj_cast_pipe(
 					__obj_get_object(
 							table,
@@ -426,7 +428,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_CREATE_SHM:
 			ret = __obj_create_shm(
-					__thread_get_parent(__sch_get_current_thread()),
+					__thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(char*)param[1],
 					(uint32_t)param[2],
@@ -434,7 +436,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_OPEN_SHM:
 			ret = __obj_open_shm(
-					__thread_get_parent(__sch_get_current_thread()),
+					__thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(char*)param[1],
 					(uint32_t)param[2],
@@ -445,7 +447,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		{
 			__object_table_t * const table =
 					__process_get_object_table(
-							__thread_get_parent(__sch_get_current_thread()));
+							__thread_get_parent(this_thread));
 			__object_shm_t * const shm = __obj_cast_shm(
 					(__object_t *)__obj_get_object(
 							table,
@@ -459,18 +461,19 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 		case SYSCALL_CREATE_TIMER:
 			ret = __obj_create_timer(
-					__thread_get_parent(__sch_get_current_thread()),
+					__thread_get_parent(this_thread),
 					(object_number_t*)param[0],
-					(const uint32_t)param[1],
+					(const __priority_t)param[1],
 					(const uint32_t)param[2],
-					(sos_timer_callback_t*)param[3],
-					(void*)param[4]);
+					(const uint32_t)param[3],
+					(sos_timer_callback_t*)param[4],
+					(void*)param[5]);
 			break;
 		case SYSCALL_CANCEL_TIMER:
 		{
 			__object_table_t * const table =
 					__process_get_object_table(
-							__thread_get_parent(__sch_get_current_thread()));
+							__thread_get_parent(this_thread));
 			__object_timer_t * const timer = __obj_cast_timer(
 					(__object_t *)__obj_get_object(
 							table,
@@ -482,7 +485,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		{
 			__object_table_t * const table =
 					__process_get_object_table(
-							__thread_get_parent(__sch_get_current_thread()));
+							__thread_get_parent(this_thread));
 			__object_timer_t * const timer = __obj_cast_timer(
 					(__object_t *)__obj_get_object(
 							table,
@@ -519,8 +522,8 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	 * If the thread has been un-scheduled we need to switch process
 	 */
 	const __thread_state_t state = __thread_get_state(this_thread);
-	if ( (state != thread_system) &&
-		 (state != thread_running) )
+	if ( (state != THREAD_SYSTEM) &&
+		 (state != THREAD_RUNNING) )
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
 		__sch_set_context_for_next_thread(context);

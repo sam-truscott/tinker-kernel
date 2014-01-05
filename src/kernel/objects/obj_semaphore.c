@@ -57,7 +57,7 @@ typedef struct __object_sema_t
 			uint32_t sem_alloc;
 			__thread_obj_queue_t * listeners;
 			__thread_obj_queue_t * owners;
-			priority_t highest_priority;
+			__priority_t highest_priority;
 			char name[__MAX_SHARED_OBJECT_NAME_LENGTH];
 		} owner;
 		struct
@@ -273,7 +273,7 @@ error_t __obj_get_semaphore(
 		__thread_state_t ts;
 		__obj_get_thread_state(thread, &ts);
 
-		if (ts != thread_not_created && ts != thread_terminated)
+		if (ts != THREAD_NOT_CREATED && ts != THREAD_TERMINATED)
 		{
 			__object_thread_t * first_owner_obj = NULL;
 			__object_sema_t * sema;
@@ -288,10 +288,10 @@ error_t __obj_get_semaphore(
 
 			__thread_obj_queue_t_front(sema->data.owner.owners, &first_owner_obj);
 
-			const priority_t thread_priority =
+			const __priority_t thread_priority =
 					__obj_get_thread_priority_ex(thread);
 
-			const priority_t waiting_thread_priority =
+			const __priority_t waiting_thread_priority =
 					__obj_get_thread_priority_ex(first_owner_obj);
 
 			/* deal with incoming priority inheritance */
@@ -312,7 +312,7 @@ error_t __obj_get_semaphore(
 
 				__thread_state_t state;
 				__obj_get_thread_state(first_owner_obj, &state);
-				if ( state == thread_waiting )
+				if ( state == THREAD_WAITING )
 				{
 					__obj_set_thread_ready(first_owner_obj);
 				}
@@ -383,7 +383,7 @@ error_t __obj_release_semaphore(
 			 * its priority temporarily elevated to avoid priority
 			 * inversion so the original thread priority is restored
 			 */
-			const priority_t thread_orig_priority = __obj_get_thread_original_priority_ex(thread);
+			const __priority_t thread_orig_priority = __obj_get_thread_original_priority_ex(thread);
 			if ( sema->data.owner.highest_priority != thread_orig_priority)
 			{
 				__obj_reset_thread_original_priority(thread);
@@ -440,7 +440,7 @@ static void __obj_notify_semaphore_listener(
 				/* tell the most recent one to go now */
 				__obj_set_thread_ready(next_thread);
 
-				const priority_t thread_priority = __obj_get_thread_priority_ex(next_thread);
+				const __priority_t thread_priority = __obj_get_thread_priority_ex(next_thread);
 				if (thread_priority < semaphore->data.owner.highest_priority)
 				{
 					/* update the original priority and copy across the temporary
@@ -511,9 +511,9 @@ uint32_t __obj_get_sema_alloc(const __object_sema_t * const sema)
 	return alloc;
 }
 
-priority_t __obj_get_sema_highest_priority(const __object_sema_t * const sema)
+__priority_t __obj_get_sema_highest_priority(const __object_sema_t * const sema)
 {
-	priority_t pri = 0;
+	__priority_t pri = 0;
 	if (sema)
 	{
 		switch (sema->sema_type)

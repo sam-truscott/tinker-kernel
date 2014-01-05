@@ -78,7 +78,7 @@ void __kernel_initialise(void)
 	__kernel_assert("Kernel Process not created",__kernel_process != NULL);
 	__kernel_assert("Kernel Idle Thread not created", __kernel_idle_thread != NULL);
 
-	__thread_set_state(__kernel_idle_thread, thread_system);
+	__thread_set_state(__kernel_idle_thread, THREAD_SYSTEM);
 
 	__sch_initialise_scheduler();
 }

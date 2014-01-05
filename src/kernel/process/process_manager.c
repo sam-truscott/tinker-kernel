@@ -200,7 +200,7 @@ error_t __proc_create_thread(
 		object_number_t objno = INVALID_OBJECT_ID;
 		if (__process_add_thread(process, thread, &objno))
 		{
-			if (__thread_get_state(thread) != thread_ready)
+			if (__thread_get_state(thread) != THREADY_READY)
 			{
 				ret = OUT_OF_MEMORY;
 			}

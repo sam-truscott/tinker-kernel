@@ -24,6 +24,7 @@ typedef void(sos_timer_callback_t)(const void * const usr_data);
 
 error_t sos_timer_create(
 		sos_timer_t * const timer,
+		const uint8_t priority,
 		const sos_timeout_time_t * const timeout,
 		sos_timer_callback_t * const callback,
 		const void * const data) SOS_API_SUFFIX;

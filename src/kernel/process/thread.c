@@ -21,7 +21,7 @@ typedef struct __thread_t
 	uint32_t			r_stack_base;
 	uint32_t			v_stack_base;
 	uint32_t			stack_size;
-	priority_t			priority;
+	__priority_t			priority;
 	uint32_t			flags;
 	__process_t 		*	parent;
 	__thread_state_t	state;
@@ -56,7 +56,7 @@ static void __thread_setup_stack(__thread_t * const thread)
 __thread_t * __thread_create(
 		__mem_pool_info_t * const pool,
 		const __fwd_process_t * const parent,
-		const priority_t priority,
+		const __priority_t priority,
 		thread_entry_point * entry_point,
 		const uint32_t flags,
 		const uint32_t stack,
@@ -77,7 +77,7 @@ __thread_t * __thread_create(
 		if (thread->stack)
 		{
 			thread->stack_size = stack;
-			thread->state = thread_ready;
+			thread->state = THREADY_READY;
 			/*
 			 * We need to ensure that the context information
 			 * is configured properly
@@ -92,7 +92,7 @@ __thread_t * __thread_create(
 		else
 		{
 			thread->stack_size = 0;
-			thread->state = thread_not_created;
+			thread->state = THREAD_NOT_CREATED;
 		}
 	}
 	return thread;
@@ -122,7 +122,7 @@ void __thread_set_oid(
 	thread->object_number = oid;
 }
 
-priority_t __thread_get_priority(
+__priority_t __thread_get_priority(
 		const __thread_t * const thread)
 {
 	return thread->priority;
@@ -130,7 +130,7 @@ priority_t __thread_get_priority(
 
 void __thread_set_priority(
 		__thread_t * const thread,
-		const priority_t priority)
+		const __priority_t priority)
 {
 	thread->priority = priority;
 }

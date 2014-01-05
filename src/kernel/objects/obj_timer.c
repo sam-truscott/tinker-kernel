@@ -7,8 +7,9 @@
  *  All Rights Reserved.
  */
 #include "obj_timer.h"
-#include "kernel/time/time.h"
 
+#include "kernel/time/time.h"
+#include "config.h"
 #include "arch/tgt_types.h"
 #include "object_private.h"
 #include "kernel/time/alarm_manager.h"
@@ -21,6 +22,7 @@ typedef struct __object_timer_t
 	sos_timeout_time_t timeout;
 	const void * parameter;
 	uint32_t alarm_id;
+	__thread_t * callback_thread;
 } __object_timer_internal_t;
 
 __object_timer_t * __obj_cast_timer(__object_t * const o)
@@ -48,28 +50,32 @@ object_number_t __obj_timer_get_oid
 	return oid;
 }
 
-static void _obj_timer_timeout(
+static void __obj_timer_thread(__object_timer_t * const t) __attribute__((section(".utext")));
+static void __obj_timer_thread(__object_timer_t * const t)
+{
+
+	if (t)
+	{
+		t->callback(t->parameter);
+	}
+}
+
+static void __obj_timer_timeout(
 		const uint32_t alarm_id,
 		const void * const usr_data,
 		const uint32_t usr_data_param)
 {
 	__object_timer_t * const timer = (__object_timer_t*)usr_data;
-	if (timer && usr_data_param)
+	if (timer && usr_data_param && alarm_id == timer->alarm_id)
 	{
-		if (alarm_id == timer->alarm_id)
-		{
-			// load up the right thread
-			// setup the first parameter
-			// switch context
-			// put this function in user-mode?
-			timer->callback(timer->parameter);
-		}
+		__thread_set_state(timer->callback_thread, THREAD_RUNNING);
 	}
 }
 
 error_t __obj_create_timer(
 		__process_t * const process,
 		object_number_t * objectno,
+		const __priority_t priority,
 		const uint32_t seconds,
 		const uint32_t nanoseconds,
 		sos_timer_callback_t * const callback,
@@ -88,6 +94,16 @@ error_t __obj_create_timer(
 			result = __obj_add_object(table, (__object_t*)no, &objno);
 			if (result == NO_ERROR)
 			{
+				no->callback_thread = __thread_create(
+						pool,
+						(__fwd_process_t*)process,
+						priority,
+						(thread_entry_point*)__obj_timer_thread,
+						0,
+						__TIMER_STACK_SIZE,
+						"timer");
+				__thread_set_state(no->callback_thread, THREAD_WAITING);
+				__thread_set_waiting_on(no->callback_thread, (__object_t*)no);
 				__obj_initialise_object(&no->object, objno, TIMER_OBJ);
 				no->timeout.seconds = seconds;
 				no->timeout.nanoseconds = nanoseconds;
@@ -95,14 +111,14 @@ error_t __obj_create_timer(
 				no->parameter = parameter;
 				no->pool = pool;
 				*objectno = no->object.object_number;
-				__time_t timeout = {
+				const __time_t timeout = {
 						.seconds = seconds,
 						.nanoseconds = nanoseconds
 				};
 				result = __alarm_set_alarm(
 						pool,
 						&timeout,
-						_obj_timer_timeout,
+						__obj_timer_timeout,
 						no,
 						sizeof(__object_timer_t*),
 						&no->alarm_id);

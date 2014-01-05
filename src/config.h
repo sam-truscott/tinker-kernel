@@ -60,6 +60,11 @@
 #define __MAX_SHARED_OBJECT_NAME_LENGTH 64
 
 /**
+ * The stack size for timers TODO replace with argument?
+ */
+#define __TIMER_STACK_SIZE 1024
+
+/**
  * The maximum number of external interrupt vectors handled
  * by the master/slave interrupt controllers
  */

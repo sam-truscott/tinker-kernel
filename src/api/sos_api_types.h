@@ -19,14 +19,14 @@
 
 typedef enum __thread_state
 {
-	thread_not_created = 1,
-	thread_idle,
-	thread_ready,
-	thread_running,
-	thread_system,
-	thread_paused,
-	thread_waiting,
-	thread_terminated,
+	THREAD_NOT_CREATED = 1,
+	THREAD_IDLE,
+	THREADY_READY,
+	THREAD_RUNNING,
+	THREAD_SYSTEM,
+	THREAD_PAUSED,
+	THREAD_WAITING,
+	THREAD_TERMINATED
 } __thread_state_t;
 
 #define THREAD_FLAG_NONE 0x0

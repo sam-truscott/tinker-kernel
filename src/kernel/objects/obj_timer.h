@@ -23,6 +23,7 @@ object_number_t __obj_timer_get_oid
 error_t __obj_create_timer(
 		__process_t * const process,
 		object_number_t * objectno,
+		const __priority_t priority,
 		const uint32_t seconds,
 		const uint32_t nanoseconds,
 		sos_timer_callback_t * const callback,

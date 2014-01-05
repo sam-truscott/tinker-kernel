@@ -237,10 +237,8 @@ bool_t __process_add_thread(
 		ret = __obj_create_thread(
 				process->memory_pool,
 				process->object_table,
-				process->process_id,
 				thread_id,
 				thread,
-				process->object_number,
 				 objno);
 
 		if (ret)
