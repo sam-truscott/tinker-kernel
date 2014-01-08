@@ -69,9 +69,9 @@ void __ppc_timer_setup(
 		const __time_t timeout,
 		__timer_callback * const call_back)
 {
-	if ( usr_data && call_back)
+	if (usr_data && call_back)
 	{
-		__ppc_timer_usr_data_t * data = (__ppc_timer_usr_data_t*)usr_data;
+		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)usr_data;
 		data->call_back = call_back;
 		data->alarm_time = timeout;
 		data->enabled = true;
@@ -80,8 +80,12 @@ void __ppc_timer_setup(
 
 void __ppc_timer_cancel(const void * const usr_data)
 {
-	if ( usr_data )
+	if (usr_data)
 	{
-		*((uint32_t*)usr_data) = 0;
+		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)usr_data;
+		if (data)
+		{
+			*((uint32_t*)usr_data) = 0;
+		}
 	}
 }

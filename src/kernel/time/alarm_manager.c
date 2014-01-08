@@ -25,22 +25,22 @@ typedef struct
 	__time_t			alarm_time;
 } __alarm_t;
 
-UNBOUNDED_LIST_TYPE(alarm_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_REMOVE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_GET(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_SPEC_SIZE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_ADD(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_REMOVE(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_GET(static, alarm_list_t, __alarm_t*)
-UNBOUNDED_LIST_BODY_SIZE(static, alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_TYPE(__alarm_list_t)
+UNBOUNDED_LIST_INTERNAL_TYPE(__alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_CREATE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_INITIALISE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_ADD(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_REMOVE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_GET(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_SPEC_SIZE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_CREATE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_INITIALISE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_ADD(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_REMOVE(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_GET(static, __alarm_list_t, __alarm_t*)
+UNBOUNDED_LIST_BODY_SIZE(static, __alarm_list_t, __alarm_t*)
 
 static void __alarm_calculate_next_alarm(__alarm_t * new_alarm);
 
@@ -50,7 +50,7 @@ static void __alarm_disable_timer(void);
 
 static void __alarm_handle_timer_timeout(void);
 
-static alarm_list_t * __alarm_list;
+static __alarm_list_t * __alarm_list;
 
 static __alarm_t * __alarm_next_alarm;
 
@@ -60,7 +60,7 @@ void __alarm_initialse(__mem_pool_info_t * const pool)
 {
 	__alarm_timer = NULL;
 	__alarm_next_alarm = NULL;
-	__alarm_list = alarm_list_t_create(pool);
+	__alarm_list = __alarm_list_t_create(pool);
 }
 
 void __alarm_set_timer(__timer_t * const timer)
@@ -82,7 +82,7 @@ error_t __alarm_set_alarm(
 		const __time_t now = __time_get_system_time();
 
 		/* check there's room of the new alarm */
-		const uint32_t alarm_list_size = alarm_list_t_size(__alarm_list);
+		const uint32_t alarm_list_size = __alarm_list_t_size(__alarm_list);
 		if (alarm_list_size < __MAX_ALARMS)
 		{
 			__alarm_t * tmp = NULL;
@@ -92,7 +92,7 @@ error_t __alarm_set_alarm(
 			uint32_t new_alarm_id = 0;
 			for (uint32_t i = 0 ; i < alarm_list_size ; i++)
 			{
-				if ( !alarm_list_t_get(__alarm_list, i, &tmp) )
+				if ( !__alarm_list_t_get(__alarm_list, i, &tmp) )
 				{
 					new_alarm_id = i;
 					break;
@@ -107,7 +107,7 @@ error_t __alarm_set_alarm(
 				new_alarm->call_back = call_back;
 				new_alarm->usr_data = (void *)usr_data;
 				new_alarm->usr_data_size = usr_data_size;
-				if (alarm_list_t_add(__alarm_list, new_alarm))
+				if (__alarm_list_t_add(__alarm_list, new_alarm))
 				{
 					__alarm_calculate_next_alarm(new_alarm);
 					if (alarm_id)
@@ -151,11 +151,11 @@ error_t __alarm_unset_alarm(const uint32_t alarm_id)
 	error_t ret = NO_ERROR;
 
 	__alarm_t * alarm = NULL;
-	alarm_list_t_get(__alarm_list, alarm_id, &alarm);
-	if (alarm)
+	const bool_t got = __alarm_list_t_get(__alarm_list, alarm_id, &alarm);
+	if (got && alarm)
 	{
-		alarm_list_t_remove_item(__alarm_list, alarm);
-		if ( alarm == __alarm_next_alarm)
+		__alarm_list_t_remove_item(__alarm_list, alarm);
+		if (alarm == __alarm_next_alarm)
 		{
 			__alarm_disable_timer();
 			__alarm_next_alarm = NULL;
@@ -188,9 +188,9 @@ void __alarm_calculate_next_alarm(__alarm_t * new_alarm)
 	}
 	else
 	{
-		if (alarm_list_t_size(__alarm_list) > 0)
+		if (__alarm_list_t_size(__alarm_list) > 0)
 		{
-			alarm_list_t_get(__alarm_list, 0, &__alarm_next_alarm);
+			__alarm_list_t_get(__alarm_list, 0, &__alarm_next_alarm);
 			__alarm_enable_timer();
 		}
 	}
@@ -224,6 +224,6 @@ void __alarm_disable_timer(void)
 {
 	if (__alarm_timer)
 	{
-		__alarm_timer->timer_cancel(__alarm_next_alarm->usr_data);
+		__alarm_timer->timer_cancel(__alarm_timer->usr_data);
 	}
 }
