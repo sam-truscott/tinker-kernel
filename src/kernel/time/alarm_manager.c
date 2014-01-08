@@ -16,15 +16,6 @@
 #include "kernel/time/time.h"
 #include "kernel/utils/collections/unbounded_list.h"
 
-typedef struct
-{
-	uint32_t 			id;
-	__alarm_call_back *	call_back;
-	void * 				usr_data;
-	uint32_t			usr_data_size;
-	__time_t			alarm_time;
-} __alarm_t;
-
 UNBOUNDED_LIST_TYPE(__alarm_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(__alarm_list_t, __alarm_t*)
 UNBOUNDED_LIST_SPEC_CREATE(static, __alarm_list_t, __alarm_t*)
@@ -73,7 +64,6 @@ error_t __alarm_set_alarm(
 		const __time_t * const timeout,
 		__alarm_call_back * const call_back,
 		const void * const usr_data,
-		const uint32_t usr_data_size,
 		uint32_t * const alarm_id)
 {
 	error_t ret = NO_ERROR;
@@ -99,14 +89,14 @@ error_t __alarm_set_alarm(
 				}
 			}
 
-			__alarm_t * const new_alarm = __mem_alloc(pool, sizeof(__alarm_t));
+			__alarm_t * const new_alarm = __alarm_create(
+					pool,
+					new_alarm_id,
+					__time_add(now, *timeout),
+					call_back,
+					(void *)usr_data);
 			if (new_alarm)
 			{
-				new_alarm->id = new_alarm_id;
-				new_alarm->alarm_time = __time_add(now, *timeout);
-				new_alarm->call_back = call_back;
-				new_alarm->usr_data = (void *)usr_data;
-				new_alarm->usr_data_size = usr_data_size;
 				if (__alarm_list_t_add(__alarm_list, new_alarm))
 				{
 					__alarm_calculate_next_alarm(new_alarm);
@@ -180,7 +170,9 @@ void __alarm_calculate_next_alarm(__alarm_t * new_alarm)
 			__alarm_next_alarm = new_alarm;
 			__alarm_enable_timer();
 		}
-		else if (__time_lt( new_alarm->alarm_time, __alarm_next_alarm->alarm_time ) )
+		else if (__time_lt(
+				__alarm_get_time(new_alarm),
+				__alarm_get_time(__alarm_next_alarm)))
 		{
 			__alarm_next_alarm = new_alarm;
 			__alarm_enable_timer();
@@ -200,11 +192,7 @@ void __alarm_handle_timer_timeout(void)
 {
 	if (__alarm_next_alarm)
 	{
-		__alarm_next_alarm->call_back(
-				__alarm_next_alarm->id,
-				__alarm_next_alarm->usr_data,
-				__alarm_next_alarm->usr_data_size);
-
+		__alarm_fire_callback(__alarm_next_alarm);
 		__alarm_calculate_next_alarm(NULL);
 	}
 }
@@ -215,7 +203,7 @@ void __alarm_enable_timer(void)
 	{
 		__alarm_timer->timer_setup(
 				__alarm_timer->usr_data,
-				__alarm_next_alarm->alarm_time,
+				__alarm_get_time(__alarm_next_alarm),
 				__alarm_handle_timer_timeout);
 	}
 }

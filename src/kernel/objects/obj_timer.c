@@ -65,11 +65,10 @@ static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p)
 
 static void __obj_timer_timeout(
 		const uint32_t alarm_id,
-		void * const usr_data,
-		const uint32_t usr_data_param)
+		void * const usr_data)
 {
 	__object_timer_t * const timer = (__object_timer_t*)usr_data;
-	if (timer && usr_data_param && alarm_id == timer->alarm_id)
+	if (timer && alarm_id == timer->alarm_id)
 	{
 		__thread_set_state(timer->callback_thread, THREADY_READY);
 		__thread_set_waiting_on(timer->callback_thread, NULL);
@@ -132,7 +131,6 @@ error_t __obj_create_timer(
 							&timeout,
 							__obj_timer_timeout,
 							no,
-							sizeof(__object_timer_t*),
 							&no->alarm_id);
 				}
 				else

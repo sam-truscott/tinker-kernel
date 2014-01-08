@@ -20,11 +20,11 @@ typedef struct
 } __ppc_timer_usr_data_t;
 
 static void __ppc_timer_setup(
-		const void * const usr_data,
+		const __timer_param_t const usr_data,
 		const __time_t timeout,
 		__timer_callback * const call_back);
 
-static void __ppc_timer_cancel(const void * const usr_data);
+static void __ppc_timer_cancel(const __timer_param_t const usr_data);
 
 void __ppc_get_timer(const __process_t * const parent, __timer_t * const timer)
 {
@@ -32,7 +32,7 @@ void __ppc_get_timer(const __process_t * const parent, __timer_t * const timer)
 	{
 		timer->timer_setup = __ppc_timer_setup;
 		timer->timer_cancel = __ppc_timer_cancel;
-		timer->usr_data = __mem_alloc(__process_get_mem_pool(parent), sizeof(__ppc_timer_usr_data_t));
+		timer->usr_data = (__timer_param_t)__mem_alloc(__process_get_mem_pool(parent), sizeof(__ppc_timer_usr_data_t));
 		if ( timer->usr_data )
 		{
 			timer->usr_data_size = sizeof(__ppc_timer_usr_data_t);
@@ -41,7 +41,7 @@ void __ppc_get_timer(const __process_t * const parent, __timer_t * const timer)
 		}
 		else
 		{
-			timer->usr_data = NULL;
+			timer->usr_data = NO_TIMER_PARAM;
 			timer->usr_data_size = 0;
 		}
 	}
@@ -65,7 +65,7 @@ void __ppc_check_timer(__timer_t * const timer)
 }
 
 void __ppc_timer_setup(
-		const void * const usr_data,
+		const __timer_param_t const usr_data,
 		const __time_t timeout,
 		__timer_callback * const call_back)
 {
@@ -78,7 +78,7 @@ void __ppc_timer_setup(
 	}
 }
 
-void __ppc_timer_cancel(const void * const usr_data)
+void __ppc_timer_cancel(const __timer_param_t const usr_data)
 {
 	if (usr_data)
 	{

@@ -9,7 +9,7 @@
 #ifndef OPIC_TIMER_H_
 #define OPIC_TIMER_H_
 
-#include "kernel/time/time.h"
+#include "kernel/time/timer.h"
 
 void __opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer);
 

@@ -10,6 +10,8 @@
 #define ALARM_MANAGER_H_
 
 #include "kernel/time/time.h"
+#include "kernel/time/timer.h"
+#include "kernel/time/alarm.h"
 #include "kernel/process/thread.h"
 
 void __alarm_initialse(__mem_pool_info_t * const pool);
@@ -30,7 +32,6 @@ error_t __alarm_set_alarm(
 		const __time_t * const timeout,
 		__alarm_call_back * const call_back,
 		const void * const usr_data,
-		const uint32_t usr_data_size,
 		uint32_t * const alarm_id);
 
 /**

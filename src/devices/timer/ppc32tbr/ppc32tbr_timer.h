@@ -10,7 +10,7 @@
 #define PPC32TBR_TIMER_H_
 
 #include "kernel/process/process.h"
-#include "kernel/time/time.h"
+#include "kernel/time/timer.h"
 
 void __ppc_get_timer(const __process_t * const parent, __timer_t * const timer);
 
