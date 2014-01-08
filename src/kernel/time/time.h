@@ -50,7 +50,7 @@ typedef struct
 
 typedef void(__alarm_call_back)(
 		const uint32_t alarm_id,
-		const void * const usr_data,
+		void * const usr_data,
 		const uint32_t usr_data_param);
 
 #endif /* TIME_H_ */

@@ -119,6 +119,9 @@ void __mem_free(
 		__mem_pool_info_t * const pool,
 		const void * const base)
 {
+#if defined (__MEMORY_DEBUGGING)
+	__debug_print("mem: free pool 0x%x, base 0x%x\n", pool, base);
+#endif
 	mspace_free(pool->space, (void*)base);
 }
 

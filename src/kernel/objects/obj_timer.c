@@ -12,6 +12,7 @@
 #include "config.h"
 #include "arch/tgt_types.h"
 #include "object_private.h"
+#include "obj_thread.h"
 #include "kernel/time/alarm_manager.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/process/process_manager.h"
@@ -25,6 +26,7 @@ typedef struct __object_timer_t
 	const void * parameter;
 	uint32_t alarm_id;
 	__thread_t * callback_thread;
+	__object_thread_t * thread_obj;
 } __object_timer_internal_t;
 
 __object_timer_t * __obj_cast_timer(__object_t * const o)
@@ -63,7 +65,7 @@ static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p)
 
 static void __obj_timer_timeout(
 		const uint32_t alarm_id,
-		const void * const usr_data,
+		void * const usr_data,
 		const uint32_t usr_data_param)
 {
 	__object_timer_t * const timer = (__object_timer_t*)usr_data;
@@ -74,8 +76,9 @@ static void __obj_timer_timeout(
 		__sch_notify_resume_thread(timer->callback_thread);
 		__thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
 		__thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
+		timer->callback = NULL;
+		__alarm_unset_alarm(alarm_id);
 	}
-	__alarm_unset_alarm(alarm_id);
 }
 
 error_t __obj_create_timer(
@@ -105,8 +108,8 @@ error_t __obj_create_timer(
 						(thread_entry_point*)&__obj_timer_thread,
 						priority,
 						__TIMER_STACK_SIZE,
-						0,
-						NULL,
+						THREAD_FLAG_TIMER,
+						(__object_t**)&no->thread_obj,
 						&no->callback_thread);
 				if (result == NO_ERROR)
 				{
@@ -186,8 +189,14 @@ error_t __obj_delete_timer(__object_timer_t * const timer)
 		{
 			__alarm_unset_alarm(timer->alarm_id);
 			timer->alarm_id = 0;
+			const object_number_t oid = __obj_thread_get_oid(timer->thread_obj);
+			__obj_delete_thread(timer->thread_obj);
+			__obj_remove_object(
+					__process_get_object_table(
+							__thread_get_parent(timer->callback_thread)),
+					oid);
 		}
-		__mem_free(timer->pool, timer);__alarm_unset_alarm(timer->alarm_id);
+		__mem_free(timer->pool, timer);
 		timer->alarm_id = 0;
 	}
 	else

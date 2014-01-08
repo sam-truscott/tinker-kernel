@@ -210,7 +210,7 @@ static void __kshell_object_table(void)
 	list = __proc_list_procs();
 	__process_list_it_t_get(list, &proc);
 
-	while( proc )
+	while(proc)
 	{
 		__object_table_it_t * const it = __obj_iterator(__process_get_object_table(proc));
 
@@ -218,7 +218,7 @@ static void __kshell_object_table(void)
 		__print_out("ObjNo.\tType\t\n");
 		__print_out("------\t----\t\n");
 
-		if ( it )
+		if (it)
 		{
 			__object_t * obj = NULL;
 

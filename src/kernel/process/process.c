@@ -292,9 +292,16 @@ void __process_exit(__process_t * const process)
 			__object_thread_t * const thread = __obj_cast_thread(object);
 			if (thread)
 			{
-				const object_number_t oid = __obj_thread_get_oid(thread);
-				__obj_exit_thread(thread);
-				__obj_remove_object(process->object_table, oid);
+				if (!(__thread_get_flags(__obj_get_thread(thread)) & THREAD_FLAG_TIMER))
+				{
+					const object_number_t oid = __obj_thread_get_oid(thread);
+					__obj_exit_thread(thread);
+					__obj_remove_object(process->object_table, oid);
+				}
+				else
+				{
+					__kernel_assert("hi", false);
+				}
 			}
 			else
 			{
@@ -356,9 +363,10 @@ void __process_exit(__process_t * const process)
 					}
 				}
 			}
-			__object_table_it_t_reset(it);
-			objects_exist = __object_table_it_t_get(it, &object);
+			objects_exist = __object_table_it_t_next(it, &object);
 		}
+		__object_table_it_t_reset(it);
+		__kernel_assert("object table isn't empty", __object_table_it_t_get(it, &object) == false);
 		__object_table_it_t_delete(it);
 	}
 	__obj_table_delete(process->object_table);

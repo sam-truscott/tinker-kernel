@@ -185,13 +185,13 @@ void __sch_notify_exit_thread(__thread_t * const t)
 	{
 		const __priority_t thread_priority = __thread_get_priority(t);
 		__thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
-		__thread_queue_t_remove(queue, t);
+		const bool_t removed = __thread_queue_t_remove(queue, t);
 
 #if defined(__PROCESS_DEBUGGING)
 		__debug_print("scheduler: exit thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
 #endif
 
-		if (__thread_queue_t_size(__sch_active_queue) == 0)
+		if (removed && __thread_queue_t_size(__sch_active_queue) == 0)
 		{
 			/* pop the one we're using off */
 			__queue_stack_t_pop(&__sch_queue_stack, &__sch_active_queue);

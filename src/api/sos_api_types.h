@@ -31,6 +31,7 @@ typedef enum __thread_state
 
 #define THREAD_FLAG_NONE 0x0
 #define THREAD_FLAG_FP 0x1
+#define THREAD_FLAG_TIMER 0x2
 
 typedef uint16_t object_number_t;
 
