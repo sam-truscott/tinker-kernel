@@ -25,7 +25,7 @@ static error_t __opic_timer_write_register(
 
 static void __opic_tmr_timer_setup(
 		const __timer_param_t const usr_data,
-		const __time_t timeout,
+		const sos_time_t timeout,
 		__timer_callback * const call_back);
 
 static void __opic_tmr_timer_cancel(const __timer_param_t const usr_data);
@@ -43,7 +43,7 @@ void __opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer)
 
 void __opic_tmr_timer_setup(
 		const __timer_param_t const usr_data,
-		const __time_t timeout,
+		const sos_time_t timeout,
 		__timer_callback * const call_back)
 {
 	if (usr_data && call_back)

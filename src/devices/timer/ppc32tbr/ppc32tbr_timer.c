@@ -10,30 +10,29 @@
 
 #include "kernel/memory/memory_manager.h"
 #include "kernel/time/time_manager.h"
-#include "kernel/time/time_utilities.h"
 
 typedef struct
 {
 	bool_t enabled;
-	__time_t alarm_time;
+	sos_time_t alarm_time;
 	__timer_callback * call_back;
 } __ppc_timer_usr_data_t;
 
 static void __ppc_timer_setup(
 		const __timer_param_t const usr_data,
-		const __time_t timeout,
+		const sos_time_t timeout,
 		__timer_callback * const call_back);
 
 static void __ppc_timer_cancel(const __timer_param_t const usr_data);
 
 void __ppc_get_timer(const __process_t * const parent, __timer_t * const timer)
 {
-	if ( parent && timer )
+	if (parent && timer)
 	{
 		timer->timer_setup = __ppc_timer_setup;
 		timer->timer_cancel = __ppc_timer_cancel;
 		timer->usr_data = (__timer_param_t)__mem_alloc(__process_get_mem_pool(parent), sizeof(__ppc_timer_usr_data_t));
-		if ( timer->usr_data )
+		if (timer->usr_data)
 		{
 			timer->usr_data_size = sizeof(__ppc_timer_usr_data_t);
 
@@ -54,8 +53,8 @@ void __ppc_check_timer(__timer_t * const timer)
 		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)timer->usr_data;
 		if (data->enabled)
 		{
-			const __time_t now = __time_get_system_time();
-			if ( __time_gt(now, data->alarm_time))
+			const sos_time_t now = __time_get_system_time();
+			if (sos_time_gt(now, data->alarm_time))
 			{
 				data->enabled = false;
 				data->call_back();
@@ -66,7 +65,7 @@ void __ppc_check_timer(__timer_t * const timer)
 
 void __ppc_timer_setup(
 		const __timer_param_t const usr_data,
-		const __time_t timeout,
+		const sos_time_t timeout,
 		__timer_callback * const call_back)
 {
 	if (usr_data && call_back)

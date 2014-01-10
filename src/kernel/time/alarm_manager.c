@@ -11,9 +11,8 @@
 #include "config.h"
 #include "kernel/process/process.h"
 #include "kernel/memory/memory_manager.h"
-#include "kernel/time/time_manager.h"
-#include "kernel/time/time_utilities.h"
 #include "kernel/time/time.h"
+#include "kernel/time/time_manager.h"
 #include "kernel/utils/collections/unbounded_list.h"
 
 UNBOUNDED_LIST_TYPE(__alarm_list_t)
@@ -33,7 +32,7 @@ UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, __alarm_list_t, __alarm_t*)
 UNBOUNDED_LIST_BODY_GET(static, __alarm_list_t, __alarm_t*)
 UNBOUNDED_LIST_BODY_SIZE(static, __alarm_list_t, __alarm_t*)
 
-static void __alarm_calculate_next_alarm(__alarm_t * new_alarm);
+static void __alarm_calculate_next_alarm(__alarm_t * const new_alarm);
 
 static void __alarm_enable_timer(void);
 
@@ -61,15 +60,15 @@ void __alarm_set_timer(__timer_t * const timer)
 
 error_t __alarm_set_alarm(
 		__mem_pool_info_t * const pool,
-		const __time_t * const timeout,
+		const sos_time_t * const timeout,
 		__alarm_call_back * const call_back,
-		const void * const usr_data,
+		const __alarm_user_data_t const usr_data,
 		uint32_t * const alarm_id)
 {
 	error_t ret = NO_ERROR;
 	if (pool && timeout)
 	{
-		const __time_t now = __time_get_system_time();
+		const sos_time_t now = __time_get_system_time();
 
 		/* check there's room of the new alarm */
 		const uint32_t alarm_list_size = __alarm_list_t_size(__alarm_list);
@@ -92,9 +91,9 @@ error_t __alarm_set_alarm(
 			__alarm_t * const new_alarm = __alarm_create(
 					pool,
 					new_alarm_id,
-					__time_add(now, *timeout),
+					sos_time_add(now, *timeout),
 					call_back,
-					(void *)usr_data);
+					usr_data);
 			if (new_alarm)
 			{
 				if (__alarm_list_t_add(__alarm_list, new_alarm))
@@ -161,7 +160,7 @@ error_t __alarm_unset_alarm(const uint32_t alarm_id)
 	return ret;
 }
 
-void __alarm_calculate_next_alarm(__alarm_t * new_alarm)
+void __alarm_calculate_next_alarm(__alarm_t * const new_alarm)
 {
 	if (new_alarm)
 	{
@@ -170,7 +169,7 @@ void __alarm_calculate_next_alarm(__alarm_t * new_alarm)
 			__alarm_next_alarm = new_alarm;
 			__alarm_enable_timer();
 		}
-		else if (__time_lt(
+		else if (sos_time_lt(
 				__alarm_get_time(new_alarm),
 				__alarm_get_time(__alarm_next_alarm)))
 		{

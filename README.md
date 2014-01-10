@@ -21,7 +21,6 @@ i've worked on & off on this microkernel for the last few years to help my under
 * sos3 was where I refactored it to be more OO and do some initial mmu work 
 
 sos3 is:
-* not complete
 * limited
 * probably wrong
 
@@ -35,6 +34,7 @@ features
 * shared memory
 * pipes
 * timers
+* clock
 
 loading
 =======
@@ -65,7 +65,8 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* timers aren't implemented yet
+* sleep
+* clocks
 * timeouts on pipe (open/read/write)
 * break up the syscalls into seperate static/inline functions
 * makefile (or smake)

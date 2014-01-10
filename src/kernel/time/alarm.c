@@ -8,20 +8,21 @@
  */
 
 #include "alarm.h"
-#include "time.h"
+
+#include "kernel/time/time.h"
 
 typedef struct __alarm_t
 {
 	uint32_t 			id;
 	__alarm_call_back *	call_back;
 	void * 				usr_data;
-	__time_t			alarm_time;
+	sos_time_t			alarm_time;
 } __alarm_internal_t;
 
 __alarm_t * __alarm_create(
 		__mem_pool_info_t * const pool,
 		const uint32_t id,
-		const __time_t alarm_time,
+		const sos_time_t alarm_time,
 		__alarm_call_back * const callback,
 		const __alarm_user_data_t user_data)
 {
@@ -36,9 +37,9 @@ __alarm_t * __alarm_create(
 	return alarm;
 }
 
-__time_t __alarm_get_time(const __alarm_t * const alarm)
+sos_time_t __alarm_get_time(const __alarm_t * const alarm)
 {
-	__time_t t = __ZERO_TIME;
+	sos_time_t t = SOS_ZERO_TIME;
 	if (alarm)
 	{
 		t = alarm->alarm_time;

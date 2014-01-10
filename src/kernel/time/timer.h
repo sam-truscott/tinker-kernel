@@ -9,6 +9,7 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
+#include "api/sos_api_time.h"
 #include "time.h"
 
 typedef void (__timer_callback)(void);
@@ -18,7 +19,7 @@ typedef void* __timer_param_t;
 
 typedef void (__timer_setup)(
 		const __timer_param_t const usr_data,
-		const __time_t timeout,
+		const sos_time_t timeout,
 		__timer_callback * const call_back);
 
 typedef void (__timer_cancel)(

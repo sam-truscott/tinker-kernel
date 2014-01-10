@@ -122,7 +122,7 @@ error_t __obj_create_timer(
 					no->parameter = parameter;
 					no->pool = pool;
 					*objectno = no->object.object_number;
-					const __time_t timeout = {
+					const sos_time_t timeout = {
 							.seconds = seconds,
 							.nanoseconds = nanoseconds
 					};
