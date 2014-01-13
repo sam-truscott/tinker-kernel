@@ -528,7 +528,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 	/* This will over-ride the result of a system-call
 	 * if the exception occurs just after the system call has been made. */
-	if ( api != SYSCALL_LOAD_THREAD )
+	if (api != SYSCALL_LOAD_THREAD)
 	{
 		__tgt_set_syscall_return(context, ret);
 	}

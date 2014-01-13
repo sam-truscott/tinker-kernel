@@ -39,14 +39,18 @@ void __util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 
 			const unsigned char is_neg = i < 0;
 			int n = i;
-			if (is_neg) {
+			if (is_neg)
+			{
 			   n = i * -1;
-			   rev_buffer[p++] = '-';
 			}
 			while (n > 0)
 			{
 				  const int tmp = get_n(&n);
 				  rev_buffer[p++] = (char)(tmp + '0');
+			}
+			if(is_neg)
+			{
+				rev_buffer[p++] = '-';
 			}
 
 			{

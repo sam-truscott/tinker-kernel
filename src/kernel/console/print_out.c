@@ -9,7 +9,9 @@
 #include "print_out.h"
 #include "kernel/utils/util_i_to_a.h"
 #include "kernel/utils/util_case.h"
+#include "kernel/utils/util_memset.h"
 #include "arch/board_support.h"
+#include "kernel/time/time_manager.h"
 #include <stdarg.h>
 
 #define MAX_INTEGER_LENGTH 10
@@ -28,11 +30,27 @@ static void __print_out_print_hex(
 		const bool_t upper_case,
 		const uint32_t pad);
 
+static void __print_time(void)
+{
+	const sos_time_t now = __time_get_system_time();
+	char msg[20];
+	memset(msg, 0, 20);
+	__util_i_to_a(now.seconds, msg, 20);
+	__print_out(msg);
+	memset(msg, 0, 20);
+	__util_i_to_a(now.nanoseconds, msg, 20);
+	__print_out(".");
+	__print_out(msg);
+	__print_out(": ");
+}
+
 void __error_print(const char * const msg, ...)
 {
 	/*__tgt_disable_external_interrupts();*/
 	va_list arguments;
 	const char * ptr = msg;
+
+	__print_time();
 
 	va_start (arguments, msg);
 
@@ -60,6 +78,8 @@ void __debug_print(const char * const msg, ...)
 	/*__tgt_disable_external_interrupts();*/
 	va_list arguments;
 	const char * ptr = msg;
+
+	__print_time();
 
 	va_start (arguments, msg);
 
@@ -170,7 +190,7 @@ void __print_out_print_hex(
 	char hex_number[MAX_HEX_INTEGER_LENGTH + 1] = {0,0,0,0,0,0,0,0,0};
 	__util_i_to_h(i, hex_number,MAX_HEX_INTEGER_LENGTH);
 
-	if ( upper_case )
+	if (upper_case)
 	{
 		__util_to_upper(hex_number);
 	}
@@ -179,7 +199,7 @@ void __print_out_print_hex(
 		__util_to_lower(hex_number);
 	}
 
-	if ( pad > 0 )
+	if (pad > 0)
 	{
 		/*
 		 * TODO pad the hex strings out

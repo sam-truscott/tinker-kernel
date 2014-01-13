@@ -8,13 +8,14 @@
  */
 #include "kernel_idle.h"
 #include "arch/tgt_types.h"
+#include "kernel/console/print_out.h"
 
 #pragma GCC optimize ("-O0") // easier to debug release build
 static uint32_t __kernel_idle_check(uint32_t count)
 {
-	if ( count % 68 == 0)
+	if ( count % 200000 == 0)
 	{
-		return count;
+		__debug_print("IDLE\n");
 	}
 	return count;
 }

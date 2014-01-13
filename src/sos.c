@@ -321,6 +321,28 @@ static void my_initial_thread(void)
 		sos_debug("sos: initial thread: timer didn't fire\n");
 	}
 
+	sos_debug("sos: testing clocks\n");
+	{
+		sos_time_t time = SOS_ZERO_TIME;
+		sos_time_t time2 = SOS_ZERO_TIME;
+		sos_time_t tdiff = SOS_ZERO_TIME;
+		sos_time_t delay;
+		delay.seconds = 1;
+		delay.nanoseconds = 0;
+		sos_debug("sos: getting the first time\n");
+		sos_get_time(&time);
+		sos_debug("sos: sleeping for a second, just a second\n");
+		sos_sleep(&delay);
+		sos_debug("sos: getting the time again\n");
+		sos_get_time(&time2);
+		sos_debug("sos: compare the times\n");
+		tdiff = sos_time_sub(&time2, &time);
+		if (tdiff.seconds && tdiff.nanoseconds)
+		{
+			sos_debug("sos: time ok\n");
+		}
+	}
+
 	sos_debug("sos: initial thread: done\n");
 }
 

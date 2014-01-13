@@ -27,12 +27,14 @@ void __time_set_system_clock(__clock_device_t * const device)
 
 sos_time_t __time_get_system_time(void)
 {
-	sos_time_t time = {0,0};
+	sos_time_t time = SOS_ZERO_TIME;
 
-	__kernel_assert("system clock isn't setup correctly", __time_system_clock != NULL);
-	__time_system_time_ns = (int64_t)__time_system_clock->get_time();
-	time.seconds = (int32_t)__time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
-	time.nanoseconds = (int64_t)(__time_system_time_ns - ((int64_t)time.seconds * ONE_SECOND_AS_NANOSECONDS));
+	if (__time_system_clock)
+	{
+		__time_system_time_ns = (int64_t)__time_system_clock->get_time();
+		time.seconds = (int32_t)__time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
+		time.nanoseconds = (int64_t)(__time_system_time_ns - ((int64_t)time.seconds * ONE_SECOND_AS_NANOSECONDS));
+	}
 
 	return time;
 }
