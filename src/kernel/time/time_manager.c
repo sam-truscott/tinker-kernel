@@ -11,7 +11,7 @@
 #include "kernel/kernel_assert.h"
 #include "time.h"
 
-static int64_t __time_system_time_ns;
+static uint64_t __time_system_time_ns;
 static __clock_device_t * __time_system_clock;
 
 void __time_initialise(void)
@@ -31,8 +31,8 @@ sos_time_t __time_get_system_time(void)
 
 	if (__time_system_clock)
 	{
-		__time_system_time_ns = (int64_t)__time_system_clock->get_time();
-		time.seconds = (int32_t)__time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
+		__time_system_time_ns = __time_system_clock->get_time();
+		time.seconds = __time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
 		time.nanoseconds = (int64_t)(__time_system_time_ns - ((int64_t)time.seconds * ONE_SECOND_AS_NANOSECONDS));
 	}
 
