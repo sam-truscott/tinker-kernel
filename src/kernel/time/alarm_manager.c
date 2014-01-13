@@ -91,7 +91,7 @@ error_t __alarm_set_alarm(
 			__alarm_t * const new_alarm = __alarm_create(
 					pool,
 					new_alarm_id,
-					sos_time_add(now, *timeout),
+					sos_time_add(&now, timeout),
 					call_back,
 					usr_data);
 			if (new_alarm)
@@ -151,6 +151,7 @@ error_t __alarm_unset_alarm(const uint32_t alarm_id)
 			__alarm_calculate_next_alarm(NULL);
 			__alarm_enable_timer();
 		}
+		__alarm_delete(alarm);
 	}
 	else
 	{

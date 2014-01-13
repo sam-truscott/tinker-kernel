@@ -9,6 +9,7 @@
 #ifndef OBJ_THREAD_H_
 #define OBJ_THREAD_H_
 
+#include "api/sos_api_time.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/process/thread.h"
@@ -65,5 +66,7 @@ error_t __obj_set_thread_original_priority(
 __priority_t __obj_get_thread_original_priority_ex(__object_thread_t * const o);
 
 __thread_t * __obj_get_thread(const __object_thread_t * const o);
+
+error_t __obj_thread_sleep(__object_thread_t * const o, const sos_time_t * const duration);
 
 #endif /* OBJ_THREAD_H_ */

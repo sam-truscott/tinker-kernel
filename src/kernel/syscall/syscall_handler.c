@@ -24,6 +24,7 @@
 #include "kernel/objects/obj_shared_mem.h"
 #include "kernel/objects/obj_timer.h"
 #include "kernel/utils/util_memcpy.h"
+#include "kernel/time/time_manager.h"
 
 static inline object_number_t __syscall_get_thread_oid(const __thread_t * const thread)
 {
@@ -497,6 +498,24 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			}
 			break;
 		}
+		case SYSCALL_GET_TIME:
+			if (param[0])
+			{
+				*((sos_time_t*)param[0]) = __time_get_system_time();
+				ret = NO_ERROR;
+			}
+			else
+			{
+				ret = PARAMETERS_NULL;
+			}
+			break;
+		case SYSCALL_SLEEP:
+		{
+			const sos_time_t * const duration = (const sos_time_t*)param[0];
+			__object_thread_t * const thread_obj =__syscall_get_thread_object(this_thread);
+			ret = __obj_thread_sleep(thread_obj, duration);
+		}
+		break;
 		case SYSCALL_LOAD_THREAD:
 			__tgt_prepare_context(context, this_thread);
 			break;

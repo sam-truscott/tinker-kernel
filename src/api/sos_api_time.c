@@ -7,12 +7,13 @@
  *  All Rights Reserved.
  */
 #include "api/sos_api_time.h"
+#include "sos_api_kernel_interface.h"
 
-sos_time_t sos_time_add(const sos_time_t l, const sos_time_t r)
+sos_time_t sos_time_add(const sos_time_t * const l, const sos_time_t * const r)
 {
 	sos_time_t t = {0, 0};
-	t.seconds = l.seconds + r.seconds;
-	t.nanoseconds = l.nanoseconds + r.nanoseconds;
+	t.seconds = l->seconds + r->seconds;
+	t.nanoseconds = l->nanoseconds + r->nanoseconds;
 	if ( t.nanoseconds >= ONE_SECOND_AS_NANOSECONDS)
 	{
 		int32_t s = (int32_t)(t.nanoseconds / ONE_SECOND_AS_NANOSECONDS);
@@ -22,12 +23,12 @@ sos_time_t sos_time_add(const sos_time_t l, const sos_time_t r)
 	return t;
 }
 
-sos_time_t sos_time_sub(const sos_time_t l, const sos_time_t r)
+sos_time_t sos_time_sub(const sos_time_t * const l, const sos_time_t * const r)
 {
 	sos_time_t t = {0, 0};
 
-	t.seconds = l.seconds - r.seconds;
-	t.nanoseconds = l.nanoseconds - r.nanoseconds;
+	t.seconds = l->seconds - r->seconds;
+	t.nanoseconds = l->nanoseconds - r->nanoseconds;
 	if ( t.nanoseconds >= ONE_SECOND_AS_NANOSECONDS )
 	{
 		int32_t s = (int32_t)(t.nanoseconds / ONE_SECOND_AS_NANOSECONDS);
@@ -45,38 +46,38 @@ sos_time_t sos_time_sub(const sos_time_t l, const sos_time_t r)
 	return t;
 }
 
-bool_t sos_time_lt(const sos_time_t l, const sos_time_t r)
+bool_t sos_time_lt(const sos_time_t * const l, const sos_time_t * const r)
 {
 	bool_t lt = false;
-	if ( l.seconds < r.seconds)
+	if ( l->seconds < r->seconds)
 	{
 		lt = true;
 	}
-	else if (  l.seconds == r.seconds && l.nanoseconds < r.nanoseconds )
+	else if (  l->seconds == r->seconds && l->nanoseconds < r->nanoseconds )
 	{
 		lt = true;
 	}
 	return lt;
 }
 
-bool_t sos_time_gt(const sos_time_t l, const sos_time_t r)
+bool_t sos_time_gt(const sos_time_t * const l, const sos_time_t * const r)
 {
 	bool_t gt = false;
-	if ( l.seconds > r.seconds)
+	if ( l->seconds > r->seconds)
 	{
 		gt = true;
 	}
-	else if (  l.seconds == r.seconds && l.nanoseconds > r.nanoseconds )
+	else if (  l->seconds == r->seconds && l->nanoseconds > r->nanoseconds )
 	{
 		gt = true;
 	}
 	return gt;
 }
 
-bool_t sos_time_eq(const sos_time_t l, const sos_time_t r)
+bool_t sos_time_eq(const sos_time_t * const l, const sos_time_t * const r)
 {
 	bool_t eq = false;
-	if(l.seconds == r.seconds && l.nanoseconds == r.nanoseconds)
+	if(l->seconds == r->seconds && l->nanoseconds == r->nanoseconds)
 	{
 		eq = true;
 	}
@@ -113,7 +114,15 @@ sos_time_t sos_time_nanoseconds(const uint64_t nanoseconds)
 	return r;
 }
 
+error_t sos_get_time(sos_time_t * const time)
+{
+	return SOS_API_CALL_1(SYSCALL_GET_TIME, (uint32_t)time);
+}
 
+error_t sos_sleep(const sos_time_t * const time)
+{
+	return SOS_API_CALL_1(SYSCALL_SLEEP, (uint32_t)time);
+}
 
 
 

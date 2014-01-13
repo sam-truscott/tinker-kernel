@@ -19,7 +19,7 @@ typedef void* __timer_param_t;
 
 typedef void (__timer_setup)(
 		const __timer_param_t const usr_data,
-		const sos_time_t timeout,
+		const sos_time_t * const timeout,
 		__timer_callback * const call_back);
 
 typedef void (__timer_cancel)(

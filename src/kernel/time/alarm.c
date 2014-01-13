@@ -17,6 +17,7 @@ typedef struct __alarm_t
 	__alarm_call_back *	call_back;
 	void * 				usr_data;
 	sos_time_t			alarm_time;
+	__mem_pool_info_t * pool;
 } __alarm_internal_t;
 
 __alarm_t * __alarm_create(
@@ -33,16 +34,25 @@ __alarm_t * __alarm_create(
 		alarm->alarm_time = alarm_time;
 		alarm->call_back = callback;
 		alarm->usr_data = user_data;
+		alarm->pool = pool;
 	}
 	return alarm;
 }
 
-sos_time_t __alarm_get_time(const __alarm_t * const alarm)
+void __alarm_delete(__alarm_t * const alarm)
 {
-	sos_time_t t = SOS_ZERO_TIME;
 	if (alarm)
 	{
-		t = alarm->alarm_time;
+		__mem_free(alarm->pool, alarm);
+	}
+}
+
+const sos_time_t* __alarm_get_time(const __alarm_t * const alarm)
+{
+	const sos_time_t * t = NULL;
+	if (alarm)
+	{
+		t = &alarm->alarm_time;
 	}
 	return t;
 }

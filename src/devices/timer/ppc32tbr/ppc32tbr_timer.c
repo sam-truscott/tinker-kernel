@@ -10,17 +10,18 @@
 
 #include "kernel/memory/memory_manager.h"
 #include "kernel/time/time_manager.h"
+#include "kernel/utils/util_memcpy.h"
 
 typedef struct
 {
 	bool_t enabled;
-	sos_time_t alarm_time;
+	const sos_time_t* alarm_time;
 	__timer_callback * call_back;
 } __ppc_timer_usr_data_t;
 
 static void __ppc_timer_setup(
 		const __timer_param_t const usr_data,
-		const sos_time_t timeout,
+		const sos_time_t * const timeout,
 		__timer_callback * const call_back);
 
 static void __ppc_timer_cancel(const __timer_param_t const usr_data);
@@ -54,7 +55,7 @@ void __ppc_check_timer(__timer_t * const timer)
 		if (data->enabled)
 		{
 			const sos_time_t now = __time_get_system_time();
-			if (sos_time_gt(now, data->alarm_time))
+			if (sos_time_gt(&now, data->alarm_time))
 			{
 				data->enabled = false;
 				data->call_back();
@@ -65,14 +66,14 @@ void __ppc_check_timer(__timer_t * const timer)
 
 void __ppc_timer_setup(
 		const __timer_param_t const usr_data,
-		const sos_time_t timeout,
+		const sos_time_t * const timeout,
 		__timer_callback * const call_back)
 {
 	if (usr_data && call_back)
 	{
 		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)usr_data;
 		data->call_back = call_back;
-		data->alarm_time = timeout;
+		*((sos_time_t*)data->alarm_time) = *timeout;
 		data->enabled = true;
 	}
 }

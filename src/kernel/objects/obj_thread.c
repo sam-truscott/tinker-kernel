@@ -15,6 +15,8 @@
 #include "kernel/memory/memory_manager.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/scheduler/scheduler.h"
+#include "kernel/time/time_manager.h"
+#include "kernel/time/alarm_manager.h"
 
 typedef struct __object_thread_t
 {
@@ -28,6 +30,7 @@ typedef struct __object_thread_t
 	__priority_t priority_inheritance;
 	__priority_t original_priority;
 	__mem_pool_info_t * pool;
+	uint32_t alarm_id;
 } __object_thread_internal_t;
 
 error_t __obj_create_thread(
@@ -53,6 +56,7 @@ error_t __obj_create_thread(
 			no->thread = thread;
 			no->original_priority = __thread_get_priority(thread);
 			no->priority_inheritance = 0;
+			no->alarm_id = 0;
 
 			__sch_notify_new_thread(thread);
 
@@ -362,4 +366,33 @@ __thread_t * __obj_get_thread(const __object_thread_t * const o)
 		t = o->thread;
 	}
 	return t;
+}
+
+static void __obj_thread_sleep_callback(const uint32_t alarm_id, __object_thread_t * const o)
+{
+	if (o && o->alarm_id == alarm_id)
+	{
+
+	}
+}
+
+error_t __obj_thread_sleep(__object_thread_t * const o, const sos_time_t * const duration)
+{
+	error_t result = NO_ERROR;
+
+	if (o && duration)
+	{
+		__alarm_set_alarm(
+				__process_get_mem_pool(__thread_get_parent(o->thread)),
+				duration,
+				(__alarm_call_back*)&__obj_thread_sleep_callback,
+				o,
+				&o->alarm_id);
+	}
+	else
+	{
+		result = PARAMETERS_NULL;
+	}
+
+	return result;
 }

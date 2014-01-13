@@ -29,7 +29,9 @@ __alarm_t * __alarm_create(
 		__alarm_call_back * const callback,
 		const __alarm_user_data_t user_data);
 
-sos_time_t __alarm_get_time(const __alarm_t * const alarm);
+void __alarm_delete(__alarm_t * const alarm);
+
+const sos_time_t* __alarm_get_time(const __alarm_t * const alarm);
 
 void __alarm_fire_callback(const __alarm_t * const alarm);
 

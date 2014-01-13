@@ -10,6 +10,7 @@
 #define SOS_API_TIME_H_
 
 #include "arch/tgt_types.h"
+#include "api/sos_api_errors.h"
 
 typedef struct
 {
@@ -22,15 +23,15 @@ typedef struct
 #define ONE_MS_AS_NANOSECONDS 		1000000
 #define ONE_US_AS_NANOSECONDS 		1000
 
-sos_time_t sos_time_add(const sos_time_t l, const sos_time_t r);
+sos_time_t sos_time_add(const sos_time_t * const l, const sos_time_t * const r);
 
-sos_time_t sos_time_sub(const sos_time_t l, const sos_time_t r);
+sos_time_t sos_time_sub(const sos_time_t * const l, const sos_time_t * const r);
 
-bool_t sos_time_lt(const sos_time_t l, const sos_time_t r);
+bool_t sos_time_lt(const sos_time_t * const l, const sos_time_t * const r);
 
-bool_t sos_time_gt(const sos_time_t l, const sos_time_t r);
+bool_t sos_time_gt(const sos_time_t * const l, const sos_time_t * const r);
 
-bool_t sos_time_eq(const sos_time_t l, const sos_time_t r);
+bool_t sos_time_eq(const sos_time_t * const l, const sos_time_t * const r);
 
 sos_time_t sos_time_seconds(const uint32_t seconds);
 
@@ -39,5 +40,9 @@ sos_time_t sos_time_milliseconds(const uint32_t milliseconds);
 sos_time_t sos_time_microseconds(const uint32_t microseconds);
 
 sos_time_t sos_time_nanoseconds(const uint64_t nanoseconds);
+
+error_t sos_get_time(sos_time_t * const time);
+
+error_t sos_sleep(const sos_time_t * const time);
 
 #endif /* SOS_API_TIME_H_ */
