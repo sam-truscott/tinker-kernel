@@ -159,6 +159,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			const char * const msg = (const char * const)param[0];
 			if (msg)
 			{
+				__print_time();
 				__print_out(msg);
 			}
 		}

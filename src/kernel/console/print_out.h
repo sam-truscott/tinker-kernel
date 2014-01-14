@@ -9,6 +9,8 @@
 #ifndef PRINT_OUT_H_
 #define PRINT_OUT_H_
 
+void __print_time(void);
+
 void __error_print(const char * const msg, ...);
 
 void __debug_print(const char * const msg, ...);

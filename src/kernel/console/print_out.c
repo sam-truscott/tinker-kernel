@@ -30,7 +30,7 @@ static void __print_out_print_hex(
 		const bool_t upper_case,
 		const uint32_t pad);
 
-static void __print_time(void)
+void __print_time(void)
 {
 	const sos_time_t now = __time_get_system_time();
 	char msg[20];
