@@ -158,10 +158,9 @@ error_t __obj_get_thread_state(
 	error_t result = NO_ERROR;
 
 
-	if ( o && state )
+	if (o && state)
 	{
 		const __thread_t * t = o->thread;
-
 		*state = __thread_get_state(t);
 	}
 	else
@@ -178,17 +177,14 @@ error_t __obj_set_thread_waiting(
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		__thread_t * t = o->thread;
-
-		const __thread_state_t state = __thread_get_state(t);
-
-		if ( state == THREAD_RUNNING )
+		const __thread_state_t state = __thread_get_state(o->thread);
+		if (state == THREAD_RUNNING)
 		{
-			__thread_set_state(t, THREAD_WAITING);
-			__thread_set_waiting_on(t, waiting_on);
-			__sch_notify_pause_thread(t);
+			__thread_set_state(o->thread, THREAD_WAITING);
+			__thread_set_waiting_on(o->thread, waiting_on);
+			__sch_notify_pause_thread(o->thread);
 		}
 	}
 	else
@@ -210,17 +206,14 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		__thread_t * t = o->thread;
-
-		const __thread_state_t state = __thread_get_state(t);
-
-		if ( state == THREAD_WAITING )
+		const __thread_state_t state = __thread_get_state(o->thread);
+		if (state == THREAD_WAITING)
 		{
-			__thread_set_state(t, THREADY_READY);
-			__thread_set_waiting_on(t, NULL);
-			__sch_notify_resume_thread(t);
+			__thread_set_state(o->thread, THREADY_READY);
+			__thread_set_waiting_on(o->thread, NULL);
+			__sch_notify_resume_thread(o->thread);
 		}
 	}
 	else
@@ -233,14 +226,11 @@ error_t __obj_set_thread_ready(__object_thread_t * const o)
 
 __priority_t __obj_get_thread_priority_ex(__object_thread_t * const o)
 {
-	const __thread_t * t = o->thread;
-	__priority_t p = 0;
-
-	if (p)
+	__priority_t p  = 0;
+	if (o)
 	{
-		p = __thread_get_priority(t);
+		p = __thread_get_priority(o->thread);
 	}
-
 	return p;
 }
 
@@ -250,9 +240,9 @@ error_t __obj_get_thread_priority(
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		if ( priority )
+		if (priority)
 		{
 			*priority = __obj_get_thread_priority_ex(o);
 		}
@@ -275,21 +265,19 @@ error_t __obj_set_thread_priority(
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		if ( priority )
+		if (priority)
 		{
-			__thread_t * t = o->thread;
+			const uint8_t old_pri = __thread_get_priority(o->thread);
+			__thread_set_priority(o->thread, priority);
 
-			const uint8_t old_pri = __thread_get_priority(t);
-			__thread_set_priority(t, priority);
-
-			if ( !o->priority_inheritance )
+			if (!o->priority_inheritance)
 			{
 				o->original_priority = priority;
 			}
 
-			__sch_notify_change_priority(t, old_pri);
+			__sch_notify_change_priority(o->thread, old_pri);
 		}
 		else
 		{
@@ -308,15 +296,13 @@ error_t __obj_reset_thread_original_priority(__object_thread_t * const o)
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		__thread_t * t = o->thread;
+		const uint8_t old_pri = __thread_get_priority(o->thread);
 
-		const uint8_t old_pri = __thread_get_priority(t);
-
-		__thread_set_priority(t, o->original_priority);
+		__thread_set_priority(o->thread, o->original_priority);
 		o->priority_inheritance = 0;
-		__sch_notify_change_priority(t, old_pri);
+		__sch_notify_change_priority(o->thread, old_pri);
 	}
 	else
 	{
@@ -330,12 +316,10 @@ error_t __obj_set_thread_original_priority(__object_thread_t * const o)
 {
 	error_t result = NO_ERROR;
 
-	if ( o )
+	if (o)
 	{
-		__thread_t * t = o->thread;
-
 		o->original_priority =
-				__thread_get_priority(t);
+				__thread_get_priority(o->thread);
 		o->priority_inheritance = 1;
 	}
 	else

@@ -61,7 +61,6 @@ void __kernel_main(void)
 	kmain();
 
 #if defined (__KERNEL_SHELL)
-	/*
 	__proc_create_thread(
 			__thread_get_parent(idle_thread),
 			"kshell",
@@ -71,7 +70,6 @@ void __kernel_main(void)
 			0,
 			NULL,
 			NULL);
-			*/
 #endif /* HAS_CONSOLE */
 
 	__tgt_enter_usermode();
