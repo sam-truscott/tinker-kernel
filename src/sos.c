@@ -44,8 +44,6 @@ int kmain(void)
 	{
 		sos_debug("sos: test process created ok\n");
 	}
-
-
 	return 0;
 }
 
@@ -366,7 +364,6 @@ static void my_initial_thread(void)
 			sos_debug("sos: time ok\n");
 		}
 	}
-
 	sos_debug("sos: initial thread: done\n");
 }
 
