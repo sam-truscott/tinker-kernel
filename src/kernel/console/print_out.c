@@ -32,7 +32,8 @@ static void __print_out_print_hex(
 
 void __print_time(void)
 {
-	const sos_time_t now = __time_get_system_time();
+	sos_time_t now = SOS_ZERO_TIME;
+	__time_get_system_time(&now);
 	char msg[20];
 	memset(msg, 0, 20);
 	__util_i_to_a(now.seconds, msg, 20);

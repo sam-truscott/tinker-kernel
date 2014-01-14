@@ -25,7 +25,7 @@ typedef struct __alarm_t __alarm_t;
 __alarm_t * __alarm_create(
 		__mem_pool_info_t * const pool,
 		const uint32_t id,
-		const sos_time_t alarm_time,
+		sos_time_t * const alarm_time,
 		__alarm_call_back * const callback,
 		const __alarm_user_data_t user_data);
 

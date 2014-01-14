@@ -68,7 +68,8 @@ error_t __alarm_set_alarm(
 	error_t ret = NO_ERROR;
 	if (pool && timeout)
 	{
-		const sos_time_t now = __time_get_system_time();
+		sos_time_t now = SOS_ZERO_TIME;
+		__time_get_system_time(&now);
 
 		/* check there's room of the new alarm */
 		const uint32_t alarm_list_size = __alarm_list_t_size(__alarm_list);
@@ -88,10 +89,12 @@ error_t __alarm_set_alarm(
 				}
 			}
 
+			sos_time_t alarm_time;
+			sos_time_add(&now, timeout, &alarm_time);
 			__alarm_t * const new_alarm = __alarm_create(
 					pool,
 					new_alarm_id,
-					sos_time_add(&now, timeout),
+					&alarm_time,
 					call_back,
 					usr_data);
 			if (new_alarm)

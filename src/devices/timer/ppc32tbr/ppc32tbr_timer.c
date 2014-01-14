@@ -54,7 +54,8 @@ void __ppc_check_timer(__timer_t * const timer)
 		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)timer->usr_data;
 		if (data->enabled)
 		{
-			const sos_time_t now = __time_get_system_time();
+			sos_time_t now = SOS_ZERO_TIME;
+			__time_get_system_time(&now);
 			if (sos_time_gt(&now, data->alarm_time))
 			{
 				data->enabled = false;

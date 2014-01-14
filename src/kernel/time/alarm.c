@@ -23,7 +23,7 @@ typedef struct __alarm_t
 __alarm_t * __alarm_create(
 		__mem_pool_info_t * const pool,
 		const uint32_t id,
-		const sos_time_t alarm_time,
+		sos_time_t * const alarm_time,
 		__alarm_call_back * const callback,
 		const __alarm_user_data_t user_data)
 {
@@ -31,7 +31,7 @@ __alarm_t * __alarm_create(
 	if (alarm)
 	{
 		alarm->id = id;
-		alarm->alarm_time = alarm_time;
+		alarm->alarm_time = *alarm_time;
 		alarm->call_back = callback;
 		alarm->usr_data = user_data;
 		alarm->pool = pool;

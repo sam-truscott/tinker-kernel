@@ -360,7 +360,7 @@ static void my_initial_thread(void)
 		sos_debug("sos: getting the time again\n");
 		sos_get_time(&time2);
 		sos_debug("sos: compare the times\n");
-		tdiff = sos_time_sub(&time2, &time);
+		sos_time_sub(&time2, &time, &tdiff);
 		if (tdiff.seconds && tdiff.nanoseconds)
 		{
 			sos_debug("sos: time ok\n");

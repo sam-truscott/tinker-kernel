@@ -27,6 +27,6 @@ void __time_set_system_clock(__clock_device_t * const device);
  * Get the current time of the system
  * @return The time since power-up
  */
-sos_time_t __time_get_system_time(void);
+void __time_get_system_time(sos_time_t * const time);
 
 #endif /* CLOCK_MANAGER_H_ */

@@ -502,7 +502,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_GET_TIME:
 			if (param[0])
 			{
-				*((sos_time_t*)param[0]) = __time_get_system_time();
+				__time_get_system_time(((sos_time_t*)param[0]));
 				ret = NO_ERROR;
 			}
 			else
