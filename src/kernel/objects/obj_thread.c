@@ -372,7 +372,9 @@ static void __obj_thread_sleep_callback(const uint32_t alarm_id, __object_thread
 {
 	if (o && o->alarm_id == alarm_id)
 	{
+		__thread_set_state(o->thread, THREADY_READY);
 		__sch_notify_resume_thread(o->thread);
+		__alarm_unset_alarm(alarm_id);
 	}
 }
 

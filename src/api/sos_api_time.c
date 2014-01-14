@@ -18,7 +18,7 @@ void sos_time_add(
 	{
 		a->seconds = l->seconds + r->seconds;
 		a->nanoseconds = l->nanoseconds + r->nanoseconds;
-		if ( a->nanoseconds >= ONE_SECOND_AS_NANOSECONDS)
+		if (a->nanoseconds >= ONE_SECOND_AS_NANOSECONDS)
 		{
 			int32_t s = (a->nanoseconds / ONE_SECOND_AS_NANOSECONDS);
 			a->seconds += s;

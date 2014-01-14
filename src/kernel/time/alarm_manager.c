@@ -168,7 +168,7 @@ void __alarm_calculate_next_alarm(__alarm_t * const new_alarm)
 {
 	if (new_alarm)
 	{
-		if ( __alarm_next_alarm == NULL )
+		if (__alarm_next_alarm == NULL)
 		{
 			__alarm_next_alarm = new_alarm;
 			__alarm_enable_timer();
