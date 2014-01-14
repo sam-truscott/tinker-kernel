@@ -155,6 +155,25 @@ error_t __obj_create_timer(
 	return result;
 }
 
+static void __obj_timer_delete_thread(__object_timer_t * const timer)
+{
+	__thread_t * const thread = __obj_get_thread(timer->thread_obj);
+	const __thread_state_t state = __thread_get_state(thread);
+	const object_number_t oid = __obj_thread_get_oid(timer->thread_obj);
+
+	if (state != THREAD_TERMINATED && state != THREAD_NOT_CREATED)
+	{
+		__sch_notify_exit_thread(thread);
+	}
+	__process_thread_exit(__thread_get_parent(thread), thread);
+	__obj_exit_thread(timer->thread_obj);
+
+	__obj_remove_object(
+			__process_get_object_table(
+					__thread_get_parent(timer->callback_thread)),
+			oid);
+}
+
 error_t __obj_cancel_timer(__object_timer_t * const timer)
 {
 	error_t result = NO_ERROR;
@@ -165,6 +184,7 @@ error_t __obj_cancel_timer(__object_timer_t * const timer)
 			__alarm_unset_alarm(timer->alarm_id);
 			timer->alarm_id = 0;
 			timer->callback = 0;
+			__obj_timer_delete_thread(timer);
 		}
 		else
 		{
@@ -187,12 +207,7 @@ error_t __obj_delete_timer(__object_timer_t * const timer)
 		{
 			__alarm_unset_alarm(timer->alarm_id);
 			timer->alarm_id = 0;
-			const object_number_t oid = __obj_thread_get_oid(timer->thread_obj);
-			__obj_delete_thread(timer->thread_obj);
-			__obj_remove_object(
-					__process_get_object_table(
-							__thread_get_parent(timer->callback_thread)),
-					oid);
+			__obj_timer_delete_thread(timer);
 		}
 		__mem_free(timer->pool, timer);
 		timer->alarm_id = 0;

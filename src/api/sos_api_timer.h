@@ -29,8 +29,8 @@ error_t sos_timer_create(
 		sos_timer_callback_t * const callback,
 		const void * const data) SOS_API_SUFFIX;
 
-error_t sos_timer_cancel(sos_timer_t * const timer) SOS_API_SUFFIX;
+error_t sos_timer_cancel(sos_timer_t timer) SOS_API_SUFFIX;
 
-error_t sos_timer_delete(sos_timer_t * const timer) SOS_API_SUFFIX;
+error_t sos_timer_delete(sos_timer_t timer) SOS_API_SUFFIX;
 
 #endif /* SOS_API_TIMER_H_ */

@@ -26,14 +26,14 @@ error_t sos_timer_create(
 			(uint32_t)data);
 }
 
-error_t sos_timer_cancel(sos_timer_t * const timer)
+error_t sos_timer_cancel(sos_timer_t timer)
 {
 	return SOS_API_CALL_1(
 			SYSCALL_CANCEL_TIMER,
 			(uint32_t)timer);
 }
 
-error_t sos_timer_delete(sos_timer_t * const timer)
+error_t sos_timer_delete(sos_timer_t timer)
 {
 	return SOS_API_CALL_1(
 			SYSCALL_DELETE_TIMER,

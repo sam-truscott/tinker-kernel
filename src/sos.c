@@ -309,6 +309,10 @@ static void my_initial_thread(void)
 	};
 	timer_expired = 0;
 	error = sos_timer_create(&sos_timer, 200, &timeout, timer_timeout, (void*)72);
+	if (error != NO_ERROR)
+	{
+		sos_debug("sos: failed to create timer\n");
+	}
 	sos_debug("sos: initial thread: delay2...\n");
 	timer = 5000000;
 	while(timer-- && !timer_expired)
@@ -321,6 +325,26 @@ static void my_initial_thread(void)
 		sos_debug("sos: initial thread: timer didn't fire\n");
 	}
 
+	error = sos_timer_delete(sos_timer);
+	if (error != NO_ERROR)
+	{
+		sos_debug("sos: failed to delete timer\n");
+	}
+	error = sos_timer_create(&sos_timer, 200, &timeout, timer_timeout, (void*)72);
+	if (error != NO_ERROR)
+	{
+		sos_debug("sos: failed to create timer\n");
+	}
+	error = sos_timer_cancel(sos_timer);
+	if (error != NO_ERROR)
+	{
+		sos_debug("sos: failed to cancel timer\n");
+	}
+	error = sos_timer_delete(sos_timer);
+	if (error != NO_ERROR)
+	{
+		sos_debug("sos: failed to delete timer\n");
+	}
 	sos_debug("sos: testing clocks\n");
 	{
 		sos_time_t time = SOS_ZERO_TIME;
