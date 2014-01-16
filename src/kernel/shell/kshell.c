@@ -67,18 +67,26 @@ static char __ksh_object_types[9][255] =
 void __kshell_start(void)
 {
 	__ksh_input_pointer = 0;
-	while(1)
+	bool_t running = true;
+	while(running)
 	{
 		__ksh_input_buffer[__ksh_input_pointer] = __debug_read();
 		if ( __ksh_input_buffer[__ksh_input_pointer] == '\r'
 				|| __ksh_input_buffer[__ksh_input_pointer] == '\n' )
 		{
 			__ksh_input_buffer[__ksh_input_pointer] = '\0';
-			if ( __ksh_input_pointer )
+			if (__ksh_input_pointer)
 			{
-				__kshell_execute_command(__ksh_input_buffer);
-				__ksh_input_pointer = 0;
-				memset(__ksh_input_buffer, 0, MAX_LINE_INPUT);
+				if (__kshell_strcmp(__ksh_input_buffer, "exit"))
+				{
+					running = false;
+				}
+				else
+				{
+					__kshell_execute_command(__ksh_input_buffer);
+					__ksh_input_pointer = 0;
+					memset(__ksh_input_buffer, 0, MAX_LINE_INPUT);
+				}
 			}
 		}
 		else
@@ -90,11 +98,11 @@ void __kshell_start(void)
 
 static void __kshell_execute_command(const char* command)
 {
-	if ( __kshell_strcmp(command, "procs") )
+	if (__kshell_strcmp(command, "procs"))
 	{
 		__kshell_process_list();
 	}
-	else if ( __kshell_strcmp(command, "tasks") )
+	else if (__kshell_strcmp(command, "tasks"))
 	{
 		__kshell_task_list();
 	}
