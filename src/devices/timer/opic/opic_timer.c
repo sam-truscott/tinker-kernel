@@ -116,13 +116,9 @@ error_t __opic_timer_write_register(
 
 static void __opic_swap_endianness(uint32_t* var)
 {
-	uint32_t new_val = 0;
-	uint8_t* overlay = (uint8_t*)var;
-
-	new_val += (overlay[3] << 24);
-	new_val += (overlay[2] << 16);
-	new_val += (overlay[1] << 8);
-	new_val += (overlay[0]);
-
-	*var = new_val;
+	const uint32_t copy = *var;
+	*var = ((copy & 0xFF) << 24) |
+			((copy & 0xFF00) << 8) |
+			((copy & 0xFF0000) >> 8) |
+			((copy & 0xFF000000) >> 24);
 }

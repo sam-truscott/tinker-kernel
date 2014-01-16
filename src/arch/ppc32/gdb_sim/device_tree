@@ -13,6 +13,12 @@
 /openprom/options/alignment 2 # strict
 /openprom/options/model "604"
 #/openprom/options/smp 0x1
+#/openprom/options/use-stdio? false
+
+/openprom/trace
+       ./interrupts 1
+       ./devices 1
+#       ./events 1
 
 # define the stack type
 #/openprom/init/register/sp 0x3feff0
@@ -57,8 +63,8 @@
         ./device_type  open-pic
         ./compatible   psim,open-pic
         ./reg 0x80000000 0x40000
-        ./timer-frequency 1
-        ./interrupt-ranges 0 256
+        ./timer-frequency 100000
+        ./interrupt-ranges 0 255
 
 # map the interrupt controller to the cpu external interrupt
 /iobus/opic > intr0 int /cpus/cpu@0x0
@@ -68,9 +74,11 @@
     ./reg 0xf4000000 0x400
     
 /iobus@0xf4000000/com@0xf40002F8
+	./name "com"
 	./reg 0xf40002F8 8
-	./ > 0 2 /iobus/opic
-	
+	./ > 0 1 /iobus/opic
+
 /nvram@0xf4008000
 	./reg 0xf4008000 0x8008
 
+#/chosen/stdin */iobus/com

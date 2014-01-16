@@ -245,6 +245,13 @@ void __bsp_setup(void)
 
 	__ppc_get_timer(__kernel_get_process(), &__ppc32_time_base_timer);
 	__alarm_set_timer(&__ppc32_time_base_timer);
+
+	// route UART -> OPIC -> CPU
+	__intc_enable(__opic_intc, 1);
+	__intc_add_device(__opic_intc, 1, &__rs232_port_1);
+
+	// enable UART interrupts
+	__rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 }
 
 void __bsp_enable_schedule_timer(void)

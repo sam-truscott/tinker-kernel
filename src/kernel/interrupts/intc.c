@@ -8,6 +8,7 @@
  */
 #include "intc.h"
 
+#include "kernel/kernel_assert.h"
 #include "kernel/utils/collections/hashed_map.h"
 
 typedef struct
@@ -77,7 +78,8 @@ void __intc_add_child(__intc_t * const intc, const uint32_t cause, const __intc_
 		{
 			internal->type = CHILD_INTC;
 			internal->devices.child = child;
-			__isr_map_t_put(intc->isr_map, cause, internal);
+			const bool_t put_ok = __isr_map_t_put(intc->isr_map, cause, internal);
+			__kernel_assert("failed to add interrupt device to controller", put_ok);
 		}
 	}
 }
@@ -91,7 +93,8 @@ void __intc_add_device(__intc_t * const intc, const uint32_t cause, const __kern
 		{
 			internal->type = DEVICE_INTC;
 			internal->devices.device = device;
-			__isr_map_t_put(intc->isr_map, cause, internal);
+			const bool_t put_ok = __isr_map_t_put(intc->isr_map, cause, internal);
+			__kernel_assert("failed to add interrupt device to controller", put_ok);
 		}
 	}
 }
@@ -105,7 +108,8 @@ void __intc_add_pipe(__intc_t * const intc, const uint32_t cause, const __object
 		{
 			internal->type = PIPE_INTC;
 			internal->devices.pipe = pipe;
-			__isr_map_t_put(intc->isr_map, cause, internal);
+			const bool_t put_ok = __isr_map_t_put(intc->isr_map, cause, internal);
+			__kernel_assert("failed to add interrupt device to controller", put_ok);
 		}
 	}
 }

@@ -35,12 +35,16 @@ typedef enum
  * Bits of the Vector priority register
  */
 typedef enum {
-  ISU_MASK_BIT = -1,
+  ISU_MASK_BIT =  (1 << 31),
   ISU_ACTIVE_BIT = 0x40000000,
   ISU_MULTICAST_BIT = 0x20000000,
   ISU_POSITIVE_POLARITY_BIT = 0x00800000,
   ISU_LEVEL_TRIGGERED_BIT = 0x00400000,
 } opic_isu_vect_pri_reg_t;
+
+#define ISU_SHIFT_PRIORITY 16
+#define ISU_SHIFT_VECTOR 0
+#define ISU_BLOCK_SIZE 32
 
 /**
  * Proc registers
