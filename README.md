@@ -65,11 +65,10 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* sleep
-* clocks
+* parameters to intc_enable (priority, edge/level, active high/low etc)
 * timeouts on pipe (open/read/write)
 * break up the syscalls into seperate static/inline functions
-* makefile (or smake)
+* gradle build file
 * add mechanism to load elfs
 * create static library for api/syscalls 
 * create newlib port
