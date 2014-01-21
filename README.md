@@ -67,6 +67,8 @@ these are the things I need to address in a rough order:
 
 * parameters to intc_enable (priority, edge/level, active high/low etc)
 * timeouts on pipe (open/read/write)
+* allow user-mode to map to real addresses (user-mode drivers)
+* (interrupts can be handled by pipes in the bsp)
 * break up the syscalls into seperate static/inline functions
 * gradle build file
 * add mechanism to load elfs
