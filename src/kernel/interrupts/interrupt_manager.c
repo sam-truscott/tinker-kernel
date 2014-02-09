@@ -45,7 +45,10 @@ void __int_fatal_program_error_interrupt(
 {
 	__kernel_assert("Fatal Interrupt Context missing", context != NULL);
 
-	__error_print("Fatal Fault: Context @ %X\n", context);
+	__thread_t * const current = __sch_get_current_thread();
+	__error_print("Fatal Fault: process: %s\t thread: %s\n",
+			__process_get_image(__thread_get_parent(current)),
+			__thread_get_name(current));
 	__print_stack_trace(__tgt_get_context_stack_pointer(context));
 	__sch_terminate_current_thread(context);
 	__sch_set_context_for_next_thread(context);

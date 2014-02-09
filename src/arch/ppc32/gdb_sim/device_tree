@@ -16,9 +16,9 @@
 #/openprom/options/use-stdio? false
 
 /openprom/trace
-       ./interrupts 1
-       ./devices 1
-#       ./events 1
+       ./interrupts 0
+       ./devices 0
+       ./events 0
 
 # define the stack type
 #/openprom/init/register/sp 0x3feff0

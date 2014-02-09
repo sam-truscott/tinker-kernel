@@ -67,8 +67,8 @@ void __tgt_set_context_param(
 /*
  * Syscall TODO remove
  */
-uint32_t __tgt_get_syscall_param(const void * context, uint8_t param);
+uint32_t __tgt_get_syscall_param(const void * const context, const uint8_t param);
 
-void __tgt_set_syscall_return(void * context, uint32_t value);
+void __tgt_set_syscall_return(void * const context, const uint32_t value);
 
 #endif /* TGT_H_ */

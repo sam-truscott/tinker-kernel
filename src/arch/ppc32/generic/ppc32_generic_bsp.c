@@ -54,18 +54,14 @@ void __bsp_print_hex(uint32_t i)
 }
 
 void __bsp_decrementer_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
+		const uint32_t vector,
+		__tgt_context_t * const context)
 {
 	__asm__("mfdec %r10");
 	if ( vector == __ppc32_vector_decrementer )
 	{
 		/* check for any timers that may have expired */
 		__bsp_check_timers_and_alarms();
-
-		/* FIXME context_size should depend on bool fp_enabled */
-		if ( fp_enabled ) {}
 
 		/* switch the context afterwards as what we change to may
 		 * have changed because of any alarms/timers */
@@ -74,11 +70,9 @@ void __bsp_decrementer_interrupt(
 }
 
 void __bsp_fatal_program_error(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
+		const uint32_t vector,
+		__tgt_context_t * const context)
 {
-	if (fp_enabled) {}
 	if (vector)
 	{
 		char id[2] = {0,0};
@@ -122,15 +116,13 @@ void __bsp_fatal_program_error(
 }
 
 void __bsp_system_call_request(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
+		const uint32_t vector,
+		__tgt_context_t * const context)
 {
 	// ensure external interrupts are disabled but make it recoverable
 	// this will ensure that the any screw ups in the syscall generates
 	// a proper exception and shuts down that thread properly.
 	__ppc_set_msr((__ppc_get_msr() | MSR_FLAG_RI) & ~MSR_FLAG_EE);
-	if ( fp_enabled ) {}
 	if ( vector == __ppc32_vector_syscall )
 	{
 		__int_syscall_request_interrupt(context);

@@ -18,9 +18,8 @@
  * @param context The saved context from the interruption
  */
 void __bsp_decrementer_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
+		const uint32_t vector,
+		__tgt_context_t * const context);
 
 /**
  * All program error interrupts
@@ -28,9 +27,8 @@ void __bsp_decrementer_interrupt(
  * @param context The saved context from the interruption
  */
 void __bsp_fatal_program_error(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
+		const uint32_t vector,
+		__tgt_context_t * const context);
 
 /**
  * Requests from programs to perform system operations
@@ -38,8 +36,7 @@ void __bsp_fatal_program_error(
  * @param context The saved context from the interruption
  */
 void __bsp_system_call_request(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
+		const uint32_t vector,
+		__tgt_context_t * const context);
 
 #endif /* PPC32_GENERIC_BSP_H_ */

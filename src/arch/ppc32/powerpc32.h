@@ -96,7 +96,7 @@ extern uint32_t __ivt_fp_assist_interrupt;
  * Type declaration for interrupt service routines
  * @param context The saved context from the interrupt vector
  */
-typedef void(__ppc_isr)(uint32_t vector, __tgt_context_t * context, bool_t fp_enabled);
+typedef void(__ppc_isr)(const uint32_t vector, __tgt_context_t * const context);
 
 /**
  * Initialise the basic powerpc interrupt services
@@ -106,7 +106,7 @@ void __ppc_isr_initialise(void);
 /**
  * Attach an Interrupt Service Routine to a Vector
  */
-void __ppc_isr_attach(const uint32_t vector, __ppc_isr * isr);
+void __ppc_isr_attach(const uint32_t vector, __ppc_isr * const isr);
 
 /**
  * Get the Interrupt Service Routine for a vector
@@ -116,7 +116,7 @@ __ppc_isr * __ppc_isr_get_isr(const uint32_t vector);
 /**
  * Set the Machine State Register
  */
-void __ppc_set_msr(uint32_t msr);
+void __ppc_set_msr(const uint32_t msr);
 
 /**
  * Get the Machine State Register
@@ -137,7 +137,7 @@ uint64_t __ppc_get_tbr(void);
  * @param tbu The upper time base DWORD
  * @param tbl The lower time base DWORD
  */
-void __ppc_set_tbr(uint32_t tbu, uint32_t tbl);
+void __ppc_set_tbr(const uint32_t tbu, const uint32_t tbl);
 
 /**
  * For a given clock speed and ticks for the TBR, calculate
@@ -146,28 +146,28 @@ void __ppc_set_tbr(uint32_t tbu, uint32_t tbl);
  * @param ticks_per_clock The number of timebase register 'ticks' per clock cycle
  * @return The number of nanoseconds per timebase register 'tick'
  */
-uint32_t __ppc_get_ns_per_tb_tick(uint64_t clock_hz, uint32_t ticks_per_clock);
+uint32_t __ppc_get_ns_per_tb_tick(const uint64_t clock_hz, const uint32_t ticks_per_clock);
 
 /**
  * Set the value of the decrementer
  */
-void __ppc_set_decrementer(uint32_t v);
+void __ppc_set_decrementer(const uint32_t v);
 
 /**
  * The place where the IVT routines will end up
  * once they've saved the context
  */
-void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enabled);
+void __ppc_isr_handler(const uint32_t vector, void * const registers);
 
 /**
  * Setup the powerpc instruction breakpoint register IDAR
  */
-void __ppc_set_instruction_breakpoint(uint32_t location);
+void __ppc_set_instruction_breakpoint(const uint32_t location);
 
 /**
  * Setup the powerpc data breakpoint register DDAR
  */
-void __ppc_set_data_breakpoint(uint32_t location);
+void __ppc_set_data_breakpoint(const uint32_t location);
 
 uint32_t __ppc_get_dsisr(void);
 

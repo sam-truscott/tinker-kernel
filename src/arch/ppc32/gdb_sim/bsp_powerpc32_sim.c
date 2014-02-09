@@ -49,9 +49,8 @@ static __ppc32_pt_t __page_table;
  * @param context The saved context from the interruption
  */
 static void __bsp_external_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled);
+		const uint32_t vector,
+		__tgt_context_t * const context);
 
 void __bsp_initialise(void)
 {
@@ -251,7 +250,7 @@ void __bsp_setup(void)
 	__intc_add_device(__opic_intc, 1, &__rs232_port_1);
 
 	// enable UART interrupts
-	__rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
+	//__rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 }
 
 void __bsp_enable_schedule_timer(void)
@@ -263,11 +262,9 @@ void __bsp_enable_schedule_timer(void)
 }
 
 static void __bsp_external_interrupt(
-		uint32_t vector,
-		__tgt_context_t * context,
-		bool_t fp_enabled)
+		const uint32_t vector,
+		__tgt_context_t * const context)
 {
-	if (fp_enabled) {}
 	if (vector && context) {}
 	__int_handle_external_vector();
 }

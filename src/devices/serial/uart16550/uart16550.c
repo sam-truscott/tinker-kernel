@@ -413,7 +413,11 @@ error_t __uart16550_isr(
 			}
 			else if ( (ir_iden & INT_RECV_DATA_AVAIL) == INT_RECV_DATA_AVAIL)
 			{
-				/* TODO UINT8 new_data = raw_com_port->reg0_tx_rx_ls; */
+				const uint8_t new_data = raw_com_port->reg0_tx_rx_ls;
+				if (new_data)
+				{
+
+				}
 			}
 			else if ( (ir_iden & INT_CHAR_TIMEOUT) == INT_CHAR_TIMEOUT)
 			{

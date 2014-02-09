@@ -16,7 +16,11 @@ __GPR_LENGTH = 4
  * The size of the stack frame for the IVT data.
  * This is the data we wish to store.
  */
+.ifdef KERNEL_POWERPC_FPS
 __FRAME_SIZE = 160 + (32 * 8)
+.else
+__FRAME_SIZE = 160
+.endif
 
 /**
  * The size of the link area of the stack frame.
@@ -40,9 +44,13 @@ __SPR_SRR1_OFFSET = __SPR_SRR0_OFFSET + __GPR_LENGTH
 __SPR_XER_OFFSET = __SPR_SRR1_OFFSET + __GPR_LENGTH
 __SPR_CR_OFFSET = __SPR_XER_OFFSET + __GPR_LENGTH
 __SPR_CTR_OFFSET = __SPR_CR_OFFSET + __GPR_LENGTH
+.ifdef KERNEL_POWERPC_FPS
 __FPR_SIZE = (32 * 8)
 __FPR_OFFSET = __SPR_CTR_OFFSET + __GPR_LENGTH
 __SPR_LR_OFFSET = __FPR_OFFSET + __FPR_SIZE
+.else
+__SPR_LR_OFFSET = __SPR_CTR_OFFSET + __GPR_LENGTH
+.endif
 
 .macro backup_gprs
     /* backup register 0 */
@@ -90,18 +98,11 @@ __SPR_LR_OFFSET = __FPR_OFFSET + __FPR_SIZE
 
 .global __ivts
 
+.ifdef KERNEL_POWERPC_FPS
 .global __ivt_backup_fpr
 __ivt_backup_fpr:
-    /* get the SRR1 - containing the FP flag - and work
-     * out if floating point is enabled. if so backup all
-     * the registers */
-    mfsrr1  %r10
-    andi.   %r10,   %r10,    0x2000
-    cmpi    0,      0,      %r10,      0x2000
-    beq     0,      __fp_backup_disabled /* FIXME: Shouldn't this be BNEQ 0x2000 or BEQ 0x0? */
-    /* we need to re-enabled floating point because we're n
+    /* we need to re-enabled floating point because we're in
      * the exception context */
-    li      %r5,    1
     mfmsr   %r10
     ori     %r10,    %r10,    0x2000
     mtmsr   %r10
@@ -139,19 +140,9 @@ __ivt_backup_fpr:
     stfd    %f30,    (__FPR_OFFSET + 240)(%sp)
     stfd    %f31,    (__FPR_OFFSET + 248)(%sp)
     blr
-__fp_backup_disabled:
-    li      %r5,    0
-    blr
 
 .global __ivt_restore_fpr
 __ivt_restore_fpr:
-    /* get the SRR1 from the stack (backed up context) and
-     * check if we need to restore floating point access
-     * and then copy over all the registers */
-    lwz     %r10,    __SPR_SRR1_OFFSET(%sp)
-    andi.   %r10,    %r10,    0x2000
-    cmpi    0,       0,      %r10,      0x2000
-    beq     0,      __fp_restore_disabled /* FIXME: Shouldn't this be BNEQ 0x2000 or BEQ 0x0? */
     /* make sure FP is enabled again if it wasnt before */
     mfmsr   %r10
     ori     %r10,   %r10,    0x2000
@@ -189,8 +180,8 @@ __ivt_restore_fpr:
     lfd    %f29,    (__FPR_OFFSET + 232)(%sp)
     lfd    %f30,    (__FPR_OFFSET + 240)(%sp)
     lfd    %f31,    (__FPR_OFFSET + 248)(%sp)
-__fp_restore_disabled:
     blr
+.endif
 
 .macro __ivt_macro iv
 
@@ -207,8 +198,9 @@ __fp_restore_disabled:
 
     /* Backup the Link register, counter, condition, exception cause */
     backup_sprs
-
+.ifdef KERNEL_POWERPC_FPS
     bla  __ivt_backup_fpr
+.endif
 
     /* Copy over the stack pointer */
     mr     %r31,   %sp
@@ -222,7 +214,9 @@ __fp_restore_disabled:
     /* Call the ISR Handler to determine what to do */
     bla     __ppc_isr_handler
 
+.ifdef KERNEL_POWERPC_FPS
     bla  __ivt_restore_fpr
+.endif
 
     /* Restore the special purpose registers */
     restore_sprs

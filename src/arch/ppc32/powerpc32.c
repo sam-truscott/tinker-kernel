@@ -37,7 +37,9 @@ typedef struct __tgt_context_t
 	uint32_t xer;
 	uint32_t cr;
 	uint32_t ctr;
-	uint64_t fpr[PPC_CONTEXT_FPR]; /* FIXME need to be moved to the end */
+#if defined(KERNEL_POWERPC_FPS)
+	uint64_t fpr[PPC_CONTEXT_FPR];
+#endif
 	uint32_t lr;
 	uint32_t fp;
 } __tgt_context_internal_t;
@@ -52,9 +54,9 @@ static __ppc_isr * __ppc_isr_table[MAX_PPC_IVECT];
  * The default, empty, ISR handler
  * @param The saved context from the interrupt
  */
-static void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t *, bool_t fp_enabled);
+static void __ppc_isr_default_handler(const uint32_t vector, __tgt_context_t * const context);
 
-static void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t size);
+static void __ivt_install_vector(void * const address, const void * const vector, const uint32_t size);
 
 /**
  * Setup a number of pages in the page table
@@ -82,7 +84,7 @@ void __ppc_isr_initialise(void)
 	}
 }
 
-void __ppc_isr_attach(const uint32_t vector, __ppc_isr * isr)
+void __ppc_isr_attach(const uint32_t vector, __ppc_isr * const isr)
 {
 	if ( vector < MAX_PPC_IVECT && isr)
 	{
@@ -102,30 +104,27 @@ __ppc_isr * __ppc_isr_get_isr(const uint32_t vector)
 	return the_isr;
 }
 
-void __ppc_isr_default_handler(uint32_t vector, __tgt_context_t * context, bool_t fp_enabled)
+void __ppc_isr_default_handler(const uint32_t vector, __tgt_context_t * const context)
 {
-	/**
-	 * TODO log a notificaiton of an unhandled exception
-	 */
-	if ( vector && context && fp_enabled)
+	if (context)
 	{
-
+		__printp_out("Unexpected exception: isr %d\n", vector);
 	}
 }
 
-uint32_t __tgt_get_syscall_param(const void * context, uint8_t param)
+uint32_t __tgt_get_syscall_param(const void * const context, const uint8_t param)
 {
-	__tgt_context_t * vector = (__tgt_context_t*)context;
+	__tgt_context_t * const vector = (__tgt_context_t*const)context;
 	return vector->gpr_2_31[1 + param];
 }
 
-void __tgt_set_syscall_return(void * context, uint32_t value)
+void __tgt_set_syscall_return(void * const context, const uint32_t value)
 {
-	__tgt_context_t * vector = (__tgt_context_t*)context;
+	__tgt_context_t * const vector = (__tgt_context_t*const)context;
 	vector->gpr_2_31[1] = value;
 }
 
-void __ppc_get_tbrs(uint32_t * a, uint32_t * b);
+void __ppc_get_tbrs(uint32_t * const a, uint32_t * const b);
 
 uint64_t __ppc_get_tbr(void)
 {
@@ -137,10 +136,10 @@ uint64_t __ppc_get_tbr(void)
 	return tb;
 }
 
-uint32_t __ppc_get_ns_per_tb_tick(uint64_t clock_hz, uint32_t ticks_per_clock)
+uint32_t __ppc_get_ns_per_tb_tick(const uint64_t clock_hz, const uint32_t ticks_per_clock)
 {
 	uint64_t ticks_per_second = clock_hz / ticks_per_clock;
-	uint32_t ticks_per_ns = (uint32_t)(ONE_SECOND_AS_NANOSECONDS / ticks_per_second);
+	uint32_t ticks_per_ns = (ONE_SECOND_AS_NANOSECONDS / ticks_per_second);
 	return ticks_per_ns;
 }
 
@@ -167,18 +166,18 @@ void __ivt_initialise(void)
 	 */
 	__ppc_isr_initialise();
 
-	__ivt_install_vector(0x100, &__ivt_system_reset_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x200, &__ivt_machine_check_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x300, &__ivt_data_storage_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x400, &__ivt_inst_storage_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x500, &__ivt_external_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x600, &__ivt_alignment_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x700, &__ivt_program_interrupt,IVT_SIZE);
-	__ivt_install_vector(0x800, &__ivt_fp_unavailable,IVT_SIZE);
-	__ivt_install_vector(0x900, &__ivt_decrementer_interrupt,IVT_SIZE);
-	__ivt_install_vector(0xC00, &__ivt_syscall_interrupt,IVT_SIZE);
-	__ivt_install_vector(0xD00, &__ivt_trace_interrupt,IVT_SIZE);
-	__ivt_install_vector(0xE00, &__ivt_fp_assist_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x100, &__ivt_system_reset_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x200, &__ivt_machine_check_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x300, &__ivt_data_storage_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x400, &__ivt_inst_storage_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x500, &__ivt_external_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x600, &__ivt_alignment_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x700, &__ivt_program_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0x800, &__ivt_fp_unavailable,IVT_SIZE);
+	__ivt_install_vector((void*)0x900, &__ivt_decrementer_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0xC00, &__ivt_syscall_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0xD00, &__ivt_trace_interrupt,IVT_SIZE);
+	__ivt_install_vector((void*)0xE00, &__ivt_fp_assist_interrupt,IVT_SIZE);
 
 	/**
 	 * Enable external interrupts
@@ -195,19 +194,12 @@ void __tgt_enter_usermode(void)
 	__ppc_set_msr(msr);
 }
 
-void __ivt_install_vector(const uint32_t address, uint32_t * vector, uint32_t size)
+void __ivt_install_vector(void * const address, const void * const vector, const uint32_t size)
 {
-	uint32_t * dst = (uint32_t*)address;
-	const uint32_t * end = (uint32_t*) (address + size);
-	while(dst < end)
-	{
-		*dst = *vector;
-		dst++;
-		vector++;
-	}
+	__util_memcpy(address, vector, size);
 }
 
-void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enabled)
+void __ppc_isr_handler(const uint32_t vector, void * const registers)
 {
 	__tgt_context_t * const vector_info = (__tgt_context_t*)registers;
 
@@ -224,7 +216,7 @@ void __ppc_isr_handler(const uint32_t vector, void * registers, bool_t fp_enable
 		const uint32_t tmp_lr = vector_info->restore_lr;
 		if (registers)
 		{
-			__ppc_isr_get_isr(vector)(vector, vector_info, fp_enabled);
+			__ppc_isr_get_isr(vector)(vector, vector_info);
 		}
 		if (vector_info->restore_lr == 0)
 		{
@@ -466,10 +458,12 @@ void __tgt_initialise_context(
 		{
 			ppc_context->gpr_2_31[gpr] = 0;
 		}
+#if defined(KERNEL_POWERPC_FPS)
 		for ( uint8_t fpr = 0 ; fpr < PPC_CONTEXT_FPR ; fpr++ )
 		{
 			ppc_context->fpr[fpr] = 0;
 		}
+#endif
 		ppc_context->srr0 = (uint32_t)__thread_get_entry_point(thread);
 
 		/* if it's not the kernel we need to add the privilege mode */
