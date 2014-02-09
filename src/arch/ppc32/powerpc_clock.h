@@ -10,8 +10,11 @@
 #define POWERPC_CLOCK_H_
 
 #include "kernel/time/time.h"
+#include "api/sos_api_time.h"
 
-void __ppc_setup_timebase_details(uint64_t clock_as_hz, uint32_t ticks_per_clock);
+void __ppc_setup_timebase_details(const uint64_t * const clock_as_hz, const uint32_t ticks_per_clock);
+
+void __ppc_convert_time_to_tbr(const sos_time_t * const t, uint64_t * const tbr);
 
 __clock_device_t * __ppc_get_ppc_timebase_clock(void);
 

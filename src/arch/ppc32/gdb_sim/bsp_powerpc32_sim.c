@@ -239,8 +239,9 @@ void __bsp_setup(void)
 	/* 1Ghz clock with 64 time-base ticks per clock.
 	 * This doesn't match the PSIM simulation but it doesn't
 	 * matter */
-	__ppc_setup_timebase_details(1 * 1000 * 1000 * 1000, 64);
-	__time_set_system_clock( __ppc_get_ppc_timebase_clock() );
+	const uint64_t sim_clock = 1 * 1000 * 1000 * 1000;
+	__ppc_setup_timebase_details(&sim_clock, 64);
+	__time_set_system_clock(__ppc_get_ppc_timebase_clock());
 
 	__ppc_get_timer(__kernel_get_process(), &__ppc32_time_base_timer);
 	__alarm_set_timer(&__ppc32_time_base_timer);
@@ -255,10 +256,11 @@ void __bsp_setup(void)
 
 void __bsp_enable_schedule_timer(void)
 {
-	/** TODO this should be build from a constant
-	 * calculated form config.h */
-	/* __ppc_set_decrementer(10000); */
-	__ppc_set_decrementer(100000);
+	sos_time_t scheduler_time;
+	sos_time_milliseconds(1000 / SCHEDULER_HERTZ, &scheduler_time);
+	uint64_t tbr_value = 0;
+	__ppc_convert_time_to_tbr(&scheduler_time, &tbr_value);
+	__ppc_set_decrementer((uint32_t)tbr_value);
 }
 
 static void __bsp_external_interrupt(

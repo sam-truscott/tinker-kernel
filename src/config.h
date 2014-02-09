@@ -13,6 +13,8 @@
 
 #define ISR_PRINT_STACKTRACE_LIMIT 20
 
+#define SCHEDULER_HERTZ 100
+
 /**
  * The size of the heap for the kernel
  */

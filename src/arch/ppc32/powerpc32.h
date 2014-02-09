@@ -146,7 +146,7 @@ void __ppc_set_tbr(const uint32_t tbu, const uint32_t tbl);
  * @param ticks_per_clock The number of timebase register 'ticks' per clock cycle
  * @return The number of nanoseconds per timebase register 'tick'
  */
-uint32_t __ppc_get_ns_per_tb_tick(const uint64_t clock_hz, const uint32_t ticks_per_clock);
+uint32_t __ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_t ticks_per_clock);
 
 /**
  * Set the value of the decrementer

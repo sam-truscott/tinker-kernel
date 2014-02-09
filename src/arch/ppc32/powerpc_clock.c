@@ -18,15 +18,23 @@ static __clock_device_t __ppc_timebase_clock =
 		__ppc_get_timebase_time
 };
 
-void __ppc_setup_timebase_details(uint64_t clock_as_hz, uint32_t ticks_per_clock)
+void __ppc_setup_timebase_details(const uint64_t * const clock_as_hz, const uint32_t ticks_per_clock)
 {
 	__ppc_nanoseconds_per_tb_tick = __ppc_get_ns_per_tb_tick(clock_as_hz, ticks_per_clock);
 }
 
 uint64_t __ppc_get_timebase_time(void)
 {
-	const uint64_t tbr = __ppc_get_tbr();
-	return tbr * __ppc_nanoseconds_per_tb_tick;
+	return __ppc_get_tbr() * __ppc_nanoseconds_per_tb_tick;
+}
+
+void __ppc_convert_time_to_tbr(const sos_time_t * const t, uint64_t * const tbr)
+{
+	if (t && tbr)
+	{
+		(*tbr) = (((t->seconds * ONE_SECOND_AS_NANOSECONDS) + t->nanoseconds)
+				/ __ppc_nanoseconds_per_tb_tick);
+	}
 }
 
 __clock_device_t * __ppc_get_ppc_timebase_clock(void)

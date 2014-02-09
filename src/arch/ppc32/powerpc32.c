@@ -136,9 +136,9 @@ uint64_t __ppc_get_tbr(void)
 	return tb;
 }
 
-uint32_t __ppc_get_ns_per_tb_tick(const uint64_t clock_hz, const uint32_t ticks_per_clock)
+uint32_t __ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_t ticks_per_clock)
 {
-	uint64_t ticks_per_second = clock_hz / ticks_per_clock;
+	uint64_t ticks_per_second = (*clock_hz) / ticks_per_clock;
 	uint32_t ticks_per_ns = (ONE_SECOND_AS_NANOSECONDS / ticks_per_second);
 	return ticks_per_ns;
 }
