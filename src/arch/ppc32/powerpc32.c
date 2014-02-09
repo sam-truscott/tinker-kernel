@@ -209,14 +209,15 @@ void __ppc_isr_handler(const uint32_t vector, void * const registers)
 		 * if it's a new thread the LR will be missing and this function will
 		 * cause an exception when it returns because it'll jump to
 		 * 0x0.
-		 * TODO: This should be fixed by the initialise code for a thread
-		 * should should set the LR value up correctly to jump to the line
-		 * of the ISR code following the interrupt vector.
 		 */
 		const uint32_t tmp_lr = vector_info->restore_lr;
 		if (registers)
 		{
-			__ppc_isr_get_isr(vector)(vector, vector_info);
+			__ppc_isr * const isr = __ppc_isr_get_isr(vector);
+			if (isr)
+			{
+				isr(vector, vector_info);
+			}
 		}
 		if (vector_info->restore_lr == 0)
 		{
