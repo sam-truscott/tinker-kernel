@@ -203,7 +203,7 @@ void __ppc_isr_handler(const uint32_t vector, void * const registers)
 {
 	__tgt_context_t * const vector_info = (__tgt_context_t*)registers;
 
-	if ( vector_info )
+	if (vector_info)
 	{
 		/* take a copy of the LR incase it's a new thread.
 		 * if it's a new thread the LR will be missing and this function will
@@ -252,12 +252,12 @@ static error_t __ppc_setup_paged_area(
 	}
 
 	uint32_t pages = size / MMU_PAGE_SIZE;
-	if ( (size % MMU_PAGE_SIZE) !=0 )
+	if ((size % MMU_PAGE_SIZE) !=0)
 	{
 		pages++;
 	}
 
-	for ( uint32_t page = 0 ; page < pages ; page++ )
+	for (uint32_t page = 0 ; page < pages ; page++)
 	{
 		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
@@ -269,7 +269,7 @@ static error_t __ppc_setup_paged_area(
 				HASH_PRIMARY,
 				0);
 
-		if ( mem_type == MMU_RANDOM_ACCESS_MEMORY)
+		if (mem_type == MMU_RANDOM_ACCESS_MEMORY)
 		{
 			/* RAM can have cache enabled */
 			w1 = __PPC_PTE_W1(
@@ -321,12 +321,12 @@ static void __ppc_remove_paged_area(
 	uint32_t w1 = 0;
 
 	uint32_t pages = size / MMU_PAGE_SIZE;
-	if ( (size % MMU_PAGE_SIZE) !=0 )
+	if ((size % MMU_PAGE_SIZE) !=0)
 	{
 		pages++;
 	}
 
-	for ( uint32_t page = 0 ; page < pages ; page++ )
+	for (uint32_t page = 0 ; page < pages ; page++)
 	{
 		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
@@ -338,7 +338,7 @@ static void __ppc_remove_paged_area(
 				HASH_PRIMARY,
 				0);
 
-		if ( mem_type == MMU_RANDOM_ACCESS_MEMORY)
+		if (mem_type == MMU_RANDOM_ACCESS_MEMORY)
 		{
 			/* RAM can have cache enabled */
 			w1 = __PPC_PTE_W1(
@@ -379,12 +379,12 @@ error_t __tgt_initialise_process(__process_t * const process)
 {
 	error_t ok = NO_ERROR;
 
-	if ( !__process_is_kernel(process) )
+	if (!__process_is_kernel(process))
 	{
 		const uint32_t pid = __process_get_pid(process);
 		tgt_mem_t segment_info;
 		/* setup all the segment IDs */
-		for ( uint8_t sid = 0 ; sid < MMU_SEG_COUNT ; sid++ )
+		for (uint8_t sid = 0 ; sid < MMU_SEG_COUNT ; sid++)
 		{
 			segment_info.segment_ids[sid] =
 					(pid * MMU_SEG_COUNT) + sid;
