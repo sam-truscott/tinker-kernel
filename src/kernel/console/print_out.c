@@ -27,8 +27,7 @@ static void __print_out_print_signed(const int32_t);
 
 static void __print_out_print_hex(
 		const uint32_t,
-		const bool_t upper_case,
-		const uint32_t pad);
+		const bool_t upper_case);
 
 void __print_time(void)
 {
@@ -150,11 +149,11 @@ void __print_out_process(va_list * const arguments, const char ** const ptr)
 			break;
 		case 'x':
 			/** TODO work out pad value */
-			__print_out_print_hex(va_arg(*arguments, uint32_t), false, 0);
+			__print_out_print_hex(va_arg(*arguments, uint32_t), false);
 			break;
 		case 'X':
 			/** TODO work out pad value */
-			__print_out_print_hex(va_arg(*arguments, uint32_t), true, 0);
+			__print_out_print_hex(va_arg(*arguments, uint32_t), true);
 			break;
 		default:
 			__print_out_print_char('%');
@@ -185,8 +184,7 @@ void __print_out_print_signed(const int32_t i)
 
 void __print_out_print_hex(
 		const uint32_t i,
-		const bool_t upper_case,
-		const uint32_t pad)
+		const bool_t upper_case)
 {
 	char hex_number[MAX_HEX_INTEGER_LENGTH + 1] = {0,0,0,0,0,0,0,0,0};
 	__util_i_to_h(i, hex_number,MAX_HEX_INTEGER_LENGTH);
@@ -198,13 +196,6 @@ void __print_out_print_hex(
 	else
 	{
 		__util_to_lower(hex_number);
-	}
-
-	if (pad > 0)
-	{
-		/*
-		 * TODO pad the hex strings out
-		 */
 	}
 
 	__print_out_print_string(hex_number);
