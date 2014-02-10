@@ -148,11 +148,9 @@ void __print_out_process(va_list * const arguments, const char ** const ptr)
 			__print_out_print_signed(va_arg(*arguments, int32_t));
 			break;
 		case 'x':
-			/** TODO work out pad value */
 			__print_out_print_hex(va_arg(*arguments, uint32_t), false);
 			break;
 		case 'X':
-			/** TODO work out pad value */
 			__print_out_print_hex(va_arg(*arguments, uint32_t), true);
 			break;
 		default:
