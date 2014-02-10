@@ -471,7 +471,7 @@ error_t __obj_delete_pipe(__object_pipe_t * const pipe)
 	{
 		__registry_remove(pipe->name);
 		__mem_free(pipe->pool, pipe->memory);
-		__mem_free(pipe->pool, pipe); //FIXME
+		__mem_free(pipe->pool, pipe);
 	}
 	else
 	{
