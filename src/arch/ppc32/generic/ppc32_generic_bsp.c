@@ -75,19 +75,12 @@ void __bsp_fatal_program_error(
 {
 	if (vector)
 	{
-		char id[2] = {0,0};
+		char id[5] = {0,0,0,0,0};
 		char * name = __bsp_vector_names[vector];
 
 		__bsp_print_str("BSP FATAL EXCEPTION \0");
 
-		if ( vector < 10 )
-		{
-			id[0] = vector + '0';
-		}
-		else
-		{
-			/* TODO Support debugging of fatal interrupts >= 10 vector ID */
-		}
+		__util_i_to_a(vector, id, 4);
 		__bsp_print_str(id);
 		__bsp_print_str(" \0");
 		__bsp_print_str(name);
