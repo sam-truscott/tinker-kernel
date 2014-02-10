@@ -12,19 +12,6 @@
 #include "kernel/console/print_out.h"
 #include "kernel/kernel_assert.h"
 
-/* #define __MEMORY_DEBUGGING 1 */
-
-/*
- * TODO This implementation needs to take account for
- * alignment. i.e. it may be that the user wants to access
- * a 32-bit aligned memory access. should this be part of the
- * user-mode code? doubtful as it won't contain the right information.
- *
- * might have to update the memory management storage blocks to
- * be allowed to start at aligned boundaries but this could get
- * wasteful.
- */
-
 /**
  * the primary memory pool i.e. RAM
  */
