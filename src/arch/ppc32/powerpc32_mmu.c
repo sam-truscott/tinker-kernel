@@ -24,7 +24,6 @@ static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
 	__ppc32_pteg_t * pPteg = 0;
 
 	sdr1 = __ppc32_get_sdr1();
-	/* FIXME the macro can do the below masking/shifting */
 	hash = __PPC_PRIMARY_HASH((vsid & 0xFFFFFFu), ((ea >> 12) & 0x7FFFFu));
 
 	htabord = (sdr1 & 0xFFFF0000u);
