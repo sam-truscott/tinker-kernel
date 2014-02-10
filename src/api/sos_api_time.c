@@ -36,16 +36,9 @@ void sos_time_sub(
 	{
 		a->seconds = l->seconds - r->seconds;
 		a->nanoseconds = l->nanoseconds - r->nanoseconds;
-		if ( a->nanoseconds >= ONE_SECOND_AS_NANOSECONDS )
+		if (a->nanoseconds >= ONE_SECOND_AS_NANOSECONDS)
 		{
 			int32_t s = (a->nanoseconds / ONE_SECOND_AS_NANOSECONDS);
-			a->seconds += s;
-			a->nanoseconds -= (s * ONE_SECOND_AS_NANOSECONDS);
-		}
-		else if ( a->nanoseconds <= ONE_SECOND_AS_NANOSECONDS )
-		{
-			/* TODO not sure if this is right so needs some work! */
-			int32_t s = (a->nanoseconds / (ONE_SECOND_AS_NANOSECONDS));
 			a->seconds += s;
 			a->nanoseconds -= (s * ONE_SECOND_AS_NANOSECONDS);
 		}
