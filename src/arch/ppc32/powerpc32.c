@@ -112,7 +112,9 @@ void __ppc_isr_default_handler(const uint32_t vector, __tgt_context_t * const co
 	}
 }
 
-uint32_t __tgt_get_syscall_param(const void * const context, const uint8_t param)
+uint32_t __tgt_get_syscall_param(
+		const void * const context,
+		const uint8_t param)
 {
 	__tgt_context_t * const vector = (__tgt_context_t*const)context;
 	return vector->gpr_2_31[1 + param];

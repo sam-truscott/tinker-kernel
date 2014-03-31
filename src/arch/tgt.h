@@ -60,15 +60,17 @@ void __tgt_save_context(
 		__tgt_context_t * const thread,
 		const __tgt_context_t * const context);
 
+uint32_t __tgt_get_syscall_param(
+		const void * const context,
+		const uint8_t param);
+
 void __tgt_set_context_param(
 		__tgt_context_t * const context,
 		const uint8_t index,
 		const uint32_t parameter);
-/*
- * Syscall TODO remove
- */
-uint32_t __tgt_get_syscall_param(const void * const context, const uint8_t param);
 
-void __tgt_set_syscall_return(void * const context, const uint32_t value);
+void __tgt_set_syscall_return(
+		void * const context,
+		const uint32_t value);
 
 #endif /* TGT_H_ */

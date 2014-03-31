@@ -26,6 +26,8 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/time/time_manager.h"
 
+#define MAX_SYSCALL_ARGS 7
+
 static inline object_number_t __syscall_get_thread_oid(const __thread_t * const thread)
 {
 	return __thread_get_object_no(thread);
@@ -90,8 +92,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 {
 	__syscall_function_t api = (__syscall_function_t)__tgt_get_syscall_param(context, 0);
 	error_t ret = UNKNOWN_ERROR;
-	/* FIXME hard coded 7 */
-	uint32_t param[7];
+	uint32_t param[MAX_SYSCALL_ARGS];
 	param[0] = __tgt_get_syscall_param(context, 1);
 	param[1] = __tgt_get_syscall_param(context, 2);
 	param[2] = __tgt_get_syscall_param(context, 3);
@@ -101,10 +102,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	param[6] = __tgt_get_syscall_param(context, 7);
 	__thread_t * const this_thread = __sch_get_current_thread();
 
-	/* TODO FIXME This is accounting for things being passed on the
+	/* This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
 	 * at some weird virtual address */
-	for (uint8_t i = 0 ; i < 7 ; i++)
+	for (uint8_t i = 0 ; i < MAX_SYSCALL_ARGS ; i++)
 	{
 		if (param[i] >= VIRTUAL_ADDRESS_SPACE)
 		{
