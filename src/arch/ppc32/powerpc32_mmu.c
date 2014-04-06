@@ -10,7 +10,10 @@
 #include "powerpc32_mmu.h"
 #include "kernel/kernel_assert.h"
 
-static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
+static tgt_pg_tbl_t __ppc32_get_pte(
+		const tgt_pg_tbl_t * const page_tbl,
+		const uint32_t ea,
+		const uint32_t vsid)
 {
 	/* below code generates a primary PTE
 	 * 06/03/2012 - checked against PPC Programming Environments Manual, page 278 */
@@ -21,9 +24,9 @@ static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
 	uint32_t htamask;
 	uint32_t hash9;
 	uint32_t hash10;
-	__ppc32_pteg_t * pPteg = 0;
+	tgt_pg_tbl_t pPteg;
 
-	sdr1 = __ppc32_get_sdr1();
+	sdr1 = (uint32_t)page_tbl;
 	hash = __PPC_PRIMARY_HASH((vsid & 0xFFFFFFu), ((ea >> 12) & 0x7FFFFu));
 
 	htabord = (sdr1 & 0xFFFF0000u);
@@ -32,19 +35,25 @@ static __ppc32_pteg_t * __ppc32_get_pte(uint32_t ea, uint32_t vsid)
 	hash9 = ((hash >> 10) & htamask);
 	hash10 = (hash & 0x3FFu);
 
-	pPteg = (__ppc32_pteg_t*)(htabord | (hash9 << 16) | (hash10<<6));
+	asm volatile("sync");
+	pPteg = (tgt_pg_tbl_t)(htabord | (hash9 << 16) | (hash10<<6));
 	return pPteg;
 }
 
-void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
+void __ppc32_add_pte(
+		const tgt_pg_tbl_t * const page_tbl,
+		const uint32_t ea,
+		const uint32_t vsid,
+		const uint32_t pte_w0,
+		const uint32_t pte_w1)
 {
-	volatile __ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
+	volatile tgt_pg_tbl_t const pPteg = __ppc32_get_pte(page_tbl, ea, vsid);
 
-	if ( pPteg )
+	if (pPteg)
 	{
 		uint8_t i;
 		bool_t mapped = false;
-		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
+		for (i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++)
 		{
 			volatile __ppc32_pte_t * const pte = (__ppc32_pte_t*)&pPteg[i];
 			if (pte)
@@ -63,18 +72,23 @@ void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w
 	}
 }
 
-void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1)
+void __ppc32_remove_pte(
+		const tgt_pg_tbl_t * const page_tbl,
+		const uint32_t ea,
+		const uint32_t vsid,
+		const uint32_t pte_w0,
+		const uint32_t pte_w1)
 {
 	asm volatile("sync");
 	asm volatile("tlbie %r3");
 	asm volatile("eieio");
 	asm volatile("tlbsync");
-	volatile __ppc32_pteg_t * const pPteg = __ppc32_get_pte(ea, vsid);
-	if ( pPteg )
+	volatile tgt_pg_tbl_t const pPteg = __ppc32_get_pte(page_tbl, ea, vsid);
+	if (pPteg)
 	{
 		uint8_t i;
 		bool_t unmapped = false;
-		for ( i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++ )
+		for (i = 0 ; i < __PPC_MAX_PTE_PER_PTEG ; i++)
 		{
 			volatile __ppc32_pte_t * const pte = (__ppc32_pte_t*)&pPteg[i];
 			if ( pte )

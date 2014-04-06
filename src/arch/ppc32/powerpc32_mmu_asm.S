@@ -241,10 +241,13 @@ __ppc32_get_sr15:
 
 .global __ppc32_set_sdr1
 __ppc32_set_sdr1:
+	sync
     mtsdr1  %r3
+    sync
     blr
 
 .global __ppc32_get_sdr1
 __ppc32_get_sdr1:
+	sync
     mfsdr1 %r3
     blr

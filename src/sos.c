@@ -27,12 +27,27 @@ int kmain(void)
 
 	sos_debug("sos: initialising test process\n");
 
+	extern char * __utext;
+	extern char * __udata;
+	extern char * __euser;
+	char * user_text_pos = (char*)&__utext;
+	char * user_data_pos = (char*)&__udata;
+	char * user_data_end = (char*)&__euser;
+	const sos_meminfo_t meminfo =
+	{
+		.heap_size = 0x10000,
+		.stack_size = 0x1000,
+		.text_start = (uint32_t)user_text_pos,
+		.text_size = (uint32_t)(user_data_pos - user_text_pos),
+		.data_start = (uint32_t)user_data_pos,
+		.data_size = (uint32_t)(user_data_end - user_data_pos)
+	};
+
 	const error_t e = sos_create_process(
 			"test_image",
 			&my_initial_thread,
 			127,
-			0x10000,
-			0x1000,
+			&meminfo,
 			0,
 			&p);
 

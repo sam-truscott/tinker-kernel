@@ -21,5 +21,19 @@ typedef struct tgt_mem
 	uint32_t segment_ids[MMU_SEG_COUNT];
 } tgt_mem_t;
 
+typedef struct __ppc32_pte
+{
+	uint32_t w0;
+	uint32_t w1;
+} __ppc32_pte_t;
+
+#define __PPC_MAX_PTE_PER_PTEG 8u
+
+typedef struct __ppc32_pteg
+{
+	__ppc32_pte_t ptes[__PPC_MAX_PTE_PER_PTEG];
+} __ppc32_pteg_t;
+
+typedef __ppc32_pteg_t* tgt_pg_tbl_t;
 
 #endif /* TGT_MEM_H_ */

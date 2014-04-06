@@ -24,6 +24,7 @@ error_t __process_create(
 		const uint32_t pid,
 		const char * const name,
 		const bool_t is_kernel,
+		const sos_meminfo_t * const meminfo,
 		const __mem_pool_info_t * pool,
 		__process_t ** process);
 
@@ -82,5 +83,7 @@ void __process_free_vmem(
 		const uint32_t virt_address);
 
 __thread_it_t * __process_iterator(const __process_t * const process);
+
+const tgt_pg_tbl_t * __process_get_page_table(const __process_t * const process);
 
 #endif /* PROCESS_H_ */

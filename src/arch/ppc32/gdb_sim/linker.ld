@@ -63,10 +63,20 @@ SECTIONS{
         *(.data.*)
         *(.got2)
         *(.fixup)
+        . = ALIGN(0x1000);
+      	__data_end = .;
+    }>RAM
+    
+    /* code */
+    .api ALIGN (0x1000) : {
+    	__api = .;
+    	*(.api)
+    	 . = ALIGN(0x1000);
+    	 __api_end = .;
     }>RAM
    
 	/* code */
-    .text ALIGN (0x4) : {
+    .text ALIGN (0x1000) : {
         __text = .;
     	*(.boot)
     	*(.vector_code)
@@ -80,10 +90,6 @@ SECTIONS{
         __utext = .;
         *(.utext)
         _euser_text = ALIGN(0x1000);
-    }
-        
-    .udata ALIGN (0x4) :
-    {
         __udata = .;
         *(.udata)
         __euser = ALIGN(0x1000);
@@ -95,9 +101,5 @@ SECTIONS{
     
     .memory_pool ALIGN (0x1000) (NOLOAD) : {
     	end = .;
-    }>RAM
-    
-    .ptbl 0x7F00000 (NOLOAD) : {
-        *(.ptbl)
     }>RAM
 }

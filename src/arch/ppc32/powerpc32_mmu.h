@@ -162,21 +162,6 @@ typedef enum __ppc32_pp
 	| (WIMG << 3) \
 	| PP
 
-typedef struct __ppc32_pte
-{
-	uint32_t w0;
-	uint32_t w1;
-} __ppc32_pte_t;
-
-#define __PPC_MAX_PTE_PER_PTEG 8u
-
-typedef struct __ppc32_pteg
-{
-	__ppc32_pte_t ptes[__PPC_MAX_PTE_PER_PTEG];
-} __ppc32_pteg_t;
-
-typedef __ppc32_pteg_t* __ppc32_pt_t;
-
 #define __PPC_GET_SEGMENT_INDEX(ea) \
 	((((uint32_t)ea) >> 28) & 0xFu)
 
@@ -277,12 +262,22 @@ uint32_t __ppc32_get_sr15(void);
 #define __PPC_PRIMARY_HASH_VA(VSID, VA) \
 		__PPC_PRIMARY_HASH(VSID, ((EA >> 39) & 0xFFFF))
 
-void __ppc32_set_sdr1(uint32_t sdr1);
+void __ppc32_set_sdr1(const tgt_pg_tbl_t sdr1);
 
-uint32_t __ppc32_get_sdr1(void);
+tgt_pg_tbl_t __ppc32_get_sdr1(void);
 
-void __ppc32_add_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1);
+void __ppc32_add_pte(
+		const tgt_pg_tbl_t * const page_tbl,
+		const uint32_t ea,
+		const uint32_t vsid,
+		const uint32_t pte_w0,
+		const uint32_t pte_w1);
 
-void __ppc32_remove_pte(uint32_t ea, uint32_t vsid, uint32_t pte_w0, uint32_t pte_w1);
+void __ppc32_remove_pte(
+		const tgt_pg_tbl_t * const page_tbl,
+		const uint32_t ea,
+		const uint32_t vsid,
+		const uint32_t pte_w0,
+		const uint32_t pte_w1);
 
 #endif /* POWERPC32_7400_MMU_H_ */

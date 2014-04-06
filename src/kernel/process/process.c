@@ -56,6 +56,7 @@ typedef struct __process_t
 	uint32_t 				next_thread_id;
 	__thread_t * 			initial_thread;
 	__mem_pool_info_t * 	parent;
+	tgt_pg_tbl_t *			page_table;
 } __process_internal_t;
 
 static void __process_add_mem_sec(
@@ -106,6 +107,7 @@ error_t __process_create(
 		const uint32_t pid,
 		const char * const name,
 		const bool_t is_kernel,
+		const sos_meminfo_t * const meminfo,
 		const __mem_pool_info_t * pool,
 		__process_t ** process)
 {
@@ -122,6 +124,7 @@ error_t __process_create(
 		p->kernel_process = is_kernel;
 		p->parent = mempool;
 		p->memory_pool = (__mem_pool_info_t *)pool;
+		p->page_table = (tgt_pg_tbl_t*)__mem_alloc(p->memory_pool, PAGE_TABLE_SIZE);
 		const uint32_t length = __util_strlen(name,__MAX_PROCESS_IMAGE_LEN);
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
@@ -132,13 +135,51 @@ error_t __process_create(
 		__process_add_mem_sec(
 				p,
 				__mem_sec_create(
-				p->memory_pool,
-				__mem_get_start_addr(p->memory_pool),
-				VIRTUAL_ADDRESS_SPACE,
-				__mem_get_alloc_size(p->memory_pool),
-				MMU_RANDOM_ACCESS_MEMORY,
-				MMU_USER_ACCESS,
-				MMU_READ_WRITE));
+					p->memory_pool,
+					__mem_get_start_addr(p->memory_pool),
+					VIRTUAL_ADDRESS_SPACE,
+					__mem_get_alloc_size(p->memory_pool),
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_USER_ACCESS,
+					MMU_READ_WRITE));
+
+		__process_add_mem_sec(
+				p,
+				__mem_sec_create(
+					p->memory_pool,
+				    meminfo->text_start,
+					meminfo->text_start,
+					meminfo->text_size,
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_USER_ACCESS,
+					MMU_READ_ONLY));
+
+		__process_add_mem_sec(
+                p,
+                __mem_sec_create(
+                    p->memory_pool,
+                    meminfo->data_start,
+                    meminfo->data_start,
+                    meminfo->data_size,
+                    MMU_RANDOM_ACCESS_MEMORY,
+                    MMU_USER_ACCESS,
+                    MMU_READ_WRITE));
+
+        extern char * __api;
+        extern char * __api_end;
+        char * api = (char*)&__api;
+        char * eapi = (char*)&__api_end;
+
+        __process_add_mem_sec(
+                p,
+                __mem_sec_create(
+                    p->memory_pool,
+                    (const uint32_t)api,
+                    (const uint32_t)api,
+                    (const uint32_t)(eapi - api),
+                    MMU_RANDOM_ACCESS_MEMORY,
+                    MMU_USER_ACCESS,
+                    MMU_READ_ONLY));
 
 		ret = __tgt_initialise_process(p);
 		if (ret == NO_ERROR && process)
@@ -500,4 +541,9 @@ void __process_free_vmem(
 __thread_it_t * __process_iterator(const __process_t * const process)
 {
 	return __thread_it_t_create(process->threads);
+}
+
+const tgt_pg_tbl_t * __process_get_page_table(const __process_t * const process)
+{
+	return process->page_table;
 }

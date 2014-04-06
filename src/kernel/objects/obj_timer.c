@@ -54,7 +54,7 @@ object_number_t __obj_timer_get_oid
 	return oid;
 }
 
-static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p) __attribute__((section(".utext")));
+static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
 static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p)
 {
 	if (t)

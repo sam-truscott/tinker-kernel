@@ -38,10 +38,6 @@ static __intc_t * __opic_intc;
 
 static __timer_t __ppc32_time_base_timer;
 
-static __ppc32_pteg_t __ptegs[16 * 1024] __attribute__((section(".ptbl"))); /* 16k of entries */
-
-static __ppc32_pt_t __page_table;
-
 
 /**
  * External Interrupt by a Hardware Device
@@ -172,11 +168,10 @@ void __bsp_initialise(void)
 	__ppc32_set_sr14(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 	__ppc32_set_sr15(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 
-	__page_table = __ptegs; /* pointer to page table */;
-
 	/* setup the SDR1 for the page table - based on
 	 * Minimum Recommended Page Table Sizes from PowerPC
 	 * Programming Environments Manual  */
+	/*
 	__ppc32_set_sdr1(__PPC_SDR(__page_table, 0xF));
 
 	extern char * __utext;
@@ -221,6 +216,7 @@ void __bsp_initialise(void)
 							__ppc32_memory_no_coherency,
 							__ppc32_not_guarded),
 					__ppc32_read_write));
+	*/
 
 	{
 		uint32_t msr = __ppc_get_msr();

@@ -17,6 +17,8 @@
 
 #define SCHEDULER_HERTZ 100
 
+#define PAGE_TABLE_SIZE (1 * (1024 * 1024))
+
 /**
  * The size of the heap for the kernel
  */

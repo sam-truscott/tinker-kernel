@@ -68,10 +68,12 @@ static void __ivt_install_vector(void * const address, const void * const vector
  * @param mem_type The type of memory being mapped
  */
 static error_t __ppc_setup_paged_area(
+		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
 		const __mem_section_t * const mem_sec);
 
 static void __ppc_remove_paged_area(
+		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
 		const __mem_section_t * const mem_sec);
 
@@ -229,6 +231,7 @@ void __ppc_isr_handler(const uint32_t vector, void * const registers)
 }
 
 static error_t __ppc_setup_paged_area(
+		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
 		const __mem_section_t * const mem_sec)
 {
@@ -301,6 +304,7 @@ static error_t __ppc_setup_paged_area(
 							access);
 		}
 		__ppc32_add_pte(
+				page_tbl,
 				page_virtual_address,
 				vsid,
 				w0,
@@ -311,6 +315,7 @@ static error_t __ppc_setup_paged_area(
 }
 
 static void __ppc_remove_paged_area(
+		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
 		const __mem_section_t * const mem_sec)
 {
@@ -371,6 +376,7 @@ static void __ppc_remove_paged_area(
 		}
 
 		__ppc32_remove_pte(
+				page_tbl,
 				page_virtual_address,
 				vsid,
 				w0,
@@ -400,6 +406,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 		{
 			/* setup virt -> real mapping for size */
 			ok = __ppc_setup_paged_area(
+			        __process_get_page_table(process),
 					&segment_info,
 					section);
 
@@ -422,6 +429,7 @@ error_t __tgt_map_memory(
 		if (segment_info)
 		{
 			result = __ppc_setup_paged_area(
+			        __process_get_page_table(process),
 					segment_info,
 					section);
 		}
@@ -439,6 +447,7 @@ void __tgt_unmap_memory(
 		if (segment_info)
 		{
 			__ppc_remove_paged_area(
+					__process_get_page_table(process),
 					segment_info,
 					section);
 		}

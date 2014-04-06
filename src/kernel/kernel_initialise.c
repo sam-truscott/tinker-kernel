@@ -63,13 +63,28 @@ void __kernel_initialise(void)
 
 	__debug_print("Kernel: Initialising Kernel Process...\n");
 
+	extern char * __text;
+	extern char * __text_end;
+	extern char * __data_end;
+	char * text_pos = (char*)&__text;
+	char * text_epos = (char*)&__text_end;
+	char * data_pos = 0;
+	char * data_end = (char*)&__data_end;
+	const sos_meminfo_t meminfo =
+	{
+		.heap_size = __KERNEL_HEAP,
+		.stack_size = __KERNEL_IDLE_STACK,
+		.text_start = (uint32_t)text_pos,
+		.text_size = (uint32_t)(text_epos - text_pos),
+		.data_start = (uint32_t)data_pos,
+		.data_size = (uint32_t)(data_end - data_pos)
+	};
 	__proc_create_process(
 			"kernel",
 			"kernel_idle",
 			__kernel_idle,
 			__KERNEL_IDLE_PRIORITY,
-			__KERNEL_IDLE_STACK,
-			__KERNEL_HEAP,
+			&meminfo,
 			THREAD_FLAG_NONE,
 			&__kernel_process);
 

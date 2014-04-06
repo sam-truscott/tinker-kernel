@@ -52,8 +52,7 @@ error_t __proc_create_process(
 		const char * initial_task_name,
 		thread_entry_point * entry_point,
 		const uint8_t priority,
-		const uint32_t stack,
-		const uint32_t heap,
+		const sos_meminfo_t * const meminfo,
 		const uint32_t flags,
 		__process_t ** process)
 {
@@ -104,7 +103,9 @@ error_t __proc_create_process(
 	const bool_t pool_allocated = __mem_init_process_memory(
 			parent_pool,
 			&new_mem_pool,
-			heap + stack);
+			meminfo->heap_size
+				+ meminfo->stack_size
+				+ PAGE_TABLE_SIZE);
 
 	if (!pool_allocated)
 	{
@@ -117,6 +118,7 @@ error_t __proc_create_process(
 				proc_id,
 				image,
 				(curr_thread == NULL),
+				meminfo,
 				new_mem_pool,
 				&proc);
 
@@ -139,7 +141,7 @@ error_t __proc_create_process(
 						initial_task_name,
 						entry_point,
 						priority,
-						stack,
+						meminfo->stack_size,
 						flags,
 						&thread_obj,
 						NULL);

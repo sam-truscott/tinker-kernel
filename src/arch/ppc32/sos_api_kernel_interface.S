@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 
-.section .utext
+.section .api
 .global SOS_API_CALL_7
 SOS_API_CALL_7:
     sc

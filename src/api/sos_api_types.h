@@ -10,7 +10,7 @@
 #define SOS_API_TYPES_H_
 
 #if defined(__BUILDING_KERNEL)
-#define SOS_API_SUFFIX __attribute__((section(".utext")))
+#define SOS_API_SUFFIX __attribute__((section(".api")))
 #else
 #define SOS_API_SUFFIX
 #endif

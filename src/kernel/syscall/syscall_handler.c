@@ -127,11 +127,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 						"main",
 						(thread_entry_point*)(param[1]),
 						(const uint8_t)param[2],
-						(const uint32_t)param[3],
-						(const uint32_t)param[4],
-						(uint32_t)param[5],
+						(const sos_meminfo_t* const)param[3],
+						(uint32_t)param[4],
 						(__process_t **)&process);
-				*((object_number_t*)param[6]) = __process_get_oid(process);
+				*((object_number_t*)param[5]) = __process_get_oid(process);
 			}
 			break;
 

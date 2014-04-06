@@ -28,18 +28,16 @@ error_t sos_create_process(
 		const char * image_name,
 		thread_entry_point * entry,
 		uint8_t priority,
-		uint32_t heap,
-		uint32_t stack,
+		const sos_meminfo_t * const meminfo,
 		uint32_t flags,
 		sos_process_t * process)
 {
-	return SOS_API_CALL_7(
+	return SOS_API_CALL_6(
 			SYSCALL_CREATE_PROCESS,
 			(uint32_t)image_name,
 			(uint32_t)entry,
 			(uint32_t)priority,
-			stack,
-			heap,
+			(uint32_t)meminfo,
 			flags,
 			(uint32_t)process);
 }

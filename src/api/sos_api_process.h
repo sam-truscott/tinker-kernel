@@ -28,12 +28,20 @@ typedef object_number_t sos_process_t;
  */
 typedef object_number_t sos_thread_t;
 
+typedef struct sos_meminfo {
+	uint32_t heap_size;
+	uint32_t stack_size;
+	uint32_t text_start;
+	uint32_t text_size;
+	uint32_t data_start;
+	uint32_t data_size;
+} sos_meminfo_t;
+
 error_t sos_create_process(
 		const char * image_name,
 		thread_entry_point * entry,
 		uint8_t priority,
-		uint32_t heap,
-		uint32_t stack,
+		const sos_meminfo_t * const meminfo,
 		uint32_t flags,
 		sos_process_t * process) SOS_API_SUFFIX;
 
