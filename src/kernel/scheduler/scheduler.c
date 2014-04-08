@@ -60,6 +60,8 @@ STACK_BODY_INSERT(static, __queue_stack_t, __thread_queue_t*)
  */
 static __thread_t * __sch_current_thread = NULL;
 
+static __process_t * __sch_current_process = NULL;
+
 static __thread_queue_t * __sch_active_queue;
 
 static __thread_queue_t __sch_thread_queues[__MAX_PRIORITY + 1];
@@ -271,7 +273,7 @@ void __sch_terminate_current_thread(
 {
 	__thread_t * thread = __sch_get_current_thread();
 
-	if ( thread )
+	if (thread)
 	{
 		__thread_set_state(thread, THREAD_TERMINATED);
 		__thread_save_context(thread, context);
@@ -286,9 +288,10 @@ __thread_t * __sch_get_current_thread(void)
 
 void __sch_set_current_thread(__thread_t * const thread)
 {
-	if ( thread )
+	if (thread)
 	{
 		__sch_current_thread = thread;
+		__sch_current_process = __thread_get_parent(thread);
 	}
 }
 
@@ -307,7 +310,7 @@ static void __sch_priority_find_next_queue(__thread_t * const t)
 		{
 			break;
 		}
-	} while ( !size && p );
+	} while (!size && p);
 
 	__sch_current_priority = p;
 	__sch_active_queue = queue;
@@ -319,7 +322,7 @@ void __sch_set_context_for_next_thread(
 {
 	__thread_t * const current_thread = __sch_current_thread;
 
-	if ( __sch_active_queue )
+	if (__sch_active_queue)
 	{
 		__thread_queue_t_front(__sch_active_queue, &__sch_current_thread);
 	}
@@ -358,8 +361,9 @@ void __sch_set_context_for_next_thread(
 		}
 		__thread_save_context(current_thread, context);
 		// load in the state of the new thread
-		__thread_load_context(__sch_current_thread, context);
-		__tgt_prepare_context(context, __sch_current_thread);
+        __tgt_prepare_context(context, __sch_current_thread, __sch_current_process);
+        // update the current process after the switch
+        __sch_current_process = __thread_get_parent(__sch_current_thread);
 	}
 
 	__kernel_assert("Scheduler couldn't get next thread", __sch_current_thread != NULL);

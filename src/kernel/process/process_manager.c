@@ -96,7 +96,17 @@ error_t __proc_create_process(
 		__debug_print("proc: create process for %s from parent\n",
 				image);
 #endif
-		parent_pool = __process_get_mem_pool(__thread_get_parent(curr_thread));
+		// if the parent is the kernel, use the default pool instead
+		// of the kernel's
+		const __process_t * const parent = __thread_get_parent(curr_thread);
+		if (parent == __kernel_get_process())
+		{
+		    parent_pool = __mem_get_default_pool();
+		}
+		else
+		{
+		    parent_pool = __process_get_mem_pool(parent);
+		}
 	}
 
 	__mem_pool_info_t * new_mem_pool = NULL;

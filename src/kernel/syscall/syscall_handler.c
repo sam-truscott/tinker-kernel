@@ -518,7 +518,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 		break;
 		case SYSCALL_LOAD_THREAD:
-			__tgt_prepare_context(context, this_thread);
+			__tgt_prepare_context(context, this_thread, NULL);
 			break;
 
 		default:

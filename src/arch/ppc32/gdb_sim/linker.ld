@@ -89,7 +89,8 @@ SECTIONS{
     {
         __utext = .;
         *(.utext)
-        _euser_text = ALIGN(0x1000);
+        . = ALIGN(0x1000);
+        _euser_text = .;
         __udata = .;
         *(.udata)
         __euser = ALIGN(0x1000);

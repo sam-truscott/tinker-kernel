@@ -262,7 +262,7 @@ uint32_t __ppc32_get_sr15(void);
 #define __PPC_PRIMARY_HASH_VA(VSID, VA) \
 		__PPC_PRIMARY_HASH(VSID, ((EA >> 39) & 0xFFFF))
 
-void __ppc32_set_sdr1(const tgt_pg_tbl_t sdr1);
+void __ppc32_set_sdr1(const uint32_t sdr1);
 
 tgt_pg_tbl_t __ppc32_get_sdr1(void);
 
@@ -279,5 +279,9 @@ void __ppc32_remove_pte(
 		const uint32_t vsid,
 		const uint32_t pte_w0,
 		const uint32_t pte_w1);
+
+void __ppc32_switch_page_table(
+        const __process_t * const last_proc,
+        const __process_t * const proc);
 
 #endif /* POWERPC32_7400_MMU_H_ */

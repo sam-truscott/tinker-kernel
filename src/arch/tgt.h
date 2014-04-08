@@ -46,7 +46,8 @@ void __tgt_destroy_context(
 
 void __tgt_prepare_context(
 		__tgt_context_t * const context,
-		const __thread_t * const thread);
+		const __thread_t * const thread,
+        const __process_t * const current_process);
 
 uint32_t __tgt_get_stack_pointer(void);
 

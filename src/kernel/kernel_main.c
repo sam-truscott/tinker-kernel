@@ -60,7 +60,7 @@ void __kernel_main(void)
 
 	kmain();
 
-#if defined (__KERNEL_SHELL)
+#if defined (__KERNEL_SHELL1)
 	__proc_create_thread(
 			__thread_get_parent(idle_thread),
 			"kshell",

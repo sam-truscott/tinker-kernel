@@ -71,7 +71,7 @@ bool_t	__mem_init_process_memory(
 			size,
 			MMU_PAGE_SIZE);
 
-	if ( proc_memory_pool != 0 )
+	if (proc_memory_pool != 0)
 	{
 		/* create a table for the given process */
 		ret = __mem_init_memory_pool(

@@ -390,13 +390,11 @@ error_t __tgt_initialise_process(__process_t * const process)
 
 	if (!__process_is_kernel(process))
 	{
-		const uint32_t pid = __process_get_pid(process);
 		tgt_mem_t segment_info;
 		/* setup all the segment IDs */
 		for (uint8_t sid = 0 ; sid < MMU_SEG_COUNT ; sid++)
 		{
-			segment_info.segment_ids[sid] =
-					(pid * MMU_SEG_COUNT) + sid;
+			segment_info.segment_ids[sid] = sid;
 		}
 		__process_set_segment_info(process, &segment_info);
 
@@ -511,9 +509,10 @@ void __tgt_destroy_context(
 
 void __tgt_prepare_context(
 		__tgt_context_t * const context,
-		const __thread_t * const thread)
+		const __thread_t * const thread,
+		const __process_t * const current_process)
 {
-	if ( context && thread )
+	if (context && thread)
 	{
 		uint8_t ks_flag = SR_KS_FAIL;
 		uint8_t kp_flag = SR_KP_OK;
@@ -594,6 +593,10 @@ void __tgt_prepare_context(
 				__PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[15]));
+
+		if (current_process != proc) {
+		    __ppc32_switch_page_table(current_process, proc);
+		}
 	}
 }
 

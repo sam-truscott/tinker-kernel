@@ -124,7 +124,11 @@ error_t __process_create(
 		p->kernel_process = is_kernel;
 		p->parent = mempool;
 		p->memory_pool = (__mem_pool_info_t *)pool;
-		p->page_table = (tgt_pg_tbl_t*)__mem_alloc(p->memory_pool, PAGE_TABLE_SIZE);
+		p->page_table = (tgt_pg_tbl_t*)__mem_alloc_aligned(p->memory_pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
+		if (p->page_table)
+		{
+		    memset(p->page_table, 0, PAGE_TABLE_SIZE);
+		}
 		const uint32_t length = __util_strlen(name,__MAX_PROCESS_IMAGE_LEN);
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
