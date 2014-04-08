@@ -93,7 +93,6 @@ void __ppc32_remove_pte(
 		const uint32_t pte_w0,
 		const uint32_t pte_w1)
 {
-    __ppc32_invalid_ea(ea);
 	volatile tgt_pg_tbl_t const pPteg = __ppc32_get_pte(page_tbl, ea, vsid);
 	if (pPteg)
 	{
@@ -120,6 +119,7 @@ void __ppc32_remove_pte(
 			}
 		}
 		__kernel_assert("pte unmapping failed", unmapped);
+		__ppc32_invalid_ea(ea);
 	}
 }
 

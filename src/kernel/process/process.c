@@ -115,11 +115,6 @@ error_t __process_create(
 	error_t ret = NO_ERROR;
 	if (p)
 	{
-		p->threads = __thread_map_t_create(
-				__hash_basic_integer,
-				__hash_equal_integer,
-				true,
-				mempool);
 		p->process_id = pid;
 		p->kernel_process = is_kernel;
 		p->parent = mempool;
@@ -129,6 +124,11 @@ error_t __process_create(
 		{
 		    memset(p->page_table, 0, PAGE_TABLE_SIZE);
 		}
+		p->threads = __thread_map_t_create(
+		        __hash_basic_integer,
+		        __hash_equal_integer,
+		        true,
+		        p->memory_pool);
 		const uint32_t length = __util_strlen(name,__MAX_PROCESS_IMAGE_LEN);
 		__util_memcpy(p->image, name, length);
 		p->image[length] = '\0';
@@ -343,10 +343,6 @@ void __process_exit(__process_t * const process)
 					__obj_exit_thread(thread);
 					__obj_remove_object(process->object_table, oid);
 				}
-				else
-				{
-					__kernel_assert("hi", false);
-				}
 			}
 			else
 			{
@@ -420,11 +416,13 @@ void __process_exit(__process_t * const process)
 	const __mem_section_t * section = process->first_section;
 	while (section)
 	{
+	    const __mem_section_t * const tmp = section;
 		__tgt_unmap_memory(process, section);
-		__mem_sec_delete(section);
 		section = __mem_sec_get_next(section);
+		__mem_sec_delete(tmp);
 	}
 
+	__mem_free(process->memory_pool, process->page_table);
 	__mem_free(process->parent, process->memory_pool);
 	__mem_free(process->parent, process);
 }
