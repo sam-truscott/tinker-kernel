@@ -10,7 +10,7 @@
 
 #include "arch/tgt.h"
 #include "arch/board_support.h"
-#include "sos_api_kernel_interface.h"
+#include "tinker_api_kernel_interface.h"
 #include "kernel/kernel_initialise.h"
 #include "kernel/kernel_main.h"
 #include "kernel/process/process_manager.h"
@@ -127,7 +127,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 						"main",
 						(thread_entry_point*)(param[1]),
 						(const uint8_t)param[2],
-						(const sos_meminfo_t* const)param[3],
+						(const tinker_meminfo_t* const)param[3],
 						(uint32_t)param[4],
 						(__process_t **)&process);
 				*((object_number_t*)param[5]) = __process_get_oid(process);
@@ -326,7 +326,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					__thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(const char*)param[1],
-					(const sos_pipe_direction_t)param[2],
+					(const tinker_pipe_direction_t)param[2],
 					(const uint32_t)param[3],
 					(const uint32_t)param[4]);
 			break;
@@ -351,7 +351,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					__syscall_get_thread_object(this_thread),
 					(object_number_t*)param[0],
 					(const char*)param[1],
-					(const sos_pipe_direction_t)param[2],
+					(const tinker_pipe_direction_t)param[2],
 					(const uint32_t)param[3],
 					(const uint32_t)param[4]);
 			break;
@@ -383,7 +383,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			ret = __obj_pipe_send_message(
 					pipe,
 					__syscall_get_thread_object(this_thread),
-					(sos_pipe_send_kind_t)param[1],
+					(tinker_pipe_send_kind_t)param[1],
 					(void*)param[2],
 					(const uint32_t)param[3],
 					(const bool_t)param[4]);
@@ -468,7 +468,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 					(const __priority_t)param[1],
 					(const uint32_t)param[2],
 					(const uint32_t)param[3],
-					(sos_timer_callback_t*)param[4],
+					(tinker_timer_callback_t*)param[4],
 					(void*)param[5]);
 			break;
 		case SYSCALL_CANCEL_TIMER:
@@ -502,7 +502,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_GET_TIME:
 			if (param[0])
 			{
-				__time_get_system_time(((sos_time_t*)param[0]));
+				__time_get_system_time(((tinker_time_t*)param[0]));
 				ret = NO_ERROR;
 			}
 			else
@@ -512,7 +512,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_SLEEP:
 		{
-			const sos_time_t * const duration = (const sos_time_t*)param[0];
+			const tinker_time_t * const duration = (const tinker_time_t*)param[0];
 			__object_thread_t * const thread_obj =__syscall_get_thread_object(this_thread);
 			ret = __obj_thread_sleep(thread_obj, duration);
 		}

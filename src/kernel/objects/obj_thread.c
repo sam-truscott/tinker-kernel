@@ -362,7 +362,7 @@ static void __obj_thread_sleep_callback(const uint32_t alarm_id, __object_thread
 	}
 }
 
-error_t __obj_thread_sleep(__object_thread_t * const o, const sos_time_t * const duration)
+error_t __obj_thread_sleep(__object_thread_t * const o, const tinker_time_t * const duration)
 {
 	error_t result = NO_ERROR;
 

@@ -9,7 +9,7 @@
 #ifndef UTIL_I_TO_A_H_
 #define UTIL_I_TO_A_H_
 
-#include "sos_api.h"
+#include "tinker_api.h"
 
 void __util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length);
 

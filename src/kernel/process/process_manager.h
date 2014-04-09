@@ -28,7 +28,7 @@ error_t __proc_create_process(
 		const char * initial_task_name,
 		thread_entry_point * entry_point,
 		const uint8_t priority,
-		const sos_meminfo_t * const meminfo,
+		const tinker_meminfo_t * const meminfo,
 		const uint32_t flags,
 		__process_t ** process);
 

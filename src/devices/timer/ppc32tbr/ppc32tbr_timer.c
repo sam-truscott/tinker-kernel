@@ -15,13 +15,13 @@
 typedef struct
 {
 	bool_t enabled;
-	const sos_time_t* alarm_time;
+	const tinker_time_t* alarm_time;
 	__timer_callback * call_back;
 } __ppc_timer_usr_data_t;
 
 static void __ppc_timer_setup(
 		const __timer_param_t const usr_data,
-		const sos_time_t * const timeout,
+		const tinker_time_t * const timeout,
 		__timer_callback * const call_back);
 
 static void __ppc_timer_cancel(const __timer_param_t const usr_data);
@@ -54,9 +54,9 @@ void __ppc_check_timer(__timer_t * const timer)
 		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)timer->usr_data;
 		if (data->enabled)
 		{
-			sos_time_t now = TINKER_ZERO_TIME;
+		    tinker_time_t now = TINKER_ZERO_TIME;
 			__time_get_system_time(&now);
-			if (sos_time_gt(&now, data->alarm_time))
+			if (tinker_time_gt(&now, data->alarm_time))
 			{
 				data->enabled = false;
 				data->call_back();
@@ -67,14 +67,14 @@ void __ppc_check_timer(__timer_t * const timer)
 
 void __ppc_timer_setup(
 		const __timer_param_t const usr_data,
-		const sos_time_t * const timeout,
+		const tinker_time_t * const timeout,
 		__timer_callback * const call_back)
 {
 	if (usr_data && call_back)
 	{
 		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)usr_data;
 		data->call_back = call_back;
-		*((sos_time_t*)data->alarm_time) = *timeout;
+		*((tinker_time_t*)data->alarm_time) = *timeout;
 		data->enabled = true;
 	}
 }

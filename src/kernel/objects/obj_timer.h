@@ -9,7 +9,7 @@
 #ifndef OBJ_TIMER_H_
 #define OBJ_TIMER_H_
 
-#include "sos_api_timer.h"
+#include "tinker_api_timer.h"
 #include "kernel/objects/object.h"
 #include "kernel/process/process.h"
 
@@ -26,7 +26,7 @@ error_t __obj_create_timer(
 		const __priority_t priority,
 		const uint32_t seconds,
 		const uint32_t nanoseconds,
-		sos_timer_callback_t * const callback,
+		tinker_timer_callback_t * const callback,
 		const void* parameter);
 
 error_t __obj_cancel_timer(__object_timer_t * const timer);

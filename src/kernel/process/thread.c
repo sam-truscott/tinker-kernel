@@ -87,7 +87,7 @@ __thread_t * __thread_create(
 					thread,
 					&thread->context,
 					__process_is_kernel(thread->parent),
-					(const uint32_t)sos_exit_thread);
+					(const uint32_t)tinker_exit_thread);
 		}
 		else
 		{

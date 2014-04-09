@@ -8,7 +8,7 @@
  */
 #include "mem_pool.h"
 
-#include "sos_api_types.h"
+#include "tinker_api_types.h"
 #include "tgt_mem.h"
 #include "kernel/kernel_assert.h"
 #include "kernel/console/print_out.h"

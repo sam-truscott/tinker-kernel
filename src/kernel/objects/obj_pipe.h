@@ -9,7 +9,7 @@
 #ifndef OBJ_PIPE_H_
 #define OBJ_PIPE_H_
 
-#include "sos_api_pipe.h"
+#include "tinker_api_pipe.h"
 #include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_thread.h"
@@ -27,7 +27,7 @@ error_t __obj_create_pipe(
 		__process_t * const process,
 		object_number_t * objectno,
 		const char * const name,
-		const sos_pipe_direction_t direction,
+		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages);
 
@@ -36,7 +36,7 @@ error_t __object_open_pipe(
 		__object_thread_t * const thread,
 		object_number_t * objectno,
 		const char * const name,
-		const sos_pipe_direction_t direction,
+		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages);
 
@@ -45,7 +45,7 @@ error_t __obj_delete_pipe(__object_pipe_t * const pipe);
 error_t __obj_pipe_send_message(
 		__object_pipe_t * const pipe,
 		__object_thread_t * const thread,
-		const sos_pipe_send_kind_t send_kind,
+		const tinker_pipe_send_kind_t send_kind,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block);

@@ -28,7 +28,7 @@ uint64_t __ppc_get_timebase_time(void)
 	return __ppc_get_tbr() * __ppc_nanoseconds_per_tb_tick;
 }
 
-void __ppc_convert_time_to_tbr(const sos_time_t * const t, uint64_t * const tbr)
+void __ppc_convert_time_to_tbr(const tinker_time_t * const t, uint64_t * const tbr)
 {
 	if (t && tbr)
 	{

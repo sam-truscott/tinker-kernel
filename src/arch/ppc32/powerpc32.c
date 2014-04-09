@@ -10,7 +10,7 @@
 #include "powerpc32_mmu.h"
 
 #include "config.h"
-#include "api/sos_api_time.h"
+#include "api/tinker_api_time.h"
 #include "kernel/time/time.h"
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/kernel_assert.h"

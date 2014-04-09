@@ -9,7 +9,7 @@
 #ifndef UNBOUNDED_QUEUE_H_
 #define UNBOUNDED_QUEUE_H_
 
-#include "sos_api_types.h"
+#include "tinker_api_types.h"
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 #include "unbounded_list.h"

@@ -6,9 +6,9 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "sos_api_process.h"
-#include "sos_api.h"
-#include "sos_api_kernel_interface.h"
+#include "tinker_api_process.h"
+#include "tinker_api.h"
+#include "tinker_api_kernel_interface.h"
 
 /**
  * Create a new Process
@@ -24,13 +24,13 @@
  * @param thread A pointer to the created Thread.
  * @return
  */
-error_t sos_create_process(
+error_t tinker_create_process(
 		const char * image_name,
 		thread_entry_point * entry,
 		uint8_t priority,
-		const sos_meminfo_t * const meminfo,
+		const tinker_meminfo_t * const meminfo,
 		uint32_t flags,
-		sos_process_t * process)
+		tinker_process_t * process)
 {
 	return TINKER_API_CALL_6(
 			SYSCALL_CREATE_PROCESS,
@@ -42,13 +42,13 @@ error_t sos_create_process(
 			(uint32_t)process);
 }
 
-error_t sos_create_thread(
+error_t tinker_create_thread(
 		const char * thread_name,
 		thread_entry_point * entry,
 		uint8_t priority,
 		uint32_t stack,
 		uint32_t flags,
-		sos_thread_t * thread)
+		tinker_thread_t * thread)
 {
 	return TINKER_API_CALL_6(
 			SYSCALL_CREATE_THREAD,
@@ -60,15 +60,15 @@ error_t sos_create_thread(
 			(uint32_t)thread);
 }
 
-error_t sos_get_thread_object(sos_thread_t * thread)
+error_t tinker_get_thread_object(tinker_thread_t * thread)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_THREAD_OBJECT,
 			(uint32_t)thread);
 }
 
-error_t	sos_get_thread_priority(
-		sos_thread_t thread,
+error_t	tinker_get_thread_priority(
+		tinker_thread_t thread,
 		uint8_t * priority)
 {
 	return TINKER_API_CALL_2(
@@ -77,12 +77,12 @@ error_t	sos_get_thread_priority(
 			(uint32_t)priority);
 }
 
-error_t sos_exit_thread(void)
+error_t tinker_exit_thread(void)
 {
 	return TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
 }
 
-void sos_debug(const char * const str)
+void tinker_debug(const char * const str)
 {
 	TINKER_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
 }

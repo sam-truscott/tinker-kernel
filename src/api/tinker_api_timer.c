@@ -6,14 +6,14 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "sos_api_timer.h"
-#include "sos_api_kernel_interface.h"
+#include "tinker_api_timer.h"
+#include "tinker_api_kernel_interface.h"
 
-error_t sos_timer_create(
-		sos_timer_t * const timer,
+error_t tinker_timer_create(
+		tinker_timer_t * const timer,
 		const uint8_t priority,
-		const sos_timeout_time_t * const timeout,
-		sos_timer_callback_t * const callback,
+		const tinker_timeout_time_t * const timeout,
+		tinker_timer_callback_t * const callback,
 		const void * const data)
 {
 	return TINKER_API_CALL_6(
@@ -26,14 +26,14 @@ error_t sos_timer_create(
 			(uint32_t)data);
 }
 
-error_t sos_timer_cancel(sos_timer_t timer)
+error_t tinker_timer_cancel(tinker_timer_t timer)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_CANCEL_TIMER,
 			(uint32_t)timer);
 }
 
-error_t sos_timer_delete(sos_timer_t timer)
+error_t tinker_timer_delete(tinker_timer_t timer)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_DELETE_TIMER,

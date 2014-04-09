@@ -10,8 +10,8 @@
 #define TINKER_H_
 
 #include "config.h"
-#include "api/sos_api.h"
-#include "api/sos_api_types.h"
-#include "api/sos_api_errors.h"
+#include "api/tinker_api.h"
+#include "api/tinker_api_types.h"
+#include "api/tinker_api_errors.h"
 
 #endif /* TINKER_H_ */

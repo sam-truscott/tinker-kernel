@@ -252,8 +252,8 @@ void __bsp_setup(void)
 
 void __bsp_enable_schedule_timer(void)
 {
-	sos_time_t scheduler_time;
-	sos_time_milliseconds(1000 / SCHEDULER_HERTZ, &scheduler_time);
+    tinker_time_t scheduler_time;
+    tinker_time_milliseconds(1000 / SCHEDULER_HERTZ, &scheduler_time);
 	uint64_t tbr_value = 0;
 	__ppc_convert_time_to_tbr(&scheduler_time, &tbr_value);
 	__ppc_set_decrementer((uint32_t)tbr_value);

@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 #include "opic_timer.h"
-#include "sos_api_errors.h"
+#include "tinker_api_errors.h"
 #include "devices/intc/opic/opic_private.h"
 
 #define TIMER_DISABLED 0x80000000
@@ -25,7 +25,7 @@ static error_t __opic_timer_write_register(
 
 static void __opic_tmr_timer_setup(
 		const __timer_param_t const usr_data,
-		const sos_time_t * const timeout,
+		const tinker_time_t * const timeout,
 		__timer_callback * const call_back);
 
 static void __opic_tmr_timer_cancel(const __timer_param_t const usr_data);
@@ -43,7 +43,7 @@ void __opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer)
 
 void __opic_tmr_timer_setup(
 		const __timer_param_t const usr_data,
-		const sos_time_t * const timeout,
+		const tinker_time_t * const timeout,
 		__timer_callback * const call_back)
 {
 	if (usr_data && call_back)

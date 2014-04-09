@@ -9,8 +9,6 @@
 #ifndef BOOT_H_
 #define BOOT_H_
 
-#include "sos.h"
-
 extern void __kernel_boot(void);
 
 #endif /* BOOT_H_ */

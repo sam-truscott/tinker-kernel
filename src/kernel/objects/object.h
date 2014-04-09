@@ -10,7 +10,7 @@
 #define OBJECT_H_
 
 #include "arch/tgt_types.h"
-#include "sos_api_types.h"
+#include "tinker_api_types.h"
 
 typedef enum __object_type
 {

@@ -9,7 +9,7 @@
 #ifndef THREAD_H_
 #define THREAD_H_
 
-#include "sos_api_process.h"
+#include "tinker_api_process.h"
 #include "kernel/memory/mem_pool.h"
 
 typedef uint8_t __priority_t;

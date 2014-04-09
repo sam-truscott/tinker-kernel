@@ -8,7 +8,7 @@
  */
 #include "kshell.h"
 #if defined(__KERNEL_SHELL)
-#include "api/sos_api_types.h"
+#include "api/tinker_api_types.h"
 #include "kernel/console/print_out.h"
 #include "kernel/console/read_in.h"
 #include "kernel/process/process_manager.h"

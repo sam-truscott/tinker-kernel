@@ -9,7 +9,7 @@
 #ifndef OBJECT_TABLE_H_
 #define OBJECT_TABLE_H_
 
-#include "sos_api_errors.h"
+#include "tinker_api_errors.h"
 #include "kernel/memory/mem_pool.h"
 #include "kernel/objects/object.h"
 #include "kernel/utils/collections/hashed_map.h"

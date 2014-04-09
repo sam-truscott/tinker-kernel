@@ -9,8 +9,8 @@
 #ifndef HASHED_MAP_ITERATOR_H_
 #define HASHED_MAP_ITERATOR_H_
 
-#include "sos_api_types.h"
-#include "../util_memcpy.h"
+#include "tinker_api_types.h"
+#include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
 #define HASH_MAP_TYPE_ITERATOR_TYPE(ITERATOR_T) \

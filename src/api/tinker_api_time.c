@@ -6,13 +6,13 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "api/sos_api_time.h"
-#include "sos_api_kernel_interface.h"
+#include "api/tinker_api_time.h"
+#include "tinker_api_kernel_interface.h"
 
-void sos_time_add(
-		const sos_time_t * const l,
-		const sos_time_t * const r,
-		sos_time_t * const a)
+void tinker_time_add(
+		const tinker_time_t * const l,
+		const tinker_time_t * const r,
+		tinker_time_t * const a)
 {
 	if (l && r && a)
 	{
@@ -27,10 +27,10 @@ void sos_time_add(
 	}
 }
 
-void sos_time_sub(
-		const sos_time_t * const l,
-		const sos_time_t * const r,
-		sos_time_t * const a)
+void tinker_time_sub(
+		const tinker_time_t * const l,
+		const tinker_time_t * const r,
+		tinker_time_t * const a)
 {
 	if (l && r && a)
 	{
@@ -45,7 +45,7 @@ void sos_time_sub(
 	}
 }
 
-bool_t sos_time_lt(const sos_time_t * const l, const sos_time_t * const r)
+bool_t tinker_time_lt(const tinker_time_t * const l, const tinker_time_t * const r)
 {
 	bool_t lt = false;
 	if (l->seconds < r->seconds)
@@ -59,7 +59,7 @@ bool_t sos_time_lt(const sos_time_t * const l, const sos_time_t * const r)
 	return lt;
 }
 
-bool_t sos_time_gt(const sos_time_t * const l, const sos_time_t * const r)
+bool_t tinker_time_gt(const tinker_time_t * const l, const tinker_time_t * const r)
 {
 	bool_t gt = false;
 	if (l->seconds > r->seconds)
@@ -73,7 +73,7 @@ bool_t sos_time_gt(const sos_time_t * const l, const sos_time_t * const r)
 	return gt;
 }
 
-bool_t sos_time_eq(const sos_time_t * const l, const sos_time_t * const r)
+bool_t tinker_time_eq(const tinker_time_t * const l, const tinker_time_t * const r)
 {
 	bool_t eq = false;
 	if (l->seconds == r->seconds && l->nanoseconds == r->nanoseconds)
@@ -83,7 +83,7 @@ bool_t sos_time_eq(const sos_time_t * const l, const sos_time_t * const r)
 	return eq;
 }
 
-void sos_time_seconds(const uint32_t seconds, sos_time_t * const a)
+void tinker_time_seconds(const uint32_t seconds, tinker_time_t * const a)
 {
 	if (a)
 	{
@@ -92,7 +92,7 @@ void sos_time_seconds(const uint32_t seconds, sos_time_t * const a)
 	}
 }
 
-void sos_time_milliseconds(const uint32_t milliseconds, sos_time_t * const a)
+void tinker_time_milliseconds(const uint32_t milliseconds, tinker_time_t * const a)
 {
 	if (a)
 	{
@@ -101,7 +101,7 @@ void sos_time_milliseconds(const uint32_t milliseconds, sos_time_t * const a)
 	}
 }
 
-void sos_time_microseconds(const uint32_t microseconds, sos_time_t * const a)
+void tinker_time_microseconds(const uint32_t microseconds, tinker_time_t * const a)
 {
 	if (a)
 	{
@@ -110,7 +110,7 @@ void sos_time_microseconds(const uint32_t microseconds, sos_time_t * const a)
 	}
 }
 
-void sos_time_nanoseconds(const uint64_t nanoseconds, sos_time_t * const a)
+void tinker_time_nanoseconds(const uint64_t nanoseconds, tinker_time_t * const a)
 {
 	if (a)
 	{
@@ -119,12 +119,12 @@ void sos_time_nanoseconds(const uint64_t nanoseconds, sos_time_t * const a)
 	}
 }
 
-error_t sos_get_time(sos_time_t * const time)
+error_t tinker_get_time(tinker_time_t * const time)
 {
 	return TINKER_API_CALL_1(SYSCALL_GET_TIME, (uint32_t)time);
 }
 
-error_t sos_sleep(const sos_time_t * const time)
+error_t tinker_sleep(const tinker_time_t * const time)
 {
 	return TINKER_API_CALL_1(SYSCALL_SLEEP, (uint32_t)time);
 }

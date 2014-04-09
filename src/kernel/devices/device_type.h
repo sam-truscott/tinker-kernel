@@ -10,7 +10,7 @@
 #define DEVICE_TYPE_H_
 
 #include "arch/tgt_types.h"
-#include "sos_api_errors.h"
+#include "tinker_api_errors.h"
 
 struct __kernel_device;
 

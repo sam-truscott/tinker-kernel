@@ -25,7 +25,7 @@ void __time_set_system_clock(__clock_device_t * const device)
 	__time_system_clock = device;
 }
 
-void __time_get_system_time(sos_time_t * const time)
+void __time_get_system_time(tinker_time_t * const time)
 {
 	if (__time_system_clock && time)
 	{

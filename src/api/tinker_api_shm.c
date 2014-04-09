@@ -6,10 +6,10 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "sos_api_shm.h"
-#include "sos_api_kernel_interface.h"
+#include "tinker_api_shm.h"
+#include "tinker_api_kernel_interface.h"
 
-error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
+error_t tinker_shm_create(tinker_shm_t * shm, char * name, uint32_t size, void** addr)
 {
 	return TINKER_API_CALL_4(
 			SYSCALL_CREATE_SHM,
@@ -19,7 +19,7 @@ error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 			(uint32_t)addr);
 }
 
-error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
+error_t tinker_shm_open(tinker_shm_t * shm, char * name, uint32_t size, void** addr)
 {
 	return TINKER_API_CALL_4(
 			SYSCALL_OPEN_SHM,
@@ -29,7 +29,7 @@ error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 			(uint32_t)addr);
 }
 
-error_t sos_shm_destroy(sos_shm_t shm)
+error_t tinker_shm_destroy(tinker_shm_t shm)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_DESTROY_SHM,

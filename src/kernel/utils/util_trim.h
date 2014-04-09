@@ -9,7 +9,7 @@
 #ifndef UTIL_TRIM_H_
 #define UTIL_TRIM_H_
 
-#include "sos_api.h"
+#include "tinker_api.h"
 
 uint32_t __util_trim(char * const string, const uint32_t length);
 

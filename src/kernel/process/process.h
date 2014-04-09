@@ -24,7 +24,7 @@ error_t __process_create(
 		const uint32_t pid,
 		const char * const name,
 		const bool_t is_kernel,
-		const sos_meminfo_t * const meminfo,
+		const tinker_meminfo_t * const meminfo,
 		const __mem_pool_info_t * pool,
 		__process_t ** process);
 

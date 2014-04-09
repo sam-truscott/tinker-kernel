@@ -24,7 +24,7 @@
 #ifndef HASHED_MAP_H_
 #define HASHED_MAP_H_
 
-#include "api/sos_api_types.h"
+#include "api/tinker_api_types.h"
 #include "arch/tgt_types.h"
 #include "kernel/console/print_out.h"
 #include "kernel/utils/hash/basic_hashes.h"

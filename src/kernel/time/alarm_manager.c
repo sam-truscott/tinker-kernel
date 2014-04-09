@@ -60,7 +60,7 @@ void __alarm_set_timer(__timer_t * const timer)
 
 error_t __alarm_set_alarm(
 		__mem_pool_info_t * const pool,
-		const sos_time_t * const timeout,
+		const tinker_time_t * const timeout,
 		__alarm_call_back * const call_back,
 		const __alarm_user_data_t const usr_data,
 		uint32_t * const alarm_id)
@@ -68,7 +68,7 @@ error_t __alarm_set_alarm(
 	error_t ret = NO_ERROR;
 	if (pool && timeout)
 	{
-		sos_time_t now = TINKER_ZERO_TIME;
+	    tinker_time_t now = TINKER_ZERO_TIME;
 		__time_get_system_time(&now);
 
 		/* check there's room of the new alarm */
@@ -89,8 +89,8 @@ error_t __alarm_set_alarm(
 				}
 			}
 
-			sos_time_t alarm_time;
-			sos_time_add(&now, timeout, &alarm_time);
+			tinker_time_t alarm_time;
+			tinker_time_add(&now, timeout, &alarm_time);
 			__alarm_t * const new_alarm = __alarm_create(
 					pool,
 					new_alarm_id,
@@ -173,7 +173,7 @@ void __alarm_calculate_next_alarm(__alarm_t * const new_alarm)
 			__alarm_next_alarm = new_alarm;
 			__alarm_enable_timer();
 		}
-		else if (sos_time_lt(
+		else if (tinker_time_lt(
 				__alarm_get_time(new_alarm),
 				__alarm_get_time(__alarm_next_alarm)))
 		{

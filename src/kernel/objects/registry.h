@@ -9,8 +9,8 @@
 #ifndef REGISTRY_H_
 #define REGISTRY_H_
 
-#include "sos_api_types.h"
-#include "sos_api_errors.h"
+#include "tinker_api_types.h"
+#include "tinker_api_errors.h"
 #include "config.h"
 #include "kernel/process/process.h"
 #include "kernel/objects/obj_thread.h"

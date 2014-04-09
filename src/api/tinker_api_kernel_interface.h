@@ -9,7 +9,7 @@
 #ifndef TINKER_API_KERNEL_INTERFACE_H_
 #define TINKER_API_KERNEL_INTERFACE_H_
 
-#include "sos_api.h"
+#include "tinker_api.h"
 
 #define UNUSED_PARAM (uint32_t)0
 

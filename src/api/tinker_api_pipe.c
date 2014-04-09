@@ -7,14 +7,14 @@
  *  All Rights Reserved.
  */
 
-#include "sos_api_pipe.h"
+#include "tinker_api_pipe.h"
 
-#include "sos_api_kernel_interface.h"
+#include "tinker_api_kernel_interface.h"
 
-error_t sos_create_pipe(
-		sos_pipe_t * pipe,
+error_t tinker_create_pipe(
+		tinker_pipe_t * pipe,
 		const char * const name,
-		const sos_pipe_direction_t direction,
+		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages)
 {
@@ -27,10 +27,10 @@ error_t sos_create_pipe(
 			messages);
 }
 
-error_t sos_open_pipe(
-		sos_pipe_t * pipe,
+error_t tinker_open_pipe(
+		tinker_pipe_t * pipe,
 		const char * const name,
-		const sos_pipe_direction_t direction,
+		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages)
 {
@@ -48,23 +48,23 @@ error_t sos_open_pipe(
 	return result;
 }
 
-error_t sos_close_pipe(sos_pipe_t pipe)
+error_t tinker_close_pipe(tinker_pipe_t pipe)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_CLOSE_PIPE,
 			(uint32_t)pipe);
 }
 
-error_t sos_delete_pipe(sos_pipe_t pipe)
+error_t tinker_delete_pipe(tinker_pipe_t pipe)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_DELETE_PIPE,
 			(uint32_t)pipe);
 }
 
-error_t sos_send_message(
-		sos_pipe_t pipe,
-		const sos_pipe_send_kind_t send_kend,
+error_t tinker_send_message(
+		tinker_pipe_t pipe,
+		const tinker_pipe_send_kind_t send_kend,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block)
@@ -83,8 +83,8 @@ error_t sos_send_message(
 	return result;
 }
 
-error_t sos_receive_message(
-		sos_pipe_t pipe,
+error_t tinker_receive_message(
+		tinker_pipe_t pipe,
 		const void ** message,
 		const uint32_t * const message_size,
 		const bool_t block)
@@ -97,7 +97,7 @@ error_t sos_receive_message(
 			block);
 }
 
-error_t sos_received_message(sos_pipe_t pipe)
+error_t tinker_received_message(tinker_pipe_t pipe)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_RECEIVED_MESSAGE,

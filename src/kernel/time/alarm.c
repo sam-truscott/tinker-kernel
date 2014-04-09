@@ -16,14 +16,14 @@ typedef struct __alarm_t
 	uint32_t 			id;
 	__alarm_call_back *	call_back;
 	void * 				usr_data;
-	sos_time_t			alarm_time;
+	tinker_time_t			alarm_time;
 	__mem_pool_info_t * pool;
 } __alarm_internal_t;
 
 __alarm_t * __alarm_create(
 		__mem_pool_info_t * const pool,
 		const uint32_t id,
-		sos_time_t * const alarm_time,
+		tinker_time_t * const alarm_time,
 		__alarm_call_back * const callback,
 		const __alarm_user_data_t user_data)
 {
@@ -47,9 +47,9 @@ void __alarm_delete(__alarm_t * const alarm)
 	}
 }
 
-const sos_time_t* __alarm_get_time(const __alarm_t * const alarm)
+const tinker_time_t* __alarm_get_time(const __alarm_t * const alarm)
 {
-	const sos_time_t * t = NULL;
+	const tinker_time_t * t = NULL;
 	if (alarm)
 	{
 		t = &alarm->alarm_time;

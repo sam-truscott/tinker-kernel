@@ -9,8 +9,8 @@
 #ifndef STACK_H_
 #define STACK_H_
 
-#include "sos_api_types.h"
-#include "../util_memset.h"
+#include "tinker_api_types.h"
+#include "kernel/utils/util_memset.h"
 #include "kernel/memory/memory_manager.h"
 #include "unbounded_list.h"
 

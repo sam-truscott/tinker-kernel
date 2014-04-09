@@ -1,4 +1,4 @@
-#include "sos_api_errors.h"
+#include "tinker_api_errors.h"
 #include "arch/tgt_types.h"
 #include "kernel/kernel_panic.h"
 #include "kernel/utils/util_memset.h"

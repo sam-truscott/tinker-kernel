@@ -9,7 +9,7 @@
 #ifndef UTIL_CASE_H_
 #define UTIL_CASE_H_
 
-#include "sos_api.h"
+#include "tinker_api.h"
 
 void __util_to_upper(char * string);
 

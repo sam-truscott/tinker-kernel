@@ -29,7 +29,7 @@ void __alarm_set_timer(__timer_t * const timer);
  */
 error_t __alarm_set_alarm(
 		__mem_pool_info_t * const pool,
-		const sos_time_t * const timeout,
+		const tinker_time_t * const timeout,
 		__alarm_call_back * const call_back,
 		const __alarm_user_data_t const usr_data,
 		uint32_t * const alarm_id);

@@ -70,7 +70,7 @@ void __kernel_initialise(void)
 	char * text_epos = (char*)&__text_end;
 	char * data_pos = 0;
 	char * data_end = (char*)&__data_end;
-	const sos_meminfo_t meminfo =
+	const tinker_meminfo_t meminfo =
 	{
 		.heap_size = __KERNEL_HEAP,
 		.stack_size = __KERNEL_IDLE_STACK,

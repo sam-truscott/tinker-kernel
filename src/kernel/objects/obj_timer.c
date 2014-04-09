@@ -21,8 +21,8 @@ typedef struct __object_timer_t
 {
 	__object_internal_t object;
 	__mem_pool_info_t * pool;
-	sos_timer_callback_t * callback;
-	sos_timeout_time_t timeout;
+	tinker_timer_callback_t * callback;
+	tinker_timeout_time_t timeout;
 	const void * parameter;
 	uint32_t alarm_id;
 	__thread_t * callback_thread;
@@ -54,8 +54,8 @@ object_number_t __obj_timer_get_oid
 	return oid;
 }
 
-static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
-static void __obj_timer_thread(sos_timer_callback_t * const t, const void * p)
+static void __obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
+static void __obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 {
 	if (t)
 	{
@@ -86,7 +86,7 @@ error_t __obj_create_timer(
 		const __priority_t priority,
 		const uint32_t seconds,
 		const uint32_t nanoseconds,
-		sos_timer_callback_t * const callback,
+		tinker_timer_callback_t * const callback,
 		const void* parameter)
 {
 	error_t result = NO_ERROR;
@@ -122,7 +122,7 @@ error_t __obj_create_timer(
 					no->parameter = parameter;
 					no->pool = pool;
 					*objectno = no->object.object_number;
-					const sos_time_t timeout = {
+					const tinker_time_t timeout = {
 							.seconds = seconds,
 							.nanoseconds = nanoseconds
 					};
