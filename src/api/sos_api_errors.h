@@ -1,13 +1,13 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#ifndef SOS_API_ERRORS_H_
-#define SOS_API_ERRORS_H_
+#ifndef TINKER_API_ERRORS_H_
+#define TINKER_API_ERRORS_H_
 
 typedef enum error_enum
 {
@@ -65,4 +65,4 @@ typedef enum error_enum
 	INTERRUPT_NO_EXT_VECTOR_SPECIFIED,
 } error_t;
 
-#endif /* SOS_API_ERRORS_H_ */
+#endif /* TINKER_API_ERRORS_H_ */

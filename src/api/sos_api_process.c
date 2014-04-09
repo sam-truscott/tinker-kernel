@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -32,7 +32,7 @@ error_t sos_create_process(
 		uint32_t flags,
 		sos_process_t * process)
 {
-	return SOS_API_CALL_6(
+	return TINKER_API_CALL_6(
 			SYSCALL_CREATE_PROCESS,
 			(uint32_t)image_name,
 			(uint32_t)entry,
@@ -50,7 +50,7 @@ error_t sos_create_thread(
 		uint32_t flags,
 		sos_thread_t * thread)
 {
-	return SOS_API_CALL_6(
+	return TINKER_API_CALL_6(
 			SYSCALL_CREATE_THREAD,
 			(uint32_t)thread_name,
 			(uint32_t)entry,
@@ -62,7 +62,7 @@ error_t sos_create_thread(
 
 error_t sos_get_thread_object(sos_thread_t * thread)
 {
-	return SOS_API_CALL_1(
+	return TINKER_API_CALL_1(
 			SYSCALL_THREAD_OBJECT,
 			(uint32_t)thread);
 }
@@ -71,7 +71,7 @@ error_t	sos_get_thread_priority(
 		sos_thread_t thread,
 		uint8_t * priority)
 {
-	return SOS_API_CALL_2(
+	return TINKER_API_CALL_2(
 			SYSCALL_THREAD_PRIORITY,
 			(uint32_t)thread,
 			(uint32_t)priority);
@@ -79,10 +79,10 @@ error_t	sos_get_thread_priority(
 
 error_t sos_exit_thread(void)
 {
-	return SOS_API_CALL_0(SYSCALL_EXIT_THREAD);
+	return TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
 }
 
 void sos_debug(const char * const str)
 {
-	SOS_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
+	TINKER_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
 }

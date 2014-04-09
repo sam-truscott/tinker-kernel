@@ -1,18 +1,18 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#ifndef SOS_API_TYPES_H_
-#define SOS_API_TYPES_H_
+#ifndef TINKER_API_TYPES_H_
+#define TINKER_API_TYPES_H_
 
 #if defined(__BUILDING_KERNEL)
-#define SOS_API_SUFFIX __attribute__((section(".api")))
+#define TINKER_API_SUFFIX __attribute__((section(".api")))
 #else
-#define SOS_API_SUFFIX
+#define TINKER_API_SUFFIX
 #endif
 
 #include "arch/tgt_types.h"
@@ -37,4 +37,4 @@ typedef uint16_t object_number_t;
 
 #define INVALID_OBJECT_ID -1
 
-#endif /* SOS_API_TYPES_H_ */
+#endif /* TINKER_API_TYPES_H_ */

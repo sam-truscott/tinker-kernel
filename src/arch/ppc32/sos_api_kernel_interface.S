@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -8,7 +8,7 @@
  */
 
 .section .api
-.global SOS_API_CALL_7
-SOS_API_CALL_7:
+.global TINKER_API_CALL_7
+TINKER_API_CALL_7:
     sc
     blr

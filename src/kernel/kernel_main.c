@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -73,7 +73,7 @@ void __kernel_main(void)
 #endif /* HAS_CONSOLE */
 
 	__tgt_enter_usermode();
-	SOS_API_CALL_0(SYSCALL_LOAD_THREAD);
+	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }
 
 

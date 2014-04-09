@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -121,12 +121,12 @@ void sos_time_nanoseconds(const uint64_t nanoseconds, sos_time_t * const a)
 
 error_t sos_get_time(sos_time_t * const time)
 {
-	return SOS_API_CALL_1(SYSCALL_GET_TIME, (uint32_t)time);
+	return TINKER_API_CALL_1(SYSCALL_GET_TIME, (uint32_t)time);
 }
 
 error_t sos_sleep(const sos_time_t * const time)
 {
-	return SOS_API_CALL_1(SYSCALL_SLEEP, (uint32_t)time);
+	return TINKER_API_CALL_1(SYSCALL_SLEEP, (uint32_t)time);
 }
 
 

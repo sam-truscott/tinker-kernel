@@ -1,17 +1,17 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#ifndef SOS_H_
-#define SOS_H_
+#ifndef TINKER_H_
+#define TINKER_H_
 
 #include "config.h"
 #include "api/sos_api.h"
 #include "api/sos_api_types.h"
 #include "api/sos_api_errors.h"
 
-#endif /* SOS_H_ */
+#endif /* TINKER_H_ */

@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -18,7 +18,7 @@ error_t sos_create_pipe(
 		const uint32_t message_size,
 		const uint32_t messages)
 {
-	return SOS_API_CALL_5(
+	return TINKER_API_CALL_5(
 			SYSCALL_CREATE_PIPE,
 			(uint32_t)pipe,
 			(uint32_t)name,
@@ -37,7 +37,7 @@ error_t sos_open_pipe(
 	error_t result = BLOCKED_RETRY;
 	while(result == BLOCKED_RETRY)
 	{
-		result = SOS_API_CALL_5(
+		result = TINKER_API_CALL_5(
 			SYSCALL_OPEN_PIPE,
 			(uint32_t)pipe,
 			(uint32_t)name,
@@ -50,14 +50,14 @@ error_t sos_open_pipe(
 
 error_t sos_close_pipe(sos_pipe_t pipe)
 {
-	return SOS_API_CALL_1(
+	return TINKER_API_CALL_1(
 			SYSCALL_CLOSE_PIPE,
 			(uint32_t)pipe);
 }
 
 error_t sos_delete_pipe(sos_pipe_t pipe)
 {
-	return SOS_API_CALL_1(
+	return TINKER_API_CALL_1(
 			SYSCALL_DELETE_PIPE,
 			(uint32_t)pipe);
 }
@@ -72,7 +72,7 @@ error_t sos_send_message(
 	error_t result = BLOCKED_RETRY;
 	while(result == BLOCKED_RETRY)
 	{
-		result = SOS_API_CALL_5(
+		result = TINKER_API_CALL_5(
 				SYSCALL_SEND_MESSAGE,
 				(uint32_t)pipe,
 				send_kend,
@@ -89,7 +89,7 @@ error_t sos_receive_message(
 		const uint32_t * const message_size,
 		const bool_t block)
 {
-	return SOS_API_CALL_4(
+	return TINKER_API_CALL_4(
 			SYSCALL_RECEIVE_MESSAGE,
 			(uint32_t)pipe,
 			(uint32_t)message,
@@ -99,7 +99,7 @@ error_t sos_receive_message(
 
 error_t sos_received_message(sos_pipe_t pipe)
 {
-	return SOS_API_CALL_1(
+	return TINKER_API_CALL_1(
 			SYSCALL_RECEIVED_MESSAGE,
 			(uint32_t)pipe);
 }

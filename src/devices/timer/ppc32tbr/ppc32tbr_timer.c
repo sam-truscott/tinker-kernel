@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -54,7 +54,7 @@ void __ppc_check_timer(__timer_t * const timer)
 		__ppc_timer_usr_data_t * const data = (__ppc_timer_usr_data_t*)timer->usr_data;
 		if (data->enabled)
 		{
-			sos_time_t now = SOS_ZERO_TIME;
+			sos_time_t now = TINKER_ZERO_TIME;
 			__time_get_system_time(&now);
 			if (sos_time_gt(&now, data->alarm_time))
 			{

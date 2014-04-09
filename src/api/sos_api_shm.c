@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -11,7 +11,7 @@
 
 error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 {
-	return SOS_API_CALL_4(
+	return TINKER_API_CALL_4(
 			SYSCALL_CREATE_SHM,
 			(uint32_t)shm,
 			(uint32_t)name,
@@ -21,7 +21,7 @@ error_t sos_shm_create(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 
 error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 {
-	return SOS_API_CALL_4(
+	return TINKER_API_CALL_4(
 			SYSCALL_OPEN_SHM,
 			(uint32_t)shm,
 			(uint32_t)name,
@@ -31,7 +31,7 @@ error_t sos_shm_open(sos_shm_t * shm, char * name, uint32_t size, void** addr)
 
 error_t sos_shm_destroy(sos_shm_t shm)
 {
-	return SOS_API_CALL_1(
+	return TINKER_API_CALL_1(
 			SYSCALL_DESTROY_SHM,
 			(uint32_t)shm);
 }

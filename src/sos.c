@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -360,9 +360,9 @@ static void my_initial_thread(void)
 	}
 	sos_debug("sos: testing clocks\n");
 	{
-		sos_time_t time = SOS_ZERO_TIME;
-		sos_time_t time2 = SOS_ZERO_TIME;
-		sos_time_t tdiff = SOS_ZERO_TIME;
+		sos_time_t time = TINKER_ZERO_TIME;
+		sos_time_t time2 = TINKER_ZERO_TIME;
+		sos_time_t tdiff = TINKER_ZERO_TIME;
 		sos_time_t delay;
 		delay.seconds = 1;
 		delay.nanoseconds = 0;

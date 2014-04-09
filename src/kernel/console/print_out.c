@@ -1,6 +1,6 @@
 /*
  *
- * SOS Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott
@@ -31,7 +31,7 @@ static void __print_out_print_hex(
 
 void __print_time(void)
 {
-	sos_time_t now = SOS_ZERO_TIME;
+	sos_time_t now = TINKER_ZERO_TIME;
 	__time_get_system_time(&now);
 	char msg[20];
 	memset(msg, 0, 20);
