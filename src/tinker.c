@@ -26,7 +26,7 @@ int kmain(void)
 {       
     tinker_process_t p = 0;
 
-    tinker_debug("sos: initialising test process\n");
+    tinker_debug("tinker: initialising test process\n");
 
 	extern char * __utext;
 	extern char * __udata;
@@ -54,11 +54,11 @@ int kmain(void)
 
 	if (e != NO_ERROR)
 	{
-	    tinker_debug("sos: failed to create test process\n");
+	    tinker_debug("tinker: failed to create test process\n");
 	}
 	else
 	{
-		tinker_debug("sos: test process created ok\n");
+		tinker_debug("tinker: test process created ok\n");
 	}
 	return 0;
 }
@@ -67,70 +67,70 @@ static void my_other_thread(void)
 {
 	error_t error;
 
-	tinker_debug("sos: other thread: opening pipe\n");
+	tinker_debug("tinker: other thread: opening pipe\n");
 	error = tinker_open_pipe(&rx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 10);
 	if (error == NO_ERROR)
 	{
-		tinker_debug("sos: other thread: sending message\n");
+		tinker_debug("tinker: other thread: sending message\n");
 		error = tinker_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: error sending on pipe\n");
+			tinker_debug("tinker: error sending on pipe\n");
 		}
 		const char * message = NULL;
 		uint32_t size = 0;
-		tinker_debug("sos: other thread: receiving message\n");
+		tinker_debug("tinker: other thread: receiving message\n");
 		error = tinker_receive_message(rx_pipe, (const void**)(&message), &size, true);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: error receiving on pipe\n");
+			tinker_debug("tinker: error receiving on pipe\n");
 		}
 		else
 		{
-			tinker_debug("sos: other thread: got (");
+			tinker_debug("tinker: other thread: got (");
 			tinker_debug(message);
 			tinker_debug(")\n");
 			error = tinker_received_message(rx_pipe);
 			if (error != NO_ERROR)
 			{
-				tinker_debug("sos: error marking pipe message as received\n");
+				tinker_debug("tinker: error marking pipe message as received\n");
 			}
 		}
 		error = tinker_close_pipe(rx_pipe);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: error closing pipe\n");
+			tinker_debug("tinker: error closing pipe\n");
 		}
 	}
 
-	tinker_debug("sos: other thread: opening semaphore\n");
+	tinker_debug("tinker: other thread: opening semaphore\n");
 	error = tinker_sem_open(&sem2, "tinker_test_1");
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to open semaphore\n");
+		tinker_debug("tinker: failed to open semaphore\n");
 	}
 	else
 	{
-		tinker_debug("sos: other thread: getting semaphore\n");
+		tinker_debug("tinker: other thread: getting semaphore\n");
 		error = tinker_sem_get(sem2);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to get semaphore\n");
+			tinker_debug("tinker: failed to get semaphore\n");
 		}
 		else
 		{
-			tinker_debug("sos: other thread: releasing semaphore\n");
+			tinker_debug("tinker: other thread: releasing semaphore\n");
 			error = tinker_sem_release(sem2);
 			if (error != NO_ERROR)
 			{
-				tinker_debug("sos: failed to release the semaphore\n");
+				tinker_debug("tinker: failed to release the semaphore\n");
 			}
 			else
 			{
 				error = tinker_sem_close(sem2);
 				if (error != NO_ERROR)
 				{
-					tinker_debug("sos: failed to close the semaphore\n");
+					tinker_debug("tinker: failed to close the semaphore\n");
 				}
 			}
 		}
@@ -147,15 +147,15 @@ static void my_other_thread(void)
 		error = tinker_shm_destroy(shm2);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: error destroying shm\n");
+			tinker_debug("tinker: error destroying shm\n");
 		}
 	}
 	else
 	{
-		tinker_debug("sos: error opening shm\n");
+		tinker_debug("tinker: error opening shm\n");
 	}
 
-	tinker_debug("sos: other thread: done\n");
+	tinker_debug("tinker: other thread: done\n");
 }
 
 static void my_initial_thread(void)
@@ -167,21 +167,21 @@ static void my_initial_thread(void)
 
 	tinker_thread_t * tmp = &my_thread;
 	if (tmp) {}
-	tinker_debug("sos: initial thread: getting my thread\n");
+	tinker_debug("tinker: initial thread: getting my thread\n");
 	error = tinker_get_thread_object(&my_thread);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to get thread object\n");
+		tinker_debug("tinker: failed to get thread object\n");
 	}
 	else
 	{
-		tinker_debug("sos: initial thread: getting priority\n");
+		tinker_debug("tinker: initial thread: getting priority\n");
 		error = tinker_get_thread_priority(
 				my_thread,
 				&my_priority);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to get thread priority\n");
+			tinker_debug("tinker: failed to get thread priority\n");
 		}
 	}
 
@@ -193,36 +193,36 @@ static void my_initial_thread(void)
 	}
 	else
 	{
-		tinker_debug("sos: failed to create new shm\n");
+		tinker_debug("tinker: failed to create new shm\n");
 	}
 
-	tinker_debug("sos: initial thread: creating count semaphore\n");
+	tinker_debug("tinker: initial thread: creating count semaphore\n");
 	error = tinker_sem_create(&sem, 1, "tinker_test_1");
 
 	if ( error == NO_ERROR )
 	{
-		tinker_debug("sos: initial thread: get semaphore\n");
+		tinker_debug("tinker: initial thread: get semaphore\n");
 		error = tinker_sem_get(sem);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to get semaphore\n");
+			tinker_debug("tinker: failed to get semaphore\n");
 		}
 
-		tinker_debug("sos: initial thread: release semaphore\n");
+		tinker_debug("tinker: initial thread: release semaphore\n");
 		error = tinker_sem_release(sem);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to release semaphore\n");
+			tinker_debug("tinker: failed to release semaphore\n");
 		}
 
-		tinker_debug("sos: initial thread: get semaphore\n");
+		tinker_debug("tinker: initial thread: get semaphore\n");
 		error = tinker_sem_get(sem);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to get semaphore\n");
+			tinker_debug("tinker: failed to get semaphore\n");
 		}
 
-		tinker_debug("sos: initial thread: create the other thread\n");
+		tinker_debug("tinker: initial thread: create the other thread\n");
 		error = tinker_create_thread(
 				"other thread",
 				my_other_thread,
@@ -232,26 +232,26 @@ static void my_initial_thread(void)
 				&other_thread);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to create other_thread\n");
+			tinker_debug("tinker: failed to create other_thread\n");
 		}
 
-		tinker_debug("sos: initial thread: create a pipe\n");
+		tinker_debug("tinker: initial thread: create a pipe\n");
 		error = tinker_create_pipe(&tx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 1);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("sos: failed to create tx pipe\n");
+			tinker_debug("tinker: failed to create tx pipe\n");
 		}
 	}
 	else
 	{
-		tinker_debug("sos: failed to create new semaphore\n");
+		tinker_debug("tinker: failed to create new semaphore\n");
 	}
 
-	tinker_debug("sos: initial thread: delay...\n");
+	tinker_debug("tinker: initial thread: delay...\n");
 	int timer = 500000;
 	while(timer--){}
 
-	tinker_debug("sos: initial thread: get priority\n");
+	tinker_debug("tinker: initial thread: get priority\n");
 	/*
 	 * this should now be as high as the other thread
 	 */
@@ -260,14 +260,14 @@ static void my_initial_thread(void)
 			&my_priority);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to get thread priority\n");
+		tinker_debug("tinker: failed to get thread priority\n");
 	}
 
-	tinker_debug("sos: initial thread: releasing semaphore\n");
+	tinker_debug("tinker: initial thread: releasing semaphore\n");
 	error = tinker_sem_release(sem);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to release semaphore\n");
+		tinker_debug("tinker: failed to release semaphore\n");
 	}
 
 	/*
@@ -278,43 +278,43 @@ static void my_initial_thread(void)
 				&my_priority);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to get thread priority\n");
+		tinker_debug("tinker: failed to get thread priority\n");
 	}
 
 	const char * message = NULL;
 	uint32_t size = 0;
-	tinker_debug("sos: initial thread: receiving message from other thread\n");
+	tinker_debug("tinker: initial thread: receiving message from other thread\n");
 	error = tinker_receive_message(tx_pipe, (const void**)(&message), &size, true);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to receive a message\n");
+		tinker_debug("tinker: failed to receive a message\n");
 	}
-	tinker_debug("sos: initial thread: received (");
+	tinker_debug("tinker: initial thread: received (");
 	tinker_debug(message);
 	tinker_debug(")\n");
-	tinker_debug("sos: initial thread: sending message\n");
+	tinker_debug("tinker: initial thread: sending message\n");
 	error = tinker_send_message(tx_pipe, PIPE_TX_SEND_ALL, "olleh\0", 6, true);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to send a message\n");
+		tinker_debug("tinker: failed to send a message\n");
 	}
 
 	error = tinker_shm_destroy(shm);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to destroy shm\n");
+		tinker_debug("tinker: failed to destroy shm\n");
 	}
 
 	error = tinker_delete_pipe(tx_pipe);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed delete tx pipe\n");
+		tinker_debug("tinker: failed delete tx pipe\n");
 	}
 
 	error = tinker_sem_close(sem);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to close the semaphore\n");
+		tinker_debug("tinker: failed to close the semaphore\n");
 	}
 
 	const tinker_timeout_time_t timeout = {
@@ -325,41 +325,41 @@ static void my_initial_thread(void)
 	error = tinker_timer_create(&tinker_timer, 200, &timeout, timer_timeout, (void*)72);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to create timer\n");
+		tinker_debug("tinker: failed to create timer\n");
 	}
-	tinker_debug("sos: initial thread: delay2...\n");
+	tinker_debug("tinker: initial thread: delay2...\n");
 	timer = 5000000;
 	while(timer-- && !timer_expired)
 	{
-		tinker_debug("sos: waiting for timer...\n");
+		tinker_debug("tinker: waiting for timer...\n");
 	}
 
 	if (!timer_expired)
 	{
-		tinker_debug("sos: initial thread: timer didn't fire\n");
+		tinker_debug("tinker: initial thread: timer didn't fire\n");
 	}
 
 	error = tinker_timer_delete(tinker_timer);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to delete timer\n");
+		tinker_debug("tinker: failed to delete timer\n");
 	}
 	error = tinker_timer_create(&tinker_timer, 200, &timeout, timer_timeout, (void*)72);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to create timer\n");
+		tinker_debug("tinker: failed to create timer\n");
 	}
 	error = tinker_timer_cancel(tinker_timer);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to cancel timer\n");
+		tinker_debug("tinker: failed to cancel timer\n");
 	}
 	error = tinker_timer_delete(tinker_timer);
 	if (error != NO_ERROR)
 	{
-		tinker_debug("sos: failed to delete timer\n");
+		tinker_debug("tinker: failed to delete timer\n");
 	}
-	tinker_debug("sos: testing clocks\n");
+	tinker_debug("tinker: testing clocks\n");
 	{
 		tinker_time_t time = TINKER_ZERO_TIME;
 		tinker_time_t time2 = TINKER_ZERO_TIME;
@@ -367,28 +367,28 @@ static void my_initial_thread(void)
 		tinker_time_t delay;
 		delay.seconds = 1;
 		delay.nanoseconds = 0;
-		tinker_debug("sos: getting the first time\n");
+		tinker_debug("tinker: getting the first time\n");
 		tinker_get_time(&time);
-		tinker_debug("sos: sleeping for a second, just a second\n");
+		tinker_debug("tinker: sleeping for a second, just a second\n");
 		tinker_sleep(&delay);
-		tinker_debug("sos: getting the time again\n");
+		tinker_debug("tinker: getting the time again\n");
 		tinker_get_time(&time2);
-		tinker_debug("sos: compare the times\n");
+		tinker_debug("tinker: compare the times\n");
 		tinker_time_sub(&time2, &time, &tdiff);
 		if (tdiff.seconds && tdiff.nanoseconds)
 		{
-			tinker_debug("sos: time ok\n");
+			tinker_debug("tinker: time ok\n");
 		}
 	}
-	tinker_debug("sos: initial thread: done\n");
+	tinker_debug("tinker: initial thread: done\n");
 }
 
 static void timer_timeout(const void * const usr_data)
 {
-	tinker_debug("sos: timeout fired\n");
+	tinker_debug("tinker: timeout fired\n");
 	if ((int)usr_data != 72)
 	{
-		tinker_debug("sos: error - unexpected callback present\n");
+		tinker_debug("tinker: error - unexpected callback present\n");
 	}
 	timer_expired = 1;
 }
