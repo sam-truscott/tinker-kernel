@@ -1,5 +1,5 @@
-sos3
-====
+Tinker Micro Kernel
+===================
 
 microkernel written in c and asm.
 
@@ -18,9 +18,10 @@ i've worked on & off on this microkernel for the last few years to help my under
 
 * sos1 was essentially a framebuffer - and a very broken scheduler
 * sos2 was a proper multitasking scheduler with dynamic memory support
-* sos3 was where I refactored it to be more OO and do some initial mmu work 
+* sos3 was where I refactored it to be more OO and do some initial mmu work
+* tinker was renamed from sos3!
 
-sos3 is:
+tinker is:
 * limited
 * probably wrong
 
@@ -66,6 +67,7 @@ issues / todo
 these are the things I need to address in a rough order:
 
 * parameters to intc_enable (priority, edge/level, active high/low etc)
+* port over to new TWR-MPC5125 (e300c4) hardware rather than simulator
 * timeouts on pipe (open/read/write)
 * allow user-mode to map to real addresses (user-mode drivers)
 * (interrupts can be handled by pipes in the bsp)
