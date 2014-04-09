@@ -15,8 +15,7 @@
 *.exe
 *.out
 *.app
-/Debug
-/Release
+/.settings
 /debug_ppc_7400
 /debug_arm_sim
 /release_ppc_7400
