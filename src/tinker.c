@@ -7,6 +7,7 @@
  *  All Rights Reserved.
  */
 #include "api/sos_api.h"
+#include "tinker.h"
 
 static sos_sem_t sem __attribute__((section(".udata")));
 static sos_sem_t sem2 __attribute__((section(".udata")));
