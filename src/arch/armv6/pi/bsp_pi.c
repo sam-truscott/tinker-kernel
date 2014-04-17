@@ -1,6 +1,6 @@
 /*
  *
- * Tinker Source Code
+ * TINKER Source Code
  * __________________
  *
  *  [2009] - [2013] Samuel Steven Truscott

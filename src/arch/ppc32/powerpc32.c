@@ -115,17 +115,15 @@ void __ppc_isr_default_handler(const uint32_t vector, __tgt_context_t * const co
 }
 
 uint32_t __tgt_get_syscall_param(
-		const void * const context,
+		const __tgt_context_t * const context,
 		const uint8_t param)
 {
-	__tgt_context_t * const vector = (__tgt_context_t*const)context;
-	return vector->gpr_2_31[1 + param];
+	return context->gpr_2_31[1 + param];
 }
 
-void __tgt_set_syscall_return(void * const context, const uint32_t value)
+void __tgt_set_syscall_return(__tgt_context_t * const context, const uint32_t value)
 {
-	__tgt_context_t * const vector = (__tgt_context_t*const)context;
-	vector->gpr_2_31[1] = value;
+	context->gpr_2_31[1] = value;
 }
 
 void __ppc_get_tbrs(uint32_t * const a, uint32_t * const b);
@@ -147,7 +145,7 @@ uint32_t __ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_
 	return ticks_per_ns;
 }
 
-uint32_t __tgt_get_context_stack_pointer(const void * const context)
+uint32_t __tgt_get_context_stack_pointer(const __tgt_context_t * const context)
 {
 	uint32_t sp = 0;
 
@@ -203,29 +201,24 @@ void __ivt_install_vector(void * const address, const void * const vector, const
 	__util_memcpy(address, vector, size);
 }
 
-void __ppc_isr_handler(const uint32_t vector, void * const registers)
+void __ppc_isr_handler(const uint32_t vector, __tgt_context_t * const context)
 {
-	__tgt_context_t * const vector_info = (__tgt_context_t*)registers;
-
-	if (vector_info)
+	if (context)
 	{
 		/* take a copy of the LR incase it's a new thread.
 		 * if it's a new thread the LR will be missing and this function will
 		 * cause an exception when it returns because it'll jump to
 		 * 0x0.
 		 */
-		const uint32_t tmp_lr = vector_info->restore_lr;
-		if (registers)
+		const uint32_t tmp_lr = context->restore_lr;
+        __ppc_isr * const isr = __ppc_isr_get_isr(vector);
+        if (isr)
+        {
+            isr(vector, context);
+        }
+		if (context->restore_lr == 0)
 		{
-			__ppc_isr * const isr = __ppc_isr_get_isr(vector);
-			if (isr)
-			{
-				isr(vector, vector_info);
-			}
-		}
-		if (vector_info->restore_lr == 0)
-		{
-			vector_info->restore_lr = tmp_lr;
+			context->restore_lr = tmp_lr;
 		}
 	}
 }

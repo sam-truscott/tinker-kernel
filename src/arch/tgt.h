@@ -51,7 +51,7 @@ void __tgt_prepare_context(
 
 uint32_t __tgt_get_stack_pointer(void);
 
-uint32_t __tgt_get_context_stack_pointer(const void * const context);
+uint32_t __tgt_get_context_stack_pointer(const __tgt_context_t * const context);
 
 void __tgt_load_context(
 		const __tgt_context_t * const thread,
@@ -62,7 +62,7 @@ void __tgt_save_context(
 		const __tgt_context_t * const context);
 
 uint32_t __tgt_get_syscall_param(
-		const void * const context,
+		const __tgt_context_t * const context,
 		const uint8_t param);
 
 void __tgt_set_context_param(
@@ -71,7 +71,7 @@ void __tgt_set_context_param(
 		const uint32_t parameter);
 
 void __tgt_set_syscall_return(
-		void * const context,
+        __tgt_context_t * const context,
 		const uint32_t value);
 
 #endif /* TGT_H_ */
