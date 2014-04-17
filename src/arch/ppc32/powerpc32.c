@@ -149,10 +149,9 @@ uint32_t __tgt_get_context_stack_pointer(const __tgt_context_t * const context)
 {
 	uint32_t sp = 0;
 
-	__tgt_context_t * const vector = (__tgt_context_t*)context;
-	if ( vector )
+	if (context)
 	{
-		sp = vector->sp;
+		sp = context->sp;
 	}
 
 	return sp;
@@ -389,7 +388,7 @@ error_t __tgt_initialise_process(__process_t * const process)
 		{
 			segment_info.segment_ids[sid] = sid;
 		}
-		__process_set_segment_info(process, &segment_info);
+		__process_set_mem_info(process, &segment_info);
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
 		const __mem_section_t * section = __process_get_first_section(process);
@@ -416,7 +415,7 @@ error_t __tgt_map_memory(
 	error_t result = PARAMETERS_INVALID;
 	if (process && section)
 	{
-		const tgt_mem_t * const segment_info = __process_get_segment_info(process);
+		const tgt_mem_t * const segment_info = __process_get_mem_info(process);
 		if (segment_info)
 		{
 			result = __ppc_setup_paged_area(
@@ -434,7 +433,7 @@ void __tgt_unmap_memory(
 {
 	if (process && section)
 	{
-		const tgt_mem_t * const segment_info = __process_get_segment_info(process);
+		const tgt_mem_t * const segment_info = __process_get_mem_info(process);
 		if (segment_info)
 		{
 			__ppc_remove_paged_area(
@@ -518,7 +517,7 @@ void __tgt_prepare_context(
 			ks_flag = SR_KS_OK;
 		}
 
-		const tgt_mem_t * const segment_info = __process_get_segment_info(proc);
+		const tgt_mem_t * const segment_info = __process_get_mem_info(proc);
 
 		__thread_load_context(thread, context);
 

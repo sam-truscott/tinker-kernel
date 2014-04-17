@@ -49,9 +49,9 @@ bool_t __process_add_thread(
 		__thread_t * const thread,
 		object_number_t * const objno);
 
-const tgt_mem_t * __process_get_segment_info(const __process_t * const process);
+const tgt_mem_t * __process_get_mem_info(const __process_t * const process);
 
-void __process_set_segment_info(
+void __process_set_mem_info(
 		__process_t * const process,
 		const tgt_mem_t * const seg);
 

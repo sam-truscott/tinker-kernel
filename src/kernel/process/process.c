@@ -50,8 +50,8 @@ typedef struct __process_t
 	__object_table_t *		object_table;
 	object_number_t			object_number;
 	bool_t					kernel_process;
-	tgt_mem_t				segment_info;
-	__mem_section_t *			first_section;
+	tgt_mem_t				mem_info;
+	__mem_section_t *		first_section;
 	char					image[__MAX_PROCESS_IMAGE_LEN + 1];
 	uint32_t 				next_thread_id;
 	__thread_t * 			initial_thread;
@@ -235,17 +235,17 @@ __object_table_t * __process_get_object_table(const __process_t * const process)
 	return process->object_table;
 }
 
-const tgt_mem_t * __process_get_segment_info(const __process_t * const process)
+const tgt_mem_t * __process_get_mem_info(const __process_t * const process)
 {
-	return &process->segment_info;
+	return &process->mem_info;
 }
 
-void __process_set_segment_info(
+void __process_set_mem_info(
 		__process_t * const process,
 		const tgt_mem_t * const seg)
 {
 	__util_memcpy(
-			&process->segment_info,
+			&process->mem_info,
 			seg,
 			sizeof(tgt_mem_t));
 }

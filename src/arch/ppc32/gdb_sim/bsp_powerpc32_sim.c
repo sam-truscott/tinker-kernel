@@ -168,56 +168,6 @@ void __bsp_initialise(void)
 	__ppc32_set_sr14(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 	__ppc32_set_sr15(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 
-	/* setup the SDR1 for the page table - based on
-	 * Minimum Recommended Page Table Sizes from PowerPC
-	 * Programming Environments Manual  */
-	/*
-	__ppc32_set_sdr1(__PPC_SDR(__page_table, 0xF));
-
-	extern char * __utext;
-	extern char * __udata;
-	char * user_text_pos = (char*)&__utext;
-	char * user_data_pos = (char*)&__udata;
-
-	__ppc32_add_pte(
-			(uint32_t)user_text_pos,
-			16,
-			__PPC_PTE_W0(
-					PTE_VALID,
-					16,
-					HASH_PRIMARY,
-					0),
-			__PPC_PTE_W1(
-					(uint32_t)user_text_pos,
-					1,
-					0,
-					__PPC32_WIMG(
-							__ppc32_write_back,
-							__ppc32_cache_enabled,
-							__ppc32_memory_no_coherency,
-							__ppc32_not_guarded),
-					__ppc32_read_write));
-
-	__ppc32_add_pte(
-			(uint32_t)user_data_pos,
-			16,
-			__PPC_PTE_W0(
-					PTE_VALID,
-					16,
-					HASH_PRIMARY,
-					0),
-			__PPC_PTE_W1(
-					(uint32_t)user_data_pos,
-					1,
-					0,
-					__PPC32_WIMG(
-							__ppc32_write_back,
-							__ppc32_cache_enabled,
-							__ppc32_memory_no_coherency,
-							__ppc32_not_guarded),
-					__ppc32_read_write));
-	*/
-
 	{
 		uint32_t msr = __ppc_get_msr();
 		msr |= (MSR_FLAG_IR | MSR_FLAG_DR);

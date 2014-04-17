@@ -157,7 +157,7 @@ void __ppc_set_decrementer(const uint32_t v);
  * The place where the IVT routines will end up
  * once they've saved the context
  */
-void __ppc_isr_handler(const uint32_t vector, void * const registers);
+void __ppc_isr_handler(const uint32_t vector, __tgt_context_t * const registers);
 
 /**
  * Setup the powerpc instruction breakpoint register IDAR
