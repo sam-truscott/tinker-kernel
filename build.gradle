@@ -1,0 +1,126 @@
+apply plugin: 'c'
+apply plugin: 'assembler'
+
+model {
+    platforms {
+        tinker_arm {
+            architecture "arm"
+        }
+        tinker_powerpc {
+            architecture "ppc"
+        }
+        tinker_x86 {
+            architecture "x86"
+        }
+    }
+    toolChains {
+        gccPowerpc(Gcc) {
+            getCppCompiler().setExecutable 'powerpc-none-eabi-gcc'
+            getCCompiler().setExecutable 'powerpc-none-eabi-gcc'
+            getAssembler().setExecutable 'powerpc-none-eabi-as'
+            getLinker().setExecutable 'powerpc-none-eabi-gcc'
+            getStaticLibArchiver().setExecutable 'powerpc-none-eabi-ar'
+            addPlatformConfiguration(new PowerPCSupport())
+        }
+        gccX86(Gcc) {
+            addPlatformConfiguration(new X86Support())
+        }
+    }
+}
+
+    class PowerPCSupport implements TargetPlatformConfiguration {
+        boolean supportsPlatform(Platform element) {
+            return element.getArchitecture().name == "ppc"
+        }
+
+        List<String> getCppCompilerArgs() {
+            []
+        }
+
+        List<String> getObjectiveCppCompilerArgs() {
+            []
+        }
+
+        List<String> getObjectiveCCompilerArgs() {
+            []
+        }
+
+        List<String> getCCompilerArgs() {
+            []
+        }
+
+        List<String> getAssemblerArgs() {
+            []
+        }
+
+        List<String> getLinkerArgs() {
+            []
+        }
+
+        List<String> getStaticLibraryArchiverArgs() {
+            []
+        }
+    }
+
+    class X86Support implements TargetPlatformConfiguration {
+        boolean supportsPlatform(Platform element) {
+            return element.getArchitecture().name == "x86"
+        }
+
+        List<String> getCppCompilerArgs() {
+            []
+        }
+
+        List<String> getObjectiveCppCompilerArgs() {
+            []
+        }
+
+        List<String> getObjectiveCCompilerArgs() {
+            []
+        }
+
+        List<String> getCCompilerArgs() {
+            []
+        }
+
+        List<String> getAssemblerArgs() {
+            []
+        }
+
+        List<String> getLinkerArgs() {
+            []
+        }
+
+        List<String> getStaticLibraryArchiverArgs() {
+            []
+        }
+    }
+
+libraries {
+    // the core kernel
+    core {}
+    // all the core architectures
+    armv6 {}
+    ppc32 {}
+    x86 {}
+}
+
+executables {
+    armv6_pi {}
+    x86 {}
+    ppc32_gdb {}
+}
+
+sources {
+    core {
+         c {
+             source {
+                 srcDir "src/boot"
+                 include "**/*.c"
+             }
+             exportedHeaders {
+                 srcDir "src/boot"
+             }
+         }
+    }
+}
