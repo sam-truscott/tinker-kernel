@@ -80,7 +80,7 @@ model {
         }
 
         List<String> getCCompilerArgs() {
-            []
+            ["-nostdinc", "-D__BUILDING_KERNEL", "-D__KERNEL_SHELL", "-D__KERNEL_DEBUGGING", "-D__MEMORY_DEBUGGING", "-D__DEBUG_COLLECTIONS", "-D__PROCESS_DEBUGGING", "-O0", "-march=i686", "-g3", "-gdwarf-4", "-pedantic", "-pedantic-errors", "-Wall", "-Wextra", "-Werror", "-c", "-fmessage-length=0", "-std=gnu99", "-fno-builtin", "-ffreestanding"]
         }
 
         List<String> getAssemblerArgs() {
@@ -98,6 +98,10 @@ model {
 
 libraries {
     // the core kernel
+    base {}
+    arch_x86 {}
+    arch_arm6 {}
+    arch_ppc {}
     core {}
     // all the core architectures
     armv6 {}
@@ -112,14 +116,33 @@ executables {
 }
 
 sources {
+    base {
+        c {
+            exportedHeaders {
+                srcDirs "src", "src/api"
+            }
+        }
+    }
+    arch_x86 {
+        c {
+            exportedHeaders {
+                srcDir "src/arch/x86"
+            }
+        }
+        asm {
+            source {
+                srcDirs "src/arch/x86"
+                include "**/*.S"
+            }
+        }
+    }
     core {
          c {
+             lib libraries.base
+             lib libraries.arch_x86
              source {
-                 srcDir "src/boot"
+                 srcDirs "src/api", "src/boot", "src/kernel", "src/devices"
                  include "**/*.c"
-             }
-             exportedHeaders {
-                 srcDir "src/boot"
              }
          }
     }
