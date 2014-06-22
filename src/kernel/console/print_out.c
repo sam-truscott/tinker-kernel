@@ -12,12 +12,11 @@
 #include "kernel/utils/util_memset.h"
 #include "arch/board_support.h"
 #include "kernel/time/time_manager.h"
-#include <stdarg.h>
 
 #define MAX_INTEGER_LENGTH 10
 #define MAX_HEX_INTEGER_LENGTH 8
 
-static void __print_out_process(va_list * const arguments, const char ** const ptr);
+static void __print_out_process(const char ** const ptr, int32_t * param);
 
 static void __print_out_print_char(const char c);
 
@@ -46,20 +45,19 @@ void __print_time(void)
 
 void __error_print(const char * const msg, ...)
 {
-	/*__tgt_disable_external_interrupts();*/
-	va_list arguments;
 	const char * ptr = msg;
 
 	__print_time();
 
-	va_start (arguments, msg);
-
+	int32_t * param = (int32_t*)msg;
+	param++;
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&arguments, &ptr);
+			__print_out_process(&ptr, param);
 			ptr++;
+			param++;
 		}
 		else
 		{
@@ -67,27 +65,23 @@ void __error_print(const char * const msg, ...)
 		}
 		ptr++;
 	}
-
-	va_end(arguments);
-	/*__tgt_enable_external_interrupts();*/
 }
 
 void __debug_print(const char * const msg, ...)
 {
 #if defined(__KERNEL_DEBUGGING)
-	/*__tgt_disable_external_interrupts();*/
-	va_list arguments;
 	const char * ptr = msg;
 
 	__print_time();
 
-	va_start (arguments, msg);
-
+	int32_t * param = (int32_t*)msg;
+	param++;
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&arguments, &ptr);
+			__print_out_process(&ptr, param);
+			param++;
 			ptr++;
 		}
 		else
@@ -96,8 +90,6 @@ void __debug_print(const char * const msg, ...)
 		}
 		ptr++;
 	}
-
-	va_end(arguments);
 #else
 	if (msg) {}
 #endif
@@ -105,16 +97,16 @@ void __debug_print(const char * const msg, ...)
 
 void __printp_out(const char * const msg, ...)
 {
-	va_list arguments;
 	const char * ptr = msg;
 
-	va_start (arguments, msg);
-
+	int32_t * param = (int32_t*)msg;
+	param++;
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&arguments, &ptr);
+			__print_out_process(&ptr, param);
+			param++;
 			ptr++;
 		}
 		else
@@ -123,8 +115,6 @@ void __printp_out(const char * const msg, ...)
 		}
 		ptr++;
 	}
-
-	va_end(arguments);
 }
 
 void __print_out(const char * const msg)
@@ -132,7 +122,7 @@ void __print_out(const char * const msg)
 	__print_out_print_string(msg);
 }
 
-void __print_out_process(va_list * const arguments, const char ** const ptr)
+void __print_out_process(const char ** const ptr, int32_t * param)
 {
 	char * rptr = (char*)(*ptr);
 	rptr++;
@@ -140,18 +130,18 @@ void __print_out_process(va_list * const arguments, const char ** const ptr)
 	{
 		case 's':
 			{
-				const char * const str = (const char *)va_arg(*arguments, char*);
+				const char * const str = (const char *)param;
 				__print_out_print_string(str);
 			}
 			break;
 		case 'd':
-			__print_out_print_signed(va_arg(*arguments, int32_t));
+			__print_out_print_signed(*param);
 			break;
 		case 'x':
-			__print_out_print_hex(va_arg(*arguments, uint32_t), false);
+			__print_out_print_hex(*param, false);
 			break;
 		case 'X':
-			__print_out_print_hex(va_arg(*arguments, uint32_t), true);
+			__print_out_print_hex(*param, true);
 			break;
 		default:
 			__print_out_print_char('%');

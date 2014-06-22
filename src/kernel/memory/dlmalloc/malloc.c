@@ -6,8 +6,6 @@
 
 #include "malloc_config.h"
 
-#include <stddef.h>   /* for size_t */
-
 extern void memcpy(void * dst, const void * src, const uint32_t size);
 
 #pragma GCC optimize ("-O3")

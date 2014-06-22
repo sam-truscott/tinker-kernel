@@ -29,8 +29,6 @@
 extern "C" {
 #endif
 
-#include <stddef.h>   /* for size_t */
-
 #ifndef ONLY_MSPACES
 #define ONLY_MSPACES 0     /* define to a value */
 #elif ONLY_MSPACES != 0

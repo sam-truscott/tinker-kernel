@@ -34,7 +34,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/arch/ppc32}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/api}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${XTOOLS}/powerpc/lib/gcc/powerpc-none-eabi/4.8.1/include/&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.nostdinc.1497126126" name="Do not search system directories (-nostdinc)" superClass="gnu.c.compiler.option.preprocessor.nostdinc" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="gnu.c.compiler.option.optimization.flags.194745959" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-mpowerpc -mno-hard-dfp -mcpu=750 -mtune=750 -mno-altivec -mno-vrsave -m32 -msoft-float -mmultiple -mstring -mno-strict-align -mbig" valueType="string"/>

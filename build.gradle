@@ -80,7 +80,27 @@ model {
         }
 
         List<String> getCCompilerArgs() {
-            ["-nostdinc", "-D__BUILDING_KERNEL", "-D__KERNEL_SHELL", "-D__KERNEL_DEBUGGING", "-D__MEMORY_DEBUGGING", "-D__DEBUG_COLLECTIONS", "-D__PROCESS_DEBUGGING", "-O0", "-march=i686", "-g3", "-gdwarf-4", "-pedantic", "-pedantic-errors", "-Wall", "-Wextra", "-Werror", "-c", "-fmessage-length=0", "-std=gnu99", "-fno-builtin", "-ffreestanding"]
+            ["-nostdinc",
+             "-D__BUILDING_KERNEL",
+             "-D__KERNEL_SHELL",
+             "-D__KERNEL_DEBUGGING",
+             "-D__MEMORY_DEBUGGING",
+             "-D__DEBUG_COLLECTIONS",
+             "-D__PROCESS_DEBUGGING",
+             "-O0",
+             "-march=i686",
+             "-g3",
+             "-gdwarf-4",
+             "-pedantic",
+             //"-pedantic-errors",
+             "-Wall",
+             "-Wextra",
+             //"-Werror",
+             "-c",
+             "-fmessage-length=0",
+             "-std=gnu99",
+             "-fno-builtin",
+             "-ffreestanding"]
         }
 
         List<String> getAssemblerArgs() {
