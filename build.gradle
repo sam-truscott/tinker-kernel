@@ -3,24 +3,28 @@ apply plugin: 'assembler'
 
 model {
     platforms {
-        tinker_arm {
+        
+        tinkerArm {
             architecture "arm"
+            operatingSystem "linux"
         }
-        tinker_powerpc {
+        tinkerPowerPc {
             architecture "ppc"
+            operatingSystem "linux"
         }
-        tinker_x86 {
+        tinkerX86 {
             architecture "x86"
+            operatingSystem "linux"
         }
     }
     toolChains {
-        gccPowerpc(Gcc) {
-            getCppCompiler().setExecutable 'powerpc-none-eabi-gcc'
-            getCCompiler().setExecutable 'powerpc-none-eabi-gcc'
-            getAssembler().setExecutable 'powerpc-none-eabi-as'
-            getLinker().setExecutable 'powerpc-none-eabi-gcc'
-            getStaticLibArchiver().setExecutable 'powerpc-none-eabi-ar'
-            addPlatformConfiguration(new PowerPCSupport())
+        gccPowerPc(Gcc) {
+            getCppCompiler().setExecutable 'powerpc-eabi-gcc'
+            getCCompiler().setExecutable 'powerpc-eabi-gcc'
+            getAssembler().setExecutable 'powerpc-eabi-as'
+            getLinker().setExecutable 'powerpc-eabi-gcc'
+            getStaticLibArchiver().setExecutable 'powerpc-eabi-ar'
+            addPlatformConfiguration(new PowerPcSupport())
         }
         gccX86(Gcc) {
             addPlatformConfiguration(new X86Support())
@@ -28,7 +32,7 @@ model {
     }
 }
 
-    class PowerPCSupport implements TargetPlatformConfiguration {
+    class PowerPcSupport implements TargetPlatformConfiguration {
         File srcDir = new File('src')
 
         boolean supportsPlatform(Platform element) {
@@ -57,14 +61,14 @@ model {
              "-D__DEBUG_COLLECTIONS",
              "-D__PROCESS_DEBUGGING",
              "-O0",
-             "-march=i686",
+             "-mcpu=powerpc",
              "-g3",
              "-gdwarf-4",
              "-pedantic",
-             "-pedantic-errors",
+             //"-pedantic-errors",
              "-Wall",
              "-Wextra",
-             "-Werror",
+             //"-Werror",
              "-c",
              "-fmessage-length=0",
              "-std=gnu99",
@@ -77,7 +81,10 @@ model {
         }
 
         List<String> getLinkerArgs() {
-            []
+            ["-nostartfiles",
+             "-nodefaultlibs",
+             "-nostdlib",
+             "-lgcc"]
         }
 
         List<String> getStaticLibraryArchiverArgs() {
@@ -146,17 +153,30 @@ libraries {
     // the core kernel
     base {}
     // architectures
-    arch_x86 {}
-    arch_arm6 {}
-    arch_ppc {}
+    archX86 {
+        targetPlatforms "tinkerX86"
+    }
+    archArm6 {
+        targetPlatforms "tinkerArm"
+    }
+    archPowerPc {
+        targetPlatforms "tinkerPowerPc"
+    }
     // the core
+    api {}
     core {}
 }
 
 executables {
-    armv6_pi {}
-    x86 {}
-    ppc32_gdb {}
+    armv6Pi {
+        targetPlatforms "tinkerArm"
+    }
+    x86 {
+        targetPlatforms "tinkerX86"
+    }
+    ppc32Gdb {
+        targetPlatforms "tinkerPowerPc"
+    }
 }
 
 sources {
@@ -167,7 +187,7 @@ sources {
             }
         }
     }
-    arch_x86 {
+    archX86 {
         c {
             exportedHeaders {
                 srcDir "src/arch/x86"
@@ -176,15 +196,16 @@ sources {
         asm {
             source {
                 srcDirs "src/arch/x86"
-                include "**/*.S"
+                include "*.S"
             }
         }
     }
-    arch_powerpc {
+    archPowerPc {
         c {
+            lib libraries.base.static
             source {
-                srcDir "src/arch/ppc32"
-                include "**/*.c"
+                srcDirs "src/arch/ppc32", "src/arch/ppc32/generic"
+                include "*.c"
             }
             exportedHeaders {
                 srcDir "src/arch/ppc32"
@@ -193,17 +214,51 @@ sources {
         asm {
             source {
                 srcDirs "src/arch/ppc32"
-                include "**/*.S"
+                include "*.S"
             }
         }
     }
-    core {
-         c {
-             lib libraries.base
+    api {
+        c {
+             lib libraries.base.static
              source {
-                 srcDirs "src/api", "src/boot", "src/kernel", "src/devices"
+                 srcDir "src/api"
                  include "**/*.c"
              }
          }
+    }
+    core {
+         c {
+             lib libraries.base.static
+             source {
+                 srcDir "src"
+                 include "*.c"
+             }
+         }
+         c {
+             lib libraries.base.static
+             source {
+                 srcDirs "src/boot", "src/kernel", "src/devices"
+                 include "**/*.c"
+             }
+         }
+    }
+    ppc32Gdb {
+        c {
+            lib libraries.base.static
+            lib libraries.api.static
+            lib libraries.archPowerPc.static
+            lib libraries.core.static
+            source {
+                srcDirs "src/arch/ppc32/gdb_sim"
+                include "**/*.c"
+            }
+        }
+        binaries.all {
+            File srcDir = new File('src')
+            linker.args "-lgcc",
+                 "-T",
+                 (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
+        }
     }
 }
