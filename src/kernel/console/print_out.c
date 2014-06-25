@@ -16,7 +16,7 @@
 #define MAX_INTEGER_LENGTH 10
 #define MAX_HEX_INTEGER_LENGTH 8
 
-static void __print_out_process(const char ** const ptr, int32_t * param);
+static void __print_out_process(const char ** const ptr, __builtin_va_list * const list);
 
 static void __print_out_print_char(const char c);
 
@@ -49,15 +49,14 @@ void __error_print(const char * const msg, ...)
 
 	__print_time();
 
-	int32_t * param = (int32_t*)msg;
-	param++;
+	__builtin_va_list list;
+	__builtin_va_start(list, msg);
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&ptr, param);
+			__print_out_process(&ptr, &list);
 			ptr++;
-			param++;
 		}
 		else
 		{
@@ -65,6 +64,7 @@ void __error_print(const char * const msg, ...)
 		}
 		ptr++;
 	}
+	__builtin_va_end(list);
 }
 
 void __debug_print(const char * const msg, ...)
@@ -74,14 +74,13 @@ void __debug_print(const char * const msg, ...)
 
 	__print_time();
 
-	int32_t * param = (int32_t*)msg;
-	param++;
+	__builtin_va_list list;
+	__builtin_va_start(list, msg);
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&ptr, param);
-			param++;
+			__print_out_process(&ptr, &list);
 			ptr++;
 		}
 		else
@@ -90,6 +89,7 @@ void __debug_print(const char * const msg, ...)
 		}
 		ptr++;
 	}
+	__builtin_va_end(list);
 #else
 	if (msg) {}
 #endif
@@ -99,14 +99,13 @@ void __printp_out(const char * const msg, ...)
 {
 	const char * ptr = msg;
 
-	int32_t * param = (int32_t*)msg;
-	param++;
+	__builtin_va_list list;
+	__builtin_va_start(list, msg);
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&ptr, param);
-			param++;
+			__print_out_process(&ptr, &list);
 			ptr++;
 		}
 		else
@@ -115,6 +114,7 @@ void __printp_out(const char * const msg, ...)
 		}
 		ptr++;
 	}
+	__builtin_va_end(list);
 }
 
 void __print_out(const char * const msg)
@@ -122,7 +122,7 @@ void __print_out(const char * const msg)
 	__print_out_print_string(msg);
 }
 
-void __print_out_process(const char ** const ptr, int32_t * param)
+void __print_out_process(const char ** const ptr, __builtin_va_list * const list)
 {
 	char * rptr = (char*)(*ptr);
 	rptr++;
@@ -130,18 +130,18 @@ void __print_out_process(const char ** const ptr, int32_t * param)
 	{
 		case 's':
 			{
-				const char * const str = (const char *)param;
+				const char * const str = (const char *)__builtin_va_arg(*list, char*);
 				__print_out_print_string(str);
 			}
 			break;
 		case 'd':
-			__print_out_print_signed(*param);
+			__print_out_print_signed(__builtin_va_arg(*list, int));
 			break;
 		case 'x':
-			__print_out_print_hex(*param, false);
+			__print_out_print_hex(__builtin_va_arg(*list, unsigned int), false);
 			break;
 		case 'X':
-			__print_out_print_hex(*param, true);
+			__print_out_print_hex(__builtin_va_arg(*list, unsigned int), true);
 			break;
 		default:
 			__print_out_print_char('%');
