@@ -9,7 +9,7 @@
 #ifndef BOARD_SUPPORT_H_
 #define BOARD_SUPPORT_H_
 
-#include "tinker.h"
+#include "kernel/tinker.h"
 #include "kernel/scheduler/scheduler.h"
 
 /**

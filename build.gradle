@@ -84,7 +84,7 @@ model {
             ["-nostartfiles",
              "-nodefaultlibs",
              "-nostdlib",
-             "-lgcc"]
+             "-static"]
         }
 
         List<String> getStaticLibraryArchiverArgs() {
@@ -163,8 +163,9 @@ libraries {
         targetPlatforms "tinkerPowerPc"
     }
     // the core
-    api {}
     core {}
+    boot {}
+    api {}
 }
 
 executables {
@@ -219,10 +220,19 @@ sources {
         }
     }
     api {
-        c {
+         c {
              lib libraries.base.static
              source {
                  srcDir "src/api"
+                 include "**/*.c"
+             }
+         }
+    }
+    boot {
+         c {
+             lib libraries.base.static
+             source {
+                 srcDir "src/boot"
                  include "**/*.c"
              }
          }
@@ -231,14 +241,7 @@ sources {
          c {
              lib libraries.base.static
              source {
-                 srcDir "src"
-                 include "*.c"
-             }
-         }
-         c {
-             lib libraries.base.static
-             source {
-                 srcDirs "src/boot", "src/kernel", "src/devices"
+                 srcDirs "src/kernel", "src/devices"
                  include "**/*.c"
              }
          }
@@ -248,6 +251,7 @@ sources {
             lib libraries.base.static
             lib libraries.api.static
             lib libraries.archPowerPc.static
+            lib libraries.boot.static
             lib libraries.core.static
             source {
                 srcDirs "src/arch/ppc32/gdb_sim"
