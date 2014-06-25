@@ -9,7 +9,10 @@
 #ifndef BOARD_SUPPORT_H_
 #define BOARD_SUPPORT_H_
 
-#include "kernel/tinker.h"
+#include "config.h"
+#include "api/tinker_api.h"
+#include "api/tinker_api_types.h"
+#include "api/tinker_api_errors.h"
 #include "kernel/scheduler/scheduler.h"
 
 /**

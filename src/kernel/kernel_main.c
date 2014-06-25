@@ -76,4 +76,8 @@ void __kernel_main(void)
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }
 
-
+void kmain()
+{
+	// does nothing
+}
+#pragma weak kmain

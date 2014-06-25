@@ -232,3 +232,10 @@ void __thread_exit(__thread_t * const thread)
 	// thread itself
 	__mem_free(pool, thread);
 }
+
+error_t tinker_exit_thread()
+{
+	// default, weak - real in the API
+	return NO_ERROR;
+}
+#pragma weak tinker_exit_thread
