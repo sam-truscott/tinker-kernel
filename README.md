@@ -37,6 +37,20 @@ features
 * timers
 * clock
 
+building
+========
+
+Gradle is used as the build system. It can build debug and release versions of either the parts
+(which are static libraries) or executables
+
+For example, for PowerPC use:
+
+    # Windows
+    gradlew.bat releasePpc32GdbExecutable
+    
+    # Linux
+    ./gradlew.sh releasePpc32GdbExecutable
+
 loading
 =======
 
@@ -66,23 +80,21 @@ issues / todo
 
 these are the things I need to address in a rough order:
 
-* parameters to intc_enable (priority, edge/level, active high/low etc)
-* port over to new TWR-MPC5125 (e300c4) hardware rather than simulator
-* timeouts on pipe (open/read/write)
-* allow user-mode to map to real addresses (user-mode drivers)
-* (interrupts can be handled by pipes in the bsp)
-* break up the syscalls into seperate static/inline functions
-* gradle build file
-* add mechanism to load elfs
-* create static library for api/syscalls 
-* create newlib port
-* create bootstrap for kernel + services
-* option to make pipes zero-copy via mmu (memory is already aligned)
-* review the powerpc page table code
-* ARM support
-* x86 support
-* need to review it all head to toe since refactor
-* doc it with doxygen
+* powerpc: check page table is in rage
+* interrupts: parameters to intc_enable (priority, edge/level, active high/low etc)
+* target: ARM support
+* target: x86 support
+* kernel: timeouts on pipe (open/read/write)
+* kernel: allow user-mode to map to real addresses (user-mode drivers)
+    * (interrupts can be handled by pipes in the bsp)
+* kernel: break up the syscalls into seperate static/inline functions
+* kernel: add mechanism to load elfs
+* support: create newlib port
+* support: create bootstrap for kernel + services
+* kernel: option to make pipes zero-copy via mmu (memory is already aligned)
+* kernel: review the powerpc page table code
+* all: need to review it all head to toe since refactor
+* doc: doc it with doxygen
 
 toolchain
 =========
