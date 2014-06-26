@@ -46,10 +46,10 @@ Gradle is used as the build system. It can build debug and release versions of e
 For example, for PowerPC use:
 
     # Windows
-    gradlew.bat releasePpc32GdbExecutable
+    gradlew releasePpc32GdbExecutable
     
     # Linux
-    ./gradlew.sh releasePpc32GdbExecutable
+    ./gradlew releasePpc32GdbExecutable
 
 loading
 =======
