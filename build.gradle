@@ -107,16 +107,7 @@ model {
         List<String> getCCompilerArgs() {
             ["-I" + srcDir.getAbsolutePath() + "/arch/x86",
              "-nostdinc",
-             "-D__BUILDING_KERNEL",
-             "-D__KERNEL_SHELL",
-             "-D__KERNEL_DEBUGGING",
-             "-D__MEMORY_DEBUGGING",
-             "-D__DEBUG_COLLECTIONS",
-             "-D__PROCESS_DEBUGGING",
-             "-O0",
              "-march=i686",
-             "-g3",
-             "-gdwarf-4",
              "-pedantic",
              //"-pedantic-errors",
              "-Wall",
@@ -134,7 +125,10 @@ model {
         }
 
         List<String> getLinkerArgs() {
-            []
+            ["-nostartfiles",
+             "-nodefaultlibs",
+             "-nostdlib",
+             "-static"]
         }
 
         List<String> getStaticLibraryArchiverArgs() {
@@ -256,6 +250,25 @@ sources {
             linker.args "-lgcc",
                  "-T",
                  (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
+        }
+    }
+    x86 {
+        c {
+            lib libraries.base.static    // core
+            lib libraries.api.static     // api layer
+            lib libraries.archX86.static // x86 code
+            lib libraries.boot.static    // boot c code into kernel
+            lib libraries.core.static    // the core kernel
+            source {
+                srcDirs "src/arch/x86", "src/tinker"
+                include "**/*.c"
+            }
+        }
+        binaries.all {
+            File srcDir = new File('src')
+            linker.args "-lgcc",
+                 "-T",
+                 (srcDir.getAbsolutePath() + "\\arch\\x86\\linker.ld")
         }
     }
     binaries.all {
