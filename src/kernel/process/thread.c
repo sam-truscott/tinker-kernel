@@ -13,6 +13,7 @@
 #include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/utils/util_strlen.h"
+#include "tinker_api_kernel_interface.h"
 
 typedef struct __thread_t
 {
@@ -31,6 +32,8 @@ typedef struct __thread_t
 	__tgt_context_t		* context;
 	char 				name[__MAX_THREAD_NAME_LEN + 1];
 } __thread_internal_t;
+
+static void __thread_end(void) __attribute__((section(".api")));
 
 static void __thread_setup_stack(__thread_t * const thread)
 {
@@ -87,7 +90,7 @@ __thread_t * __thread_create(
 					thread,
 					&thread->context,
 					__process_is_kernel(thread->parent),
-					(const uint32_t)tinker_exit_thread);
+					(const uint32_t)__thread_end);
 		}
 		else
 		{
@@ -233,9 +236,7 @@ void __thread_exit(__thread_t * const thread)
 	__mem_free(pool, thread);
 }
 
-error_t tinker_exit_thread()
+static void __thread_end(void)
 {
-	// default, weak - real in the API
-	return NO_ERROR;
+	TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
 }
-#pragma weak tinker_exit_thread
