@@ -117,7 +117,9 @@ model {
              "-fmessage-length=0",
              "-std=gnu99",
              "-fno-builtin",
-             "-ffreestanding"]
+             "-ffreestanding"]//,
+             //"-fleading-underscore"]
+             //"-fno-leading-underscore"]
         }
 
         List<String> getAssemblerArgs() {
@@ -177,6 +179,11 @@ sources {
     }
     archX86 {
         c {
+            lib libraries.base.static
+            source {
+                srcDirs "src/arch/x86"
+                include "*.c"
+            }
             exportedHeaders {
                 srcDir "src/arch/x86"
             }
@@ -260,7 +267,7 @@ sources {
             lib libraries.boot.static    // boot c code into kernel
             lib libraries.core.static    // the core kernel
             source {
-                srcDirs "src/arch/x86", "src/tinker"
+                srcDirs "src/tinker"
                 include "**/*.c"
             }
         }
