@@ -63,7 +63,7 @@ SECTIONS{
         *(.got2)
         *(.fixup)
         . = ALIGN(0x1000);
-      	__data_end = .;
+      	___data_end = .;
     }>RAM
     
     /* code */
@@ -76,23 +76,23 @@ SECTIONS{
    
 	/* code */
     .text ALIGN (0x1000) : {
-        __text = .;
+        ___text = .;
     	*(.boot)
     	*(.vector_code)
     	. = ALIGN(4);
         *(.text)
-        __text_end = .;
+        ___text_end = .;
     }>RAM
     
     .utext ALIGN (0x1000) :
     {
-        __utext = .;
+        ___utext = .;
         *(.utext)
         . = ALIGN(0x1000);
-        _euser_text = .;
-        __udata = .;
+        ___euser_text = .;
+        ___udata = .;
         *(.udata)
-        __euser = ALIGN(0x1000);
+        ___euser = ALIGN(0x1000);
     }>RAM
     
     .dynsym ALIGN (0x1000) : { *(.dynsym) }>RAM
