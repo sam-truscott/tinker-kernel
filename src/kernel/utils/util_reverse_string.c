@@ -15,4 +15,3 @@ void util_reverse_string(const char * src, const uint32_t src_length, char * dst
 		dst[p] = src[src_length-p-1];
 	}
 }
-#pragma weak util_reverse_string

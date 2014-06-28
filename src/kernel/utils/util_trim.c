@@ -19,4 +19,3 @@ uint32_t util_trim(char * const string, const uint32_t length)
 	}
 	return new_length;
 }
-#pragma weak util_trim

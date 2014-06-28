@@ -68,10 +68,10 @@ SECTIONS{
     
     /* code */
     .api ALIGN (0x1000) : {
-    	__api = .;
+    	___api = .;
     	*(.api)
     	 . = ALIGN(0x1000);
-    	 __api_end = .;
+    	 ___api_end = .;
     }>RAM
    
 	/* code */

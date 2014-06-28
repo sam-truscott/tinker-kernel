@@ -61,8 +61,6 @@ void util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 		}
 	}
 }
-#pragma weak util_i_to_a
-
 
 void util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
 {
@@ -102,4 +100,3 @@ void util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
 		}
 	}
 }
-#pragma weak util_i_to_h

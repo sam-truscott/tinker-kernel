@@ -11,13 +11,5 @@
 #pragma GCC optimize ("-O2") // this code screws up on -O3
 void* memset(void * address, const uint32_t value, const uint32_t size)
 {
-	uint8_t * addr = (uint8_t*) address;
-	uint32_t s = size;
-	while(s--)
-	{
-		(*addr) = value;
-		addr++;
-	}
-	return address;
+	return __builtin_memset(address, value, size);
 }
-#pragma weak memset
