@@ -213,7 +213,7 @@ extern void memcpy(void * dst, const void * src, const uint32_t size);
 
   You can similarly create thread-local allocators by storing
   mspaces as thread-locals. For example:
-    static __thread mspace tlms = 0;
+    static thread mspace tlms = 0;
     void*  tlmalloc(size_t bytes) {
       if (tlms == 0) tlms = create_mspace(0, 0);
       return mspace_malloc(tlms, bytes);
@@ -253,7 +253,7 @@ WIN32                    default: defined if _WIN32 defined
 DLMALLOC_EXPORT       default: extern
   Defines how public APIs are declared. If you want to export via a
   Windows DLL, you might define this as
-    #define DLMALLOC_EXPORT extern  __declspec(dllexport)
+    #define DLMALLOC_EXPORT extern  declspec(dllexport)
   If you want a POSIX ELF shared object, you might use
     #define DLMALLOC_EXPORT extern __attribute__((visibility("default")))
 
@@ -602,9 +602,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #endif /* USE_LOCKS */
 
 #if USE_LOCKS /* Spin locks for gcc >= 4.1, older gcc on x86, MSC >= 1310 */
-#if ((defined(__GNUC__) &&                                              \
-      ((__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)) ||      \
-       defined(__i386__) || defined(__x86_64__))) ||                    \
+#if ((defined(GNUC) &&                                              \
+      ((GNUC > 4 || (GNUC == 4 && GNUC_MINOR >= 1)) ||      \
+       defined(i386) || defined(x86_64))) ||                    \
      (defined(_MSC_VER) && _MSC_VER>=1310))
 #ifndef USE_SPIN_LOCKS
 #define USE_SPIN_LOCKS 1
@@ -794,28 +794,28 @@ struct mallinfo {
 */
 
 #ifndef FORCEINLINE
-  #if defined(__GNUC__)
-#define FORCEINLINE __inline __attribute__ ((always_inline))
+  #if defined(GNUC)
+#define FORCEINLINE inline __attribute__ ((always_inline))
   #elif defined(_MSC_VER)
-    #define FORCEINLINE __forceinline
+    #define FORCEINLINE forceinline
   #endif
 #endif
 #ifndef NOINLINE
-  #if defined(__GNUC__)
+  #if defined(GNUC)
     #define NOINLINE __attribute__ ((noinline))
   #elif defined(_MSC_VER)
-    #define NOINLINE __declspec(noinline)
+    #define NOINLINE declspec(noinline)
   #else
     #define NOINLINE
   #endif
 #endif
 
-#ifdef __cplusplus
+#ifdef cplusplus
 extern "C" {
 #ifndef FORCEINLINE
  #define FORCEINLINE inline
 #endif
-#endif /* __cplusplus */
+#endif /* cplusplus */
 #ifndef FORCEINLINE
  #define FORCEINLINE
 #endif
@@ -1425,9 +1425,9 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 
 #endif /* MSPACES */
 
-#ifdef __cplusplus
+#ifdef cplusplus
 }  /* end of extern "C" */
-#endif /* __cplusplus */
+#endif /* cplusplus */
 
 /*
   ========================================================================
@@ -1479,11 +1479,11 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #endif /* USE_BUILTIN_FFS */
 #if HAVE_MMAP
 #ifndef LACKS_SYS_MMAN_H
-/* On some versions of linux, mremap decl in mman.h needs __USE_GNU set */
-#if (defined(linux) && !defined(__USE_GNU))
-#define __USE_GNU 1
+/* On some versions of linux, mremap decl in mman.h needs USE_GNU set */
+#if (defined(linux) && !defined(USE_GNU))
+#define USE_GNU 1
 #include <sys/mman.h>    /* for mmap */
-#undef __USE_GNU
+#undef USE_GNU
 #else
 #include <sys/mman.h>    /* for mmap */
 #endif /* linux */
@@ -1495,7 +1495,7 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>     /* for sbrk, sysconf */
 #else /* LACKS_UNISTD_H */
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
+#if !defined(FreeBSD) && !defined(OpenBSD) && !defined(NetBSD)
 extern void*     sbrk(ptrdiff_t);
 #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */
@@ -1503,7 +1503,7 @@ extern void*     sbrk(ptrdiff_t);
 /* Declarations for locking */
 #if USE_LOCKS
 #ifndef WIN32
-#if defined (__SVR4) && defined (__sun)  /* solaris */
+#if defined (SVR4) && defined (sun)  /* solaris */
 #include <thread.h>
 #elif !defined(LACKS_SCHED_H)
 #include <sched.h>
@@ -1514,22 +1514,22 @@ extern void*     sbrk(ptrdiff_t);
 #elif defined(_MSC_VER)
 #ifndef _M_AMD64
 /* These are already defined on AMD64 builds */
-#ifdef __cplusplus
+#ifdef cplusplus
 extern "C" {
-#endif /* __cplusplus */
-LONG __cdecl _InterlockedCompareExchange(LONG volatile *Dest, LONG Exchange, LONG Comp);
-LONG __cdecl _InterlockedExchange(LONG volatile *Target, LONG Value);
-#ifdef __cplusplus
+#endif /* cplusplus */
+LONG cdecl _InterlockedCompareExchange(LONG volatile *Dest, LONG Exchange, LONG Comp);
+LONG cdecl _InterlockedExchange(LONG volatile *Target, LONG Value);
+#ifdef cplusplus
 }
-#endif /* __cplusplus */
+#endif /* cplusplus */
 #endif /* _M_AMD64 */
 #pragma intrinsic (_InterlockedCompareExchange)
 #pragma intrinsic (_InterlockedExchange)
 #define interlockedcompareexchange _InterlockedCompareExchange
 #define interlockedexchange _InterlockedExchange
-#elif defined(WIN32) && defined(__GNUC__)
-#define interlockedcompareexchange(a, b, c) __sync_val_compare_and_swap(a, c, b)
-#define interlockedexchange __sync_lock_test_and_set
+#elif defined(WIN32) && defined(GNUC)
+#define interlockedcompareexchange(a, b, c) sync_val_compare_and_swap(a, c, b)
+#define interlockedexchange sync_lock_test_and_set
 #endif /* Win32 */
 #else /* USE_LOCKS */
 #endif /* USE_LOCKS */
@@ -1541,14 +1541,14 @@ LONG __cdecl _InterlockedExchange(LONG volatile *Target, LONG Value);
 /* Declarations for bit scanning on win32 */
 #if defined(_MSC_VER) && _MSC_VER>=1300
 #ifndef BitScanForward /* Try to avoid pulling in WinNT.h */
-#ifdef __cplusplus
+#ifdef cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif /* cplusplus */
 unsigned char _BitScanForward(unsigned long *index, unsigned long mask);
 unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);
-#ifdef __cplusplus
+#ifdef cplusplus
 }
-#endif /* __cplusplus */
+#endif /* cplusplus */
 
 #define BitScanForward _BitScanForward
 #define BitScanReverse _BitScanReverse
@@ -1834,17 +1834,17 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 /* First, define CAS_LOCK and CLEAR_LOCK on ints */
 /* Note CAS_LOCK defined to return 0 on success */
 
-#if defined(__GNUC__)&& (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))
-#define CAS_LOCK(sl)     __sync_lock_test_and_set(sl, 1)
-#define CLEAR_LOCK(sl)   __sync_lock_release(sl)
+#if defined(GNUC)&& (GNUC > 4 || (GNUC == 4 && GNUC_MINOR >= 1))
+#define CAS_LOCK(sl)     sync_lock_test_and_set(sl, 1)
+#define CLEAR_LOCK(sl)   sync_lock_release(sl)
 
-#elif (defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__)))
+#elif (defined(GNUC) && (defined(i386) || defined(x86_64)))
 /* Custom spin locks for older gcc on x86 */
 static FORCEINLINE int x86_cas_lock(int *sl) {
   int ret;
   int val = 1;
   int cmp = 0;
-  __asm__ __volatile__  ("lock; cmpxchgl %1, %2"
+  asm volatile  ("lock; cmpxchgl %1, %2"
                          : "=a" (ret)
                          : "r" (val), "m" (*(sl)), "0"(cmp)
                          : "memory", "cc");
@@ -1855,7 +1855,7 @@ static FORCEINLINE void x86_clear_lock(int* sl) {
   assert(*sl != 0);
   int prev = 0;
   int ret;
-  __asm__ __volatile__ ("lock; xchgl %0, %1"
+  asm volatile ("lock; xchgl %0, %1"
                         : "=r" (ret)
                         : "m" (*(sl)), "0"(prev)
                         : "memory");
@@ -1875,7 +1875,7 @@ static FORCEINLINE void x86_clear_lock(int* sl) {
 #if defined(_MSC_VER)
 #define SLEEP_EX_DURATION     50 /* delay for yield/sleep */
 #define SPIN_LOCK_YIELD  SleepEx(SLEEP_EX_DURATION, FALSE)
-#elif defined (__SVR4) && defined (__sun) /* solaris */
+#elif defined (SVR4) && defined (sun) /* solaris */
 #define SPIN_LOCK_YIELD   thr_yield();
 #elif !defined(LACKS_SCHED_H)
 #define SPIN_LOCK_YIELD   sched_yield();
@@ -2020,8 +2020,8 @@ static void init_malloc_global_mutex() {
 #if defined(USE_RECURSIVE_LOCKS) && USE_RECURSIVE_LOCKS != 0 && defined(linux) && !defined(PTHREAD_MUTEX_RECURSIVE)
 /* Cope with old-style linux recursive lock initialization by adding */
 /* skipped internal declaration from pthread.h */
-extern int pthread_mutexattr_setkind_np __P ((pthread_mutexattr_t *__attr,
-                                              int __kind));
+extern int pthread_mutexattr_setkind_np P ((pthread_mutexattr_t *attr,
+                                              int kind));
 #define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
 #define pthread_mutexattr_settype(x,y) pthread_mutexattr_setkind_np(x,y)
 #endif /* USE_RECURSIVE_LOCKS ... */
@@ -2841,7 +2841,7 @@ static size_t traverse_and_check(mstate m);
 #define treebin_at(M,i)     (&((M)->treebins[i]))
 
 /* assign tree index for size S to variable I. Use x86 asm if possible  */
-#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+#if defined(GNUC) && (defined(i386) || defined(x86_64))
 #define compute_tree_index(S, I)\
 {\
   unsigned int X = S >> TREEBIN_SHIFT;\
@@ -2850,12 +2850,12 @@ static size_t traverse_and_check(mstate m);
   else if (X > 0xFFFF)\
     I = NTREEBINS-1;\
   else {\
-    unsigned int K = (unsigned) sizeof(X)*__CHAR_BIT__ - 1 - (unsigned) __builtin_clz(X); \
+    unsigned int K = (unsigned) sizeof(X)*CHAR_BIT - 1 - (unsigned) builtin_clz(X); \
     I =  (bindex_t)((K << 1) + ((S >> (K + (TREEBIN_SHIFT-1)) & 1)));\
   }\
 }
 
-#elif defined (__INTEL_COMPILER)
+#elif defined (INTEL_COMPILER)
 #define compute_tree_index(S, I)\
 {\
   size_t X = S >> TREEBIN_SHIFT;\
@@ -2944,15 +2944,15 @@ static size_t traverse_and_check(mstate m);
 
 /* index corresponding to given bit. Use x86 asm if possible */
 
-#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+#if defined(GNUC) && (defined(i386) || defined(x86_64))
 #define compute_bit2idx(X, I)\
 {\
   unsigned int J;\
-  J = __builtin_ctz(X); \
+  J = builtin_ctz(X); \
   I = (bindex_t)J;\
 }
 
-#elif defined (__INTEL_COMPILER)
+#elif defined (INTEL_COMPILER)
 #define compute_bit2idx(X, I)\
 {\
   unsigned int J;\
@@ -3038,10 +3038,10 @@ static size_t traverse_and_check(mstate m);
 #define ok_magic(M)      (1)
 #endif /* (FOOTERS && !INSECURE) */
 
-/* In gcc, use __builtin_expect to minimize impact of checks */
+/* In gcc, use builtin_expect to minimize impact of checks */
 #if !INSECURE
-#if defined(__GNUC__) && __GNUC__ >= 3
-#define RTCHECK(e)  __builtin_expect(e, 1)
+#if defined(GNUC) && GNUC >= 3
+#define RTCHECK(e)  builtin_expect(e, 1)
 #else /* GNUC */
 #define RTCHECK(e)  (e)
 #endif /* GNUC */

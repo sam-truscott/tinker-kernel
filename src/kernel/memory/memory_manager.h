@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -14,7 +14,7 @@
 /**
  * Initialise memory services
  */
-bool_t __mem_initialise(
+bool_t mem_initialise(
 		const uint32_t start,
 		const uint32_t end);
 
@@ -22,6 +22,6 @@ bool_t __mem_initialise(
  * Get the default memory pool
  * @return The default memory pool
  */
-__mem_pool_info_t * __mem_get_default_pool(void);
+mem_pool_info_t * mem_get_default_pool(void);
 
 #endif /* MEMORY_MANAGER_H_ */

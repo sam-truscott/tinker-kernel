@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -21,7 +21,7 @@ typedef enum bool
 
 #define NULL ((void*)0)
 
-typedef volatile uint8_t __spinlock_t;
+typedef volatile uint8_t spinlock_t;
 #define LOCK_ON 0xDE
 #define LOCK_OFF 0xED
 
@@ -31,6 +31,6 @@ typedef volatile uint8_t __spinlock_t;
 	(V & 0x00FF0000) >> 8  | \
 	(V & 0xFF000000) >> 24
 
-typedef struct __tgt_context_t __tgt_context_t;
+typedef struct tgt_context_t tgt_context_t;
 
 #endif /* TGT_TYPES_H_ */

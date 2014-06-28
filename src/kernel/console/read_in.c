@@ -10,7 +10,7 @@
 
 #include "arch/board_support.h"
 
-char __debug_read(void)
+char debug_read(void)
 {
-	return __bsp_read_debug_char();
+	return bsp_read_debug_char();
 }

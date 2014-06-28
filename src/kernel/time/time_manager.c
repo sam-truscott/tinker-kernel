@@ -11,26 +11,26 @@
 #include "kernel/kernel_assert.h"
 #include "time.h"
 
-static uint64_t __time_system_time_ns;
-static __clock_device_t * __time_system_clock;
+static uint64_t time_system_time_ns;
+static clock_device_t * time_system_clock;
 
-void __time_initialise(void)
+void time_initialise(void)
 {
-	__time_system_time_ns = 0;
-	__time_system_clock = NULL;
+	time_system_time_ns = 0;
+	time_system_clock = NULL;
 }
 
-void __time_set_system_clock(__clock_device_t * const device)
+void time_set_system_clock(clock_device_t * const device)
 {
-	__time_system_clock = device;
+	time_system_clock = device;
 }
 
-void __time_get_system_time(tinker_time_t * const time)
+void time_get_system_time(tinker_time_t * const time)
 {
-	if (__time_system_clock && time)
+	if (time_system_clock && time)
 	{
-		__time_system_time_ns = __time_system_clock->get_time();
-		time->seconds = __time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
-		time->nanoseconds = (int64_t)(__time_system_time_ns - ((int64_t)time->seconds * ONE_SECOND_AS_NANOSECONDS));
+		time_system_time_ns = time_system_clock->get_time();
+		time->seconds = time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
+		time->nanoseconds = (int64_t)(time_system_time_ns - ((int64_t)time->seconds * ONE_SECOND_AS_NANOSECONDS));
 	}
 }

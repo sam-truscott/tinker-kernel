@@ -24,7 +24,7 @@
  * The structure of the saved interrupt vector context
  */
 #pragma pack(push,1)
-typedef struct __tgt_context_t
+typedef struct tgt_context_t
 {
 	uint32_t sp;
 	uint32_t restore_lr;
@@ -42,21 +42,21 @@ typedef struct __tgt_context_t
 #endif
 	uint32_t lr;
 	uint32_t fp;
-} __tgt_context_internal_t;
+} tgt_context_internal_t;
 #pragma pack(pop)
 
 /**
  * The interrupt service routine (ISR) table
  */
-static __ppc_isr * __ppc_isr_table[MAX_PPC_IVECT];
+static ppc_isr * ppc_isr_table[MAX_PPC_IVECT];
 
 /**
  * The default, empty, ISR handler
  * @param The saved context from the interrupt
  */
-static void __ppc_isr_default_handler(const uint32_t vector, __tgt_context_t * const context);
+static void ppc_isr_default_handler(const uint32_t vector, tgt_context_t * const context);
 
-static void __ivt_install_vector(void * const address, const void * const vector, const uint32_t size);
+static void ivt_install_vector(void * const address, const void * const vector, const uint32_t size);
 
 /**
  * Setup a number of pages in the page table
@@ -67,85 +67,85 @@ static void __ivt_install_vector(void * const address, const void * const vector
  * @param rw_access Read/Write access
  * @param mem_type The type of memory being mapped
  */
-static error_t __ppc_setup_paged_area(
+static error_t ppc_setup_paged_area(
 		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
-		const __mem_section_t * const mem_sec);
+		const mem_section_t * const mem_sec);
 
-static void __ppc_remove_paged_area(
+static void ppc_remove_paged_area(
 		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
-		const __mem_section_t * const mem_sec);
+		const mem_section_t * const mem_sec);
 
-void __ppc_isr_initialise(void)
+void ppc_isr_initialise(void)
 {
 	uint32_t vect = 0;
 	for ( vect = 0 ; vect < MAX_PPC_IVECT ; vect++ )
 	{
-		__ppc_isr_table[vect] = &__ppc_isr_default_handler;
+		ppc_isr_table[vect] = &ppc_isr_default_handler;
 	}
 }
 
-void __ppc_isr_attach(const uint32_t vector, __ppc_isr * const isr)
+void ppc_isr_attach(const uint32_t vector, ppc_isr * const isr)
 {
 	if ( vector < MAX_PPC_IVECT && isr)
 	{
-		__ppc_isr_table[vector] = isr;
+		ppc_isr_table[vector] = isr;
 	}
 }
 
-__ppc_isr * __ppc_isr_get_isr(const uint32_t vector)
+ppc_isr * ppc_isr_get_isr(const uint32_t vector)
 {
-	__ppc_isr * the_isr = NULL;
+	ppc_isr * the_isr = NULL;
 
 	if ( vector < MAX_PPC_IVECT )
 	{
-		the_isr = __ppc_isr_table[vector];
+		the_isr = ppc_isr_table[vector];
 	}
 
 	return the_isr;
 }
 
-void __ppc_isr_default_handler(const uint32_t vector, __tgt_context_t * const context)
+void ppc_isr_default_handler(const uint32_t vector, tgt_context_t * const context)
 {
 	if (context)
 	{
-		__printp_out("Unexpected exception: isr %d\n", vector);
+		printp_out("Unexpected exception: isr %d\n", vector);
 	}
 }
 
-uint32_t __tgt_get_syscall_param(
-		const __tgt_context_t * const context,
+uint32_t tgt_get_syscall_param(
+		const tgt_context_t * const context,
 		const uint8_t param)
 {
 	return context->gpr_2_31[1 + param];
 }
 
-void __tgt_set_syscall_return(__tgt_context_t * const context, const uint32_t value)
+void tgt_set_syscall_return(tgt_context_t * const context, const uint32_t value)
 {
 	context->gpr_2_31[1] = value;
 }
 
-void __ppc_get_tbrs(uint32_t * const a, uint32_t * const b);
+void ppc_get_tbrs(uint32_t * const a, uint32_t * const b);
 
-uint64_t __ppc_get_tbr(void)
+uint64_t ppc_get_tbr(void)
 {
 	uint32_t tbl = 0, tbu = 0;
 	uint64_t tb = 0;
-	__ppc_get_tbrs(&tbl, &tbu);
+	ppc_get_tbrs(&tbl, &tbu);
 	tb += ( (uint64_t)tbu << 32);
 	tb += tbl;
 	return tb;
 }
 
-uint32_t __ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_t ticks_per_clock)
+uint32_t ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_t ticks_per_clock)
 {
 	uint64_t ticks_per_second = (*clock_hz) / ticks_per_clock;
 	uint32_t ticks_per_ns = (ONE_SECOND_AS_NANOSECONDS / ticks_per_second);
 	return ticks_per_ns;
 }
 
-uint32_t __tgt_get_context_stack_pointer(const __tgt_context_t * const context)
+uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
 {
 	uint32_t sp = 0;
 
@@ -159,48 +159,48 @@ uint32_t __tgt_get_context_stack_pointer(const __tgt_context_t * const context)
 
 #define IVT_SIZE 0xA8u
 
-void __ivt_initialise(void)
+void ivt_initialise(void)
 {
 	uint32_t msr = 0;
 	/**
 	 * Initialise the ISR table
 	 */
-	__ppc_isr_initialise();
+	ppc_isr_initialise();
 
-	__ivt_install_vector((void*)0x100, &__ivt_system_reset_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x200, &__ivt_machine_check_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x300, &__ivt_data_storage_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x400, &__ivt_inst_storage_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x500, &__ivt_external_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x600, &__ivt_alignment_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x700, &__ivt_program_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0x800, &__ivt_fp_unavailable,IVT_SIZE);
-	__ivt_install_vector((void*)0x900, &__ivt_decrementer_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0xC00, &__ivt_syscall_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0xD00, &__ivt_trace_interrupt,IVT_SIZE);
-	__ivt_install_vector((void*)0xE00, &__ivt_fp_assist_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x100, &ivt_system_reset_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x200, &ivt_machine_check_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x300, &ivt_data_storage_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x400, &ivt_inst_storage_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x500, &ivt_external_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x600, &ivt_alignment_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x700, &ivt_program_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0x800, &ivt_fp_unavailable,IVT_SIZE);
+	ivt_install_vector((void*)0x900, &ivt_decrementer_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0xC00, &ivt_syscall_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0xD00, &ivt_trace_interrupt,IVT_SIZE);
+	ivt_install_vector((void*)0xE00, &ivt_fp_assist_interrupt,IVT_SIZE);
 
 	/**
 	 * Enable external interrupts
 	 */
-	msr = __ppc_get_msr();
+	msr = ppc_get_msr();
 	msr |=  MSR_FLAG_EE | MSR_FLAG_RI;
-	__ppc_set_msr(msr);
+	ppc_set_msr(msr);
 }
 
-void __tgt_enter_usermode(void)
+void tgt_enter_usermode(void)
 {
-	uint32_t msr = __ppc_get_msr();
+	uint32_t msr = ppc_get_msr();
 	msr |=  MSR_FLAG_PR;
-	__ppc_set_msr(msr);
+	ppc_set_msr(msr);
 }
 
-void __ivt_install_vector(void * const address, const void * const vector, const uint32_t size)
+void ivt_install_vector(void * const address, const void * const vector, const uint32_t size)
 {
-	__util_memcpy(address, vector, size);
+	util_memcpy(address, vector, size);
 }
 
-void __ppc_isr_handler(const uint32_t vector, __tgt_context_t * const context)
+void ppc_isr_handler(const uint32_t vector, tgt_context_t * const context)
 {
 	if (context)
 	{
@@ -210,7 +210,7 @@ void __ppc_isr_handler(const uint32_t vector, __tgt_context_t * const context)
 		 * 0x0.
 		 */
 		const uint32_t tmp_lr = context->restore_lr;
-        __ppc_isr * const isr = __ppc_isr_get_isr(vector);
+        ppc_isr * const isr = ppc_isr_get_isr(vector);
         if (isr)
         {
             isr(vector, context);
@@ -222,19 +222,19 @@ void __ppc_isr_handler(const uint32_t vector, __tgt_context_t * const context)
 	}
 }
 
-static error_t __ppc_setup_paged_area(
+static error_t ppc_setup_paged_area(
 		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
-		const __mem_section_t * const mem_sec)
+		const mem_section_t * const mem_sec)
 {
 	uint32_t w0 = 0;
 	uint32_t w1 = 0;
 
-	const uint32_t real_addr = __mem_sec_get_real_addr(mem_sec);
-	const uint32_t size = __mem_sec_get_size(mem_sec);
-	const uint32_t virt_addr = __mem_sec_get_virt_addr(mem_sec);
-	const mmu_memory_t mem_type = __mem_sec_get_mem_type(mem_sec);
-	const mmu_access_t access = __mem_sec_get_access(mem_sec);
+	const uint32_t real_addr = mem_sec_get_real_addr(mem_sec);
+	const uint32_t size = mem_sec_get_size(mem_sec);
+	const uint32_t virt_addr = mem_sec_get_virt_addr(mem_sec);
+	const mmu_memory_t mem_type = mem_sec_get_mem_type(mem_sec);
+	const mmu_access_t access = mem_sec_get_access(mem_sec);
 
 	if ((real_addr % MMU_PAGE_SIZE) != 0)
 	{
@@ -259,9 +259,9 @@ static error_t __ppc_setup_paged_area(
 	{
 		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
-		const uint32_t vsid = segment_info->segment_ids[__PPC_GET_SEGMENT_INDEX(page_virtual_address)];
+		const uint32_t vsid = segment_info->segment_ids[PPC_GET_SEGMENT_INDEX(page_virtual_address)];
 
-		w0 = __PPC_PTE_W0(
+		w0 = PPC_PTE_W0(
 				PTE_VALID,
 				vsid,
 				HASH_PRIMARY,
@@ -270,32 +270,32 @@ static error_t __ppc_setup_paged_area(
 		if (mem_type == MMU_RANDOM_ACCESS_MEMORY)
 		{
 			/* RAM can have cache enabled */
-			w1 = __PPC_PTE_W1(
+			w1 = PPC_PTE_W1(
 					page_real_address,
 					1,
 					0,
-					__PPC32_WIMG(
-							__ppc32_write_back,
-							__ppc32_cache_enabled,
-							__ppc32_memory_no_coherency,
-							__ppc32_not_guarded),
+					PPC32_WIMG(
+							ppc32_write_back,
+							ppc32_cache_enabled,
+							ppc32_memory_no_coherency,
+							ppc32_not_guarded),
 							access);
 		}
 		else
 		{
 			/* hardware needs caching disabled and OoO access disabled */
-			w1 = __PPC_PTE_W1(
+			w1 = PPC_PTE_W1(
 					page_real_address,
 					1,
 					0,
-					__PPC32_WIMG(
-							__ppc32_write_through,
-							__ppc32_cache_inhibited,
-							__ppc32_memory_no_coherency,
-							__ppc32_guarded),
+					PPC32_WIMG(
+							ppc32_write_through,
+							ppc32_cache_inhibited,
+							ppc32_memory_no_coherency,
+							ppc32_guarded),
 							access);
 		}
-		__ppc32_add_pte(
+		ppc32_add_pte(
 				page_tbl,
 				page_virtual_address,
 				vsid,
@@ -306,16 +306,16 @@ static error_t __ppc_setup_paged_area(
 	return true;
 }
 
-static void __ppc_remove_paged_area(
+static void ppc_remove_paged_area(
 		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
-		const __mem_section_t * const mem_sec)
+		const mem_section_t * const mem_sec)
 {
-	const uint32_t real_addr = __mem_sec_get_real_addr(mem_sec);
-	const uint32_t size = __mem_sec_get_size(mem_sec);
-	const uint32_t virt_addr = __mem_sec_get_virt_addr(mem_sec);
-	const mmu_memory_t mem_type = __mem_sec_get_mem_type(mem_sec);
-	const mmu_access_t access = __mem_sec_get_access(mem_sec);
+	const uint32_t real_addr = mem_sec_get_real_addr(mem_sec);
+	const uint32_t size = mem_sec_get_size(mem_sec);
+	const uint32_t virt_addr = mem_sec_get_virt_addr(mem_sec);
+	const mmu_memory_t mem_type = mem_sec_get_mem_type(mem_sec);
+	const mmu_access_t access = mem_sec_get_access(mem_sec);
 
 	uint32_t w0 = 0;
 	uint32_t w1 = 0;
@@ -330,9 +330,9 @@ static void __ppc_remove_paged_area(
 	{
 		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
-		const uint32_t vsid = segment_info->segment_ids[__PPC_GET_SEGMENT_INDEX(page_virtual_address)];
+		const uint32_t vsid = segment_info->segment_ids[PPC_GET_SEGMENT_INDEX(page_virtual_address)];
 
-		w0 = __PPC_PTE_W0(
+		w0 = PPC_PTE_W0(
 				PTE_VALID,
 				vsid,
 				HASH_PRIMARY,
@@ -341,33 +341,33 @@ static void __ppc_remove_paged_area(
 		if (mem_type == MMU_RANDOM_ACCESS_MEMORY)
 		{
 			/* RAM can have cache enabled */
-			w1 = __PPC_PTE_W1(
+			w1 = PPC_PTE_W1(
 					page_real_address,
 					1,
 					0,
-					__PPC32_WIMG(
-							__ppc32_write_back,
-							__ppc32_cache_enabled,
-							__ppc32_memory_no_coherency,
-							__ppc32_not_guarded),
+					PPC32_WIMG(
+							ppc32_write_back,
+							ppc32_cache_enabled,
+							ppc32_memory_no_coherency,
+							ppc32_not_guarded),
 							access);
 		}
 		else
 		{
 			/* hardware needs caching disabled and OoO access disabled */
-			w1 = __PPC_PTE_W1(
+			w1 = PPC_PTE_W1(
 					page_real_address,
 					1,
 					0,
-					__PPC32_WIMG(
-							__ppc32_write_through,
-							__ppc32_cache_inhibited,
-							__ppc32_memory_no_coherency,
-							__ppc32_guarded),
+					PPC32_WIMG(
+							ppc32_write_through,
+							ppc32_cache_inhibited,
+							ppc32_memory_no_coherency,
+							ppc32_guarded),
 							access);
 		}
 
-		__ppc32_remove_pte(
+		ppc32_remove_pte(
 				page_tbl,
 				page_virtual_address,
 				vsid,
@@ -376,11 +376,11 @@ static void __ppc_remove_paged_area(
 	}
 }
 
-error_t __tgt_initialise_process(__process_t * const process)
+error_t tgt_initialise_process(process_t * const process)
 {
 	error_t ok = NO_ERROR;
 
-	if (!__process_is_kernel(process))
+	if (!process_is_kernel(process))
 	{
 		tgt_mem_t segment_info;
 		/* setup all the segment IDs */
@@ -388,38 +388,38 @@ error_t __tgt_initialise_process(__process_t * const process)
 		{
 			segment_info.segment_ids[sid] = sid;
 		}
-		__process_set_mem_info(process, &segment_info);
+		process_set_mem_info(process, &segment_info);
 
 		/* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
-		const __mem_section_t * section = __process_get_first_section(process);
+		const mem_section_t * section = process_get_first_section(process);
 		while (section && (ok == NO_ERROR))
 		{
 			/* setup virt -> real mapping for size */
-			ok = __ppc_setup_paged_area(
-			        __process_get_page_table(process),
+			ok = ppc_setup_paged_area(
+			        process_get_page_table(process),
 					&segment_info,
 					section);
 
 			/* next section */
-			section = __mem_sec_get_next(section);
+			section = mem_sec_get_next(section);
 		}
 	}
 
 	return ok;
 }
 
-error_t __tgt_map_memory(
-		const __process_t * const process,
-		const __mem_section_t * const section)
+error_t tgt_map_memory(
+		const process_t * const process,
+		const mem_section_t * const section)
 {
 	error_t result = PARAMETERS_INVALID;
 	if (process && section)
 	{
-		const tgt_mem_t * const segment_info = __process_get_mem_info(process);
+		const tgt_mem_t * const segment_info = process_get_mem_info(process);
 		if (segment_info)
 		{
-			result = __ppc_setup_paged_area(
-			        __process_get_page_table(process),
+			result = ppc_setup_paged_area(
+			        process_get_page_table(process),
 					segment_info,
 					section);
 		}
@@ -427,34 +427,34 @@ error_t __tgt_map_memory(
 	return result;
 }
 
-void __tgt_unmap_memory(
-		const __process_t * const process,
-		const __mem_section_t * const section)
+void tgt_unmap_memory(
+		const process_t * const process,
+		const mem_section_t * const section)
 {
 	if (process && section)
 	{
-		const tgt_mem_t * const segment_info = __process_get_mem_info(process);
+		const tgt_mem_t * const segment_info = process_get_mem_info(process);
 		if (segment_info)
 		{
-			__ppc_remove_paged_area(
-					__process_get_page_table(process),
+			ppc_remove_paged_area(
+					process_get_page_table(process),
 					segment_info,
 					section);
 		}
 	}
 }
 
-void __tgt_initialise_context(
-		const __thread_t * thread,
-		__tgt_context_t ** const context,
+void tgt_initialise_context(
+		const thread_t * thread,
+		tgt_context_t ** const context,
 		const bool_t kernel_mode,
 		const uint32_t exit_function)
 {
 	if (context)
 	{
-		*context = __mem_alloc(__process_get_mem_pool(__thread_get_parent(thread)), sizeof(__tgt_context_t));
-		__tgt_context_t * const ppc_context = *context;
-		ppc_context->sp = __thread_get_virt_stack_base(thread);
+		*context = mem_alloc(process_get_mem_pool(thread_get_parent(thread)), sizeof(tgt_context_t));
+		tgt_context_t * const ppc_context = *context;
+		ppc_context->sp = thread_get_virt_stack_base(thread);
 		ppc_context->fp = ppc_context->sp;
 		for (uint8_t gpr = 0 ; gpr < PPC_CONTEXT_GPR ; gpr++)
 		{
@@ -466,12 +466,12 @@ void __tgt_initialise_context(
 			ppc_context->fpr[fpr] = 0;
 		}
 #endif
-		ppc_context->srr0 = (uint32_t)__thread_get_entry_point(thread);
+		ppc_context->srr0 = (uint32_t)thread_get_entry_point(thread);
 
 		/* if it's not the kernel we need to add the privilege mode */
 		ppc_context->srr1 = MSR_FLAG_ME | MSR_FLAG_RI | MSR_FLAG_EE;
 		ppc_context->srr1 |= (MSR_FLAG_IR | MSR_FLAG_DR);
-		if ( (__thread_get_flags(thread) & THREAD_FLAG_FP) == THREAD_FLAG_FP)
+		if ( (thread_get_flags(thread) & THREAD_FLAG_FP) == THREAD_FLAG_FP)
 		{
 			ppc_context->srr1 |= MSR_FLAG_FP;
 		}
@@ -489,125 +489,125 @@ void __tgt_initialise_context(
 	}
 }
 
-void __tgt_destroy_context(
-		__mem_pool_info_t * const pool,
-		__tgt_context_t * const context)
+void tgt_destroy_context(
+		mem_pool_info_t * const pool,
+		tgt_context_t * const context)
 {
 	if (context)
 	{
-		__mem_free(pool, context);
+		mem_free(pool, context);
 	}
 }
 
-void __tgt_prepare_context(
-		__tgt_context_t * const context,
-		const __thread_t * const thread,
-		const __process_t * const current_process)
+void tgt_prepare_context(
+		tgt_context_t * const context,
+		const thread_t * const thread,
+		const process_t * const current_process)
 {
 	if (context && thread)
 	{
 		uint8_t ks_flag = SR_KS_FAIL;
 		uint8_t kp_flag = SR_KP_OK;
 
-		const __process_t * const proc = __thread_get_parent(thread);
+		const process_t * const proc = thread_get_parent(thread);
 
-		if (__process_is_kernel(proc))
+		if (process_is_kernel(proc))
 		{
 			// only the kernel has access to kernel segments
 			ks_flag = SR_KS_OK;
 		}
 
-		const tgt_mem_t * const segment_info = __process_get_mem_info(proc);
+		const tgt_mem_t * const segment_info = process_get_mem_info(proc);
 
-		__thread_load_context(thread, context);
+		thread_load_context(thread, context);
 
-		__ppc32_set_sr0(
-				__PPC_SR_T0(
+		ppc32_set_sr0(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[0]));
-		__ppc32_set_sr1(
-				__PPC_SR_T0(
+		ppc32_set_sr1(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[1]));
-		__ppc32_set_sr2(
-				__PPC_SR_T0(
+		ppc32_set_sr2(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[2]));
-		__ppc32_set_sr3(
-				__PPC_SR_T0(
+		ppc32_set_sr3(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[3]));
-		__ppc32_set_sr4(
-				__PPC_SR_T0(
+		ppc32_set_sr4(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[4]));
-		__ppc32_set_sr5(
-				__PPC_SR_T0(
+		ppc32_set_sr5(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[5]));
-		__ppc32_set_sr6(
-				__PPC_SR_T0(
+		ppc32_set_sr6(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[6]));
-		__ppc32_set_sr7(
-				__PPC_SR_T0(
+		ppc32_set_sr7(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[7]));
-		__ppc32_set_sr8(
-				__PPC_SR_T0(
+		ppc32_set_sr8(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[8]));
-		__ppc32_set_sr9(
-				__PPC_SR_T0(
+		ppc32_set_sr9(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[9]));
-		__ppc32_set_sr10(
-				__PPC_SR_T0(
+		ppc32_set_sr10(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[10]));
-		__ppc32_set_sr11(
-				__PPC_SR_T0(
+		ppc32_set_sr11(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[11]));
-		__ppc32_set_sr12(
-				__PPC_SR_T0(
+		ppc32_set_sr12(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[12]));
-		__ppc32_set_sr13(
-				__PPC_SR_T0(
+		ppc32_set_sr13(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[13]));
-		__ppc32_set_sr14(
-				__PPC_SR_T0(
+		ppc32_set_sr14(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[14]));
-		__ppc32_set_sr15(
-				__PPC_SR_T0(
+		ppc32_set_sr15(
+				PPC_SR_T0(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[15]));
 
 		if (current_process != proc) {
-		    __ppc32_switch_page_table(current_process, proc);
+		    ppc32_switch_page_table(current_process, proc);
 		}
 	}
 }
 
-void __tgt_load_context(
-		const __tgt_context_t * const thread,
-		__tgt_context_t * const context)
+void tgt_load_context(
+		const tgt_context_t * const thread,
+		tgt_context_t * const context)
 {
-	__util_memcpy(context, thread, sizeof(__tgt_context_t));
+	util_memcpy(context, thread, sizeof(tgt_context_t));
 }
 
-void __tgt_save_context(
-		__tgt_context_t * const thread,
-		const __tgt_context_t * const context)
+void tgt_save_context(
+		tgt_context_t * const thread,
+		const tgt_context_t * const context)
 {
-	__util_memcpy(thread, context, sizeof(__tgt_context_t));
+	util_memcpy(thread, context, sizeof(tgt_context_t));
 }
 
-void __tgt_set_context_param(
-		__tgt_context_t * const context,
+void tgt_set_context_param(
+		tgt_context_t * const context,
 		const uint8_t index,
 		const uint32_t parameter)
 {

@@ -9,7 +9,7 @@
 
 #include "util_streq.h"
 
-bool_t __util_streq(const char * const l, const char * const r, uint32_t length)
+bool_t util_streq(const char * const l, const char * const r, uint32_t length)
 {
 	bool_t eq = true;
 

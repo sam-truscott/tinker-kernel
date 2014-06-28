@@ -16,38 +16,38 @@
 #define MAX_INTEGER_LENGTH 10
 #define MAX_HEX_INTEGER_LENGTH 8
 
-static void __print_out_process(const char ** const ptr, __builtin_va_list * const list);
+static void print_out_process(const char ** const ptr, __builtin_va_list * const list);
 
-static void __print_out_print_char(const char c);
+static void print_out_print_char(const char c);
 
-static void __print_out_print_string(const char * string);
+static void print_out_print_string(const char * string);
 
-static void __print_out_print_signed(const int32_t);
+static void print_out_print_signed(const int32_t);
 
-static void __print_out_print_hex(
+static void print_out_print_hex(
 		const uint32_t,
 		const bool_t upper_case);
 
-void __print_time(void)
+void print_time(void)
 {
     tinker_time_t now = TINKER_ZERO_TIME;
-	__time_get_system_time(&now);
+	time_get_system_time(&now);
 	char msg[20];
 	memset(msg, 0, 20);
-	__util_i_to_a(now.seconds, msg, 20);
-	__print_out(msg);
+	util_i_to_a(now.seconds, msg, 20);
+	print_out(msg);
 	memset(msg, 0, 20);
-	__util_i_to_a(now.nanoseconds, msg, 20);
-	__print_out(".");
-	__print_out(msg);
-	__print_out(": ");
+	util_i_to_a(now.nanoseconds, msg, 20);
+	print_out(".");
+	print_out(msg);
+	print_out(": ");
 }
 
-void __error_print(const char * const msg, ...)
+void error_print(const char * const msg, ...)
 {
 	const char * ptr = msg;
 
-	__print_time();
+	print_time();
 
 	__builtin_va_list list;
 	__builtin_va_start(list, msg);
@@ -55,47 +55,47 @@ void __error_print(const char * const msg, ...)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&ptr, &list);
+			print_out_process(&ptr, &list);
 			ptr++;
 		}
 		else
 		{
-			__print_out_print_char(*ptr);
+			print_out_print_char(*ptr);
 		}
 		ptr++;
 	}
 	__builtin_va_end(list);
 }
 
-void __debug_print(const char * const msg, ...)
+void debug_print(const char * const msg, ...)
 {
-#if defined(__KERNEL_DEBUGGING)
+#if defined(KERNEL_DEBUGGING)
 	const char * ptr = msg;
 
-	__print_time();
+	print_time();
 
-	__builtin_va_list list;
-	__builtin_va_start(list, msg);
+	builtin_va_list list;
+	builtin_va_start(list, msg);
 	while(*ptr)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&ptr, &list);
+			print_out_process(&ptr, &list);
 			ptr++;
 		}
 		else
 		{
-			__print_out_print_char(*ptr);
+			print_out_print_char(*ptr);
 		}
 		ptr++;
 	}
-	__builtin_va_end(list);
+	builtin_va_end(list);
 #else
 	if (msg) {}
 #endif
 }
 
-void __printp_out(const char * const msg, ...)
+void printp_out(const char * const msg, ...)
 {
 	const char * ptr = msg;
 
@@ -105,24 +105,24 @@ void __printp_out(const char * const msg, ...)
 	{
 		if(*ptr == '%')
 		{
-			__print_out_process(&ptr, &list);
+			print_out_process(&ptr, &list);
 			ptr++;
 		}
 		else
 		{
-			__print_out_print_char(*ptr);
+			print_out_print_char(*ptr);
 		}
 		ptr++;
 	}
 	__builtin_va_end(list);
 }
 
-void __print_out(const char * const msg)
+void print_out(const char * const msg)
 {
-	__print_out_print_string(msg);
+	print_out_print_string(msg);
 }
 
-void __print_out_process(const char ** const ptr, __builtin_va_list * const list)
+void print_out_process(const char ** const ptr, __builtin_va_list * const list)
 {
 	char * rptr = (char*)(*ptr);
 	rptr++;
@@ -131,60 +131,60 @@ void __print_out_process(const char ** const ptr, __builtin_va_list * const list
 		case 's':
 			{
 				const char * const str = (const char *)__builtin_va_arg(*list, char*);
-				__print_out_print_string(str);
+				print_out_print_string(str);
 			}
 			break;
 		case 'd':
-			__print_out_print_signed(__builtin_va_arg(*list, int));
+			print_out_print_signed(__builtin_va_arg(*list, int));
 			break;
 		case 'x':
-			__print_out_print_hex(__builtin_va_arg(*list, unsigned int), false);
+			print_out_print_hex(__builtin_va_arg(*list, unsigned int), false);
 			break;
 		case 'X':
-			__print_out_print_hex(__builtin_va_arg(*list, unsigned int), true);
+			print_out_print_hex(__builtin_va_arg(*list, unsigned int), true);
 			break;
 		default:
-			__print_out_print_char('%');
-			__print_out_print_char(*rptr);
+			print_out_print_char('%');
+			print_out_print_char(*rptr);
 			break;
 	}
 }
 
-void __print_out_print_char(const char c)
+void print_out_print_char(const char c)
 {
-	__bsp_write_debug_char(c);
+	bsp_write_debug_char(c);
 }
 
-void __print_out_print_string(const char * string)
+void print_out_print_string(const char * string)
 {
 	while(*string)
 	{
-		__print_out_print_char(*string++);
+		print_out_print_char(*string++);
 	}
 }
 
-void __print_out_print_signed(const int32_t i)
+void print_out_print_signed(const int32_t i)
 {
 	char number[MAX_INTEGER_LENGTH + 1] = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
-	__util_i_to_a(i, number, MAX_INTEGER_LENGTH);
-	__print_out_print_string(number);
+	util_i_to_a(i, number, MAX_INTEGER_LENGTH);
+	print_out_print_string(number);
 }
 
-void __print_out_print_hex(
+void print_out_print_hex(
 		const uint32_t i,
 		const bool_t upper_case)
 {
 	char hex_number[MAX_HEX_INTEGER_LENGTH + 1] = {0,0,0,0,0,0,0,0,0};
-	__util_i_to_h(i, hex_number,MAX_HEX_INTEGER_LENGTH);
+	util_i_to_h(i, hex_number,MAX_HEX_INTEGER_LENGTH);
 
 	if (upper_case)
 	{
-		__util_to_upper(hex_number);
+		util_to_upper(hex_number);
 	}
 	else
 	{
-		__util_to_lower(hex_number);
+		util_to_lower(hex_number);
 	}
 
-	__print_out_print_string(hex_number);
+	print_out_print_string(hex_number);
 }

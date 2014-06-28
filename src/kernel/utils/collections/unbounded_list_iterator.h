@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -23,7 +23,7 @@
 	{ \
 		const LIST_T * list; \
 		LIST_T##_element_t * current; \
-	} ITERATOR_T##__internal ; \
+	} ITERATOR_T##internal ; \
 
 #define UNBOUNDED_LIST_ITERATOR_SPEC(PREFIX, ITERATOR_T, LIST_T, ITEM_T) \
 	\
@@ -67,7 +67,7 @@
 		ITERATOR_T * it = NULL; \
 		if ( list ) \
 		{ \
-			it = __mem_alloc(list->pool, sizeof(ITERATOR_T)); \
+			it = mem_alloc(list->pool, sizeof(ITERATOR_T)); \
 			ITERATOR_T##_initialise(it, list); \
 		} \
 		return it;\
@@ -81,7 +81,7 @@
 	{ \
 		 if ( it ) \
 		 { \
-			 __mem_free(it->list->pool, it); \
+			 mem_free(it->list->pool, it); \
 		 } \
 	} \
 	\
@@ -100,7 +100,7 @@
 			\
 			if ( it->current ) \
 			{ \
-				__util_memcpy(item, &(it->current->item), sizeof(ITEM_T)); \
+				util_memcpy(item, &(it->current->item), sizeof(ITEM_T)); \
 				ok = true; \
 			} \
 		} \
@@ -122,7 +122,7 @@
 			 { \
 				 if ( it->current->next ) \
 				 { \
-					 __util_memcpy(item, &(it->current->next->item), sizeof(ITEM_T)); \
+					 util_memcpy(item, &(it->current->next->item), sizeof(ITEM_T)); \
 					 it->current = it->current->next; \
 					 ok = true; \
 				 } \
@@ -140,7 +140,7 @@
 		} \
 	} \
 	\
-	extern inline void ITERATOR_T##_test__(void) \
+	extern inline void ITERATOR_T##_test(void) \
 	{ \
 		ITERATOR_T * item = ITERATOR_T##_create(NULL); \
 		ITERATOR_T##_next(item, NULL); \

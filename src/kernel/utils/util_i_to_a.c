@@ -20,7 +20,7 @@ static int get_n(int * const number)
        return r;
 }
 
-void __util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
+void util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 {
 	if ( buffer )
 	{
@@ -54,17 +54,17 @@ void __util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 			}
 
 			{
-				const uint32_t number_length = __util_strlen(rev_buffer, buffer_length);
-				const uint32_t new_length = __util_trim(rev_buffer, number_length);
-				__util_reverse_string(rev_buffer, new_length, buffer);
+				const uint32_t number_length = util_strlen(rev_buffer, buffer_length);
+				const uint32_t new_length = util_trim(rev_buffer, number_length);
+				util_reverse_string(rev_buffer, new_length, buffer);
 			}
 		}
 	}
 }
-#pragma weak __util_i_to_a
+#pragma weak util_i_to_a
 
 
-void __util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
+void util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
 {
 	if ( buffer )
 	{
@@ -102,4 +102,4 @@ void __util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length
 		}
 	}
 }
-#pragma weak __util_i_to_h
+#pragma weak util_i_to_h

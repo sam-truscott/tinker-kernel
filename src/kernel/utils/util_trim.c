@@ -8,7 +8,7 @@
  */
 #include "util_trim.h"
 
-uint32_t __util_trim(char * const string, const uint32_t length)
+uint32_t util_trim(char * const string, const uint32_t length)
 {
 	char * ptr = string + length - 1;
 	int new_length = length;
@@ -19,4 +19,4 @@ uint32_t __util_trim(char * const string, const uint32_t length)
 	}
 	return new_length;
 }
-#pragma weak __util_trim
+#pragma weak util_trim

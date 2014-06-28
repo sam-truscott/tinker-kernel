@@ -16,39 +16,39 @@
  * Endian swap routine
  * @param var The variable to swap
  */
-static void __opic_swap_endianness(uint32_t* var);
+static void opic_swap_endianness(uint32_t* var);
 
-static error_t __opic_timer_write_register(
+static error_t opic_timer_write_register(
 		const void * usr_data,
 		const uint32_t reg,
 		const uint32_t value);
 
-static void __opic_tmr_timer_setup(
-		const __timer_param_t const usr_data,
+static void opic_tmr_timer_setup(
+		const timer_param_t const usr_data,
 		const tinker_time_t * const timeout,
-		__timer_callback * const call_back);
+		timer_callback * const call_back);
 
-static void __opic_tmr_timer_cancel(const __timer_param_t const usr_data);
+static void opic_tmr_timer_cancel(const timer_param_t const usr_data);
 
-void __opic_tmr_get_timer(uint32_t * base_address, __timer_t * timer)
+void opic_tmr_get_timer(uint32_t * base_address, timer_t * timer)
 {
 	if (base_address && timer)
 	{
-		timer->timer_setup = __opic_tmr_timer_setup;
-		timer->timer_cancel = __opic_tmr_timer_cancel;
-		timer->usr_data = (__timer_param_t)base_address;
+		timer->timer_setup = opic_tmr_timer_setup;
+		timer->timer_cancel = opic_tmr_timer_cancel;
+		timer->usr_data = (timer_param_t)base_address;
 		timer->usr_data_size = (uint32_t)sizeof(uint32_t*);
 	}
 }
 
-void __opic_tmr_timer_setup(
-		const __timer_param_t const usr_data,
+void opic_tmr_timer_setup(
+		const timer_param_t const usr_data,
 		const tinker_time_t * const timeout,
-		__timer_callback * const call_back)
+		timer_callback * const call_back)
 {
 	if (usr_data && call_back)
 	{
-		__opic_timer_write_register(
+		opic_timer_write_register(
 				(void*)usr_data,
 				TMR_N_VECTOR_PRIORITY_REGISTER,
 				/* flags */
@@ -58,27 +58,27 @@ void __opic_tmr_timer_setup(
 				 /* port */
 				 | 1);
 
-		__opic_timer_write_register(
+		opic_timer_write_register(
 				(void*)usr_data,
 				TMR_N_BASE_COUNT_REGISTER,
 				TIMER_DISABLED);
 
-		__opic_timer_write_register(
+		opic_timer_write_register(
 				(void*)usr_data,
 				TMR_N_BASE_COUNT_REGISTER,
 				/* TIMER_TICKS */timeout->seconds); /* TODO need to work this one out */
 	}
 }
 
-void __opic_tmr_timer_cancel(const __timer_param_t const usr_data)
+void opic_tmr_timer_cancel(const timer_param_t const usr_data)
 {
-	__opic_timer_write_register(
+	opic_timer_write_register(
 			(void*)usr_data,
 			TMR_N_BASE_COUNT_REGISTER,
 			TIMER_DISABLED);
 }
 
-error_t __opic_timer_write_register(
+error_t opic_timer_write_register(
 		const void * usr_data,
 		const uint32_t reg,
 		const uint32_t value)
@@ -102,7 +102,7 @@ error_t __opic_timer_write_register(
 	}
 
 #if defined(OPIC_BIG_ENDIAN)
-	__opic_swap_endianness(&new_value);
+	opic_swap_endianness(&new_value);
 #endif
 
 	if ( err == NO_ERROR )
@@ -114,7 +114,7 @@ error_t __opic_timer_write_register(
 	return err;
 }
 
-static void __opic_swap_endianness(uint32_t* var)
+static void opic_swap_endianness(uint32_t* var)
 {
 	const uint32_t copy = *var;
 	*var = ((copy & 0xFF) << 24) |

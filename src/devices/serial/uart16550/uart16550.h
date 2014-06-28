@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -24,15 +24,15 @@ typedef enum
 	REG_5_LSR = 5,
 	REG_6_MSR = 6,
 	REG_7_SCRATCH = 7
-} __uart_16550_register_t;
+} uart_16550_register_t;
 
 /**
  * Get the kernel device instance for a given base address
  * @param base_address The base address of the device
  * @param device The new kernel device
  */
-void __uart16550_get_device(
+void uart16550_get_device(
 		const void * const base_address,
-		__kernel_device_t * const device);
+		kernel_device_t * const device);
 
 #endif /* UART16550_H_ */

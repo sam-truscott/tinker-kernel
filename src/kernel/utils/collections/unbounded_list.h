@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -13,7 +13,7 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
-#define UNBOUNDED_LIST_DEBUG __debug_print
+#define UNBOUNDED_LIST_DEBUG debug_print
 
 #define UNBOUNDED_LIST_TYPE(LIST_T) \
 	\
@@ -39,7 +39,7 @@
 		uint32_t size; \
 		LIST_T##_element_t * head; \
 		LIST_T##_element_t * tail; \
-		__mem_pool_info_t * pool; \
+		mem_pool_info_t * pool; \
 	} LIST_T##_internal; \
 
 /**
@@ -59,9 +59,9 @@
  * to free the memory on the heap.
  */
 #define UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX void LIST_T##_initialise(LIST_T * const list, __mem_pool_info_t * const pool);
+	PREFIX void LIST_T##_initialise(LIST_T * const list, mem_pool_info_t * const pool);
 #define UNBOUNDED_LIST_SPEC_CREATE(PREFIX, LIST_T, ITEM_T) \
-	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * const pool);
+	PREFIX LIST_T * LIST_T##_create(mem_pool_info_t * const pool);
 #define UNBOUNDED_LIST_SPEC_DELETE(PREFIX, LIST_T, ITEM_T) \
 	PREFIX void LIST_T##_delete(LIST_T * const list);
 #define UNBOUNDED_LIST_SPEC_ADD(PREFIX, LIST_T, ITEM_T) \
@@ -86,7 +86,7 @@
 	/**
 	 * Initialise the data structure
 	 */ \
-	PREFIX void LIST_T##_initialise(LIST_T * const list, __mem_pool_info_t * const pool) \
+	PREFIX void LIST_T##_initialise(LIST_T * const list, mem_pool_info_t * const pool) \
 	{ \
 		 if (list) \
 		 { \
@@ -101,9 +101,9 @@
 	 * Constructor, returns a list on the heap or
 	 * NULL if it failed.
 	 */ \
-	PREFIX LIST_T * LIST_T##_create(__mem_pool_info_t * const pool) \
+	PREFIX LIST_T * LIST_T##_create(mem_pool_info_t * const pool) \
 	{ \
-		LIST_T * const lst = __mem_alloc(pool, sizeof(LIST_T)); \
+		LIST_T * const lst = mem_alloc(pool, sizeof(LIST_T)); \
 		if (lst) \
 		{ \
 			LIST_T##_initialise(lst, pool); \
@@ -124,10 +124,10 @@
 			{ \
 				LIST_T##_element_t * const e = list->head; \
 				list->head = e->next; \
-				__mem_free(list->pool, e); \
+				mem_free(list->pool, e); \
 				list->size--; \
 			} \
-			__mem_free(list->pool, list); \
+			mem_free(list->pool, list); \
 		} \
 	}
 #define UNBOUNDED_LIST_BODY_ADD(PREFIX, LIST_T, ITEM_T) \
@@ -140,7 +140,7 @@
 		\
 		if (list) \
 		{ \
-			LIST_T##_element_t * const element = __mem_alloc( \
+			LIST_T##_element_t * const element = mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
 			\
 			/* initialise the new item */ \
@@ -173,7 +173,7 @@
 		UNBOUNDED_LIST_DEBUG("unbounded list: insert in list %x at index %d\n", list, index); \
 		if (list) \
 		{ \
-			LIST_T##_element_t * const element = __mem_alloc( \
+			LIST_T##_element_t * const element = mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
 			\
 			if (element) \
@@ -298,7 +298,7 @@
 				} \
 				\
 				list->size--; \
-				__mem_free(list->pool, e); \
+				mem_free(list->pool, e); \
 				ret = true; \
 			} \
 		} \
@@ -379,7 +379,7 @@
 			} \
 			if (e && item_ptr) \
 			{ \
-				__util_memcpy(item_ptr, &e->item, sizeof(ITEM_T)); \
+				util_memcpy(item_ptr, &e->item, sizeof(ITEM_T)); \
 				ret = true; \
 			} \
 		} \
@@ -411,7 +411,7 @@
 			e = e->next; \
 			if (next_ptr) \
 			{ \
-				__util_memcpy(next_ptr, &e->item, sizeof(ITEM_T)); \
+				util_memcpy(next_ptr, &e->item, sizeof(ITEM_T)); \
 				ret = true; \
 			} \
 		} \

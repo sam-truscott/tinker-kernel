@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -12,7 +12,7 @@
 #include "arch/tgt_types.h"
 #include "tinker_api_types.h"
 
-typedef enum __object_type
+typedef enum object_type
 {
 	UNKNOWN_OBJ = 0,
 	OBJECT = 1,
@@ -22,17 +22,17 @@ typedef enum __object_type
 	SEMAPHORE_OBJ = 5,
 	SHARED_MEMORY_OBJ = 6,
 	TIMER_OBJ = 7
-} __object_type_t;
+} object_type_t;
 
-typedef struct __object_t __object_t;
+typedef struct object_t object_t;
 
-void __obj_initialise_object(
-		__object_t * const o,
+void obj_initialise_object(
+		object_t * const o,
 		const object_number_t id,
-		const __object_type_t type);
+		const object_type_t type);
 
-__object_type_t __obj_get_type(const __object_t * const o);
+object_type_t obj_get_type(const object_t * const o);
 
-uint32_t __obj_get_number(const __object_t * const o);
+uint32_t obj_get_number(const object_t * const o);
 
 #endif /* OBJECT_H_ */

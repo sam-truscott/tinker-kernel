@@ -13,15 +13,15 @@
 #include "console/print_out.h"
 #include "arch/tgt.h"
 
-void __kernel_panic(void)
+void kernel_panic(void)
 {
 	/*
 	 * Disable interrupts to prevent the panic being stopped
 	 */
-	__tgt_disable_external_interrupts();
+	tgt_disable_external_interrupts();
 
-	__error_print("KERNEL PANIC\n");
-	__print_current_stack_trace();
+	error_print("KERNEL PANIC\n");
+	print_current_stack_trace();
 	volatile int crash = 0;
 
 	/*

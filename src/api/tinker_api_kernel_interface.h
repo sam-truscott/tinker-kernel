@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -13,7 +13,7 @@
 
 #define UNUSED_PARAM (uint32_t)0
 
-typedef enum __syscall_function
+typedef enum syscall_function
 {
 	SYSCALL_UNKNOWN,
 
@@ -53,10 +53,10 @@ typedef enum __syscall_function
 
 	SYSCALL_LOAD_THREAD
 
-} __syscall_function_t;
+} syscall_function_t;
 
 uint32_t TINKER_API_CALL_7(
-		const __syscall_function_t api,
+		const syscall_function_t api,
 		uint32_t param_1,
 		uint32_t param_2,
 		uint32_t param_3,

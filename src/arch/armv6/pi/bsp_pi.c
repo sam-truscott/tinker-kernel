@@ -32,85 +32,85 @@
 /**
  * The device information for port 1 of the UART 16550
  */
-static __kernel_device_t __rs232_port_1;
+static kernel_device_t rs232_port_1;
 
-static __intc_t * __opic_intc;
+static intc_t * opic_intc;
 
-static __timer_t __arm_internal_clock;
+static timer_t arm_internal_clock;
 
-void __bsp_initialise(void)
+void bsp_initialise(void)
 {
 	/*
 	 * Initialise the Target Processor
 	 */
-	__tgt_initialise();
+	tgt_initialise();
 
 	/*
 	 * Initialise the Interrupt Vector Table
 	 */
-	__ivt_initialise();
+	ivt_initialise();
 
-	__uart16550_get_device(UART_1_BASE_ADDRESS, &__rs232_port_1);
+	uart16550_get_device(UART_1_BASE_ADDRESS, &rs232_port_1);
 
-#if defined(__KERNEL_DEBUGGING)
-	__rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
+#if defined(KERNEL_DEBUGGING)
+	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
 #endif
 
 	// TODO Initialise the MMU
 	// TODO Enable the MMU
 }
 
-void __bsp_setup(void)
+void bsp_setup(void)
 {
-	__rs232_port_1.initialise(&__rs232_port_1, NULL, 0);
+	rs232_port_1.initialise(&rs232_port_1, NULL, 0);
 
-	__opic_intc = __opic_intc_create(__mem_get_default_pool(), (void*)0x80000000);
-	__int_install_isr(__opic_intc);
+	opic_intc = opic_intc_create(mem_get_default_pool(), (void*)0x80000000);
+	int_install_isr(opic_intc);
 
-	__alarm_set_timer(&__arm_internal_clock);
+	alarm_set_timer(&arm_internal_clock);
 
 	// route UART -> OPIC -> CPU
-	__intc_enable(__opic_intc, 1);
-	__intc_add_device(__opic_intc, 1, &__rs232_port_1);
+	intc_enable(opic_intc, 1);
+	intc_add_device(opic_intc, 1, &rs232_port_1);
 
 	// enable UART interrupts
-	//__rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
+	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 }
 
-void __bsp_enable_schedule_timer(void)
+void bsp_enable_schedule_timer(void)
 {
     // TODO schedule an alarm to generate an external
     // interrupt at the scheduling rate
 }
 
-void __bsp_check_timers_and_alarms(void)
+void bsp_check_timers_and_alarms(void)
 {
-	__ppc_check_timer(&__arm_internal_clock);
+	ppc_check_timer(&arm_internal_clock);
 }
 
-uint32_t __bsp_get_usable_memory_start()
+uint32_t bsp_get_usable_memory_start()
 {
 	extern uint32_t end;
 	return (uint32_t)&end;
 }
 
-uint32_t __bsp_get_usable_memory_end()
+uint32_t bsp_get_usable_memory_end()
 {
 	/* 127 because the last 1MB is the page table */
 	return (127 * 1024 * 1024);
 }
 
-void __bsp_write_debug_char(const char c)
+void bsp_write_debug_char(const char c)
 {
-	__rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
+	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
 }
 
-char __bsp_read_debug_char(void)
+char bsp_read_debug_char(void)
 {
 	char c = 0;
 	while (c == 0)
 	{
-		__rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
+		rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
 	}
 	return c;
 }

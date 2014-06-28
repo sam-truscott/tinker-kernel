@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -63,81 +63,81 @@ typedef enum
 	MSR_FLAG_LE = 	0x00000001
 } ppc32_msr_flags;
 
-typedef enum __ppc32_interrupt_vector
+typedef enum ppc32_interrupt_vector
 {
-	__ppc32_vector_system_reset = 1,
-	__ppc32_vector_machine_check = 2,
-	__ppc32_vector_data_storage = 3,
-	__ppc32_vector_instruction_storage = 4,
-	__ppc32_vector_external_interrupt = 5,
-	__ppc32_vector_alignment = 6,
-	__ppc32_vector_program_error = 7,
-	__ppc32_vector_floating_point_unavailable = 8,
-	__ppc32_vector_decrementer = 9,
-	__ppc32_vector_syscall = 12,
-	__ppc32_vector_trace = 13,
-	__ppc32_vector_floating_point_assist = 14
-} __ppc32_interrupt_vector_t;
+	ppc32_vector_system_reset = 1,
+	ppc32_vector_machine_check = 2,
+	ppc32_vector_data_storage = 3,
+	ppc32_vector_instruction_storage = 4,
+	ppc32_vector_external_interrupt = 5,
+	ppc32_vector_alignment = 6,
+	ppc32_vector_program_error = 7,
+	ppc32_vector_floating_point_unavailable = 8,
+	ppc32_vector_decrementer = 9,
+	ppc32_vector_syscall = 12,
+	ppc32_vector_trace = 13,
+	ppc32_vector_floating_point_assist = 14
+} ppc32_interrupt_vector_t;
 
-extern uint32_t __ivt_system_reset_interrupt;
-extern uint32_t __ivt_machine_check_interrupt;
-extern uint32_t __ivt_data_storage_interrupt;
-extern uint32_t __ivt_inst_storage_interrupt;
-extern uint32_t __ivt_external_interrupt;
-extern uint32_t __ivt_alignment_interrupt;
-extern uint32_t __ivt_program_interrupt;
-extern uint32_t __ivt_fp_unavailable;
-extern uint32_t __ivt_decrementer_interrupt;
-extern uint32_t __ivt_syscall_interrupt;
-extern uint32_t __ivt_trace_interrupt;
-extern uint32_t __ivt_fp_assist_interrupt;
+extern uint32_t ivt_system_reset_interrupt;
+extern uint32_t ivt_machine_check_interrupt;
+extern uint32_t ivt_data_storage_interrupt;
+extern uint32_t ivt_inst_storage_interrupt;
+extern uint32_t ivt_external_interrupt;
+extern uint32_t ivt_alignment_interrupt;
+extern uint32_t ivt_program_interrupt;
+extern uint32_t ivt_fp_unavailable;
+extern uint32_t ivt_decrementer_interrupt;
+extern uint32_t ivt_syscall_interrupt;
+extern uint32_t ivt_trace_interrupt;
+extern uint32_t ivt_fp_assist_interrupt;
 
 /**
  * Type declaration for interrupt service routines
  * @param context The saved context from the interrupt vector
  */
-typedef void(__ppc_isr)(const uint32_t vector, __tgt_context_t * const context);
+typedef void(ppc_isr)(const uint32_t vector, tgt_context_t * const context);
 
 /**
  * Initialise the basic powerpc interrupt services
  */
-void __ppc_isr_initialise(void);
+void ppc_isr_initialise(void);
 
 /**
  * Attach an Interrupt Service Routine to a Vector
  */
-void __ppc_isr_attach(const uint32_t vector, __ppc_isr * const isr);
+void ppc_isr_attach(const uint32_t vector, ppc_isr * const isr);
 
 /**
  * Get the Interrupt Service Routine for a vector
  */
-__ppc_isr * __ppc_isr_get_isr(const uint32_t vector);
+ppc_isr * ppc_isr_get_isr(const uint32_t vector);
 
 /**
  * Set the Machine State Register
  */
-void __ppc_set_msr(const uint32_t msr);
+void ppc_set_msr(const uint32_t msr);
 
 /**
  * Get the Machine State Register
  */
-uint32_t __ppc_get_msr(void);
+uint32_t ppc_get_msr(void);
 
-uint32_t __ppc_get_srr0(void);
-uint32_t __ppc_get_srr1(void);
+uint32_t ppc_get_srr0(void);
+uint32_t ppc_get_srr1(void);
 
 /**
  * Get the combined lower and upper time base
  * @return 64 bit value for the upper and lower timebase register value
  */
-uint64_t __ppc_get_tbr(void);
+uint64_t ppc_get_tbr(void);
 
 /**
  * Set the lower and upper bits of the time base register
  * @param tbu The upper time base DWORD
  * @param tbl The lower time base DWORD
  */
-void __ppc_set_tbr(const uint32_t tbu, const uint32_t tbl);
+void ppc_set_tbr(const uint32_t tbu, const uint32_t tbl);
 
 /**
  * For a given clock speed and ticks for the TBR, calculate
@@ -146,29 +146,29 @@ void __ppc_set_tbr(const uint32_t tbu, const uint32_t tbl);
  * @param ticks_per_clock The number of timebase register 'ticks' per clock cycle
  * @return The number of nanoseconds per timebase register 'tick'
  */
-uint32_t __ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_t ticks_per_clock);
+uint32_t ppc_get_ns_per_tb_tick(const uint64_t * const clock_hz, const uint32_t ticks_per_clock);
 
 /**
  * Set the value of the decrementer
  */
-void __ppc_set_decrementer(const uint32_t v);
+void ppc_set_decrementer(const uint32_t v);
 
 /**
  * The place where the IVT routines will end up
  * once they've saved the context
  */
-void __ppc_isr_handler(const uint32_t vector, __tgt_context_t * const registers);
+void ppc_isr_handler(const uint32_t vector, tgt_context_t * const registers);
 
 /**
  * Setup the powerpc instruction breakpoint register IDAR
  */
-void __ppc_set_instruction_breakpoint(const uint32_t location);
+void ppc_set_instruction_breakpoint(const uint32_t location);
 
 /**
  * Setup the powerpc data breakpoint register DDAR
  */
-void __ppc_set_data_breakpoint(const uint32_t location);
+void ppc_set_data_breakpoint(const uint32_t location);
 
-uint32_t __ppc_get_dsisr(void);
+uint32_t ppc_get_dsisr(void);
 
 #endif /* POWERPC32_H_ */

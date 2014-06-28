@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -12,25 +12,25 @@
 #include "api/tinker_api_time.h"
 #include "time.h"
 
-typedef void (__timer_callback)(void);
+typedef void (timer_callback)(void);
 
-typedef void* __timer_param_t;
-#define NO_TIMER_PARAM (__timer_param_t)0
+typedef void* timer_param_t;
+#define NO_TIMER_PARAM (timer_param_t)0
 
-typedef void (__timer_setup)(
-		const __timer_param_t const usr_data,
+typedef void (timer_setup)(
+		const timer_param_t const usr_data,
 		const tinker_time_t * const timeout,
-		__timer_callback * const call_back);
+		timer_callback * const call_back);
 
-typedef void (__timer_cancel)(
-		const __timer_param_t const usr_data);
+typedef void (timer_cancel)(
+		const timer_param_t const usr_data);
 
 typedef struct
 {
-	__timer_setup *		timer_setup;
-	__timer_cancel *	timer_cancel;
-	__timer_param_t		usr_data;
+	timer_setup *		timer_setup;
+	timer_cancel *	timer_cancel;
+	timer_param_t		usr_data;
 	uint32_t 			usr_data_size;
-} __timer_t;
+} timer_t;
 
 #endif /* TIMER_H_ */

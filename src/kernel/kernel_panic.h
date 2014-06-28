@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -12,6 +12,6 @@
 /**
  * Fatal Kernel problem
  */
-void __kernel_panic();
+void kernel_panic();
 
 #endif /* KERNEL_PANIC_H_ */

@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -16,47 +16,47 @@
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/registry.h"
 
-typedef struct __object_pipe_t __object_pipe_t;
+typedef struct object_pipe_t object_pipe_t;
 
-__object_pipe_t * __obj_cast_pipe(__object_t * const o);
+object_pipe_t * obj_cast_pipe(object_t * const o);
 
-object_number_t __obj_pipe_get_oid
-	(const __object_pipe_t * const o);
+object_number_t obj_pipe_get_oid
+	(const object_pipe_t * const o);
 
-error_t __obj_create_pipe(
-		__process_t * const process,
+error_t obj_create_pipe(
+		process_t * const process,
 		object_number_t * objectno,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages);
 
-error_t __object_open_pipe(
-		__process_t * const process,
-		__object_thread_t * const thread,
+error_t object_open_pipe(
+		process_t * const process,
+		object_thread_t * const thread,
 		object_number_t * objectno,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages);
 
-error_t __obj_delete_pipe(__object_pipe_t * const pipe);
+error_t obj_delete_pipe(object_pipe_t * const pipe);
 
-error_t __obj_pipe_send_message(
-		__object_pipe_t * const pipe,
-		__object_thread_t * const thread,
+error_t obj_pipe_send_message(
+		object_pipe_t * const pipe,
+		object_thread_t * const thread,
 		const tinker_pipe_send_kind_t send_kind,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block);
 
-error_t __obj_pipe_receive_message(
-		__object_pipe_t * const pipe,
-		__object_thread_t * const thread,
+error_t obj_pipe_receive_message(
+		object_pipe_t * const pipe,
+		object_thread_t * const thread,
 		void ** const message,
 		uint32_t * const message_size,
 		const bool_t block);
 
-error_t __obj_pipe_received_message(__object_pipe_t * const pipe);
+error_t obj_pipe_received_message(object_pipe_t * const pipe);
 
 #endif /* OBJ_PIPE_H_ */

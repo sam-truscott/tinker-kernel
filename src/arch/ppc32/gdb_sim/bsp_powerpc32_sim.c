@@ -32,11 +32,11 @@
 /**
  * The device information for port 1 of the UART 16550
  */
-static __kernel_device_t __rs232_port_1;
+static kernel_device_t rs232_port_1;
 
-static __intc_t * __opic_intc;
+static intc_t * opic_intc;
 
-static __timer_t __ppc32_time_base_timer;
+static timer_t ppc32_time_base_timer;
 
 
 /**
@@ -44,207 +44,207 @@ static __timer_t __ppc32_time_base_timer;
  * @param vector The interrupt vector from the controller
  * @param context The saved context from the interruption
  */
-static void __bsp_external_interrupt(
+static void bsp_external_interrupt(
 		const uint32_t vector,
-		__tgt_context_t * const context);
+		tgt_context_t * const context);
 
-void __bsp_initialise(void)
+void bsp_initialise(void)
 {
 	/*
 	 * Initialise the Target Processor
 	 */
-	__tgt_initialise();
+	tgt_initialise();
 
 	/*
 	 * Initialise the Interrupt Vector Table
 	 */
-	__ivt_initialise();
+	ivt_initialise();
 
 	/*
 	 * Setup where all the interrupts go to
 	 */
-	__ppc_isr_attach(__ppc32_vector_system_reset, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_machine_check, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_data_storage, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_instruction_storage, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_external_interrupt, &__bsp_external_interrupt);
-	__ppc_isr_attach(__ppc32_vector_alignment, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_program_error, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_floating_point_unavailable, &__bsp_fatal_program_error);
-	__ppc_isr_attach(__ppc32_vector_decrementer, &__bsp_decrementer_interrupt);
-	__ppc_isr_attach(__ppc32_vector_syscall, &__bsp_system_call_request);
-	/* Not supported __ppc_isr_attach(__ppc32_vector_trace); */
-	/* Not supported __ppc_isr_attach(__ppc32_vector_floating_point_assist); */
+	ppc_isr_attach(ppc32_vector_system_reset, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_machine_check, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_data_storage, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_instruction_storage, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_external_interrupt, &bsp_external_interrupt);
+	ppc_isr_attach(ppc32_vector_alignment, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_program_error, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_floating_point_unavailable, &bsp_fatal_program_error);
+	ppc_isr_attach(ppc32_vector_decrementer, &bsp_decrementer_interrupt);
+	ppc_isr_attach(ppc32_vector_syscall, &bsp_system_call_request);
+	/* Not supported ppc_isr_attach(ppc32_vector_trace); */
+	/* Not supported ppc_isr_attach(ppc32_vector_floating_point_assist); */
 
-	__uart16550_get_device(UART_1_BASE_ADDRESS, &__rs232_port_1);
+	uart16550_get_device(UART_1_BASE_ADDRESS, &rs232_port_1);
 
-#if defined(__KERNEL_DEBUGGING)
-	__rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
+#if defined(KERNEL_DEBUGGING)
+	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
 #endif
 
 	/* IBAT0 Setup for RAM */
-	__ppc32_set_ibat0l(
-			__PPC32_BATL(
+	ppc32_set_ibat0l(
+			PPC32_BATL(
 					0,
-					__PPC32_WIMG(	__ppc32_write_back,
-									__ppc32_cache_enabled,
-									__ppc32_memory_no_coherency,
-									__ppc32_not_guarded),
-					__ppc32_read_write));
+					PPC32_WIMG(	ppc32_write_back,
+									ppc32_cache_enabled,
+									ppc32_memory_no_coherency,
+									ppc32_not_guarded),
+					ppc32_read_write));
 
-	__ppc32_set_ibat0u(
-			__PPC32_BATU(
+	ppc32_set_ibat0u(
+			PPC32_BATU(
 					0,
-					__ppc32_mb_128,
-					__ppc32_supervisor_access,
-					__ppc32_no_user_access));
+					ppc32_mb_128,
+					ppc32_supervisor_access,
+					ppc32_no_user_access));
 
 	/* DBAT0 Setup for RAM */
-	__ppc32_set_dbat0l(
-			__PPC32_BATL(
+	ppc32_set_dbat0l(
+			PPC32_BATL(
 					0,
-					__PPC32_WIMG(	__ppc32_write_back,
-									__ppc32_cache_enabled,
-									__ppc32_memory_no_coherency,
-									__ppc32_not_guarded),
-					__ppc32_read_write));
+					PPC32_WIMG(	ppc32_write_back,
+									ppc32_cache_enabled,
+									ppc32_memory_no_coherency,
+									ppc32_not_guarded),
+					ppc32_read_write));
 
-	__ppc32_set_dbat0u(
-			__PPC32_BATU(
+	ppc32_set_dbat0u(
+			PPC32_BATU(
 					0,
-					__ppc32_mb_128,
-					__ppc32_supervisor_access,
-					__ppc32_no_user_access));
+					ppc32_mb_128,
+					ppc32_supervisor_access,
+					ppc32_no_user_access));
 
 	/* DBAT1 Setup for Interrupt Controller */
-	__ppc32_set_dbat1l(
-			__PPC32_BATL(
-					__PPC32_BEPI_BRPN(0x80000000u),
-					__PPC32_WIMG(	__ppc32_write_through,
-									__ppc32_cache_inhibited,
-									__ppc32_memory_no_coherency,
-									__ppc32_guarded),
-					__ppc32_read_write));
+	ppc32_set_dbat1l(
+			PPC32_BATL(
+					PPC32_BEPI_BRPN(0x80000000u),
+					PPC32_WIMG(	ppc32_write_through,
+									ppc32_cache_inhibited,
+									ppc32_memory_no_coherency,
+									ppc32_guarded),
+					ppc32_read_write));
 
-	__ppc32_set_dbat1u(
-			__PPC32_BATU(
-					__PPC32_BEPI_BRPN(0x80000000u),
-					__ppc32_kb_128,
-					__ppc32_supervisor_access,
-					__ppc32_no_user_access));
+	ppc32_set_dbat1u(
+			PPC32_BATU(
+					PPC32_BEPI_BRPN(0x80000000u),
+					ppc32_kb_128,
+					ppc32_supervisor_access,
+					ppc32_no_user_access));
 
 	/* DBAT2 Setup for Serial */
-	__ppc32_set_dbat1l(
-			__PPC32_BATL(
-					__PPC32_BEPI_BRPN(0xf40002F8u),
-					__PPC32_WIMG(	__ppc32_write_through,
-									__ppc32_cache_inhibited,
-									__ppc32_memory_no_coherency,
-									__ppc32_guarded),
-					__ppc32_read_write));
+	ppc32_set_dbat1l(
+			PPC32_BATL(
+					PPC32_BEPI_BRPN(0xf40002F8u),
+					PPC32_WIMG(	ppc32_write_through,
+									ppc32_cache_inhibited,
+									ppc32_memory_no_coherency,
+									ppc32_guarded),
+					ppc32_read_write));
 
-	__ppc32_set_dbat1u(
-			__PPC32_BATU(
-					__PPC32_BEPI_BRPN(0xf40002F8u),
-					__ppc32_kb_128,
-					__ppc32_supervisor_access,
-					__ppc32_no_user_access));
+	ppc32_set_dbat1u(
+			PPC32_BATU(
+					PPC32_BEPI_BRPN(0xf40002F8u),
+					ppc32_kb_128,
+					ppc32_supervisor_access,
+					ppc32_no_user_access));
 
 	/* setup all the SR registers - only first segment is setup for pages */
-	__ppc32_set_sr0(__PPC_SR_T0(SR_KS_OK, SR_KP_OK, SR_NE_OFF, 0));
-	__ppc32_set_sr1(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr2(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr3(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr4(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr5(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr6(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr7(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr8(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr9(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr10(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr11(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr12(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr13(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr14(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
-	__ppc32_set_sr15(__PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr0(PPC_SR_T0(SR_KS_OK, SR_KP_OK, SR_NE_OFF, 0));
+	ppc32_set_sr1(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr2(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr3(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr4(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr5(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr6(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr7(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr8(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr9(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr10(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr11(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr12(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr13(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr14(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
+	ppc32_set_sr15(PPC_SR_T0(SR_KS_FAIL, SR_KP_FAIL, SR_NE_OFF, 0));
 
 	{
-		uint32_t msr = __ppc_get_msr();
+		uint32_t msr = ppc_get_msr();
 		msr |= (MSR_FLAG_IR | MSR_FLAG_DR);
-		__ppc_set_msr(msr);
+		ppc_set_msr(msr);
 	}
 }
 
-void __bsp_setup(void)
+void bsp_setup(void)
 {
-	__rs232_port_1.initialise(&__rs232_port_1, NULL, 0);
+	rs232_port_1.initialise(&rs232_port_1, NULL, 0);
 
-	__opic_intc = __opic_intc_create(__mem_get_default_pool(), (void*)0x80000000);
-	__int_install_isr(__opic_intc);
+	opic_intc = opic_intc_create(mem_get_default_pool(), (void*)0x80000000);
+	int_install_isr(opic_intc);
 
 	/* 1Ghz clock with 64 time-base ticks per clock.
 	 * This doesn't match the PSIM simulation but it doesn't
 	 * matter */
 	const uint64_t sim_clock = 1 * 1000 * 1000 * 1000;
-	__ppc_setup_timebase_details(&sim_clock, 64);
-	__time_set_system_clock(__ppc_get_ppc_timebase_clock());
+	ppc_setup_timebase_details(&sim_clock, 64);
+	time_set_system_clock(ppc_get_ppc_timebase_clock());
 
-	__ppc_get_timer(__kernel_get_process(), &__ppc32_time_base_timer);
-	__alarm_set_timer(&__ppc32_time_base_timer);
+	ppc_get_timer(kernel_get_process(), &ppc32_time_base_timer);
+	alarm_set_timer(&ppc32_time_base_timer);
 
 	// route UART -> OPIC -> CPU
-	__intc_enable(__opic_intc, 1);
-	__intc_add_device(__opic_intc, 1, &__rs232_port_1);
+	intc_enable(opic_intc, 1);
+	intc_add_device(opic_intc, 1, &rs232_port_1);
 
 	// enable UART interrupts
-	//__rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
+	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 }
 
-void __bsp_enable_schedule_timer(void)
+void bsp_enable_schedule_timer(void)
 {
     tinker_time_t scheduler_time;
     tinker_time_milliseconds(1000 / SCHEDULER_HERTZ, &scheduler_time);
 	uint64_t tbr_value = 0;
-	__ppc_convert_time_to_tbr(&scheduler_time, &tbr_value);
-	__ppc_set_decrementer((uint32_t)tbr_value);
+	ppc_convert_time_to_tbr(&scheduler_time, &tbr_value);
+	ppc_set_decrementer((uint32_t)tbr_value);
 }
 
-static void __bsp_external_interrupt(
+static void bsp_external_interrupt(
 		const uint32_t vector,
-		__tgt_context_t * const context)
+		tgt_context_t * const context)
 {
 	if (vector && context) {}
-	__int_handle_external_vector();
+	int_handle_external_vector();
 }
 
-void __bsp_check_timers_and_alarms(void)
+void bsp_check_timers_and_alarms(void)
 {
-	__ppc_check_timer(&__ppc32_time_base_timer);
+	ppc_check_timer(&ppc32_time_base_timer);
 }
 
-uint32_t __bsp_get_usable_memory_start()
+uint32_t bsp_get_usable_memory_start()
 {
 	extern uint32_t end;
 	return (uint32_t)&end;
 }
 
-uint32_t __bsp_get_usable_memory_end()
+uint32_t bsp_get_usable_memory_end()
 {
 	/* 127 because the last 1MB is the page table */
 	return (127 * 1024 * 1024);
 }
 
-void __bsp_write_debug_char(const char c)
+void bsp_write_debug_char(const char c)
 {
-	__rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
+	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
 }
 
-char __bsp_read_debug_char(void)
+char bsp_read_debug_char(void)
 {
 	char c = 0;
 	while (c == 0)
 	{
-		__rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
+		rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
 	}
 	return c;
 }

@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -14,9 +14,9 @@
 #include "kernel/time/alarm.h"
 #include "kernel/process/thread.h"
 
-void __alarm_initialse(__mem_pool_info_t * const pool);
+void alarm_initialse(mem_pool_info_t * const pool);
 
-void __alarm_set_timer(__timer_t * const timer);
+void alarm_set_timer(timer_t * const timer);
 
 /**
  * Setup an alarm for a thread to a given call back
@@ -27,11 +27,11 @@ void __alarm_set_timer(__timer_t * const timer);
  * @param alarm_id The ID of the alarm incase we have to cancel it
  * @return Errors
  */
-error_t __alarm_set_alarm(
-		__mem_pool_info_t * const pool,
+error_t alarm_set_alarm(
+		mem_pool_info_t * const pool,
 		const tinker_time_t * const timeout,
-		__alarm_call_back * const call_back,
-		const __alarm_user_data_t const usr_data,
+		alarm_call_back * const call_back,
+		const alarm_user_data_t const usr_data,
 		uint32_t * const alarm_id);
 
 /**
@@ -39,6 +39,6 @@ error_t __alarm_set_alarm(
  * @param alarm_id The alarm ID to cancel
  * @return Errors
  */
-error_t __alarm_unset_alarm(const uint32_t alarm_id);
+error_t alarm_unset_alarm(const uint32_t alarm_id);
 
 #endif /* ALARM_MANAGER_H_ */

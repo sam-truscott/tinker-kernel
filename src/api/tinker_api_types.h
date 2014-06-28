@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -9,7 +9,7 @@
 #ifndef TINKER_API_TYPES_H_
 #define TINKER_API_TYPES_H_
 
-#if defined(__BUILDING_KERNEL)
+#if defined(BUILDING_KERNEL)
 #define TINKER_API_SUFFIX __attribute__((section(".api")))
 #else
 #define TINKER_API_SUFFIX
@@ -17,7 +17,7 @@
 
 #include "arch/tgt_types.h"
 
-typedef enum __thread_state
+typedef enum thread_state
 {
 	THREAD_NOT_CREATED = 1,
 	THREAD_IDLE,
@@ -27,7 +27,7 @@ typedef enum __thread_state
 	THREAD_PAUSED,
 	THREAD_WAITING,
 	THREAD_TERMINATED
-} __thread_state_t;
+} thread_state_t;
 
 #define THREAD_FLAG_NONE 0x0
 #define THREAD_FLAG_FP 0x1

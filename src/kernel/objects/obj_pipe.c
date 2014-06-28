@@ -14,19 +14,19 @@
 #include "kernel/utils/collections/unbounded_list.h"
 #include "kernel/utils/collections/unbounded_list_iterator.h"
 
-UNBOUNDED_LIST_TYPE(__pipe_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(__pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_BODY_ADD(static, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_TYPE(pipe_list_t)
+UNBOUNDED_LIST_INTERNAL_TYPE(pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_SPEC_CREATE(static, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_SPEC_INITIALISE(static, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_SPEC_ADD(static, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_BODY_CREATE(static, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_BODY_INITIALISE(static, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_BODY_ADD(static, pipe_list_t, object_pipe_t*)
 
-UNBOUNDED_LIST_ITERATOR_TYPE(__pipe_list_it_t)
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(__pipe_list_it_t, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_SPEC(static, __pipe_list_it_t, __pipe_list_t, __object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(static, __pipe_list_it_t, __pipe_list_t, __object_pipe_t*)
+UNBOUNDED_LIST_ITERATOR_TYPE(pipe_list_it_t)
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(pipe_list_it_t, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_ITERATOR_SPEC(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
+UNBOUNDED_LIST_ITERATOR_BODY(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
 
 typedef struct rx_data
 {
@@ -34,44 +34,44 @@ typedef struct rx_data
 	uint32_t total_messages;
 	uint32_t current_message;
 	uint32_t message_size;
-	__object_thread_t * blocked_owner;
+	object_thread_t * blocked_owner;
 	uint8_t* current_message_ptr;
-	__pipe_list_t * senders;
+	pipe_list_t * senders;
 } rx_data_t;
 
 typedef struct tx_data
 {
-	__object_thread_t * sending_thread;
-	__pipe_list_t * readers;
+	object_thread_t * sending_thread;
+	pipe_list_t * readers;
 } tx_data_t;
 
-typedef struct __object_pipe_t
+typedef struct object_pipe_t
 {
-	__object_internal_t object;
+	object_internal_t object;
 	registry_key_t name;
 	tinker_pipe_direction_t direction;
 	rx_data_t rx_data;
 	tx_data_t tx_data;
-	__mem_pool_info_t * pool;
+	mem_pool_info_t * pool;
 	uint8_t * memory;
-} __object_pipe_internal_t;
+} object_pipe_internal_t;
 
-__object_pipe_t * __obj_cast_pipe(__object_t * const o)
+object_pipe_t * obj_cast_pipe(object_t * const o)
 {
-	__object_pipe_t * result = NULL;
+	object_pipe_t * result = NULL;
 	if(o)
 	{
-		const __object_pipe_t * const tmp = (const __object_pipe_t*)o;
+		const object_pipe_t * const tmp = (const object_pipe_t*)o;
 		if (tmp->object.type == PIPE_OBJ)
 		{
-			result = (__object_pipe_t*)tmp;
+			result = (object_pipe_t*)tmp;
 		}
 	}
 	return result;
 }
 
-object_number_t __obj_pipe_get_oid
-	(const __object_pipe_t * const o)
+object_number_t obj_pipe_get_oid
+	(const object_pipe_t * const o)
 {
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
@@ -81,21 +81,21 @@ object_number_t __obj_pipe_get_oid
 	return oid;
 }
 
-static bool_t __pipe_can_receive(const __object_pipe_t * const pipe)
+static bool_t pipe_can_receive(const object_pipe_t * const pipe)
 {
 	return pipe
 			&& ((pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 			&& (pipe->rx_data.free_messages > 0));
 }
 
-static void __pipe_receive_message(
-		__object_pipe_t * const receiver,
+static void pipe_receive_message(
+		object_pipe_t * const receiver,
 		const void * message,
 		const uint32_t message_size)
 {
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.current_message_ptr;
 	*msg_size = message_size;
-	__util_memcpy(receiver->rx_data.current_message_ptr+4, message, message_size);
+	util_memcpy(receiver->rx_data.current_message_ptr+4, message, message_size);
 	if ((receiver->rx_data.current_message + 1) == receiver->rx_data.total_messages)
 	{
 		receiver->rx_data.current_message = 0;
@@ -107,84 +107,84 @@ static void __pipe_receive_message(
 		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+4);
 	}
 	receiver->rx_data.free_messages--;
-	if (__obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (__object_t*)receiver))
+	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
 
-		__obj_set_thread_ready(receiver->rx_data.blocked_owner);
+		obj_set_thread_ready(receiver->rx_data.blocked_owner);
 		receiver->rx_data.blocked_owner = NULL;
 	}
 }
 
-static bool_t __pipe_is_receiver(const __object_pipe_t * const pipe)
+static bool_t pipe_is_receiver(const object_pipe_t * const pipe)
 {
 	return ((pipe->direction == PIPE_RECEIVE) || (pipe->direction == PIPE_SEND_RECEIVE));
 }
 
-static bool_t __pipe_is_sender(const __object_pipe_t * const pipe)
+static bool_t pipe_is_sender(const object_pipe_t * const pipe)
 {
 	return ((pipe->direction == PIPE_SEND) || (pipe->direction == PIPE_SEND_RECEIVE));
 }
 
-static bool_t __pipe_is_receiver_sender(const __object_pipe_t * const pipe)
+static bool_t pipe_is_receiver_sender(const object_pipe_t * const pipe)
 {
 	return (pipe->direction == PIPE_SEND_RECEIVE);
 }
 
-static bool_t __pipe_can_send_to_all(
-		const __object_pipe_t * const pipe,
+static bool_t pipe_can_send_to_all(
+		const object_pipe_t * const pipe,
 		const bool_t blocking)
 {
-	__pipe_list_it_t it;
-	__object_pipe_t * receiver = NULL;
+	pipe_list_it_t it;
+	object_pipe_t * receiver = NULL;
 	bool_t can_send_all = true;
 
-	__pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-	const bool_t has_any_receivers = __pipe_list_it_t_get(&it, &receiver);
+	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
+	const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 	if (has_any_receivers)
 	{
 		while(receiver)
 		{
-			const bool_t can_send_pipe = __pipe_can_receive(receiver);
+			const bool_t can_send_pipe = pipe_can_receive(receiver);
 			if (!can_send_pipe && blocking)
 			{
-				__pipe_list_t_add(receiver->rx_data.senders, (__object_pipe_t*)pipe);
+				pipe_list_t_add(receiver->rx_data.senders, (object_pipe_t*)pipe);
 			}
 			can_send_all = (!can_send_all) ? can_send_all : can_send_pipe;
-			__pipe_list_it_t_next(&it, &receiver);
+			pipe_list_it_t_next(&it, &receiver);
 		}
 	}
 	// if there's no one to send to then in pub/sub we're good
 	return can_send_all;
 }
 
-error_t __obj_create_pipe(
-		__process_t * const process,
+error_t obj_create_pipe(
+		process_t * const process,
 		object_number_t * objectno,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages)
 {
-	__object_pipe_t * no = NULL;
+	object_pipe_t * no = NULL;
 	error_t result = NO_ERROR;
 
 	if (process && objectno)
 	{
 		*objectno = INVALID_OBJECT_ID;
-		__object_table_t * const table = __process_get_object_table(process);
+		object_table_t * const table = process_get_object_table(process);
 		if (table)
 		{
-			__mem_pool_info_t * const pool = __process_get_mem_pool(process);
+			mem_pool_info_t * const pool = process_get_mem_pool(process);
 			uint8_t * memory = NULL;
-			__pipe_list_t * tx_queue = NULL;
-			__pipe_list_t * rx_queue = NULL;
+			pipe_list_t * tx_queue = NULL;
+			pipe_list_t * rx_queue = NULL;
 			switch (direction)
 			{
 			case PIPE_DIRECTION_UNKNOWN:
 				result = PARAMETERS_INVALID;
 				break;
 			case PIPE_SEND_RECEIVE:
-				tx_queue = __pipe_list_t_create(pool);
+				tx_queue = pipe_list_t_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -197,13 +197,13 @@ error_t __obj_create_pipe(
 				{
 					total_size++;
 				}
-				memory = (uint8_t*)__mem_alloc_aligned(
+				memory = (uint8_t*)mem_alloc_aligned(
 						pool, total_size, MMU_PAGE_SIZE);
 				if (!memory)
 				{
 					result = OUT_OF_MEMORY;
 				}
-				rx_queue = __pipe_list_t_create(pool);
+				rx_queue = pipe_list_t_create(pool);
 				if (!rx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -211,7 +211,7 @@ error_t __obj_create_pipe(
 			}
 				break;
 			case PIPE_SEND:
-				tx_queue = __pipe_list_t_create(pool);
+				tx_queue = pipe_list_t_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -220,20 +220,20 @@ error_t __obj_create_pipe(
 			}
 			if (result == NO_ERROR)
 			{
-				no = (__object_pipe_t*)__mem_alloc(pool, sizeof(__object_pipe_t));
+				no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
 				object_number_t objno;
-				result = __obj_add_object(table, (__object_t*)no, &objno);
+				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
 				{
 					*objectno = objno;
-					__obj_initialise_object(&no->object, objno, PIPE_OBJ);
+					obj_initialise_object(&no->object, objno, PIPE_OBJ);
 					no->direction = direction;
 					no->pool = pool;
 					no->memory = memory;
 					no->tx_data.readers = rx_queue;
 					no->rx_data.senders = tx_queue;
 					memset(no->name, 0, sizeof(registry_key_t));
-					__util_memcpy(no->name, name, __util_strlen(name, sizeof(registry_key_t)));
+					util_memcpy(no->name, name, util_strlen(name, sizeof(registry_key_t)));
 					const rx_data_t rx_data = {
 							.senders = rx_queue,
 							.free_messages = messages,
@@ -247,11 +247,11 @@ error_t __obj_create_pipe(
 					no->rx_data = rx_data;
 					no->tx_data = tx_data;
 					// register it - create
-					result = __regsitery_add(name, process, no->object.object_number);
+					result = regsitery_add(name, process, no->object.object_number);
 				}
 				else
 				{
-					__mem_free(pool, no);
+					mem_free(pool, no);
 				}
 			}
 			else
@@ -272,28 +272,28 @@ error_t __obj_create_pipe(
 	return result;
 }
 
-error_t __object_open_pipe(
-		__process_t * const process,
-		__object_thread_t * const thread,
+error_t object_open_pipe(
+		process_t * const process,
+		object_thread_t * const thread,
 		object_number_t * objectno,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages)
 {
-	__object_pipe_t * no = NULL;
+	object_pipe_t * no = NULL;
 	error_t result;
 
-	__process_t * other_proc = NULL;
-	__object_pipe_t * other_pipe = NULL;
+	process_t * other_proc = NULL;
+	object_pipe_t * other_pipe = NULL;
 	object_number_t other_pipe_no = INVALID_OBJECT_ID;
-	result = __registry_get(name, &other_proc, &other_pipe_no);
+	result = registry_get(name, &other_proc, &other_pipe_no);
 	// check that the pipe is in the registry
 	if (result == NO_ERROR)
 	{
-		const __object_table_t * const table = __process_get_object_table(other_proc);
-		__object_t * const other_obj = __obj_get_object(table, other_pipe_no);
-		other_pipe = __obj_cast_pipe(other_obj);
+		const object_table_t * const table = process_get_object_table(other_proc);
+		object_t * const other_obj = obj_get_object(table, other_pipe_no);
+		other_pipe = obj_cast_pipe(other_obj);
 
 		if (other_obj)
 		{
@@ -307,19 +307,19 @@ error_t __object_open_pipe(
 					result = PARAMETERS_INVALID;
 					break;
 				case PIPE_SEND:
-					if (!__pipe_is_receiver(other_pipe))
+					if (!pipe_is_receiver(other_pipe))
 					{
 						result = PIPE_POLARITY_WRONG;
 					}
 					break;
 				case PIPE_RECEIVE:
-					if (!__pipe_is_sender(other_pipe))
+					if (!pipe_is_sender(other_pipe))
 					{
 						result = PIPE_POLARITY_WRONG;
 					}
 					break;
 				case PIPE_SEND_RECEIVE:
-					if (!__pipe_is_receiver_sender(other_pipe))
+					if (!pipe_is_receiver_sender(other_pipe))
 					{
 						result = PIPE_POLARITY_WRONG;
 					}
@@ -338,7 +338,7 @@ error_t __object_open_pipe(
 	}
 	else
 	{
-		__registry_wait_for(thread, name);
+		registry_wait_for(thread, name);
 		result = BLOCKED_RETRY;
 	}
 
@@ -346,20 +346,20 @@ error_t __object_open_pipe(
 	{
 		if (process && objectno)
 		{
-			__object_table_t * table = __process_get_object_table(process);
+			object_table_t * table = process_get_object_table(process);
 			if (table)
 			{
-				__mem_pool_info_t * const pool = __process_get_mem_pool(process);
+				mem_pool_info_t * const pool = process_get_mem_pool(process);
 				uint8_t * memory = NULL;
-				__pipe_list_t * tx_queue = NULL;
-				__pipe_list_t * rx_queue = NULL;
+				pipe_list_t * tx_queue = NULL;
+				pipe_list_t * rx_queue = NULL;
 				switch (direction)
 				{
 				case PIPE_DIRECTION_UNKNOWN:
 					result = PARAMETERS_INVALID;
 					break;
 				case PIPE_SEND_RECEIVE:
-					tx_queue = __pipe_list_t_create(pool);
+					tx_queue = pipe_list_t_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -372,13 +372,13 @@ error_t __object_open_pipe(
 					{
 						total_size++;
 					}
-					memory = (uint8_t*)__mem_alloc_aligned(
+					memory = (uint8_t*)mem_alloc_aligned(
 							pool, total_size, MMU_PAGE_SIZE);
 					if (!memory)
 					{
 						result = OUT_OF_MEMORY;
 					}
-					rx_queue = __pipe_list_t_create(pool);
+					rx_queue = pipe_list_t_create(pool);
 					if (!rx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -386,7 +386,7 @@ error_t __object_open_pipe(
 				}
 					break;
 				case PIPE_SEND:
-					tx_queue = __pipe_list_t_create(pool);
+					tx_queue = pipe_list_t_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -395,18 +395,18 @@ error_t __object_open_pipe(
 				}
 				if (result == NO_ERROR)
 				{
-					no = (__object_pipe_t*)__mem_alloc(pool, sizeof(__object_pipe_t));
+					no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
 					object_number_t objno;
-					result = __obj_add_object(table, (__object_t*)no, &objno);
+					result = obj_add_object(table, (object_t*)no, &objno);
 					if (result == NO_ERROR)
 					{
 						*objectno = objno;
-						__obj_initialise_object(&no->object, objno, PIPE_OBJ);
+						obj_initialise_object(&no->object, objno, PIPE_OBJ);
 						no->direction = direction;
 						no->pool = pool;
 						no->memory = memory;
 						memset(no->name, 0, sizeof(registry_key_t));
-						__util_memcpy(no->name, name, __util_strlen(name, sizeof(registry_key_t)));
+						util_memcpy(no->name, name, util_strlen(name, sizeof(registry_key_t)));
 						const rx_data_t rx_data = {
 								.senders = rx_queue,
 								.free_messages = messages,
@@ -424,24 +424,24 @@ error_t __object_open_pipe(
 						case PIPE_DIRECTION_UNKNOWN:
 							break;
 						case PIPE_SEND:
-							__pipe_list_t_add(other_pipe->rx_data.senders, no);
-							__pipe_list_t_add(no->tx_data.readers, other_pipe);
+							pipe_list_t_add(other_pipe->rx_data.senders, no);
+							pipe_list_t_add(no->tx_data.readers, other_pipe);
 							break;
 						case PIPE_SEND_RECEIVE:
-							__pipe_list_t_add(other_pipe->tx_data.readers, no);
-							__pipe_list_t_add(other_pipe->rx_data.senders, no);
-							__pipe_list_t_add(no->tx_data.readers, other_pipe);
-							__pipe_list_t_add(no->rx_data.senders, other_pipe);
+							pipe_list_t_add(other_pipe->tx_data.readers, no);
+							pipe_list_t_add(other_pipe->rx_data.senders, no);
+							pipe_list_t_add(no->tx_data.readers, other_pipe);
+							pipe_list_t_add(no->rx_data.senders, other_pipe);
 							break;
 						case PIPE_RECEIVE:
-							__pipe_list_t_add(other_pipe->tx_data.readers, no);
-							__pipe_list_t_add(no->rx_data.senders, other_pipe);
+							pipe_list_t_add(other_pipe->tx_data.readers, no);
+							pipe_list_t_add(no->rx_data.senders, other_pipe);
 							break;
 						}
 					}
 					else
 					{
-						__mem_free(pool, no);
+						mem_free(pool, no);
 					}
 				}
 				else
@@ -463,15 +463,15 @@ error_t __object_open_pipe(
 	return result;
 }
 
-error_t __obj_delete_pipe(__object_pipe_t * const pipe)
+error_t obj_delete_pipe(object_pipe_t * const pipe)
 {
 	error_t result = NO_ERROR;
 
 	if (pipe)
 	{
-		__registry_remove(pipe->name);
-		__mem_free(pipe->pool, pipe->memory);
-		__mem_free(pipe->pool, pipe);
+		registry_remove(pipe->name);
+		mem_free(pipe->pool, pipe->memory);
+		mem_free(pipe->pool, pipe);
 	}
 	else
 	{
@@ -481,9 +481,9 @@ error_t __obj_delete_pipe(__object_pipe_t * const pipe)
 	return result;
 }
 
-error_t __obj_pipe_send_message(
-		__object_pipe_t * const pipe,
-		__object_thread_t * const thread,
+error_t obj_pipe_send_message(
+		object_pipe_t * const pipe,
+		object_thread_t * const thread,
 		const tinker_pipe_send_kind_t send_kind,
 		void * const message,
 		const uint32_t message_size,
@@ -495,13 +495,13 @@ error_t __obj_pipe_send_message(
 	{
 		if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 		{
-			if (send_kind == PIPE_TX_SEND_ALL && !__pipe_can_send_to_all(pipe, block))
+			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
 			{
 				// we can't send to everyone
 				if (block)
 				{
 					pipe->tx_data.sending_thread = thread;
-					__obj_set_thread_waiting(thread, (__object_t*)pipe);
+					obj_set_thread_waiting(thread, (object_t*)pipe);
 					result = BLOCKED_RETRY;
 				}
 				else
@@ -522,20 +522,20 @@ error_t __obj_pipe_send_message(
 
 	if (result == NO_ERROR)
 	{
-		__pipe_list_it_t it;
-		__object_pipe_t * receiver = NULL;
+		pipe_list_it_t it;
+		object_pipe_t * receiver = NULL;
 
-		__pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-		const bool_t has_any_receivers = __pipe_list_it_t_get(&it, &receiver);
+		pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
+		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 		if (has_any_receivers)
 		{
 			while(receiver)
 			{
-				if (__pipe_can_receive(receiver))
+				if (pipe_can_receive(receiver))
 				{
-					__pipe_receive_message(receiver, message, message_size);
+					pipe_receive_message(receiver, message, message_size);
 				}
-				__pipe_list_it_t_next(&it, &receiver);
+				pipe_list_it_t_next(&it, &receiver);
 			}
 		}
 	}
@@ -543,9 +543,9 @@ error_t __obj_pipe_send_message(
 	return result;
 }
 
-error_t __obj_pipe_receive_message(
-		__object_pipe_t * const pipe,
-		__object_thread_t * const thread,
+error_t obj_pipe_receive_message(
+		object_pipe_t * const pipe,
+		object_thread_t * const thread,
 		void ** const message,
 		uint32_t * const message_size,
 		const bool_t block)
@@ -568,7 +568,7 @@ error_t __obj_pipe_receive_message(
 					{
 						*message = pipe->rx_data.current_message_ptr + 4;
 						*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
-						__obj_set_thread_waiting(thread, (__object_t*)pipe);
+						obj_set_thread_waiting(thread, (object_t*)pipe);
 						pipe->rx_data.blocked_owner = thread;
 					}
 					else
@@ -600,7 +600,7 @@ error_t __obj_pipe_receive_message(
 	return result;
 }
 
-error_t __obj_pipe_received_message(__object_pipe_t * const pipe)
+error_t obj_pipe_received_message(object_pipe_t * const pipe)
 {
 	error_t result = NO_ERROR;
 
@@ -609,16 +609,16 @@ error_t __obj_pipe_received_message(__object_pipe_t * const pipe)
 		pipe->rx_data.free_messages++;
 
 		// notify any senders
-		__pipe_list_it_t it;
-		__object_pipe_t * sender = NULL;
-		__pipe_list_it_t_initialise(&it, pipe->rx_data.senders);
-		const bool_t has_any_senders = __pipe_list_it_t_get(&it, &sender);
+		pipe_list_it_t it;
+		object_pipe_t * sender = NULL;
+		pipe_list_it_t_initialise(&it, pipe->rx_data.senders);
+		const bool_t has_any_senders = pipe_list_it_t_get(&it, &sender);
 		if (has_any_senders)
 		{
 			while(sender)
 			{
-				__obj_set_thread_ready(sender->tx_data.sending_thread);
-				__pipe_list_it_t_next(&it, &sender);
+				obj_set_thread_ready(sender->tx_data.sending_thread);
+				pipe_list_it_t_next(&it, &sender);
 			}
 		}
 	}

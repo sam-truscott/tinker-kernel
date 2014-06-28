@@ -11,20 +11,20 @@
 #include "kernel/kernel_assert.h"
 #include "kernel/utils/util_memset.h"
 
-typedef struct __mem_section_t
+typedef struct mem_section_t
 {
-	__mem_section_t *next;
+	mem_section_t *next;
 	uint32_t 			real_address;
 	uint32_t			virt_address;
 	uint32_t 			size;
 	mmu_memory_t		memory_type;
 	mmu_privilege_t		privilege;
 	mmu_access_t		access_rights;
-	__mem_pool_info_t * pool;
+	mem_pool_info_t * pool;
 } mem_section_internal_t;
 
-__mem_section_t * __mem_sec_create(
-		__mem_pool_info_t * const pool,
+mem_section_t * mem_sec_create(
+		mem_pool_info_t * const pool,
 		const uint32_t real_addr,
 		const uint32_t virt_addr,
 		const uint32_t size,
@@ -32,10 +32,10 @@ __mem_section_t * __mem_sec_create(
 		const mmu_privilege_t mem_priv,
 		const mmu_access_t mem_access)
 {
-	__mem_section_t * const ms = __mem_alloc(pool, sizeof(__mem_section_t));
+	mem_section_t * const ms = mem_alloc(pool, sizeof(mem_section_t));
 	if (ms)
 	{
-		memset(ms, 0, sizeof(__mem_section_t));
+		memset(ms, 0, sizeof(mem_section_t));
 		ms->real_address = real_addr;
 		ms->virt_address = virt_addr;
 		ms->size = size;
@@ -47,51 +47,51 @@ __mem_section_t * __mem_sec_create(
 	return ms;
 }
 
-void __mem_sec_delete(const __mem_section_t * const section)
+void mem_sec_delete(const mem_section_t * const section)
 {
-	__kernel_assert("__mem_sec_delete - check that the section is valid", section != NULL);
-	__mem_free(section->pool, section);
+	kernel_assert("mem_sec_delete - check that the section is valid", section != NULL);
+	mem_free(section->pool, section);
 }
 
-uint32_t __mem_sec_get_real_addr(const __mem_section_t * const ms)
+uint32_t mem_sec_get_real_addr(const mem_section_t * const ms)
 {
 	return ms->real_address;
 }
 
-uint32_t __mem_sec_get_virt_addr(const __mem_section_t * const ms)
+uint32_t mem_sec_get_virt_addr(const mem_section_t * const ms)
 {
 	return ms->virt_address;
 }
 
-uint32_t __mem_sec_get_size(const __mem_section_t * const ms)
+uint32_t mem_sec_get_size(const mem_section_t * const ms)
 {
 	return ms->size;
 }
 
-mmu_memory_t __mem_sec_get_mem_type(const __mem_section_t * const ms)
+mmu_memory_t mem_sec_get_mem_type(const mem_section_t * const ms)
 {
 	return ms->memory_type;
 }
 
-mmu_privilege_t __mem_sec_get_priv(const __mem_section_t * const ms)
+mmu_privilege_t mem_sec_get_priv(const mem_section_t * const ms)
 {
 	return ms->privilege;
 }
 
-mmu_access_t __mem_sec_get_access(const __mem_section_t * const ms)
+mmu_access_t mem_sec_get_access(const mem_section_t * const ms)
 {
 	return ms->access_rights;
 }
 
-__mem_section_t * __mem_sec_get_next(const __mem_section_t * const ms)
+mem_section_t * mem_sec_get_next(const mem_section_t * const ms)
 {
 	return ms->next;
 }
 
-void __mem_sec_set_next(__mem_section_t * const ms, const __mem_section_t * const next)
+void mem_sec_set_next(mem_section_t * const ms, const mem_section_t * const next)
 {
 	if (ms)
 	{
-		ms->next = (__mem_section_t*)next;
+		ms->next = (mem_section_t*)next;
 	}
 }

@@ -8,7 +8,7 @@
  */
 #include "util_case.h"
 
-void __util_to_upper(char * string)
+void util_to_upper(char * string)
 {
 	char * copy = string;
 	while(*copy)
@@ -20,9 +20,9 @@ void __util_to_upper(char * string)
 		copy++;
 	}
 }
-#pragma weak __util_to_upper
+#pragma weak util_to_upper
 
-void __util_to_lower(char * string)
+void util_to_lower(char * string)
 {
 	char * copy = string;
 	while(*copy)
@@ -34,4 +34,4 @@ void __util_to_lower(char * string)
 		copy++;
 	}
 }
-#pragma weak __util_to_lower
+#pragma weak util_to_lower

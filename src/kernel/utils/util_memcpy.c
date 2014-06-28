@@ -14,7 +14,7 @@
 #define SIZE_OF_8 sizeof(uint8_t)
 
 #pragma GCC optimize ("-O3")
-void __util_memcpy(void * dst, const void * src, const uint32_t size)
+void util_memcpy(void * dst, const void * src, const uint32_t size)
 {
 	uint32_t total = size;
 	uint32_t sixty = total / SIZE_OF_64;
@@ -63,9 +63,9 @@ void __util_memcpy(void * dst, const void * src, const uint32_t size)
 		real_src++;
 	}
 }
-#pragma weak __util_memcpy
+#pragma weak util_memcpy
 
 extern void memcpy(void * dst, const void * src, const uint32_t size)
 {
-	__util_memcpy(dst, src, size);
+	util_memcpy(dst, src, size);
 }

@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -59,7 +59,7 @@
 		ITERATOR_T * it = NULL; \
 		if (map) \
 		{ \
-			it = __mem_alloc(map->pool, sizeof(ITERATOR_T)); \
+			it = mem_alloc(map->pool, sizeof(ITERATOR_T)); \
 			ITERATOR_T##_initialise(it, map); \
 		} \
 		return it;\
@@ -69,7 +69,7 @@
 	{ \
 		if ( it ) \
 		{ \
-			__mem_free(it->map->pool, it); \
+			mem_free(it->map->pool, it); \
 		} \
 	} \
 	\
@@ -81,7 +81,7 @@
 		{ \
 			if ( it->map_entry ) \
 			{ \
-				__util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
+				util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
 				ok = true;\
 			} \
 		} \
@@ -102,7 +102,7 @@
 					it->entry = e; \
 					it->map_entry = it->map_bucket->entries[e]; \
 					ok = true; \
-					__util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
+					util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
 					break; \
 				} \
 			} \
@@ -119,7 +119,7 @@
 								it->entry = e; \
 								it->bucket = b; \
 								it->map_entry = it->map->buckets[b]->entries[e]; \
-								__util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
+								util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T)); \
 								ok = true; \
 								break; \
 							} \
@@ -160,14 +160,14 @@
 		} \
 	} \
 	\
-	extern inline void ITERATOR_T##_test__(void) \
+	extern inline void ITERATOR_T##_test(void) \
 	{ \
 		ITERATOR_T * item = ITERATOR_T##_create(NULL); \
 		ITERATOR_T##_next(item, NULL); \
 		ITERATOR_T##_get(item, NULL); \
 		ITERATOR_T##_reset(item); \
 		ITERATOR_T##_delete(item); \
-		ITERATOR_T##_test__(); \
+		ITERATOR_T##_test(); \
 	} \
 
 #endif /* HASHED_MAP_ITERATOR_H_ */

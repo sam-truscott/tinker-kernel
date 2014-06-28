@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -11,11 +11,11 @@
 
 #include "arch/tgt_types.h"
 
-typedef uint64_t (__clock_get_nanoseconds_time)(void);
+typedef uint64_t (clock_get_nanoseconds_time)(void);
 
 typedef struct
 {
-	__clock_get_nanoseconds_time * 		get_time;
-} __clock_device_t;
+	clock_get_nanoseconds_time * 		get_time;
+} clock_device_t;
 
 #endif /* TIME_H_ */

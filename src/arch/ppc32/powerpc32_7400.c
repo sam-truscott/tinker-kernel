@@ -16,17 +16,17 @@
  * Varaible used to store the stack pointer in interrupt routines
  */
 extern uint32_t __ivtse;
-uint32_t * __ivts = &__ivtse;
+uint32_t * ivts = &__ivtse;
 
-void __tgt_initialise(void)
+void tgt_initialise(void)
 {
 	uint32_t msr = MSR_FLAG_ME;
 	/* msr |= MSR_FLAG_FP; */
-	__ppc_set_msr(msr);
+	ppc_set_msr(msr);
 
-	__ppc_set_tbr(0, 0);
+	ppc_set_tbr(0, 0);
 	for ( int i = 0 ; i < MAX_DTLB_ENTRIES ; i++ )
 	{
-		__ppc_invalid_tlbe(i);
+		ppc_invalid_tlbe(i);
 	}
 }

@@ -21,106 +21,106 @@
 #include "kernel/utils/collections/unbounded_queue.h"
 #include "kernel/utils/collections/stack.h"
 
-UNBOUNDED_QUEUE_TYPE(__thread_queue_t)
-UNBOUNDED_QUEUE_INTERNAL_TYPE(__thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_INITIALISE(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_FRONT(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_PUSH(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_POP(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_REMOVE(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_REORDER_FIRST(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_SPEC_SIZE(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_INITIALISE(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_FRONT(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_PUSH(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_POP(extern, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_REMOVE(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_REORDER_FIRST(static, __thread_queue_t, __thread_t*)
-UNBOUNDED_QUEUE_BODY_SIZE(static, __thread_queue_t, __thread_t*)
+UNBOUNDED_QUEUE_TYPE(thread_queue_t)
+UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_INITIALISE(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_FRONT(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_PUSH(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_POP(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_REMOVE(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_REORDER_FIRST(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_SPEC_SIZE(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_INITIALISE(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_FRONT(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_PUSH(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_POP(extern, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_REMOVE(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_REORDER_FIRST(static, thread_queue_t, thread_t*)
+UNBOUNDED_QUEUE_BODY_SIZE(static, thread_queue_t, thread_t*)
 
-STACK_TYPE(__queue_stack_t)
-STACK_INTERNAL_TYPE(__queue_stack_t, __thread_queue_t*)
-STACK_SPEC_INITIALISE(static, __queue_stack_t, __thread_queue_t*)
-STACK_SPEC_PUSH(static, __queue_stack_t, __thread_queue_t*)
-STACK_SPEC_POP(static, __queue_stack_t, __thread_queue_t*)
-STACK_SPEC_SIZE(static, __queue_stack_t, __thread_queue_t*)
-STACK_SPEC_GET(static, __queue_stack_t, __thread_queue_t*)
-STACK_SPEC_FRONT(static, __queue_stack_t, __thread_queue_t*)
-STACK_SPEC_INSERT(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_INITIALISE(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_PUSH(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_SIZE(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_GET(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_POP(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_FRONT(static, __queue_stack_t, __thread_queue_t*)
-STACK_BODY_INSERT(static, __queue_stack_t, __thread_queue_t*)
+STACK_TYPE(queue_stack_t)
+STACK_INTERNAL_TYPE(queue_stack_t, thread_queue_t*)
+STACK_SPEC_INITIALISE(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_PUSH(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_POP(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_SIZE(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_GET(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_FRONT(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_INSERT(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_INITIALISE(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_PUSH(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_SIZE(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_GET(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_POP(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_FRONT(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_INSERT(static, queue_stack_t, thread_queue_t*)
 
 /**
  * The current thread executing
  */
-static __thread_t * __sch_current_thread = NULL;
+static thread_t * sch_current_thread = NULL;
 
-static __process_t * __sch_current_process = NULL;
+static process_t * sch_current_process = NULL;
 
-static __thread_queue_t * __sch_active_queue;
+static thread_queue_t * sch_active_queue;
 
-static __thread_queue_t __sch_thread_queues[__MAX_PRIORITY + 1];
+static thread_queue_t sch_thread_queues[MAX_PRIORITY + 1];
 
-static __priority_t __sch_current_priority;
+static priority_t sch_current_priority;
 
-static __queue_stack_t __sch_queue_stack;
+static queue_stack_t sch_queue_stack;
 
-static void __sch_priority_find_next_queue(__thread_t * const t);
+static void sch_priority_find_next_queue(thread_t * const t);
 
-static bool_t __sch_initialised = false;
+static bool_t sch_initialised = false;
 
-void __sch_initialise_scheduler(void)
+void sch_initialise_scheduler(void)
 {
-	if ( !__sch_initialised )
+	if ( !sch_initialised )
 	{
-		for ( uint16_t i = 0 ; i < __MAX_PRIORITY + 1 ; i++ )
+		for ( uint16_t i = 0 ; i < MAX_PRIORITY + 1 ; i++ )
 		{
-			__thread_queue_t_initialise(&__sch_thread_queues[i], __mem_get_default_pool());
+			thread_queue_t_initialise(&sch_thread_queues[i], mem_get_default_pool());
 		}
 
-		__sch_active_queue = &(__sch_thread_queues[0]);
-		__queue_stack_t_initialise( &__sch_queue_stack, __mem_get_default_pool() );
-		__queue_stack_t_push(&__sch_queue_stack, __sch_active_queue);
+		sch_active_queue = &(sch_thread_queues[0]);
+		queue_stack_t_initialise( &sch_queue_stack, mem_get_default_pool() );
+		queue_stack_t_push(&sch_queue_stack, sch_active_queue);
 
-		__sch_initialised = true;
+		sch_initialised = true;
 	}
 }
 
-void __sch_notify_new_thread(__thread_t * const t)
+void sch_notify_new_thread(thread_t * const t)
 {
-	if (!__sch_initialised)
+	if (!sch_initialised)
 	{
-		__sch_initialise_scheduler();
+		sch_initialise_scheduler();
 	}
 
 	if (t)
 	{
-		const __priority_t thread_priority = __thread_get_priority(t);
-		__thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
-		__thread_queue_t_push(queue, t);
+		const priority_t thread_priority = thread_get_priority(t);
+		thread_queue_t * const queue = &(sch_thread_queues[thread_priority]);
+		thread_queue_t_push(queue, t);
 
-#if defined(__PROCESS_DEBUGGING)
-		__debug_print("scheduler: new thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
+#if defined(PROCESS_DEBUGGING)
+		debug_print("scheduler: new thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
-		if (thread_priority > __sch_current_priority)
+		if (thread_priority > sch_current_priority)
 		{
-				__sch_current_priority = thread_priority;
-				__sch_active_queue = &(__sch_thread_queues[__sch_current_priority]);
-				__queue_stack_t_push(&__sch_queue_stack, __sch_active_queue);
+				sch_current_priority = thread_priority;
+				sch_active_queue = &(sch_thread_queues[sch_current_priority]);
+				queue_stack_t_push(&sch_queue_stack, sch_active_queue);
 		}
-		else if ( thread_priority < __sch_current_priority )
+		else if ( thread_priority < sch_current_priority )
 		{
 			/* if we add a thread that's of a lower priority then it must be added
 			 * to the queue stack so when the new high priority task finishes the
 			 *  new lower priority task will be executed */
-			__thread_queue_t * stack_queue = NULL;
-			const uint32_t stack_size = __queue_stack_t_size(&__sch_queue_stack);
+			thread_queue_t * stack_queue = NULL;
+			const uint32_t stack_size = queue_stack_t_size(&sch_queue_stack);
 			int32_t stack_index = (int32_t)(stack_size - 1);
 			bool_t found = false;
 			int32_t insert_index = -1;
@@ -137,16 +137,16 @@ void __sch_notify_new_thread(__thread_t * const t)
 			 */
 			while(stack_index >= 0 && !found && insert_index == -1)
 			{
-				if (__queue_stack_t_get(&__sch_queue_stack, stack_index, &stack_queue))
+				if (queue_stack_t_get(&sch_queue_stack, stack_index, &stack_queue))
 				{
-					const uint32_t queue_size = __thread_queue_t_size(stack_queue);
+					const uint32_t queue_size = thread_queue_t_size(stack_queue);
 					if ( queue_size )
 					{
-						__thread_t * firstThreadInQueue = NULL;
-						const bool_t ok = __thread_queue_t_front(stack_queue, &firstThreadInQueue);
+						thread_t * firstThreadInQueue = NULL;
+						const bool_t ok = thread_queue_t_front(stack_queue, &firstThreadInQueue);
 						if ( ok == true )
 						{
-							const __priority_t stack_thread_priority = __thread_get_priority(firstThreadInQueue);
+							const priority_t stack_thread_priority = thread_get_priority(firstThreadInQueue);
 							if ( stack_thread_priority == thread_priority )
 							{
 								/* it's already on the stack */
@@ -168,203 +168,203 @@ void __sch_notify_new_thread(__thread_t * const t)
 			 */
 			if ( !found && insert_index >= 0 )
 			{
-				if (!__queue_stack_t_insert(&__sch_queue_stack, insert_index, queue))
+				if (!queue_stack_t_insert(&sch_queue_stack, insert_index, queue))
 				{
 					/* failed to add it to the scheduler, panic */
-					__kernel_panic();
+					kernel_panic();
 				}
 			}
 		}
 	}
-#if defined(__PROCESS_DEBUGGING)
-		__debug_print("scheduler: new priority, now (%d)\n", __sch_current_priority);
+#if defined(PROCESS_DEBUGGING)
+		debug_print("scheduler: new priority, now (%d)\n", sch_current_priority);
 #endif
 }
 
-void __sch_notify_exit_thread(__thread_t * const t)
+void sch_notify_exit_thread(thread_t * const t)
 {
 	if (t)
 	{
-		const __priority_t thread_priority = __thread_get_priority(t);
-		__thread_queue_t * const queue = &(__sch_thread_queues[thread_priority]);
-		const bool_t removed = __thread_queue_t_remove(queue, t);
+		const priority_t thread_priority = thread_get_priority(t);
+		thread_queue_t * const queue = &(sch_thread_queues[thread_priority]);
+		const bool_t removed = thread_queue_t_remove(queue, t);
 
-#if defined(__PROCESS_DEBUGGING)
-		__debug_print("scheduler: exit thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
+#if defined(PROCESS_DEBUGGING)
+		debug_print("scheduler: exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
-		if (removed && __thread_queue_t_size(__sch_active_queue) == 0)
+		if (removed && thread_queue_t_size(sch_active_queue) == 0)
 		{
 			/* pop the one we're using off */
-			__queue_stack_t_pop(&__sch_queue_stack, &__sch_active_queue);
+			queue_stack_t_pop(&sch_queue_stack, &sch_active_queue);
 			/* pop the next queue off the stack - if one can't be found
 			 * perform a slow search */
-			if (!__queue_stack_t_front(&__sch_queue_stack, &__sch_active_queue))
+			if (!queue_stack_t_front(&sch_queue_stack, &sch_active_queue))
 			{
-				__sch_priority_find_next_queue(t);
+				sch_priority_find_next_queue(t);
 			}
 			else
 			{
-				__thread_t * first_thread = NULL;
-				if (__thread_queue_t_front(__sch_active_queue, &first_thread))
+				thread_t * first_thread = NULL;
+				if (thread_queue_t_front(sch_active_queue, &first_thread))
 				{
-					const __priority_t tp = __thread_get_priority(first_thread);
-					__sch_current_priority = tp;
+					const priority_t tp = thread_get_priority(first_thread);
+					sch_current_priority = tp;
 				}
 			}
 		}
 	}
-#if defined(__PROCESS_DEBUGGING)
-		__debug_print("scheduler: exit priority, now (%d)\n", __sch_current_priority);
+#if defined(PROCESS_DEBUGGING)
+		debug_print("scheduler: exit priority, now (%d)\n", sch_current_priority);
 #endif
 }
 
-void __sch_notify_pause_thread(__thread_t * const t)
+void sch_notify_pause_thread(thread_t * const t)
 {
-	__sch_notify_exit_thread(t);
+	sch_notify_exit_thread(t);
 }
 
-void __sch_notify_resume_thread(__thread_t * const t)
+void sch_notify_resume_thread(thread_t * const t)
 {
-	__sch_notify_new_thread(t);
+	sch_notify_new_thread(t);
 }
 
-void __sch_notify_change_priority(
-		__thread_t * const t,
-		const __priority_t original_priority)
+void sch_notify_change_priority(
+		thread_t * const t,
+		const priority_t original_priority)
 {
 	if ( t )
 	{
-		const __priority_t thread_priority = __thread_get_priority(t);
+		const priority_t thread_priority = thread_get_priority(t);
 
-#if defined(__PROCESS_DEBUGGING)
-		__debug_print("scheduler: change thread (%s) with priority (%d)\n", __thread_get_name(t), thread_priority);
+#if defined(PROCESS_DEBUGGING)
+		debug_print("scheduler: change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
 		/* remove it from the old list */
-		__thread_queue_t * queue = &(__sch_thread_queues[original_priority]);
-		__thread_queue_t_remove(queue, t);
+		thread_queue_t * queue = &(sch_thread_queues[original_priority]);
+		thread_queue_t_remove(queue, t);
 
 		/* add it to the new list */
-		queue = &(__sch_thread_queues[thread_priority]);
-		__thread_queue_t_push(queue, t);
+		queue = &(sch_thread_queues[thread_priority]);
+		thread_queue_t_push(queue, t);
 
-		if (!__thread_queue_t_size(__sch_active_queue))
+		if (!thread_queue_t_size(sch_active_queue))
 		{
-			__sch_current_priority = thread_priority;
+			sch_current_priority = thread_priority;
 
 			/* pop the one we're using off */
-			__queue_stack_t_pop(&__sch_queue_stack, &__sch_active_queue);
+			queue_stack_t_pop(&sch_queue_stack, &sch_active_queue);
 			/* pop the next queue off the stack - if one can't be found
 			 * perform a slow search */
-			if ( !__queue_stack_t_front(&__sch_queue_stack, &__sch_active_queue) )
+			if ( !queue_stack_t_front(&sch_queue_stack, &sch_active_queue) )
 			{
-				__sch_priority_find_next_queue(t);
+				sch_priority_find_next_queue(t);
 			}
 		}
 	}
-#if defined(__PROCESS_DEBUGGING)
-		__debug_print("scheduler: change priority, now (%d)\n", __sch_current_priority);
+#if defined(PROCESS_DEBUGGING)
+		debug_print("scheduler: change priority, now (%d)\n", sch_current_priority);
 #endif
 }
 
-void __sch_terminate_current_thread(
-		const __tgt_context_t * const context)
+void sch_terminate_current_thread(
+		const tgt_context_t * const context)
 {
-	__thread_t * thread = __sch_get_current_thread();
+	thread_t * thread = sch_get_current_thread();
 
 	if (thread)
 	{
-		__thread_set_state(thread, THREAD_TERMINATED);
-		__thread_save_context(thread, context);
-		__sch_notify_exit_thread(thread);
+		thread_set_state(thread, THREAD_TERMINATED);
+		thread_save_context(thread, context);
+		sch_notify_exit_thread(thread);
 	}
 }
 
-__thread_t * __sch_get_current_thread(void)
+thread_t * sch_get_current_thread(void)
 {
-	return __sch_current_thread;
+	return sch_current_thread;
 }
 
-void __sch_set_current_thread(__thread_t * const thread)
+void sch_set_current_thread(thread_t * const thread)
 {
 	if (thread)
 	{
-		__sch_current_thread = thread;
-		__sch_current_process = __thread_get_parent(thread);
+		sch_current_thread = thread;
+		sch_current_process = thread_get_parent(thread);
 	}
 }
 
-static void __sch_priority_find_next_queue(__thread_t * const t)
+static void sch_priority_find_next_queue(thread_t * const t)
 {
 	uint32_t size;
-	__priority_t p = __thread_get_priority(t);
-	__thread_queue_t * queue;
+	priority_t p = thread_get_priority(t);
+	thread_queue_t * queue;
 
 	/* there will always be 1 - the idle thread */
 	do
 	{
-		queue = &(__sch_thread_queues[--p]);
-		size = __thread_queue_t_size(queue);
+		queue = &(sch_thread_queues[--p]);
+		size = thread_queue_t_size(queue);
 		if ( size )
 		{
 			break;
 		}
 	} while (!size && p);
 
-	__sch_current_priority = p;
-	__sch_active_queue = queue;
-	__queue_stack_t_push(&__sch_queue_stack, __sch_active_queue);
+	sch_current_priority = p;
+	sch_active_queue = queue;
+	queue_stack_t_push(&sch_queue_stack, sch_active_queue);
 }
 
-void __sch_set_context_for_next_thread(
-		__tgt_context_t * const context)
+void sch_set_context_for_next_thread(
+		tgt_context_t * const context)
 {
-	__thread_t * const current_thread = __sch_current_thread;
+	thread_t * const current_thread = sch_current_thread;
 
-	if (__sch_active_queue)
+	if (sch_active_queue)
 	{
-		__thread_queue_t_front(__sch_active_queue, &__sch_current_thread);
+		thread_queue_t_front(sch_active_queue, &sch_current_thread);
 	}
 
 	/* once we're either back at the start or we've
 	 * selected a new thread check its running and
 	 * then use it */
-	if (__sch_current_thread)
+	if (sch_current_thread)
 	{
-		const bool_t reorder_ok = __thread_queue_t_reorder_first(__sch_active_queue);
-		__kernel_assert("re-ordering of priority queue failed", reorder_ok);
-		const __thread_state_t state = __thread_get_state(__sch_current_thread);
+		const bool_t reorder_ok = thread_queue_t_reorder_first(sch_active_queue);
+		kernel_assert("re-ordering of priority queue failed", reorder_ok);
+		const thread_state_t state = thread_get_state(sch_current_thread);
 		if (state == THREADY_READY)
 		{
-			__thread_set_state(__sch_current_thread, THREAD_RUNNING);
+			thread_set_state(sch_current_thread, THREAD_RUNNING);
 		}
 		else
 		{
-			__sch_current_thread = NULL;
+			sch_current_thread = NULL;
 		}
 	}
 
-	if (__sch_current_thread == NULL)
+	if (sch_current_thread == NULL)
 	{
-		__sch_current_thread = __kernel_get_idle_thread();
+		sch_current_thread = kernel_get_idle_thread();
 	}
 
 	// the thread changed so save the state of the previous thread
-	if (current_thread != __sch_current_thread)
+	if (current_thread != sch_current_thread)
 	{
 		// Move the thread from the running state to the ready state
-		const __thread_state_t state = __thread_get_state(current_thread);
+		const thread_state_t state = thread_get_state(current_thread);
 		if (state == THREAD_RUNNING)
 		{
-			__thread_set_state(current_thread, THREADY_READY);
+			thread_set_state(current_thread, THREADY_READY);
 		}
-		__thread_save_context(current_thread, context);
+		thread_save_context(current_thread, context);
 		// load in the state of the new thread
-        __tgt_prepare_context(context, __sch_current_thread, __sch_current_process);
+        tgt_prepare_context(context, sch_current_thread, sch_current_process);
         // update the current process after the switch
-        __sch_current_process = __thread_get_parent(__sch_current_thread);
+        sch_current_process = thread_get_parent(sch_current_thread);
 	}
 
-	__kernel_assert("Scheduler couldn't get next thread", __sch_current_thread != NULL);
+	kernel_assert("Scheduler couldn't get next thread", sch_current_thread != NULL);
 }

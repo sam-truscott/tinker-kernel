@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -14,7 +14,7 @@
 #include "kernel/devices/device_type.h"
 #include "kernel/objects/obj_pipe.h"
 
-typedef struct __intc_t __intc_t;
+typedef struct intc_t intc_t;
 
 typedef enum
 {
@@ -26,22 +26,22 @@ typedef enum
 	DEVICE_INTC,
 	/* a pipe is hanging off the pin */
 	PIPE_INTC
-} __intc_device_type;
+} intc_device_type;
 
-__intc_t * __intc_create(__mem_pool_info_t * const pool, __kernel_intc_t * const kernel_intc);
+intc_t * intc_create(mem_pool_info_t * const pool, kernel_intc_t * const kernel_intc);
 
-void __intc_delete(__intc_t * const intc);
+void intc_delete(intc_t * const intc);
 
-void __intc_add_child(__intc_t * const intc, const uint32_t cause, const __intc_t * child);
+void intc_add_child(intc_t * const intc, const uint32_t cause, const intc_t * child);
 
-void __intc_add_device(__intc_t * const intc, const uint32_t cause, const __kernel_device_t * device);
+void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_device_t * device);
 
-void __intc_add_pipe(__intc_t * const intc, const uint32_t cause, const __object_pipe_t * pipe);
+void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_t * pipe);
 
-error_t __intc_handle(const __intc_t * const intc);
+error_t intc_handle(const intc_t * const intc);
 
-error_t __intc_enable(__intc_t * const intc, const uint32_t cause);
+error_t intc_enable(intc_t * const intc, const uint32_t cause);
 
-error_t __intc_mask(__intc_t * const intc, const uint32_t cause);
+error_t intc_mask(intc_t * const intc, const uint32_t cause);
 
 #endif /* INTC_H_ */

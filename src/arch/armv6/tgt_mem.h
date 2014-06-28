@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -18,8 +18,8 @@ typedef struct tgt_mem
     uint32_t unused;
 } tgt_mem_t;
 
-typedef uint32_t __ppc32_pteg_t;
+typedef uint32_t ppc32_pteg_t;
 
-typedef __ppc32_pteg_t* tgt_pg_tbl_t;
+typedef ppc32_pteg_t* tgt_pg_tbl_t;
 
 #endif /* TGT_MEM_H_ */

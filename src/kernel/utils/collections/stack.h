@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -26,14 +26,14 @@
 	typedef struct STACK_T\
 	{ \
 		STACK_T##_list_t * list; \
-	} STACK_T##__internal; \
+	} STACK_T##internal; \
 	\
 
 #define STACK_SPEC_INITIALISE(PREFIX, STACK_T, ITEM_T) \
-	PREFIX void STACK_T##_initialise(STACK_T * const stack, __mem_pool_info_t * const pool); \
+	PREFIX void STACK_T##_initialise(STACK_T * const stack, mem_pool_info_t * const pool); \
 		UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, STACK_T##_list_t, ITEM_T)
 #define STACK_SPEC_CREATE(PREFIX, STACK_T, ITEM_T) \
-	PREFIX STACK_T * STACK_T##_create(__mem_pool_info_t * const pool); \
+	PREFIX STACK_T * STACK_T##_create(mem_pool_info_t * const pool); \
 		UNBOUNDED_LIST_SPEC_CREATE(PREFIX, STACK_T##_list_t, ITEM_T)
 #define STACK_SPEC_DELETE(PREFIX, STACK_T, ITEM_T) \
 	PREFIX void STACK_T##_delete(STACK_T * const stack); \
@@ -60,7 +60,7 @@
 	UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, STACK_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_BODY_CREATE(PREFIX, STACK_T##_list_t, ITEM_T) \
 	\
-	PREFIX void STACK_T##_initialise(STACK_T * const stack, __mem_pool_info_t * const pool) \
+	PREFIX void STACK_T##_initialise(STACK_T * const stack, mem_pool_info_t * const pool) \
 	{ \
 		if (stack) \
 		{ \
@@ -69,12 +69,12 @@
 	}
 #define STACK_BODY_CREATE(PREFIX, STACK_T, ITEM_T) \
 	\
-	PREFIX STACK_T * STACK_T##_create(__mem_pool_info_t * const pool) \
+	PREFIX STACK_T * STACK_T##_create(mem_pool_info_t * const pool) \
 	{ \
 		STACK_T * stack = NULL; \
 		if (pool) \
 		{ \
-			stack = (STACK_T*)__mem_alloc(pool, sizeof(STACK_T)); \
+			stack = (STACK_T*)mem_alloc(pool, sizeof(STACK_T)); \
 			STACK_T##_initialise(stack, pool); \
 		} \
 		return stack; \
@@ -91,7 +91,7 @@
 			{ \
 				STACK_T##_list_t_delete(stack->list);\
 			} \
-			__mem_free(stack->list->pool, stack); \
+			mem_free(stack->list->pool, stack); \
 		} \
 	}
 #define STACK_BODY_PUSH(PREFIX, STACK_T, ITEM_T) \

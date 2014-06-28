@@ -19,31 +19,31 @@
 
 extern void kmain(void);
 
-void __kernel_main(void)
+void kernel_main(void)
 {
 	/*
 	 * The BSP will initialise everything
 	 */
-	__bsp_initialise();
+	bsp_initialise();
 
 	/*
 	 * Initialise the kernel into a known state;
 	 */
-	__debug_print("Kernel: Initialising...\n");
-	__kernel_initialise();
-	__debug_print("Kernel: Initialised OK.\n");
+	debug_print("Kernel: Initialising...\n");
+	kernel_initialise();
+	debug_print("Kernel: Initialised OK.\n");
 
 	/*
 	 * Get the BSP to configure itself
 	 */
-	__debug_print("BSP: Setting up the Board...\n");
-	__bsp_setup();
-	__debug_print("BSP: Setup Complete\n");
+	debug_print("BSP: Setting up the Board...\n");
+	bsp_setup();
+	debug_print("BSP: Setup Complete\n");
 
 	/*
 	 * Start up message(s)
 	 */
-	__debug_print("\nSystem: Up - Kernel Version: %s, Build: %d\n\n", __KERNEL_VERSION, __KERNEL_BUILD);
+	debug_print("\nSystem: Up - Kernel Version: %s, Build: %d\n\n", KERNEL_VERSION, KERNEL_BUILD);
 
 	/*
 	 * Show time; we're ready
@@ -54,17 +54,17 @@ void __kernel_main(void)
 	 * This will also perform the first call to initialise
 	 * the timer
 	 */
-	__thread_t * const idle_thread = __kernel_get_idle_thread();
-	__kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
-	__sch_set_current_thread(idle_thread);
+	thread_t * const idle_thread = kernel_get_idle_thread();
+	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
+	sch_set_current_thread(idle_thread);
 
 	kmain();
 
-#if defined (__KERNEL_SHELL1)
-	__proc_create_thread(
-			__thread_get_parent(idle_thread),
+#if defined (KERNEL_SHELL1)
+	proc_create_thread(
+			thread_get_parent(idle_thread),
 			"kshell",
-			__kshell_start,
+			kshell_start,
 			1,
 			0x1000,
 			0,
@@ -72,6 +72,6 @@ void __kernel_main(void)
 			NULL);
 #endif /* HAS_CONSOLE */
 
-	__tgt_enter_usermode();
+	tgt_enter_usermode();
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }

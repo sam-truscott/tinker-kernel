@@ -6,28 +6,28 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-.global __ppc_set_msr
-__ppc_set_msr:
+.global ppc_set_msr
+ppc_set_msr:
     mtmsr %r3
     blr
 
-.global __ppc_get_msr
-__ppc_get_msr:
+.global ppc_get_msr
+ppc_get_msr:
     mfmsr %r3
     blr
 
-.global __ppc_get_srr0
-__ppc_get_srr0:
+.global ppc_get_srr0
+ppc_get_srr0:
     mfsrr0 %r3
     blr
 
-.global __ppc_get_srr1
-__ppc_get_srr1:
+.global ppc_get_srr1
+ppc_get_srr1:
     mfsrr1 %r3
     blr
 
-.global __ppc_get_tbrs
-__ppc_get_tbrs:
+.global ppc_get_tbrs
+ppc_get_tbrs:
     loop:
     mftbu   %r10
     mftbl   %r11
@@ -38,31 +38,31 @@ __ppc_get_tbrs:
     stw     %r10, 0(%r4)
     blr
 
-.global __ppc_set_tbr
-__ppc_set_tbr:
+.global ppc_set_tbr
+ppc_set_tbr:
     mttbu %r3
     mttbl %r4
     blr
 
-.global __ppc_set_decrementer
-__ppc_set_decrementer:
+.global ppc_set_decrementer
+ppc_set_decrementer:
     mtdec   %r3
     blr
 
-.global __tgt_get_stack_pointer
-__tgt_get_stack_pointer:
+.global tgt_get_stack_pointer
+tgt_get_stack_pointer:
     mr  %r3, %r1
     blr
 
-     .global __tgt_enable_external_interrupts
- __tgt_enable_external_interrupts:
+     .global tgt_enable_external_interrupts
+ tgt_enable_external_interrupts:
     mfmsr   %r10
     oris    %r10,    %r10,    0x8
     mtmsr   %r10
     blr
 
-.global __tgt_disable_external_interrupts
-__tgt_disable_external_interrupts:
+.global tgt_disable_external_interrupts
+tgt_disable_external_interrupts:
     mfmsr   %r10
     lis     %r11,    0x8
     not     %r11,    %r11
@@ -70,17 +70,17 @@ __tgt_disable_external_interrupts:
     mtmsr   %r10
     blr
 
-.global __ppc_set_instruction_breakpoint
-__ppc_set_instruction_breakpoint:
+.global ppc_set_instruction_breakpoint
+ppc_set_instruction_breakpoint:
     mtspr 1010, %r3
     blr
 
-.global __ppc_set_data_breakpoint
-__ppc_set_data_breakpoint:
+.global ppc_set_data_breakpoint
+ppc_set_data_breakpoint:
     mtspr 1013, %r3
     blr
 
-.global __ppc_get_dsisr
-__ppc_get_dsisr:
+.global ppc_get_dsisr
+ppc_get_dsisr:
     mfdsisr %r3
     blr

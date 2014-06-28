@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -13,24 +13,24 @@
 #include "kernel/objects/object.h"
 #include "kernel/process/process.h"
 
-typedef struct __object_timer_t __object_timer_t;
+typedef struct object_timer_t object_timer_t;
 
-__object_timer_t * __obj_cast_timer(__object_t * const o);
+object_timer_t * obj_cast_timer(object_t * const o);
 
-object_number_t __obj_timer_get_oid
-	(const __object_timer_t * const o);
+object_number_t obj_timer_get_oid
+	(const object_timer_t * const o);
 
-error_t __obj_create_timer(
-		__process_t * const process,
+error_t obj_create_timer(
+		process_t * const process,
 		object_number_t * objectno,
-		const __priority_t priority,
+		const priority_t priority,
 		const uint32_t seconds,
 		const uint32_t nanoseconds,
 		tinker_timer_callback_t * const callback,
 		const void* parameter);
 
-error_t __obj_cancel_timer(__object_timer_t * const timer);
+error_t obj_cancel_timer(object_timer_t * const timer);
 
-error_t __obj_delete_timer(__object_timer_t * const timer);
+error_t obj_delete_timer(object_timer_t * const timer);
 
 #endif /* OBJ_TIMER_H_ */

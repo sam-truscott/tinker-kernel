@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -11,6 +11,6 @@
 
 #include "tinker_api.h"
 
-void __util_memcpy(void * dst, const void * src, const uint32_t size);
+void util_memcpy(void * dst, const void * src, const uint32_t size);
 
 #endif /* I_MEMCPY_H_ */

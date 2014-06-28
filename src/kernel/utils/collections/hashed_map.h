@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -60,7 +60,7 @@
  *
  */
 
-#define HASH_MAP_DEBUG __debug_print
+#define HASH_MAP_DEBUG debug_print
 
 #define HASH_MAP_TYPE_T(HASH_MAP_T) \
 	\
@@ -68,9 +68,9 @@
 
 #define HASH_MAP_INTERNAL_TYPE_T(HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY, BUCKET_SIZE) \
 	\
-	typedef bool_t(HASH_MAP_T##__hash_key_equal)(const KEY_T l, const KEY_T r); \
+	typedef bool_t(HASH_MAP_T##hash_key_equal)(const KEY_T l, const KEY_T r); \
 	\
-	typedef int32_t(HASH_MAP_T##__hash_create_hash)(const void * const data, const uint32_t size);\
+	typedef int32_t(HASH_MAP_T##hash_create_hash)(const void * const data, const uint32_t size);\
 	\
 	typedef struct HASH_MAP_T##_entry \
 	{ \
@@ -87,9 +87,9 @@
 	{ \
 		uint32_t size; \
 		HASH_MAP_T##_bucket_t * buckets[MAP_CAPACITY/BUCKET_SIZE]; \
-		HASH_MAP_T##__hash_create_hash * hashing_algorithm; \
-		HASH_MAP_T##__hash_key_equal * key_equal; \
-		__mem_pool_info_t * pool; \
+		HASH_MAP_T##hash_create_hash * hashing_algorithm; \
+		HASH_MAP_T##hash_key_equal * key_equal; \
+		mem_pool_info_t * pool; \
 		bool_t key_is_value; \
 	} HASH_MAP_T##_internal_t;\
 	\
@@ -98,7 +98,7 @@
 	\
 	static void HASH_MAP_T##_copy_key(HASH_MAP_T##_entry_t * const e, const KEY_T r) \
 	{ \
-		__util_memcpy(&e->key, &r, sizeof(KEY_T)); \
+		util_memcpy(&e->key, &r, sizeof(KEY_T)); \
 	} \
 	\
 	static inline int32_t HASH_MAP_T##_hash(const HASH_MAP_T * const map, const KEY_T key) \
@@ -115,7 +115,7 @@
 	\
 	static void HASH_MAP_T##_copy_key(HASH_MAP_T##_entry_t * const e, const KEY_T r) \
 	{ \
-		__util_memcpy(e->key, r, sizeof(KEY_T)); \
+		util_memcpy(e->key, r, sizeof(KEY_T)); \
 	} \
 	\
 	static inline int32_t HASH_MAP_T##_hash(const HASH_MAP_T * const map, const KEY_T key) \
@@ -132,17 +132,17 @@
 	\
 	PREFIX void HASH_MAP_T##_initialise( \
 			HASH_MAP_T * const map, \
-			HASH_MAP_T##__hash_create_hash * const hashing_algorithm, \
-			HASH_MAP_T##__hash_key_equal * const hash_key_equal, \
+			HASH_MAP_T##hash_create_hash * const hashing_algorithm, \
+			HASH_MAP_T##hash_key_equal * const hash_key_equal, \
 			const bool_t key_is_value, \
-			__mem_pool_info_t * const pool);
+			mem_pool_info_t * const pool);
 #define HASH_MAP_SPEC_CREATE(PREFIX, HASH_MAP_T) \
 	\
 	PREFIX HASH_MAP_T * HASH_MAP_T##_create( \
-			HASH_MAP_T##__hash_create_hash * const hashing_algorithm, \
-			HASH_MAP_T##__hash_key_equal * const hash_key_equal, \
+			HASH_MAP_T##hash_create_hash * const hashing_algorithm, \
+			HASH_MAP_T##hash_key_equal * const hash_key_equal, \
 			const bool_t key_is_value, \
-			__mem_pool_info_t * const pool);
+			mem_pool_info_t * const pool);
 #define HASH_MAP_SPEC_DELETE(PREFIX, HASH_MAP_T) \
 	\
 	PREFIX void HASH_MAP_T##_delete(HASH_MAP_T * const map);
@@ -172,10 +172,10 @@
 	 */ \
 	PREFIX void HASH_MAP_T##_initialise( \
 			HASH_MAP_T * const map, \
-			HASH_MAP_T##__hash_create_hash * const hashing_algorithm, \
-			HASH_MAP_T##__hash_key_equal * const hash_key_equal, \
+			HASH_MAP_T##hash_create_hash * const hashing_algorithm, \
+			HASH_MAP_T##hash_key_equal * const hash_key_equal, \
 			const bool_t key_is_value, \
-			__mem_pool_info_t * const pool) \
+			mem_pool_info_t * const pool) \
 	{ \
 		map->size = 0; \
 		map->hashing_algorithm = hashing_algorithm; \
@@ -194,12 +194,12 @@
 	 * if the allocation failed.
 	 */ \
 	PREFIX HASH_MAP_T * HASH_MAP_T##_create( \
-			HASH_MAP_T##__hash_create_hash * const hashing_algorithm, \
-			HASH_MAP_T##__hash_key_equal * const hash_key_equal, \
+			HASH_MAP_T##hash_create_hash * const hashing_algorithm, \
+			HASH_MAP_T##hash_key_equal * const hash_key_equal, \
 			const bool_t key_is_value, \
-			__mem_pool_info_t * const pool) \
+			mem_pool_info_t * const pool) \
 	{ \
-		HASH_MAP_T * const new_map = __mem_alloc(pool, sizeof(HASH_MAP_T)); \
+		HASH_MAP_T * const new_map = mem_alloc(pool, sizeof(HASH_MAP_T)); \
 		if (new_map) \
 		{ \
 			HASH_MAP_T##_initialise(new_map, hashing_algorithm, hash_key_equal, key_is_value, pool); \
@@ -216,13 +216,13 @@
 		{ \
 			if (map->buckets[i]) \
 			{ \
-				__kernel_panic(); \
+				kernel_panic(); \
 			} \
 		} \
 		\
 		if (map && map->pool) \
 		{ \
-			__mem_free (map->pool, map); \
+			mem_free (map->pool, map); \
 		} \
 	}
 #define HASH_MAP_BODY_GET(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, BUCKET_SIZE) \
@@ -269,7 +269,7 @@
 			if (!map->buckets[index]) \
 			{ \
 				map->buckets[index] = \
-					__mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
+					mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
 				HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
 				memset(bucket, 0, sizeof(HASH_MAP_T##_bucket_t)); \
 			} \
@@ -282,7 +282,7 @@
 					if (!bucket->entries[i]) \
 					{ \
 						HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, i); \
-						bucket->entries[i] = __mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
+						bucket->entries[i] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
 						memset(bucket->entries[i], 0, sizeof(HASH_MAP_T##_entry_t)); \
 						HASH_MAP_T##_copy_key(bucket->entries[i], key); \
 						bucket->entries[i]->value = value; \
@@ -331,7 +331,7 @@
 						 HASH_MAP_DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i); \
 						 ok = true; \
 						 map->size--; \
-						 __mem_free(map->pool, bucket->entries[i]); \
+						 mem_free(map->pool, bucket->entries[i]); \
 						 bucket->entries[i] = NULL; \
 						 c--; \
 					 } \
@@ -340,7 +340,7 @@
 			 if (!c) \
 			 { \
 				 HASH_MAP_DEBUG("hashed_map: bucket %d is empty, removing it\n", index); \
-				 __mem_free(map->pool, bucket); \
+				 mem_free(map->pool, bucket); \
 				 map->buckets[index] = NULL; \
 			 } \
 			 else \

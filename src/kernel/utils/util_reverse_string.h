@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -11,6 +11,6 @@
 
 #include "tinker_api.h"
 
-void __util_reverse_string(const char * src, const uint32_t src_length, char * dst);
+void util_reverse_string(const char * src, const uint32_t src_length, char * dst);
 
 #endif /* UTIL_REVERSE_STRING_H_ */

@@ -8,11 +8,11 @@
  */
 #include "util_reverse_string.h"
 
-void __util_reverse_string(const char * src, const uint32_t src_length, char * dst)
+void util_reverse_string(const char * src, const uint32_t src_length, char * dst)
 {
 	for ( uint32_t p = 0 ; p < src_length ; p++ )
 	{
 		dst[p] = src[src_length-p-1];
 	}
 }
-#pragma weak __util_reverse_string
+#pragma weak util_reverse_string

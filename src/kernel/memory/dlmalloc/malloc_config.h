@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -17,7 +17,7 @@
 
 #undef DEBUG
 #define ABORT_ON_ASSERT_FAILURE 1
-#define MALLOC_FAILURE_ACTION __kernel_panic()
+#define MALLOC_FAILURE_ACTION kernel_panic()
 
 #define LACKS_UNISTD_H 1
 #define LACKS_FCNTL_H 1
@@ -31,7 +31,7 @@
 #define LACKS_SCHED_H 1
 #define LACKS_TIME_H 1
 
-#define ABORT __kernel_panic()
+#define ABORT kernel_panic()
 #define EINVAL PARAMETERS_INVALID
 #define ENOMEM OUT_OF_MEMORY
 #define malloc_getpagesize MMU_PAGE_SIZE

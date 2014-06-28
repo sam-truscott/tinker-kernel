@@ -15,21 +15,21 @@
 /**
  * the primary memory pool i.e. RAM
  */
-static __mem_pool_info_t *__mem_memory_pool = NULL;
+static mem_pool_info_t *mem_memory_pool = NULL;
 
-__mem_pool_info_t * __mem_get_default_pool(void)
+mem_pool_info_t * mem_get_default_pool(void)
 {
-	return __mem_memory_pool;
+	return mem_memory_pool;
 }
 
-bool_t __mem_initialise(
+bool_t mem_initialise(
 		const uint32_t start,
 		const uint32_t end)
 {
-	bool_t ret =  __mem_init_memory_pool(
+	bool_t ret =  mem_init_memory_pool(
 		start,
 		end - start,
-		(&__mem_memory_pool));
+		(&mem_memory_pool));
 
 	return ret;
 }

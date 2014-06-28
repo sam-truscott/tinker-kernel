@@ -8,7 +8,7 @@
  */
  
 /* http://www.redhat.com/docs/manuals/enterprise/RHEL-4-Manual/gnu-linker/memory.html */
-ENTRY (__kernel_start)
+ENTRY (kernel_start)
 
 __VECTOR_SIZE = 0xF00;
 __VECTOR_STACK_SIZE = 0x1000;

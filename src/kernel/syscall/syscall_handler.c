@@ -28,44 +28,44 @@
 
 #define MAX_SYSCALL_ARGS 7
 
-static inline object_number_t __syscall_get_thread_oid(const __thread_t * const thread)
+static inline object_number_t syscall_get_thread_oid(const thread_t * const thread)
 {
-	return __thread_get_object_no(thread);
+	return thread_get_object_no(thread);
 }
 
-static inline __object_thread_t * __syscall_get_thread_object(const __thread_t * const thread)
+static inline object_thread_t * syscall_get_thread_object(const thread_t * const thread)
 {
-	const __process_t * const proc =  __thread_get_parent(thread);
-	const __object_table_t * const table = __process_get_object_table(proc);
-	return (__object_thread_t*)__obj_get_object(table, __syscall_get_thread_oid(thread));
+	const process_t * const proc =  thread_get_parent(thread);
+	const object_table_t * const table = process_get_object_table(proc);
+	return (object_thread_t*)obj_get_object(table, syscall_get_thread_oid(thread));
 }
 
-static error_t __syscall_delete_object(
+static error_t syscall_delete_object(
 		const object_number_t obj_no)
 {
-	return __obj_remove_object(
-			__process_get_object_table(
-					__thread_get_parent(__sch_get_current_thread())),
+	return obj_remove_object(
+			process_get_object_table(
+					thread_get_parent(sch_get_current_thread())),
 					obj_no);
 }
 
-static error_t __syscall_get_sema(
-		const __thread_t * const thread,
+static error_t syscall_get_sema(
+		const thread_t * const thread,
 		const object_number_t sema_no,
-		__object_sema_t ** sema)
+		object_sema_t ** sema)
 {
 	error_t ret = UNKNOWN_ERROR;
 
-	const __object_table_t * const table =
-			__process_get_object_table(__thread_get_parent(__sch_get_current_thread()));
+	const object_table_t * const table =
+			process_get_object_table(thread_get_parent(sch_get_current_thread()));
 
-	__object_thread_t * const thread_obj = __syscall_get_thread_object(thread);
+	object_thread_t * const thread_obj = syscall_get_thread_object(thread);
 	if (table && thread_obj)
 	{
-		__object_t * const possible_sema = __obj_get_object(table,sema_no);
+		object_t * const possible_sema = obj_get_object(table,sema_no);
 		if (possible_sema)
 		{
-			__object_sema_t * const sema_obj = __obj_cast_semaphore(possible_sema);
+			object_sema_t * const sema_obj = obj_cast_semaphore(possible_sema);
 			if (sema_obj)
 			{
 				*sema = sema_obj;
@@ -88,19 +88,19 @@ static error_t __syscall_get_sema(
 	return ret;
 }
 
-void __syscall_handle_system_call(__tgt_context_t * const context)
+void syscall_handle_system_call(tgt_context_t * const context)
 {
-	__syscall_function_t api = (__syscall_function_t)__tgt_get_syscall_param(context, 0);
+	syscall_function_t api = (syscall_function_t)tgt_get_syscall_param(context, 0);
 	error_t ret = UNKNOWN_ERROR;
 	uint32_t param[MAX_SYSCALL_ARGS];
-	param[0] = __tgt_get_syscall_param(context, 1);
-	param[1] = __tgt_get_syscall_param(context, 2);
-	param[2] = __tgt_get_syscall_param(context, 3);
-	param[3] = __tgt_get_syscall_param(context, 4);
-	param[4] = __tgt_get_syscall_param(context, 5);
-	param[5] = __tgt_get_syscall_param(context, 6);
-	param[6] = __tgt_get_syscall_param(context, 7);
-	__thread_t * const this_thread = __sch_get_current_thread();
+	param[0] = tgt_get_syscall_param(context, 1);
+	param[1] = tgt_get_syscall_param(context, 2);
+	param[2] = tgt_get_syscall_param(context, 3);
+	param[3] = tgt_get_syscall_param(context, 4);
+	param[4] = tgt_get_syscall_param(context, 5);
+	param[5] = tgt_get_syscall_param(context, 6);
+	param[6] = tgt_get_syscall_param(context, 7);
+	thread_t * const this_thread = sch_get_current_thread();
 
 	/* This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
@@ -109,7 +109,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	{
 		if (param[i] >= VIRTUAL_ADDRESS_SPACE)
 		{
-			param[i] = __process_virt_to_real(__thread_get_parent(this_thread), param[i]);
+			param[i] = process_virt_to_real(thread_get_parent(this_thread), param[i]);
 		}
 	}
 
@@ -121,27 +121,27 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	{
 		case SYSCALL_CREATE_PROCESS:
 			{
-				__process_t * process;
-				ret = __proc_create_process(
+				process_t * process;
+				ret = proc_create_process(
 						(const char *)param[0],
 						"main",
 						(thread_entry_point*)(param[1]),
 						(const uint8_t)param[2],
 						(const tinker_meminfo_t* const)param[3],
 						(uint32_t)param[4],
-						(__process_t **)&process);
-				*((object_number_t*)param[5]) = __process_get_oid(process);
+						(process_t **)&process);
+				*((object_number_t*)param[5]) = process_get_oid(process);
 			}
 			break;
 
 		case SYSCALL_CREATE_THREAD:
 			{
-				__process_t * process;
-				__thread_t * thread;
+				process_t * process;
+				thread_t * thread;
 
-				process = __thread_get_parent(this_thread);
+				process = thread_get_parent(this_thread);
 
-				ret = __proc_create_thread(
+				ret = proc_create_thread(
 						process,
 						(const char*)param[0],
 						(thread_entry_point*)(param[1]),
@@ -149,8 +149,8 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 						(const uint32_t)param[3],
 						(uint32_t)param[4],
 						NULL,
-						(__thread_t **)&thread);
-				*((object_number_t*)param[5]) = __thread_get_object_no(thread);
+						(thread_t **)&thread);
+				*((object_number_t*)param[5]) = thread_get_object_no(thread);
 			}
 			break;
 
@@ -159,8 +159,8 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			const char * const msg = (const char * const)param[0];
 			if (msg)
 			{
-				__print_time();
-				__print_out(msg);
+				print_time();
+				print_out(msg);
 			}
 		}
 			break;
@@ -168,23 +168,23 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_THREAD_PRIORITY:
 			{
 				object_number_t thread_no = (object_number_t)param[0];
-				__priority_t * priority = (__priority_t*)param[1];
+				priority_t * priority = (priority_t*)param[1];
 				if ( thread_no && priority)
 				{
-					__object_table_t * table = NULL;
-					__object_t * obj = NULL;
-					__object_thread_t * thread_obj = NULL;
+					object_table_t * table = NULL;
+					object_t * obj = NULL;
+					object_thread_t * thread_obj = NULL;
 
-					table = __process_get_object_table(__thread_get_parent(this_thread));
+					table = process_get_object_table(thread_get_parent(this_thread));
 
-					obj = __obj_get_object(table, thread_no);
+					obj = obj_get_object(table, thread_no);
 					if (obj)
 					{
-						thread_obj = __obj_cast_thread(obj);
+						thread_obj = obj_cast_thread(obj);
 					}
 					if (thread_obj)
 					{
-						ret = __obj_get_thread_priority(thread_obj, priority);
+						ret = obj_get_thread_priority(thread_obj, priority);
 					}
 					else
 					{
@@ -200,7 +200,7 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_THREAD_OBJECT:
 			{
-				const object_number_t objno = __syscall_get_thread_oid(this_thread);
+				const object_number_t objno = syscall_get_thread_oid(this_thread);
 				*((object_number_t*)param[0]) = objno;
 				ret = NO_ERROR;
 			}
@@ -208,21 +208,21 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_EXIT_THREAD:
 			{
-				__object_thread_t * const thread_obj =__syscall_get_thread_object(this_thread);
+				object_thread_t * const thread_obj =syscall_get_thread_object(this_thread);
 				if (thread_obj)
 				{
-					__process_t * const parent = __thread_get_parent(this_thread);
-					const __object_table_t * const table =
-							__process_get_object_table(parent);
+					process_t * const parent = thread_get_parent(this_thread);
+					const object_table_t * const table =
+							process_get_object_table(parent);
 
-					__object_process_t * const proc_obj =
-							__obj_cast_process(
-								__obj_get_object(table,
-									__process_get_oid(parent)));
+					object_process_t * const proc_obj =
+							obj_cast_process(
+								obj_get_object(table,
+									process_get_oid(parent)));
 
 					if (proc_obj)
 					{
-						ret = __obj_process_thread_exit(proc_obj, thread_obj);
+						ret = obj_process_thread_exit(proc_obj, thread_obj);
 					}
 				}
 			}
@@ -233,10 +233,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			{
 				if (this_thread)
 				{
-					__process_t * const proc = __thread_get_parent(this_thread);
+					process_t * const proc = thread_get_parent(this_thread);
 					if (proc)
 					{
-						ret = __obj_create_semaphore(
+						ret = obj_create_semaphore(
 								proc,
 								(object_number_t*)param[0],
 								(char*)param[1],
@@ -258,10 +258,10 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_OPEN_SEMAPHORE:
 			if (this_thread)
 			{
-				__process_t * const proc = __thread_get_parent(this_thread);
+				process_t * const proc = thread_get_parent(this_thread);
 				if (proc)
 				{
-					ret = __obj_open_semaphore(proc, (object_number_t*)param[0],(char*)param[1]);
+					ret = obj_open_semaphore(proc, (object_number_t*)param[0],(char*)param[1]);
 				}
 				else
 				{
@@ -277,14 +277,14 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_GET_SEMAPHORE:
 		{
-			__object_thread_t * const thread_obj = __syscall_get_thread_object(this_thread);
-			__object_sema_t * sema_obj;
+			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
+			object_sema_t * sema_obj;
 
-			ret = __syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
+			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
 
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
-				ret = __obj_get_semaphore( thread_obj, sema_obj);
+				ret = obj_get_semaphore( thread_obj, sema_obj);
 			}
 			else
 			{
@@ -295,35 +295,35 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		}
 		case SYSCALL_RELEASE_SEMAPHORE:
 		{
-			__object_thread_t * const thread_obj = __syscall_get_thread_object(this_thread);
-			__object_sema_t * sema_obj = NULL;
+			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
+			object_sema_t * sema_obj = NULL;
 
-			ret = __syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
+			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
 
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
-				ret = __obj_release_semaphore( thread_obj, sema_obj);
+				ret = obj_release_semaphore( thread_obj, sema_obj);
 			}
 			break;
 		}
 		case SYSCALL_CLOSE_SEMAPHORE:
 		{
-			__object_sema_t * sema_obj = NULL;
+			object_sema_t * sema_obj = NULL;
 
-			ret = __syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
+			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj)
 			{
-				ret = __object_delete_semaphore(sema_obj);
+				ret = object_delete_semaphore(sema_obj);
 				if (ret == NO_ERROR)
 				{
-					ret = __syscall_delete_object((object_number_t)param[0]);
+					ret = syscall_delete_object((object_number_t)param[0]);
 				}
 			}
 			break;
 		}
 		case SYSCALL_CREATE_PIPE:
-			ret = __obj_create_pipe(
-					__thread_get_parent(this_thread),
+			ret = obj_create_pipe(
+					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(const char*)param[1],
 					(const tinker_pipe_direction_t)param[2],
@@ -332,23 +332,23 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_DELETE_PIPE:
 		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(this_thread));
-			__object_pipe_t * const pipe = __obj_cast_pipe(
-					__obj_get_object(
+			object_table_t * table = NULL;
+			table = process_get_object_table(thread_get_parent(this_thread));
+			object_pipe_t * const pipe = obj_cast_pipe(
+					obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			ret = __obj_delete_pipe(pipe);
+			ret = obj_delete_pipe(pipe);
 			if (ret == NO_ERROR)
 			{
-				ret = __syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object((object_number_t)param[0]);
 			}
 		}
 			break;
 		case SYSCALL_OPEN_PIPE:
-			ret = __object_open_pipe(
-					__thread_get_parent(this_thread),
-					__syscall_get_thread_object(this_thread),
+			ret = object_open_pipe(
+					thread_get_parent(this_thread),
+					syscall_get_thread_object(this_thread),
 					(object_number_t*)param[0],
 					(const char*)param[1],
 					(const tinker_pipe_direction_t)param[2],
@@ -357,32 +357,32 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_CLOSE_PIPE:
 		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(this_thread));
-			__object_pipe_t * const pipe = __obj_cast_pipe(
-					__obj_get_object(
+			object_table_t * table = NULL;
+			table = process_get_object_table(thread_get_parent(this_thread));
+			object_pipe_t * const pipe = obj_cast_pipe(
+					obj_get_object(
 							table,
 							(object_number_t)param[0]));
 			// FIXME This will release memory but isn't right,
 			// close needs to remove the item from the senders list etc
-			ret = __obj_delete_pipe(pipe);
+			ret = obj_delete_pipe(pipe);
 			if (ret == NO_ERROR)
 			{
-				ret = __syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object((object_number_t)param[0]);
 			}
 		}
 			break;
 		case SYSCALL_SEND_MESSAGE:
 		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(this_thread));
-			__object_pipe_t * const pipe = __obj_cast_pipe(
-					__obj_get_object(
+			object_table_t * table = NULL;
+			table = process_get_object_table(thread_get_parent(this_thread));
+			object_pipe_t * const pipe = obj_cast_pipe(
+					obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			ret = __obj_pipe_send_message(
+			ret = obj_pipe_send_message(
 					pipe,
-					__syscall_get_thread_object(this_thread),
+					syscall_get_thread_object(this_thread),
 					(tinker_pipe_send_kind_t)param[1],
 					(void*)param[2],
 					(const uint32_t)param[3],
@@ -391,25 +391,25 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_RECEIVE_MESSAGE:
 		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(this_thread));
-			__object_pipe_t * const pipe = __obj_cast_pipe(
-					__obj_get_object(
+			object_table_t * table = NULL;
+			table = process_get_object_table(thread_get_parent(this_thread));
+			object_pipe_t * const pipe = obj_cast_pipe(
+					obj_get_object(
 							table,
 							(object_number_t)param[0]));
 
 			uint8_t ** msg = (uint8_t**)param[1];
 			uint32_t * msg_size = (uint32_t*)param[2];
-			ret = __obj_pipe_receive_message(
+			ret = obj_pipe_receive_message(
 					pipe,
-					__syscall_get_thread_object(this_thread),
+					syscall_get_thread_object(this_thread),
 					(void**)msg,
 					msg_size,
 					(const bool_t)param[3]);
 
-			const uint32_t pool_start = __mem_get_start_addr(
-					__process_get_mem_pool(
-							__thread_get_parent(this_thread)));
+			const uint32_t pool_start = mem_get_start_addr(
+					process_get_mem_pool(
+							thread_get_parent(this_thread)));
 			*msg += VIRTUAL_ADDRESS_SPACE;
 			*msg -= pool_start;
 			msg_size += VIRTUAL_ADDRESS_SPACE;
@@ -418,27 +418,27 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_RECEIVED_MESSAGE:
 		{
-			__object_table_t * table = NULL;
-			table = __process_get_object_table(__thread_get_parent(this_thread));
-			__object_pipe_t * const pipe = __obj_cast_pipe(
-					__obj_get_object(
+			object_table_t * table = NULL;
+			table = process_get_object_table(thread_get_parent(this_thread));
+			object_pipe_t * const pipe = obj_cast_pipe(
+					obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			ret = __obj_pipe_received_message(pipe);
+			ret = obj_pipe_received_message(pipe);
 		}
 			break;
 
 		case SYSCALL_CREATE_SHM:
-			ret = __obj_create_shm(
-					__thread_get_parent(this_thread),
+			ret = obj_create_shm(
+					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(char*)param[1],
 					(uint32_t)param[2],
 					(void**)param[3]);
 			break;
 		case SYSCALL_OPEN_SHM:
-			ret = __obj_open_shm(
-					__thread_get_parent(this_thread),
+			ret = obj_open_shm(
+					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(char*)param[1],
 					(uint32_t)param[2],
@@ -447,25 +447,25 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 
 		case SYSCALL_DESTROY_SHM:
 		{
-			__object_table_t * const table =
-					__process_get_object_table(
-							__thread_get_parent(this_thread));
-			__object_shm_t * const shm = __obj_cast_shm(
-					(__object_t *)__obj_get_object(
+			object_table_t * const table =
+					process_get_object_table(
+							thread_get_parent(this_thread));
+			object_shm_t * const shm = obj_cast_shm(
+					(object_t *)obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			ret = __obj_delete_shm(shm);
+			ret = obj_delete_shm(shm);
 			if (ret == NO_ERROR)
 			{
-				ret = __syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object((object_number_t)param[0]);
 			}
 			break;
 		}
 		case SYSCALL_CREATE_TIMER:
-			ret = __obj_create_timer(
-					__thread_get_parent(this_thread),
+			ret = obj_create_timer(
+					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
-					(const __priority_t)param[1],
+					(const priority_t)param[1],
 					(const uint32_t)param[2],
 					(const uint32_t)param[3],
 					(tinker_timer_callback_t*)param[4],
@@ -473,36 +473,36 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 			break;
 		case SYSCALL_CANCEL_TIMER:
 		{
-			__object_table_t * const table =
-					__process_get_object_table(
-							__thread_get_parent(this_thread));
-			__object_timer_t * const timer = __obj_cast_timer(
-					(__object_t *)__obj_get_object(
+			object_table_t * const table =
+					process_get_object_table(
+							thread_get_parent(this_thread));
+			object_timer_t * const timer = obj_cast_timer(
+					(object_t *)obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			ret = __obj_cancel_timer(timer);
+			ret = obj_cancel_timer(timer);
 			break;
 		}
 		case SYSCALL_DELETE_TIMER:
 		{
-			__object_table_t * const table =
-					__process_get_object_table(
-							__thread_get_parent(this_thread));
-			__object_timer_t * const timer = __obj_cast_timer(
-					(__object_t *)__obj_get_object(
+			object_table_t * const table =
+					process_get_object_table(
+							thread_get_parent(this_thread));
+			object_timer_t * const timer = obj_cast_timer(
+					(object_t *)obj_get_object(
 							table,
 							(object_number_t)param[0]));
-			ret = __obj_delete_timer(timer);
+			ret = obj_delete_timer(timer);
 			if (ret == NO_ERROR)
 			{
-				ret = __syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object((object_number_t)param[0]);
 			}
 			break;
 		}
 		case SYSCALL_GET_TIME:
 			if (param[0])
 			{
-				__time_get_system_time(((tinker_time_t*)param[0]));
+				time_get_system_time(((tinker_time_t*)param[0]));
 				ret = NO_ERROR;
 			}
 			else
@@ -513,12 +513,12 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 		case SYSCALL_SLEEP:
 		{
 			const tinker_time_t * const duration = (const tinker_time_t*)param[0];
-			__object_thread_t * const thread_obj =__syscall_get_thread_object(this_thread);
-			ret = __obj_thread_sleep(thread_obj, duration);
+			object_thread_t * const thread_obj =syscall_get_thread_object(this_thread);
+			ret = obj_thread_sleep(thread_obj, duration);
 		}
 		break;
 		case SYSCALL_LOAD_THREAD:
-			__tgt_prepare_context(context, this_thread, NULL);
+			tgt_prepare_context(context, this_thread, NULL);
 			break;
 
 		default:
@@ -531,21 +531,21 @@ void __syscall_handle_system_call(__tgt_context_t * const context)
 	 * if the exception occurs just after the system call has been made. */
 	if (api != SYSCALL_LOAD_THREAD)
 	{
-		__tgt_set_syscall_return(context, ret);
+		tgt_set_syscall_return(context, ret);
 	}
 	else
 	{
-		__bsp_enable_schedule_timer();
+		bsp_enable_schedule_timer();
 	}
 
 	/*
 	 * If the thread has been un-scheduled we need to switch process
 	 */
-	const __thread_state_t state = __thread_get_state(this_thread);
+	const thread_state_t state = thread_get_state(this_thread);
 	if ( (state != THREAD_SYSTEM) &&
 		 (state != THREAD_RUNNING) )
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
-		__sch_set_context_for_next_thread(context);
+		sch_set_context_for_next_thread(context);
 	}
 }

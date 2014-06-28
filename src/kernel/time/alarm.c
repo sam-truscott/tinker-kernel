@@ -11,23 +11,23 @@
 
 #include "kernel/time/time.h"
 
-typedef struct __alarm_t
+typedef struct alarm_t
 {
 	uint32_t 			id;
-	__alarm_call_back *	call_back;
+	alarm_call_back *	call_back;
 	void * 				usr_data;
 	tinker_time_t			alarm_time;
-	__mem_pool_info_t * pool;
-} __alarm_internal_t;
+	mem_pool_info_t * pool;
+} alarm_internal_t;
 
-__alarm_t * __alarm_create(
-		__mem_pool_info_t * const pool,
+alarm_t * alarm_create(
+		mem_pool_info_t * const pool,
 		const uint32_t id,
 		tinker_time_t * const alarm_time,
-		__alarm_call_back * const callback,
-		const __alarm_user_data_t user_data)
+		alarm_call_back * const callback,
+		const alarm_user_data_t user_data)
 {
-	__alarm_t * const alarm = (__alarm_t*)__mem_alloc(pool, sizeof(__alarm_t));
+	alarm_t * const alarm = (alarm_t*)mem_alloc(pool, sizeof(alarm_t));
 	if (alarm)
 	{
 		alarm->id = id;
@@ -39,15 +39,15 @@ __alarm_t * __alarm_create(
 	return alarm;
 }
 
-void __alarm_delete(__alarm_t * const alarm)
+void alarm_delete(alarm_t * const alarm)
 {
 	if (alarm)
 	{
-		__mem_free(alarm->pool, alarm);
+		mem_free(alarm->pool, alarm);
 	}
 }
 
-const tinker_time_t* __alarm_get_time(const __alarm_t * const alarm)
+const tinker_time_t* alarm_get_time(const alarm_t * const alarm)
 {
 	const tinker_time_t * t = NULL;
 	if (alarm)
@@ -57,7 +57,7 @@ const tinker_time_t* __alarm_get_time(const __alarm_t * const alarm)
 	return t;
 }
 
-void __alarm_fire_callback(const __alarm_t * const alarm)
+void alarm_fire_callback(const alarm_t * const alarm)
 {
 	alarm->call_back(alarm->id, alarm->usr_data);
 }

@@ -15,37 +15,37 @@
 #include "kernel/utils/util_strlen.h"
 #include "tinker_api_kernel_interface.h"
 
-typedef struct __thread_t
+typedef struct thread_t
 {
 	uint32_t			thread_id;
 	void 				* stack;
 	uint32_t			r_stack_base;
 	uint32_t			v_stack_base;
 	uint32_t			stack_size;
-	__priority_t			priority;
+	priority_t			priority;
 	uint32_t			flags;
-	__process_t 		*	parent;
-	__thread_state_t	state;
-	const __object_t *	waiting_on;
+	process_t 		*	parent;
+	thread_state_t	state;
+	const object_t *	waiting_on;
 	thread_entry_point * 	entry_point;
 	object_number_t		object_number;
-	__tgt_context_t		* context;
-	char 				name[__MAX_THREAD_NAME_LEN + 1];
-} __thread_internal_t;
+	tgt_context_t		* context;
+	char 				name[MAX_THREAD_NAME_LEN + 1];
+} thread_internal_t;
 
-static void __thread_end(void) __attribute__((section(".api")));
+static void thread_end(void) __attribute__((section(".api")));
 
-static void __thread_setup_stack(__thread_t * const thread)
+static void thread_setup_stack(thread_t * const thread)
 {
 	const uint32_t stack_size = thread->stack_size;
 	const uint32_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
 	uint32_t vsp;
 
-	if ( !__process_is_kernel(thread->parent) )
+	if ( !process_is_kernel(thread->parent) )
 	{
 		vsp = VIRTUAL_ADDRESS_SPACE
 				+ (((uint32_t)thread->stack
-						- __mem_get_start_addr(__process_get_mem_pool(thread->parent)))
+						- mem_get_start_addr(process_get_mem_pool(thread->parent)))
 						+ stack_size - 12);
 	}
 	else
@@ -56,26 +56,26 @@ static void __thread_setup_stack(__thread_t * const thread)
 	thread->v_stack_base = vsp;
 }
 
-__thread_t * __thread_create(
-		__mem_pool_info_t * const pool,
-		const __fwd_process_t * const parent,
-		const __priority_t priority,
+thread_t * thread_create(
+		mem_pool_info_t * const pool,
+		const fwd_process_t * const parent,
+		const priority_t priority,
 		thread_entry_point * entry_point,
 		const uint32_t flags,
 		const uint32_t stack,
 		const char * const name)
 {
-	__thread_t * const thread = __mem_alloc(pool, sizeof(__thread_t));
+	thread_t * const thread = mem_alloc(pool, sizeof(thread_t));
 	if (thread)
 	{
-		thread->parent = (__process_t*)parent;
+		thread->parent = (process_t*)parent;
 		thread->thread_id = 0;
 		thread->priority = priority;
 		thread->entry_point = entry_point;
 		thread->flags = flags;
-		thread->stack = __mem_alloc_aligned(pool, stack, MMU_PAGE_SIZE);
-		const uint32_t length = __util_strlen(name, __MAX_THREAD_NAME_LEN);
-		__util_memcpy(thread->name, name, length);
+		thread->stack = mem_alloc_aligned(pool, stack, MMU_PAGE_SIZE);
+		const uint32_t length = util_strlen(name, MAX_THREAD_NAME_LEN);
+		util_memcpy(thread->name, name, length);
 		thread->name[length] = '\0';
 		if (thread->stack)
 		{
@@ -85,12 +85,12 @@ __thread_t * __thread_create(
 			 * We need to ensure that the context information
 			 * is configured properly
 			 */
-			__thread_setup_stack(thread);
-			__tgt_initialise_context(
+			thread_setup_stack(thread);
+			tgt_initialise_context(
 					thread,
 					&thread->context,
-					__process_is_kernel(thread->parent),
-					(const uint32_t)__thread_end);
+					process_is_kernel(thread->parent),
+					(const uint32_t)thread_end);
 		}
 		else
 		{
@@ -101,142 +101,142 @@ __thread_t * __thread_create(
 	return thread;
 }
 
-uint32_t __thread_get_tid(const __thread_t * const thread)
+uint32_t thread_get_tid(const thread_t * const thread)
 {
 	return thread->thread_id;
 }
 
-const char * __thread_get_name(const __thread_t * const thread)
+const char * thread_get_name(const thread_t * const thread)
 {
 	return thread->name;
 }
 
-void __thread_set_tid(
-		__thread_t * const thread,
+void thread_set_tid(
+		thread_t * const thread,
 		const uint32_t tid)
 {
 	thread->thread_id = tid;
 }
 
-void __thread_set_oid(
-		__thread_t * const thread,
+void thread_set_oid(
+		thread_t * const thread,
 		const object_number_t oid)
 {
 	thread->object_number = oid;
 }
 
-__priority_t __thread_get_priority(
-		const __thread_t * const thread)
+priority_t thread_get_priority(
+		const thread_t * const thread)
 {
 	return thread->priority;
 }
 
-void __thread_set_priority(
-		__thread_t * const thread,
-		const __priority_t priority)
+void thread_set_priority(
+		thread_t * const thread,
+		const priority_t priority)
 {
 	thread->priority = priority;
 }
 
-__process_t * __thread_get_parent(
-		const __thread_t * const thread)
+process_t * thread_get_parent(
+		const thread_t * const thread)
 {
 	return thread->parent;
 }
 
-__thread_state_t __thread_get_state(
-		const __thread_t * const thread)
+thread_state_t thread_get_state(
+		const thread_t * const thread)
 {
 	return thread->state;
 }
 
-void __thread_set_state(
-		__thread_t * const thread,
-		const __thread_state_t new_state)
+void thread_set_state(
+		thread_t * const thread,
+		const thread_state_t new_state)
 {
 	thread->state = new_state;
 }
 
-void __thread_load_context(
-		const __thread_t * const thread,
-		__tgt_context_t * const context)
+void thread_load_context(
+		const thread_t * const thread,
+		tgt_context_t * const context)
 {
-	__tgt_load_context(thread->context, context);
+	tgt_load_context(thread->context, context);
 }
 
-void __thread_save_context(
-		__thread_t * const thread,
-		const __tgt_context_t * const context)
+void thread_save_context(
+		thread_t * const thread,
+		const tgt_context_t * const context)
 {
-	__tgt_save_context(thread->context, context);
+	tgt_save_context(thread->context, context);
 }
 
-void __thread_set_context_param(
-		__thread_t * const thread,
+void thread_set_context_param(
+		thread_t * const thread,
 		const uint8_t index,
 		const uint32_t parameter)
 {
-	__tgt_set_context_param(thread->context, index, parameter);
+	tgt_set_context_param(thread->context, index, parameter);
 }
 
-object_number_t __thread_get_object_no(
-		const __thread_t * const thread)
+object_number_t thread_get_object_no(
+		const thread_t * const thread)
 {
 	return thread->object_number;
 }
 
-uint32_t __thread_get_virt_stack_base(
-		const __thread_t * const thread)
+uint32_t thread_get_virt_stack_base(
+		const thread_t * const thread)
 {
 	return thread->v_stack_base;
 }
 
-thread_entry_point * __thread_get_entry_point(
-		const __thread_t * const thread)
+thread_entry_point * thread_get_entry_point(
+		const thread_t * const thread)
 {
 	return thread->entry_point;
 }
 
-uint32_t __thread_get_flags(
-		const __thread_t * const thread)
+uint32_t thread_get_flags(
+		const thread_t * const thread)
 {
 	return thread->flags;
 }
 
 
-const __object_t * __thread_get_waiting_on(
-		const __thread_t * const thread)
+const object_t * thread_get_waiting_on(
+		const thread_t * const thread)
 {
 	return thread->waiting_on;
 }
 
-void __thread_set_waiting_on(
-		__thread_t * const thread,
-		const __object_t * const object)
+void thread_set_waiting_on(
+		thread_t * const thread,
+		const object_t * const object)
 {
 	thread->waiting_on = object;
 }
 
-uint32_t __thread_get_stack_size(const __thread_t * const thread)
+uint32_t thread_get_stack_size(const thread_t * const thread)
 {
 	return thread->stack_size;
 }
 
-void __thread_exit(__thread_t * const thread)
+void thread_exit(thread_t * const thread)
 {
-	__mem_pool_info_t * const pool = __process_get_mem_pool(thread->parent);
+	mem_pool_info_t * const pool = process_get_mem_pool(thread->parent);
 
 	// stack
-	__mem_free(pool, thread->stack);
+	mem_free(pool, thread->stack);
 	thread->stack = NULL;
 	// contact
-	__tgt_destroy_context(pool, thread->context);
+	tgt_destroy_context(pool, thread->context);
 	thread->context = NULL;
 	// thread itself
-	__mem_free(pool, thread);
+	mem_free(pool, thread);
 }
 
-static void __thread_end(void)
+static void thread_end(void)
 {
 	TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
 }

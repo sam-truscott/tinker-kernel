@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -15,18 +15,18 @@
 /**
  * Initialise the time manager
  */
-void __time_initialise(void);
+void time_initialise(void);
 
 /**
  * Set the device to be used as the system clock
  * @param device The device to use as the system clock
  */
-void __time_set_system_clock(__clock_device_t * const device);
+void time_set_system_clock(clock_device_t * const device);
 
 /**
  * Get the current time of the system
  * @return The time since power-up
  */
-void __time_get_system_time(tinker_time_t * const time);
+void time_get_system_time(tinker_time_t * const time);
 
 #endif /* CLOCK_MANAGER_H_ */

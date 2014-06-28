@@ -11,22 +11,22 @@
 #include "kernel/console/print_out.h"
 
 #pragma GCC optimize ("-O0") // easier to debug release build
-static uint32_t __kernel_idle_check(uint32_t count)
+static uint32_t kernel_idle_check(uint32_t count)
 {
 	if ( count % 200000 == 0)
 	{
-		__debug_print("IDLE\n");
+		debug_print("IDLE\n");
 	}
 	return count;
 }
 
-void __kernel_idle(void)
+void kernel_idle(void)
 {
 	const uint32_t testing_a = 0x55AA55AA;
 	uint32_t count = 0;
 	while( 1 != 2 && testing_a)
 	{
 		count++;
-		count = __kernel_idle_check(count);
+		count = kernel_idle_check(count);
 	}
 }

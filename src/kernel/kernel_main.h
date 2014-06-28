@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -14,6 +14,6 @@
 /**
  * Start up the Kernel
  */
-void __kernel_main(void);
+void kernel_main(void);
 
 #endif /* KERNEL_MAIN_H_ */

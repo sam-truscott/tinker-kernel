@@ -21,7 +21,7 @@
 .long FLAGS
 .long CHECKSUM
 
-.global __kernel_start
-__kernel_start:
-    bla     __kernel_boot
+.global kernel_start
+kernel_start:
+    bla     kernel_boot
     blr

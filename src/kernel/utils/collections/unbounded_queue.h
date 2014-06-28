@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -36,11 +36,11 @@
 	UNBOUNDED_LIST_SPEC_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, __mem_pool_info_t * const pool); \
+	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, mem_pool_info_t * const pool); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_CREATE(PREFIX, QUEUE_T, ITEM_T) \
-	PREFIX QUEUE_T * QUEUE_T##_create(__mem_pool_info_t * const pool); \
+	PREFIX QUEUE_T * QUEUE_T##_create(mem_pool_info_t * const pool); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_DELETE(PREFIX, QUEUE_T, ITEM_T) \
@@ -61,7 +61,7 @@
 	\
 	UNBOUNDED_LIST_SPEC_REMOVE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * const queue) __attribute((used)); \
+	PREFIX bool_t QUEUE_T##_pop(QUEUE_T * const queue) __attribute__((used)); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_FRONT(PREFIX, QUEUE_T, ITEM_T) \
@@ -97,7 +97,7 @@
 	UNBOUNDED_LIST_BODY_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
-	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, __mem_pool_info_t * const pool) \
+	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, mem_pool_info_t * const pool) \
 	{ \
 		if (queue) \
 		{ \
@@ -107,13 +107,13 @@
 	\
 
 #define UNBOUNDED_QUEUE_BODY_CREATE(PREFIX, QUEUE_T, ITEM_T) \
-	PREFIX QUEUE_T * QUEUE_T##_create(__mem_pool_info_t * const pool) \
+	PREFIX QUEUE_T * QUEUE_T##_create(mem_pool_info_t * const pool) \
 	{ \
 		QUEUE_T * queue = NULL; \
 		\
 		if (pool) \
 		{ \
-			queue = (QUEUE_T*)__mem_alloc(pool, sizeof(QUEUE_T)); \
+			queue = (QUEUE_T*)mem_alloc(pool, sizeof(QUEUE_T)); \
 			if (queue) \
 			{ \
 				QUEUE_T##_initialise(queue, pool); \
@@ -134,9 +134,9 @@
 		{ \
 			if (queue->list) \
 			{ \
-				__mem_pool_info_t * const pool = queue->list->pool; \
+				mem_pool_info_t * const pool = queue->list->pool; \
 				QUEUE_T##_list_t_delete(queue->list);\
-				__mem_free(pool, queue); \
+				mem_free(pool, queue); \
 			} \
 		} \
 	} \

@@ -12,7 +12,7 @@
 
 #define MAX_HASH_KEY_LEN 255
 
-int32_t __hash_basic_integer(const void * ptr, const uint32_t size)
+int32_t hash_basic_integer(const void * ptr, const uint32_t size)
 {
 	int32_t hash;
 	switch(size)
@@ -33,7 +33,7 @@ int32_t __hash_basic_integer(const void * ptr, const uint32_t size)
 	return hash;
 }
 
-int32_t __hash_basic_string(const void * ptr, const uint32_t size)
+int32_t hash_basic_string(const void * ptr, const uint32_t size)
 {
 	int32_t h = 0;
 	int32_t off = 0;
@@ -46,12 +46,12 @@ int32_t __hash_basic_string(const void * ptr, const uint32_t size)
 	return h;
 }
 
-bool_t __hash_equal_integer(const uint32_t l, const uint32_t r)
+bool_t hash_equal_integer(const uint32_t l, const uint32_t r)
 {
 	return (l == r);
 }
 
-bool_t __hash_equal_string(const char * const l, const char * const r)
+bool_t hash_equal_string(const char * const l, const char * const r)
 {
-	return __util_streq(l, r, MAX_HASH_KEY_LEN);
+	return util_streq(l, r, MAX_HASH_KEY_LEN);
 }

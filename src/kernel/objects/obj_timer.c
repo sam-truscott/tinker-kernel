@@ -17,34 +17,34 @@
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/process/process_manager.h"
 
-typedef struct __object_timer_t
+typedef struct object_timer_t
 {
-	__object_internal_t object;
-	__mem_pool_info_t * pool;
+	object_internal_t object;
+	mem_pool_info_t * pool;
 	tinker_timer_callback_t * callback;
 	tinker_timeout_time_t timeout;
 	const void * parameter;
 	uint32_t alarm_id;
-	__thread_t * callback_thread;
-	__object_thread_t * thread_obj;
-} __object_timer_internal_t;
+	thread_t * callback_thread;
+	object_thread_t * thread_obj;
+} object_timer_internal_t;
 
-__object_timer_t * __obj_cast_timer(__object_t * const o)
+object_timer_t * obj_cast_timer(object_t * const o)
 {
-	__object_timer_t * timer = NULL;
+	object_timer_t * timer = NULL;
 	if (o)
 	{
-		const __object_timer_t * const tmp = (__object_timer_t*)o;
+		const object_timer_t * const tmp = (object_timer_t*)o;
 		if (tmp->object.type == TIMER_OBJ)
 		{
-			timer = (__object_timer_t*)tmp;
+			timer = (object_timer_t*)tmp;
 		}
 	}
 	return timer;
 }
 
-object_number_t __obj_timer_get_oid
-	(const __object_timer_t * const o)
+object_number_t obj_timer_get_oid
+	(const object_timer_t * const o)
 {
 	object_number_t oid = INVALID_OBJECT_ID;
 	if (o)
@@ -54,8 +54,8 @@ object_number_t __obj_timer_get_oid
 	return oid;
 }
 
-static void __obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
-static void __obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
+static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
+static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 {
 	if (t)
 	{
@@ -63,27 +63,27 @@ static void __obj_timer_thread(tinker_timer_callback_t * const t, const void * p
 	}
 }
 
-static void __obj_timer_timeout(
+static void obj_timer_timeout(
 		const uint32_t alarm_id,
 		void * const usr_data)
 {
-	__object_timer_t * const timer = (__object_timer_t*)usr_data;
+	object_timer_t * const timer = (object_timer_t*)usr_data;
 	if (timer && alarm_id == timer->alarm_id)
 	{
-		__thread_set_state(timer->callback_thread, THREADY_READY);
-		__thread_set_waiting_on(timer->callback_thread, NULL);
-		__sch_notify_resume_thread(timer->callback_thread);
-		__thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
-		__thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
+		thread_set_state(timer->callback_thread, THREADY_READY);
+		thread_set_waiting_on(timer->callback_thread, NULL);
+		sch_notify_resume_thread(timer->callback_thread);
+		thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
+		thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
 		timer->callback = NULL;
-		__alarm_unset_alarm(alarm_id);
+		alarm_unset_alarm(alarm_id);
 	}
 }
 
-error_t __obj_create_timer(
-		__process_t * const process,
+error_t obj_create_timer(
+		process_t * const process,
 		object_number_t * objectno,
-		const __priority_t priority,
+		const priority_t priority,
 		const uint32_t seconds,
 		const uint32_t nanoseconds,
 		tinker_timer_callback_t * const callback,
@@ -92,30 +92,30 @@ error_t __obj_create_timer(
 	error_t result = NO_ERROR;
 	if (process && objectno && (seconds || nanoseconds) && callback)
 	{
-		__object_table_t * const table = __process_get_object_table(process);
-		__mem_pool_info_t * const pool = __process_get_mem_pool(process);
-		__object_timer_t * const no = (__object_timer_t*)__mem_alloc(pool, sizeof(__object_timer_t));
+		object_table_t * const table = process_get_object_table(process);
+		mem_pool_info_t * const pool = process_get_mem_pool(process);
+		object_timer_t * const no = (object_timer_t*)mem_alloc(pool, sizeof(object_timer_t));
 		if (no)
 		{
 			object_number_t objno;
-			result = __obj_add_object(table, (__object_t*)no, &objno);
+			result = obj_add_object(table, (object_t*)no, &objno);
 			if (result == NO_ERROR)
 			{
-				result = __proc_create_thread(
+				result = proc_create_thread(
 						process,
 						"timer",
-						(thread_entry_point*)&__obj_timer_thread,
+						(thread_entry_point*)&obj_timer_thread,
 						priority,
-						__TIMER_STACK_SIZE,
+						TIMER_STACK_SIZE,
 						THREAD_FLAG_TIMER,
-						(__object_t**)&no->thread_obj,
+						(object_t**)&no->thread_obj,
 						&no->callback_thread);
 				if (result == NO_ERROR)
 				{
-					__thread_set_state(no->callback_thread, THREAD_WAITING);
-					__thread_set_waiting_on(no->callback_thread, (__object_t*)no);
-					__obj_initialise_object(&no->object, objno, TIMER_OBJ);
-					__sch_notify_pause_thread(no->callback_thread);
+					thread_set_state(no->callback_thread, THREAD_WAITING);
+					thread_set_waiting_on(no->callback_thread, (object_t*)no);
+					obj_initialise_object(&no->object, objno, TIMER_OBJ);
+					sch_notify_pause_thread(no->callback_thread);
 					no->timeout.seconds = seconds;
 					no->timeout.nanoseconds = nanoseconds;
 					no->callback = callback;
@@ -126,10 +126,10 @@ error_t __obj_create_timer(
 							.seconds = seconds,
 							.nanoseconds = nanoseconds
 					};
-					result = __alarm_set_alarm(
+					result = alarm_set_alarm(
 							pool,
 							&timeout,
-							__obj_timer_timeout,
+							obj_timer_timeout,
 							no,
 							&no->alarm_id);
 				}
@@ -140,7 +140,7 @@ error_t __obj_create_timer(
 			}
 			else
 			{
-				__mem_free(pool, no);
+				mem_free(pool, no);
 			}
 		}
 		else
@@ -155,36 +155,36 @@ error_t __obj_create_timer(
 	return result;
 }
 
-static void __obj_timer_delete_thread(__object_timer_t * const timer)
+static void obj_timer_delete_thread(object_timer_t * const timer)
 {
-	__thread_t * const thread = __obj_get_thread(timer->thread_obj);
-	const __thread_state_t state = __thread_get_state(thread);
-	const object_number_t oid = __obj_thread_get_oid(timer->thread_obj);
+	thread_t * const thread = obj_get_thread(timer->thread_obj);
+	const thread_state_t state = thread_get_state(thread);
+	const object_number_t oid = obj_thread_get_oid(timer->thread_obj);
 
 	if (state != THREAD_TERMINATED && state != THREAD_NOT_CREATED)
 	{
-		__sch_notify_exit_thread(thread);
+		sch_notify_exit_thread(thread);
 	}
-	__process_thread_exit(__thread_get_parent(thread), thread);
-	__obj_exit_thread(timer->thread_obj);
+	process_thread_exit(thread_get_parent(thread), thread);
+	obj_exit_thread(timer->thread_obj);
 
-	__obj_remove_object(
-			__process_get_object_table(
-					__thread_get_parent(timer->callback_thread)),
+	obj_remove_object(
+			process_get_object_table(
+					thread_get_parent(timer->callback_thread)),
 			oid);
 }
 
-error_t __obj_cancel_timer(__object_timer_t * const timer)
+error_t obj_cancel_timer(object_timer_t * const timer)
 {
 	error_t result = NO_ERROR;
 	if (timer)
 	{
 		if (timer->callback)
 		{
-			__alarm_unset_alarm(timer->alarm_id);
+			alarm_unset_alarm(timer->alarm_id);
 			timer->alarm_id = 0;
 			timer->callback = 0;
-			__obj_timer_delete_thread(timer);
+			obj_timer_delete_thread(timer);
 		}
 		else
 		{
@@ -198,18 +198,18 @@ error_t __obj_cancel_timer(__object_timer_t * const timer)
 	return result;
 }
 
-error_t __obj_delete_timer(__object_timer_t * const timer)
+error_t obj_delete_timer(object_timer_t * const timer)
 {
 	error_t result = NO_ERROR;
 	if (timer)
 	{
 		if (timer->callback)
 		{
-			__alarm_unset_alarm(timer->alarm_id);
+			alarm_unset_alarm(timer->alarm_id);
 			timer->alarm_id = 0;
-			__obj_timer_delete_thread(timer);
+			obj_timer_delete_thread(timer);
 		}
-		__mem_free(timer->pool, timer);
+		mem_free(timer->pool, timer);
 		timer->alarm_id = 0;
 	}
 	else

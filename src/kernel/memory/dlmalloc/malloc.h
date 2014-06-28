@@ -25,7 +25,7 @@
 
 #include "malloc_config.h"
 
-#ifdef __cplusplus
+#ifdef cplusplus
 extern "C" {
 #endif
 
@@ -613,7 +613,7 @@ void mspace_inspect_all(mspace msp,
                         void* arg);
 #endif  /* MSPACES */
 
-#ifdef __cplusplus
+#ifdef cplusplus
 };  /* end of extern "C" */
 #endif
 

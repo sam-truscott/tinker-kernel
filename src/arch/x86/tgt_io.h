@@ -1,7 +1,7 @@
 /*
  *
  * TINKER Source Code
- * __________________
+ * 
  *
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
@@ -11,32 +11,32 @@
 
 #include "tgt_ints.h"
 
-#define __out_(N,T) \
-	static inline void __out_##N(T * const addr, const T const value) \
+#define out_(N,T) \
+	static inline void out_##N(T * const addr, const T const value) \
 	{ \
 		*((volatile T *)(addr)) = value; \
 		asm volatile ("" : : : "memory"); \
 	}
 
 
-#define __in_(N,T) \
-	static inline T __in_##N(const T * const addr) \
+#define in_(N,T) \
+	static inline T in_##N(const T * const addr) \
 	{ \
 		asm volatile ("" : : : "memory"); \
 		return *((volatile T*)(addr)); \
 	}
 
-__out_(u8, uint8_t)
-__out_(s8, int8_t)
-__out_(u16, uint16_t)
-__out_(s16, int16_t)
-__out_(u32, uint32_t)
-__out_(s32, int32_t)
-__in_(u8, uint8_t)
-__in_(s8, int8_t)
-__in_(u16, uint16_t)
-__in_(s16, int16_t)
-__in_(u32, uint32_t)
-__in_(s32, int32_t)
+out_(u8, uint8_t)
+out_(s8, int8_t)
+out_(u16, uint16_t)
+out_(s16, int16_t)
+out_(u32, uint32_t)
+out_(s32, int32_t)
+in_(u8, uint8_t)
+in_(s8, int8_t)
+in_(u16, uint16_t)
+in_(s16, int16_t)
+in_(u32, uint32_t)
+in_(s32, int32_t)
 
 #endif /* TGT_IO_H_ */
