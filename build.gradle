@@ -1,5 +1,5 @@
-apply plugin: 'c'
 apply plugin: 'assembler'
+apply plugin: 'c'
 
 model {
     buildTypes {
@@ -30,6 +30,11 @@ model {
             addPlatformConfiguration(new PowerPcSupport())
         }
         gccX86(Gcc) {
+            getCppCompiler().setExecutable 'i686-elf-gcc'
+            getCCompiler().setExecutable 'i686-elf-gcc'
+            getAssembler().setExecutable 'i686-elf-as'
+            getLinker().setExecutable 'i686-elf-gcc'
+            getStaticLibArchiver().setExecutable 'i686-elf-ar'
             addPlatformConfiguration(new X86Support())
         }
     }
@@ -192,10 +197,6 @@ sources {
     archX86 {
         c {
             lib libraries.base.static
-            source {
-                srcDirs "src/arch/x86"
-                include "*.c"
-            }
             exportedHeaders {
                 srcDir "src/arch/x86"
             }
@@ -273,7 +274,7 @@ sources {
             lib libraries.boot.static    // boot c code into kernel
             lib libraries.core.static    // the core kernel
             source {
-                srcDirs "src/tinker"
+                srcDirs "src/tinker", "src/arch/x86"
                 include "**/*.c"
             }
         }

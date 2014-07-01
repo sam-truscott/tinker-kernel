@@ -10,28 +10,42 @@
 /* http://www.redhat.com/docs/manuals/enterprise/RHEL-4-Manual/gnu-linker/memory.html */
 ENTRY (__kernel_start)
 
-__VECTOR_SIZE = 0xF00;
-__VECTOR_STACK_SIZE = 0x1000;
-
 MEMORY 
 {
 	RAM : ORIGIN = 0x00000000, LENGTH = 0x8000000 /* 128MB */
 }
 
 SECTIONS{
+
+	. = 1M;
+	
+	/* code */
+    .text BLOCK(4K) : ALIGN (0x1000) {
+        ___text = .;
+    	*(.boot)
+    	. = ALIGN(4);
+        *(.text)
+        ___text_end = .;
+    }>RAM
     
-    /* interrupt vector table */
-    .ivt 0x100 (NOLOAD) : {
-        __ivt = .;
-        *(.vectors)
-        . += __VECTOR_SIZE;
-    } > RAM
+    /* code */
+    .api ALIGN (0x1000) : {
+    	___api = .;
+    	*(.api)
+    	 . = ALIGN(0x1000);
+    	 ___api_end = .;
+    }>RAM
     
-    .ivts 0x1000 (NOLOAD) : {
-        __ivts = .;
-        . += __VECTOR_STACK_SIZE;
-        __ivtse = .;
-    } > RAM
+    .utext ALIGN (0x1000) :
+    {
+        ___utext = .;
+        *(.utext)
+        . = ALIGN(0x1000);
+        ___euser_text = .;
+        ___udata = .;
+        *(.udata)
+        ___euser = ALIGN(0x1000);
+    }>RAM
     
     /* Small Block Started by Symbol */
     .sbss ALIGN (0x1000): {
@@ -42,6 +56,7 @@ SECTIONS{
     .bss ALIGN (0x1000) : {
         *(COMMON)
         *(.bss)
+        *(.bootstrap_stack)
     }>RAM
     
     /* read only data */
@@ -66,40 +81,11 @@ SECTIONS{
       	___data_end = .;
     }>RAM
     
-    /* code */
-    .api ALIGN (0x1000) : {
-    	___api = .;
-    	*(.api)
-    	 . = ALIGN(0x1000);
-    	 ___api_end = .;
-    }>RAM
-   
-	/* code */
-    .text ALIGN (0x1000) : {
-        ___text = .;
-    	*(.boot)
-    	*(.vector_code)
-    	. = ALIGN(4);
-        *(.text)
-        ___text_end = .;
-    }>RAM
-    
-    .utext ALIGN (0x1000) :
-    {
-        ___utext = .;
-        *(.utext)
-        . = ALIGN(0x1000);
-        ___euser_text = .;
-        ___udata = .;
-        *(.udata)
-        ___euser = ALIGN(0x1000);
-    }>RAM
-    
     .dynsym ALIGN (0x1000) : { *(.dynsym) }>RAM
     .dynstr ALIGN (0x1000) : { *(.dynstr) }>RAM
     .hash   ALIGN (0x1000) : { *(.hash)   }>RAM
     
     .memory_pool ALIGN (0x1000) (NOLOAD) : {
-    	end = .;
+    _end = .;
     }>RAM
 }
