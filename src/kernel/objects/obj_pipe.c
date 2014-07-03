@@ -232,7 +232,7 @@ error_t obj_create_pipe(
 					no->memory = memory;
 					no->tx_data.readers = rx_queue;
 					no->rx_data.senders = tx_queue;
-					memset(no->name, 0, sizeof(registry_key_t));
+					util_memset(no->name, 0, sizeof(registry_key_t));
 					util_memcpy(no->name, name, util_strlen(name, sizeof(registry_key_t)));
 					const rx_data_t rx_data = {
 							.senders = rx_queue,
@@ -405,7 +405,7 @@ error_t object_open_pipe(
 						no->direction = direction;
 						no->pool = pool;
 						no->memory = memory;
-						memset(no->name, 0, sizeof(registry_key_t));
+						util_memset(no->name, 0, sizeof(registry_key_t));
 						util_memcpy(no->name, name, util_strlen(name, sizeof(registry_key_t)));
 						const rx_data_t rx_data = {
 								.senders = rx_queue,

@@ -16,6 +16,7 @@
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"
 #include "x86_vga.h"
+#include "x86_clock.h"
 
 /**
  * The structure of the saved interrupt vector context
@@ -57,11 +58,17 @@ typedef struct tgt_context_t
 void bsp_initialise(void)
 {
 	x86_vga_initialise();
+	x86_vga_writestring("x86 bsp_initialise\n", 100);
+#if defined(KERNEL_DEBUGGING)
+	x86_vga_writestring("debugging enabled\n", 100);
+#endif // KERNEL_DEBUGGING
+	time_set_system_clock(x86_get_ppc_timebase_clock());
+	x86_vga_writestring("clock setup\n", 100);
 }
 
 void bsp_setup(void)
 {
-
+	x86_vga_writestring("x86 bsp_setup\n", 100);
 }
 
 void bsp_enable_schedule_timer(void)
@@ -76,19 +83,18 @@ void bsp_check_timers_and_alarms(void)
 
 uint32_t bsp_get_usable_memory_start()
 {
-	extern uint32_t end;
-	return (uint32_t)&end;
+	extern uint32_t _end;
+	return (uint32_t)&_end;
 }
 
 uint32_t bsp_get_usable_memory_end()
 {
-	/* 127 because the last 1MB is the page table */
-	return (127 * 1024 * 1024);
+	return (128 * 1024 * 1024);
 }
 
 void bsp_write_debug_char(const char c)
 {
-    (void*)c;
+	x86_vga_putchar(c);
 }
 
 char bsp_read_debug_char(void)
@@ -132,7 +138,7 @@ void tgt_initialise_context(
     {
         *context = mem_alloc(process_get_mem_pool(thread_get_parent(thread)), sizeof(tgt_context_t));
         tgt_context_t * const x86_context = *context;
-        memset(x86_context, 0, sizeof(tgt_context_t));
+        util_memset(x86_context, 0, sizeof(tgt_context_t));
         x86_context->esp =
         		x86_context->ebp = thread_get_virt_stack_base(thread);
         // TODO initialise the other registers

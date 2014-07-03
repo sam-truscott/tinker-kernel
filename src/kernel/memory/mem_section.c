@@ -35,7 +35,7 @@ mem_section_t * mem_sec_create(
 	mem_section_t * const ms = mem_alloc(pool, sizeof(mem_section_t));
 	if (ms)
 	{
-		memset(ms, 0, sizeof(mem_section_t));
+		util_memset(ms, 0, sizeof(mem_section_t));
 		ms->real_address = real_addr;
 		ms->virt_address = virt_addr;
 		ms->size = size;

@@ -21,30 +21,30 @@ SECTIONS{
 	
 	/* code */
     .text BLOCK(4K) : ALIGN (0x1000) {
-        ___text = .;
+        __text = .;
     	*(.boot)
     	. = ALIGN(4);
         *(.text)
-        ___text_end = .;
+        __text_end = .;
     }>RAM
     
     /* code */
     .api ALIGN (0x1000) : {
-    	___api = .;
+    	__api = .;
     	*(.api)
     	 . = ALIGN(0x1000);
-    	 ___api_end = .;
+    	 __api_end = .;
     }>RAM
     
     .utext ALIGN (0x1000) :
     {
-        ___utext = .;
+        __utext = .;
         *(.utext)
         . = ALIGN(0x1000);
-        ___euser_text = .;
-        ___udata = .;
+        __euser_text = .;
+        __udata = .;
         *(.udata)
-        ___euser = ALIGN(0x1000);
+        __euser = ALIGN(0x1000);
     }>RAM
     
     /* Small Block Started by Symbol */
@@ -78,7 +78,7 @@ SECTIONS{
         *(.got2)
         *(.fixup)
         . = ALIGN(0x1000);
-      	___data_end = .;
+      	__data_end = .;
     }>RAM
     
     .dynsym ALIGN (0x1000) : { *(.dynsym) }>RAM

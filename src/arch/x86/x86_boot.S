@@ -31,7 +31,7 @@ stack_top:
 __kernel_start:
 	movl $stack_top, %esp
     //cli
-    call     _kernel_boot
+    call     kernel_boot
     cli
 	hlt
 .Lhang:

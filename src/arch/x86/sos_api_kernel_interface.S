@@ -8,7 +8,7 @@
  */
 
 .section .api
-.global _TINKER_API_CALL_7
-_TINKER_API_CALL_7:
+.global TINKER_API_CALL_7
+TINKER_API_CALL_7:
     int	$0x80
     ret

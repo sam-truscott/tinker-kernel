@@ -59,7 +59,7 @@ model {
                     args << "-fno-builtin"
                     args << "-ffreestanding"
                 }
-                linker.withArguments {
+                linker.withArguments { args->
                     args << "-nostartfiles"
                     args << "-nodefaultlibs"
                     args << "-nostdlib"
@@ -219,7 +219,7 @@ sources {
     }
     binaries.all {
         if (buildType == buildTypes.debug) {
-            cCompiler.args "-O0", "-g3", "-gdwarf-4", "-D__BUILDING_KERNEL","-D__KERNEL_SHELL", "-D__KERNEL_DEBUGGING", "-D__MEMORY_DEBUGGING","-D__DEBUG_COLLECTIONS","-D__PROCESS_DEBUGGING"
+            cCompiler.args "-O0", "-g3", "-gdwarf-4", "-DBUILDING_KERNEL","-DKERNEL_SHELL", "-DKERNEL_DEBUGGING", "-DMEMORY_DEBUGGING","-DDEBUG_COLLECTIONS","-DPROCESS_DEBUGGING"
         } else if (buildType == buildTypes.release) {
             cCompiler.args "-Os", "-g0", "-gdwarf-4"
             linker.args "-s","-lgcc"

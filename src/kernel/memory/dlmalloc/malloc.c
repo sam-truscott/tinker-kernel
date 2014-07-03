@@ -4806,7 +4806,7 @@ void* dlcalloc(size_t n_elements, size_t elem_size) {
   }
   mem = dlmalloc(req);
   if (mem != 0 && calloc_must_clear(mem2chunk(mem)))
-    memset(mem, 0, req);
+    util_memset(mem, 0, req);
   return mem;
 }
 
@@ -5043,7 +5043,7 @@ static void** ialloc(mstate m,
   assert(!is_mmapped(p));
 
   if (opts & 0x2) {       /* optionally clear the elements */
-    memset((size_t*)mem, 0, remainder_size - SIZE_T_SIZE - array_size);
+    util_memset((size_t*)mem, 0, remainder_size - SIZE_T_SIZE - array_size);
   }
 
   /* If not provided, allocate the pointer array as final part of chunk */
@@ -5408,7 +5408,7 @@ static mstate init_user_mstate(char* tbase, size_t tsize) {
   mchunkptr mn;
   mchunkptr msp = align_as_chunk(tbase);
   mstate m = (mstate)(chunk2mem(msp));
-  memset(m, 0, msize);
+  util_memset(m, 0, msize);
   (void)INITIAL_LOCK(&m->mutex);
   msp->head = (msize|INUSE_BITS);
   m->seg.base = m->least_addr = tbase;
@@ -5735,7 +5735,7 @@ void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size) {
   }
   mem = internal_malloc(ms, req);
   if (mem != 0 && calloc_must_clear(mem2chunk(mem)))
-    memset(mem, 0, req);
+    util_memset(mem, 0, req);
   return mem;
 }
 

@@ -11,6 +11,6 @@
 
 #include "tinker_api.h"
 
-void * memset(void * address, const uint32_t value, const uint32_t size);
+void * util_memset(void * address, uint32_t value, uint32_t size);
 
 #endif /* I_MEMSET_H_ */

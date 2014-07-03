@@ -11,6 +11,6 @@
 
 #include "tinker_api.h"
 
-void util_memcpy(void * dst, const void * src, const uint32_t size);
+void util_memcpy(void * dst, const void * src, uint32_t size);
 
 #endif /* I_MEMCPY_H_ */

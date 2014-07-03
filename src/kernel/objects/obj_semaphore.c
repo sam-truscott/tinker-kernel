@@ -130,7 +130,7 @@ error_t obj_create_semaphore(
 					no->data.owner.owners = thread_obj_queue_t_create(pool);
 					no->data.owner.highest_priority = 0;
 					no->pool = pool;
-					memset(no->data.owner.name, 0, sizeof(no->data.owner.name));
+					util_memset(no->data.owner.name, 0, sizeof(no->data.owner.name));
 					util_memcpy(no->data.owner.name, name, util_strlen(name,MAX_SHARED_OBJECT_NAME_LENGTH));
 					regsitery_add(name, process, no->object.object_number);
 					*objectno = no->object.object_number;

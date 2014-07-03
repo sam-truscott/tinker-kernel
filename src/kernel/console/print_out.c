@@ -33,10 +33,10 @@ void print_time(void)
     tinker_time_t now = TINKER_ZERO_TIME;
 	time_get_system_time(&now);
 	char msg[20];
-	memset(msg, 0, 20);
+	util_memset(msg, 0, 20);
 	util_i_to_a(now.seconds, msg, 20);
 	print_out(msg);
-	memset(msg, 0, 20);
+	util_memset(msg, 0, 20);
 	util_i_to_a(now.nanoseconds, msg, 20);
 	print_out(".");
 	print_out(msg);
@@ -74,8 +74,8 @@ void debug_print(const char * const msg, ...)
 
 	print_time();
 
-	builtin_va_list list;
-	builtin_va_start(list, msg);
+	__builtin_va_list list;
+	__builtin_va_start(list, msg);
 	while(*ptr)
 	{
 		if(*ptr == '%')
@@ -89,7 +89,7 @@ void debug_print(const char * const msg, ...)
 		}
 		ptr++;
 	}
-	builtin_va_end(list);
+	__builtin_va_end(list);
 #else
 	if (msg) {}
 #endif

@@ -93,7 +93,7 @@ error_t regsitery_add(
 {
 	error_t ret = NO_ERROR;
 	registry_key_t key;
-	memset(key, 0, sizeof(key));
+	util_memset(key, 0, sizeof(key));
 	util_memcpy(key, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 
 	if (!registry_t_contains_key(registry, key))
@@ -147,7 +147,7 @@ error_t registry_get(
 
 	error_t ret = NO_ERROR;
 	registry_key_t key;
-	memset(key, 0, sizeof(key));
+	util_memset(key, 0, sizeof(key));
 	util_memcpy(key, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 
 	if (registry_t_contains_key(registry, key))
@@ -180,7 +180,7 @@ void registry_wait_for(
 	obj_set_thread_waiting(thread, NULL);
 
 	registry_key_t key;
-	memset(key, 0, sizeof(key));
+	util_memset(key, 0, sizeof(key));
 	util_memcpy(key, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 
 	waiting_queue_t * queue = NULL;
@@ -208,7 +208,7 @@ error_t registry_remove(const char * const name)
 	error_t ret = NO_ERROR;
 
 	registry_key_t key;
-	memset(key, 0, sizeof(key));
+	util_memset(key, 0, sizeof(key));
 	util_memcpy(key, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 
 	if (registry_t_contains_key(registry, key))

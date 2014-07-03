@@ -114,7 +114,7 @@ error_t obj_create_shm(
 						no->virt_addr = virt_addr;
 						no->client_list = shm_client_list_t_create(pool);
 						no->parent_shm = NULL;
-						memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
+						util_memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
 						util_memcpy(no->name, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 						regsitery_add(name, process, no->object.object_number);
 						*objectno = no->object.object_number;
@@ -196,7 +196,7 @@ error_t obj_open_shm(
 									no->virt_addr = virt_addr;
 									no->parent_shm = other_shm_obj;
 									shm_client_list_t_add(other_shm_obj->client_list, no);
-									memset(no->name, 0, sizeof(no->name));
+									util_memset(no->name, 0, sizeof(no->name));
 									util_memcpy(no->name, name, util_strlen(name, sizeof(name)));
 									regsitery_add(name, process, no->object.object_number);
 									*objectno = no->object.object_number;

@@ -122,7 +122,7 @@ error_t process_create(
 		p->page_table = (tgt_pg_tbl_t*)mem_alloc_aligned(p->memory_pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
 		if (p->page_table)
 		{
-		    memset(p->page_table, 0, PAGE_TABLE_SIZE);
+		    util_memset(p->page_table, 0, PAGE_TABLE_SIZE);
 		}
 		p->threads = thread_map_t_create(
 		        hash_basic_integer,
