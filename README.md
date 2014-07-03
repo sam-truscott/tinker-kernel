@@ -47,9 +47,11 @@ For example, for PowerPC use:
 
     # Windows
     gradlew releasePpc32GdbExecutable
+    gradlew releasex86Executable
     
     # Linux
     ./gradlew releasePpc32GdbExecutable
+    ./gradlew releasex86Executable
 
 loading
 =======
@@ -82,8 +84,8 @@ these are the things I need to address in a rough order:
 
 * powerpc: check page table is in rage
 * interrupts: parameters to intc_enable (priority, edge/level, active high/low etc)
-* target: ARM support
 * target: x86 support
+* target: ARM support
 * kernel: timeouts on pipe (open/read/write)
 * kernel: allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
