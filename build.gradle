@@ -6,142 +6,80 @@ model {
         debug
         release
     }
+    toolChains {
+        xgcc(Gcc) {
+            target("tinkerPpc") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "powerpc-eabi-gcc"
+                cCompiler.executable = "powerpc-eabi-gcc"
+                assembler.executable = "powerpc-eabi-as"
+                linker.executable = "powerpc-eabi-gcc"
+                staticLibArchiver.executable = "powerpc-eabi-ar"
+                cCompiler.withArguments { args ->
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/ppc32"
+                    args << "-nostdinc"
+                    args << "-mcpu=powerpc"
+                    args << "-pedantic"
+                    //args << "-pedantic-errors"
+                    args << "-Wall"
+                    args << "-Wextra"
+                    //args << "-Werror"
+                    args << "-c"
+                    args << "-fmessage-length=0"
+                    args << "-std=gnu99"
+                    args << "-fno-builtin"
+                    args << "-ffreestanding"
+                }
+                linker.withArguments { args ->
+                    args << "-nostartfiles"
+                    args << "-nodefaultlibs"
+                    args << "-nostdlib"
+                    args << "-static"
+                }
+            }
+            target("tinkerX86") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "i686-elf-gcc"
+                cCompiler.executable = "i686-elf-gcc"
+                assembler.executable = "i686-elf-as"
+                linker.executable = "i686-elf-gcc"
+                staticLibArchiver.executable = "i686-elf-ar"
+                cCompiler.withArguments { args ->
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/x86"
+                    args << "-nostdinc"
+                    args << "-march=i686"
+                    args << "-pedantic"
+                    //args << "-pedantic-errors"
+                    args << "-Wall"
+                    args << "-Wextra"
+                    //args << "-Werror"
+                    args << "-c"
+                    args << "-fmessage-length=0"
+                    args << "-std=gnu99"
+                    args << "-fno-builtin"
+                    args << "-ffreestanding"
+                }
+                linker.withArguments {
+                    args << "-nostartfiles"
+                    args << "-nodefaultlibs"
+                    args << "-nostdlib"
+                    args << "-static"
+                }
+            }
+        }
+    }
     platforms {
         tinkerArm {
             architecture "arm"
-            operatingSystem "linux"
         }
-        tinkerPowerPc {
+        tinkerPpc {
             architecture "ppc"
-            operatingSystem "linux"
         }
         tinkerX86 {
             architecture "x86"
-            operatingSystem "linux"
-        }
-    }
-    toolChains {
-        gccPowerPc(Gcc) {
-            getCppCompiler().setExecutable 'powerpc-eabi-gcc'
-            getCCompiler().setExecutable 'powerpc-eabi-gcc'
-            getAssembler().setExecutable 'powerpc-eabi-as'
-            getLinker().setExecutable 'powerpc-eabi-gcc'
-            getStaticLibArchiver().setExecutable 'powerpc-eabi-ar'
-            addPlatformConfiguration(new PowerPcSupport())
-        }
-        gccX86(Gcc) {
-            getCppCompiler().setExecutable 'i686-elf-gcc'
-            getCCompiler().setExecutable 'i686-elf-gcc'
-            getAssembler().setExecutable 'i686-elf-as'
-            getLinker().setExecutable 'i686-elf-gcc'
-            getStaticLibArchiver().setExecutable 'i686-elf-ar'
-            addPlatformConfiguration(new X86Support())
         }
     }
 }
-    class PowerPcSupport implements TargetPlatformConfiguration {
-        File srcDir = new File('src')
-
-        boolean supportsPlatform(Platform element) {
-            return element.getArchitecture().name == "ppc"
-        }
-
-        List<String> getCppCompilerArgs() {
-            []
-        }
-
-        List<String> getObjectiveCppCompilerArgs() {
-            []
-        }
-
-        List<String> getObjectiveCCompilerArgs() {
-            []
-        }
-
-        List<String> getCCompilerArgs() {
-            ["-I" + srcDir.getAbsolutePath() + "/arch/ppc32",
-             "-nostdinc",
-             "-mcpu=powerpc",
-             "-pedantic",
-             //"-pedantic-errors",
-             "-Wall",
-             "-Wextra",
-             //"-Werror",
-             "-c",
-             "-fmessage-length=0",
-             "-std=gnu99",
-             "-fno-builtin",
-             "-ffreestanding"]
-        }
-
-        List<String> getAssemblerArgs() {
-            []
-        }
-
-        List<String> getLinkerArgs() {
-            ["-nostartfiles",
-             "-nodefaultlibs",
-             "-nostdlib",
-             "-static"]
-        }
-
-        List<String> getStaticLibraryArchiverArgs() {
-            []
-        }
-    }
-
-    class X86Support implements TargetPlatformConfiguration {
-        File srcDir = new File('src')
-
-        boolean supportsPlatform(Platform element) {
-            return element.getArchitecture().name == "x86"
-        }
-
-        List<String> getCppCompilerArgs() {
-            []
-        }
-
-        List<String> getObjectiveCppCompilerArgs() {
-            []
-        }
-
-        List<String> getObjectiveCCompilerArgs() {
-		[]
-        }
-
-        List<String> getCCompilerArgs() {
-            ["-I" + srcDir.getAbsolutePath() + "/arch/x86",
-             "-nostdinc",
-             "-march=i686",
-             "-pedantic",
-             //"-pedantic-errors",
-             "-Wall",
-             "-Wextra",
-             //"-Werror",
-             "-c",
-             "-fmessage-length=0",
-             "-std=gnu99",
-             "-fno-builtin",
-             "-ffreestanding"]//,
-             //"-fleading-underscore"]
-             //"-fno-leading-underscore"]
-        }
-
-        List<String> getAssemblerArgs() {
-            []
-        }
-
-        List<String> getLinkerArgs() {
-            ["-nostartfiles",
-             "-nodefaultlibs",
-             "-nostdlib",
-             "-static"]
-        }
-
-        List<String> getStaticLibraryArchiverArgs() {
-            []
-        }
-    }
 
 libraries {
     // the core kernel
@@ -154,7 +92,7 @@ libraries {
         targetPlatforms "tinkerArm"
     }
     archPowerPc {
-        targetPlatforms "tinkerPowerPc"
+        targetPlatforms "tinkerPpc"
     }
     // the core
     core {}
@@ -176,7 +114,7 @@ executables {
         }
     }
     ppc32Gdb {
-        targetPlatforms "tinkerPowerPc"
+        targetPlatforms "tinkerPpc"
         binaries.all {
             File srcDir = new File('src')
             linker.args "-lgcc",
