@@ -34,6 +34,7 @@ be simple enough to port and possibly even verify.
 Features
 ========
 
+* Processes & Threads with a priority based pre-emptive scheduler
 * Semaphores
 * Shared Memory
 * Pipes
