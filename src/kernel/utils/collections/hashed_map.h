@@ -60,7 +60,12 @@
  *
  */
 
+#if defined (DEBUG_COLLECTIONS)
 #define HASH_MAP_DEBUG debug_print
+#else
+static inline void empty2(const char * const x, ...) {if (x){}}
+#define HASH_MAP_DEBUG empty2
+#endif
 
 #define HASH_MAP_TYPE_T(HASH_MAP_T) \
 	\

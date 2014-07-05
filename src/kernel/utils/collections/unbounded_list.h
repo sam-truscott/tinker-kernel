@@ -13,7 +13,12 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/memory/memory_manager.h"
 
+#if defined (DEBUG_COLLECTIONS)
 #define UNBOUNDED_LIST_DEBUG debug_print
+#else
+static inline void empty1(const char * const x, ...) {if (x){}}
+#define UNBOUNDED_LIST_DEBUG empty1
+#endif
 
 #define UNBOUNDED_LIST_TYPE(LIST_T) \
 	\

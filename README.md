@@ -1,43 +1,46 @@
 Tinker Micro Kernel
 ===================
 
-microkernel written in c and asm.
+Microkernel written in C and assembly.
 
-supported targets:
-- powerpc32 (gdb simulator)
+Supported targets:
+- PowerPC (gdb simulator)
 
-licence
+In development:
+x86, arm6 (Raspberry Pi)
+
+Licence
 =======
 
-gpl v3
+GPL v3
 
-overview
+Overview
 ========
 
-i've worked on & off on this microkernel for the last few years to help my understanding in operating systems.
+I've worked on & off on this microkernel for the last few years to help my understanding in operating systems.
 
-* sos1 was essentially a framebuffer - and a very broken scheduler
-* sos2 was a proper multitasking scheduler with dynamic memory support
-* sos3 was where I refactored it to be more OO and do some initial mmu work
-* tinker was renamed from sos3!
+* SOS1 was essentially a framebuffer - and a very broken scheduler
+* SOS2 was a proper multitasking scheduler with dynamic memory support
+* SOS3 was where I refactored it to be more OO and do some initial MMU work
+* Tinker was renamed from SOS3!
 
-tinker is:
-* limited
-* probably wrong
+Tinker is:
+* Limited - it's an RTOS Microkernel so that's the idea
+* In development
 
-he is my hobby. the aim is to keep it simple enough for anyone to understand and therefore also
+He is my hobby. The aim is to keep it simple enough for anyone to understand and therefore also
 be simple enough to port and possibly even verify.
 
-features
+Features
 ========
 
-* semaphores
-* shared memory
-* pipes
-* timers
-* clock
+* Semaphores
+* Shared Memory
+* Pipes
+* Timers
+* Clock
 
-building
+Building
 ========
 
 Gradle is used as the build system. It can build debug and release versions of either the parts
@@ -53,11 +56,11 @@ For example, for PowerPC use:
     ./gradlew releasePpc32GdbExecutable
     ./gradlew releasex86Executable
 
-loading
+Loading
 =======
 
-you can place user-code in sos.c for now but eventually there'll be a bootstrap that contains
-the microkernel and the required user-services to startup. the bootstrap will place the kernel
+You can place user-code in tinker.c for now but eventually there'll be a bootstrap that contains
+the microkernel and the required user-services to startup. The bootstrap will place the kernel
 and services into memory, load the kernel and then start the user-services (much like init).
 
  bootstrap
@@ -68,37 +71,37 @@ and services into memory, load the kernel and then start the user-services (much
   - service<| (i.e. tcp/ip stack)
   - service</ (i.e. hardware device driver)
   
-the intention is that the kernel is started by firmware or bootloader like u-boot.
+The intention is that the kernel is started by firmware or bootloader like u-boot.
 
-drivers
+Drivers
 =======
 
-drivers and written as userland services with mmio through the mmu.
+Drivers and written as userland services with MMIO through the MMU.
 
-the kernel bsp should only have drivers for timers and a debugging port such as a uart.
+The kernel Board Support Package (BSP) should only have drivers for timers and a debugging port such as a UART.
 
-issues / todo
+Issues / TODO
 =============
 
-these are the things I need to address in a rough order:
+These are the things I need to address in a rough order:
 
-* powerpc: check page table is in rage
-* interrupts: parameters to intc_enable (priority, edge/level, active high/low etc)
-* target: x86 support
-* target: ARM support
-* kernel: timeouts on pipe (open/read/write)
-* kernel: allow user-mode to map to real addresses (user-mode drivers)
+* PowerPC: Check page table is in rage
+* Interrupts: Parameters to intc_enable (priority, edge/level, active high/low etc)
+* Target: x86 support
+* Target: ARM support
+* Kernel: Timeouts on pipe (open/read/write)
+* Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
-* kernel: break up the syscalls into seperate static/inline functions
-* kernel: add mechanism to load elfs
-* support: create newlib port
-* support: create bootstrap for kernel + services
-* kernel: option to make pipes zero-copy via mmu (memory is already aligned)
-* kernel: review the powerpc page table code
-* all: need to review it all head to toe since refactor
-* doc: doc it with doxygen
+* Kernel: Break up the syscalls into seperate static/inline functions
+* Kernel: Add mechanism to load elfs
+* Support: Create newlib port
+* Support: Create bootstrap for kernel + services
+* Kernel: Option to make pipes zero-copy via mmu (memory is already aligned)
+* Kernel: Review the powerpc page table code
+* All: Need to review it all head to toe since refactor
+* Doc: Doc it with doxygen
 
-toolchain
+Toolchain
 =========
 
-a standard stage 1 gcc compiler will work (i.e. C compiler without libc support)
+A standard stage 1 gcc compiler will work (i.e. C compiler without libc support).
