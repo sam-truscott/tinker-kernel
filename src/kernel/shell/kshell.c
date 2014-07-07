@@ -68,11 +68,11 @@ void kshell_start(void)
 {
 	ksh_input_pointer = 0;
 	bool_t running = true;
-	while(running)
+	while (running)
 	{
 		ksh_input_buffer[ksh_input_pointer] = debug_read();
-		if ( ksh_input_buffer[ksh_input_pointer] == '\r'
-				|| ksh_input_buffer[ksh_input_pointer] == '\n' )
+		if (ksh_input_buffer[ksh_input_pointer] == '\r'
+				|| ksh_input_buffer[ksh_input_pointer] == '\n')
 		{
 			ksh_input_buffer[ksh_input_pointer] = '\0';
 			if (ksh_input_pointer)
@@ -118,9 +118,9 @@ static void kshell_execute_command(const char* command)
 
 static bool_t kshell_strcmp(const char * a, const char * b)
 {
-	const uint32_t l = util_strlen(a, 65535);
+	const uint32_t length = util_strlen(a, 65535);
 
-	if ( l != util_strlen(b, 65535) )
+	if (length != util_strlen(b, 65535))
 	{
 		return false;
 	}
@@ -128,8 +128,9 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 	uint32_t p;
 	bool_t ok = true;
 
-	for(p = 0 ; p < l && p < 65535 && ok ; p++) {
-		if ( a[p] != b[p])
+	for (p = 0 ; p < length && p < 65535 && ok ; p++)
+	{
+		if (a[p] != b[p])
 		{
 			ok = false;
 		}
@@ -149,7 +150,7 @@ static void kshell_process_list(void)
 	print_out("ProcessId\tThreads\tName\n");
 	print_out("---------\t-------\t----\n");
 
-	while( proc )
+	while (proc)
 	{
 		printp_out("\t%d", process_get_pid(proc));
 		printp_out("\t%d", process_get_thread_count(proc));
@@ -171,7 +172,7 @@ static void kshell_task_list(void)
 	list = proc_list_procs();
 	process_list_it_t_get(list, &proc);
 
-	while( proc )
+	while (proc)
 	{
 		thread_it_t * tlist = process_iterator(proc);
 		thread_t  * t = NULL;
@@ -182,7 +183,7 @@ static void kshell_task_list(void)
 		print_out("Thread ID\tStack\tPri\tState\tEntry\tName\n");
 		print_out("---------\t-----\t---\t-----\t-----\t----\n");
 
-		while ( t )
+		while (t)
 		{
 			printp_out("\t%d", thread_get_tid(t));
 			printp_out("\t0x%X", thread_get_stack_size(t));
@@ -192,7 +193,7 @@ static void kshell_task_list(void)
 			printp_out("\t%s", thread_get_name(t));
 			print_out("\n");
 
-			if ( !thread_it_t_next(tlist, &t))
+			if (!thread_it_t_next(tlist, &t))
 			{
 				t = NULL;
 			}
@@ -201,7 +202,7 @@ static void kshell_task_list(void)
 
 		thread_it_t_delete(tlist);
 
-		if ( !process_list_it_t_next(list, &proc) )
+		if (!process_list_it_t_next(list, &proc))
 		{
 			proc = NULL;
 		}
@@ -218,7 +219,7 @@ static void kshell_object_table(void)
 	list = proc_list_procs();
 	process_list_it_t_get(list, &proc);
 
-	while(proc)
+	while (proc)
 	{
 		object_table_it_t * const it = obj_iterator(process_get_object_table(proc));
 
@@ -232,14 +233,14 @@ static void kshell_object_table(void)
 
 			object_table_it_t_get(it, &obj);
 
-			while( obj )
+			while (obj)
 			{
 				object_type_t type = obj_get_type(obj);
 
 				printp_out("%d\t", obj_get_number(obj));
 				printp_out("%s\t", ksh_object_types[type]);
 
-				switch( type )
+				switch (type)
 				{
 					case UNKNOWN_OBJ:
 					case OBJECT:
@@ -263,7 +264,7 @@ static void kshell_object_table(void)
 						object_thread_t * const t = obj_cast_thread(obj);
 						if (t)
 						{
-							thread_t * thread = obj_get_thread(t);
+							thread_t * const thread = obj_get_thread(t);
 							if (thread)
 							{
 								printp_out("Tid:\t%d\t", thread_get_tid(thread));
@@ -315,7 +316,7 @@ static void kshell_object_table(void)
 			object_table_it_t_delete(it);
 		}
 
-		if ( !process_list_it_t_next(list, &proc) )
+		if (!process_list_it_t_next(list, &proc))
 		{
 			proc = NULL;
 		}

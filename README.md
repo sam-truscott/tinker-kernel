@@ -90,7 +90,7 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* PowerPC: Check page table is in range
+* Kernel: Shell should use pipes for reading I/O
 * Target: x86 support
 * Target: ARM support
 * Kernel: Timeouts on pipe (open/read/write)

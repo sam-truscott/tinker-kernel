@@ -90,7 +90,6 @@ void debug_print(const char * const msg, ...)
 		ptr++;
 	}
 	__builtin_va_end(list);
-	for (unsigned int i = 0 ; i < 90000000 ; i++){}
 #else
 	if (msg) {}
 #endif

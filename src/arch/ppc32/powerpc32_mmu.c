@@ -47,9 +47,8 @@ void ppc32_add_pte(
 		const uint32_t pte_w0,
 		const uint32_t pte_w1)
 {
-	volatile tgt_pg_tbl_t const pPteg = ppc32_get_pte(page_tbl, ea, vsid);
+	tgt_pg_tbl_t const pPteg = ppc32_get_pte(page_tbl, ea, vsid);
 
-	printp_out("ppc32_add_pte tbl=%x, ea=%x, pteg=%x\n", page_tbl, ea, pPteg);
 	if (pPteg)
 	{
 		uint8_t i;
@@ -66,10 +65,6 @@ void ppc32_add_pte(
 					asm volatile("sync");
 					mapped = true;
 					break;
-				}
-				else
-				{
-				    printp_out("pte=%d in pbl=%x had a w0=%x, pte=%x\n", i, page_tbl, pte->w0, pte);
 				}
 			}
 		}
