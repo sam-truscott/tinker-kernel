@@ -105,7 +105,7 @@ void sch_notify_new_thread(thread_t * const t)
 		thread_queue_t_push(queue, t);
 
 #if defined(PROCESS_DEBUGGING)
-		debug_print("scheduler: new thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
+		debug_print("Scheduler: New thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
 		if (thread_priority > sch_current_priority)
@@ -177,7 +177,7 @@ void sch_notify_new_thread(thread_t * const t)
 		}
 	}
 #if defined(PROCESS_DEBUGGING)
-		debug_print("scheduler: new priority, now (%d)\n", sch_current_priority);
+		debug_print("Scheduler: New priority, now (%d)\n", sch_current_priority);
 #endif
 }
 
@@ -190,7 +190,7 @@ void sch_notify_exit_thread(thread_t * const t)
 		const bool_t removed = thread_queue_t_remove(queue, t);
 
 #if defined(PROCESS_DEBUGGING)
-		debug_print("scheduler: exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
+		debug_print("Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
 		if (removed && thread_queue_t_size(sch_active_queue) == 0)
@@ -215,7 +215,7 @@ void sch_notify_exit_thread(thread_t * const t)
 		}
 	}
 #if defined(PROCESS_DEBUGGING)
-		debug_print("scheduler: exit priority, now (%d)\n", sch_current_priority);
+		debug_print("Scheduler: Exit priority, now (%d)\n", sch_current_priority);
 #endif
 }
 
@@ -238,7 +238,7 @@ void sch_notify_change_priority(
 		const priority_t thread_priority = thread_get_priority(t);
 
 #if defined(PROCESS_DEBUGGING)
-		debug_print("scheduler: change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
+		debug_print("Scheduler: Change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
 		/* remove it from the old list */
@@ -264,7 +264,7 @@ void sch_notify_change_priority(
 		}
 	}
 #if defined(PROCESS_DEBUGGING)
-		debug_print("scheduler: change priority, now (%d)\n", sch_current_priority);
+		debug_print("Scheduler: Change priority, now (%d)\n", sch_current_priority);
 #endif
 }
 

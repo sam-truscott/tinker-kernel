@@ -214,6 +214,7 @@ static void bsp_external_interrupt(
 		const uint32_t vector,
 		tgt_context_t * const context)
 {
+	// TODO use or remove
 	if (vector && context) {}
 	int_handle_external_vector();
 }

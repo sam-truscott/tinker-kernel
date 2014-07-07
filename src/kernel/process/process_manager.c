@@ -88,13 +88,12 @@ error_t proc_create_process(
 	if (curr_thread == NULL)
 	{
 #if defined (PROCESS_DEBUGGING)
-		debug_print("proc: create process from default pool\n");
+		debug_print("Process: Create process from default pool\n");
 #endif
 		parent_pool = mem_get_default_pool();
 	} else {
 #if defined (PROCESS_DEBUGGING)
-		debug_print("proc: create process for %s from parent\n",
-				image);
+		debug_print("Process: Create process for %s from parent\n", image);
 #endif
 		// if the parent is the kernel, use the default pool instead
 		// of the kernel's
@@ -109,6 +108,9 @@ error_t proc_create_process(
 		}
 	}
 
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Initialising pool for %s\n", image);
+#endif
 	mem_pool_info_t * new_mem_pool = NULL;
 	const bool_t pool_allocated = mem_init_process_memory(
 			parent_pool,
@@ -123,6 +125,9 @@ error_t proc_create_process(
 	}
 	else
 	{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Building process: %s\n", image);
+#endif
 		ret = process_create(
 				parent_pool,
 				proc_id,
@@ -135,6 +140,9 @@ error_t proc_create_process(
 		if (ret == NO_ERROR)
 		{
 			object_t * process_obj = NULL;
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Building process object: %s\n", image);
+#endif
 			ret = obj_create_process(
 					process_get_mem_pool(proc),
 					process_get_object_table(proc),
@@ -146,6 +154,9 @@ error_t proc_create_process(
 			if ( ret == NO_ERROR )
 			{
 				object_t * thread_obj = NULL;
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Building process entry thread: %s\n", image);
+#endif
 				ret = proc_create_thread(
 						proc,
 						initial_task_name,

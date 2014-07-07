@@ -43,7 +43,7 @@ void kernel_main(void)
 	/*
 	 * Start up message(s)
 	 */
-	debug_print("\nSystem: Up - Kernel Version: %s, Build: %d\n\n", KERNEL_VERSION, KERNEL_BUILD);
+	debug_print("System: Up - Kernel Version: %s, Build: %d\n", KERNEL_VERSION, KERNEL_BUILD);
 
 	/*
 	 * Show time; we're ready
