@@ -27,6 +27,7 @@ I've worked on & off on this microkernel for the last few years to help my under
 Tinker is:
 * Limited - it's an RTOS Microkernel so that's the idea
 * In development
+* Single-core at present
 
 He is my hobby. The aim is to keep it simple enough for anyone to understand and therefore also
 be simple enough to port and possibly even verify.
@@ -97,7 +98,7 @@ These are the things I need to address in a rough order:
 * Kernel: Add mechanism to load elfs
 * Support: Create newlib port
 * Support: Create bootstrap for kernel + services
-* Kernel: Option to make pipes zero-copy via mmu (memory is already aligned)
+* Kernel: Option to make pipes zero-copy via MMU (memory is already aligned)
 * Kernel: Review the powerpc page table code
 * All: Need to review it all head to toe since refactor
 * Doc: Doc it with doxygen
