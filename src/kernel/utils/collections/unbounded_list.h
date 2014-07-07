@@ -11,6 +11,7 @@
 
 #include "tinker_api_types.h"
 #include "kernel/utils/util_memcpy.h"
+#include "kernel/utils/util_memset.h"
 #include "kernel/memory/memory_manager.h"
 
 #if defined (DEBUG_COLLECTIONS)

@@ -171,6 +171,26 @@ error_t intc_handle(const intc_t * const intc)
 	return ret;
 }
 
+error_t intc_setup(
+		intc_t * const intc,
+		const uint32_t cause,
+		const intc_priority_t priority,
+		const intc_detection_type detection,
+		const intc_active_type edge_type)
+{
+	error_t ret = NO_ERROR;
+	if (intc)
+	{
+		intc->kernel_intc->setup_cause(
+				cause, priority, detection, edge_type, intc->kernel_intc->user_data);
+	}
+	else
+	{
+		ret = NO_ROOT_INTERRUPT_HANDLER;
+	}
+	return ret;
+}
+
 error_t intc_enable(intc_t * const intc, const uint32_t cause)
 {
 	error_t ret = NO_ERROR;

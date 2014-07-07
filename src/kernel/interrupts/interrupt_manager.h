@@ -9,7 +9,7 @@
 #ifndef INTERRUPT_MANAGER_H_
 #define INTERRUPT_MANAGER_H_
 
-#include "kernel/devices/device_type.h"
+#include "kernel/devices/kernel_intc_device.h"
 #include "intc.h"
 
  void int_install_isr(const intc_t * const intc);

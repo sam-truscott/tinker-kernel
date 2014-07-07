@@ -276,7 +276,7 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 				map->buckets[index] = \
 					mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
 				HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
-				memset(bucket, 0, sizeof(HASH_MAP_T##_bucket_t)); \
+				util_memset(bucket, 0, sizeof(HASH_MAP_T##_bucket_t)); \
 			} \
 			HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
 			if (bucket) \
@@ -288,7 +288,7 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 					{ \
 						HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, i); \
 						bucket->entries[i] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
-						memset(bucket->entries[i], 0, sizeof(HASH_MAP_T##_entry_t)); \
+						util_memset(bucket->entries[i], 0, sizeof(HASH_MAP_T##_entry_t)); \
 						HASH_MAP_T##_copy_key(bucket->entries[i], key); \
 						bucket->entries[i]->value = value; \
 						put_ok = true; \

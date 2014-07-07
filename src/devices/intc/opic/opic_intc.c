@@ -66,10 +66,34 @@ static void opic_enable(
 {
 	if (cause && user_data)
 	{
+		out_u32((uint32_t*)
+				(((char*)user_data) +
+						(OPIC_ISU_BASE
+								+ (INTC_SRC_N_DEST_REGISTER
+										+ (cause * ISU_BLOCK_SIZE)))),
+										0xFFFFFFFF); //FIXME TODO Find out why 1 doesn't work
+	}
+}
+
+static void opic_setup(
+		const uint32_t cause,
+		const intc_priority_t priority,
+		const intc_detection_type detection,
+		const intc_active_type edge_type,
+		const void * const user_data)
+{
+	if (cause && user_data)
+	{
 		uint32_t value = (cause & 0xFF) |
-				(1 << ISU_SHIFT_PRIORITY) |
-				ISU_LEVEL_TRIGGERED_BIT |
-				ISU_POSITIVE_POLARITY_BIT;
+				(priority << ISU_SHIFT_PRIORITY);
+		if (detection == INTC_LEVEL)
+		{
+			value |= ISU_LEVEL_TRIGGERED_BIT;
+		}
+		if (edge_type == INTC_ACTIVE_HIGH)
+		{
+			value |= ISU_POSITIVE_POLARITY_BIT;
+		}
 #if defined (OPIC_BIG_ENDIAN)
 		opic_swap_endianness(&value);
 #endif  // OPIC_BIG_ENDIAN
@@ -79,12 +103,6 @@ static void opic_enable(
 								+ (INTC_SRC_N_VECT_PRIORITY_REGISTER
 										+ (cause * ISU_BLOCK_SIZE)))),
 										value);
-		out_u32((uint32_t*)
-				(((char*)user_data) +
-						(OPIC_ISU_BASE
-								+ (INTC_SRC_N_DEST_REGISTER
-										+ (cause * ISU_BLOCK_SIZE)))),
-										0xFFFFFFFF); //FIXME TODO Find out why 1 doesn't work
 	}
 }
 
@@ -100,6 +118,7 @@ intc_t* opic_intc_create(
 		intc_device->ack_cause = opic_ack;
 		intc_device->enable_cause = opic_enable;
 		intc_device->mask_cause = opic_mask;
+		intc_device->setup_cause = opic_setup;
 		intc_device->user_data = base_address;
 		intc = intc_create(pool, intc_device);
 

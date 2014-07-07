@@ -82,13 +82,15 @@ Drivers and written as userland services with MMIO through the MMU.
 
 The kernel Board Support Package (BSP) should only have drivers for timers and a debugging port such as a UART.
 
+The root Interrupt Handler should be part of the kernel, other ones should really be installed as
+user processes/servers that listen to the pipe.
+
 Issues / TODO
 =============
 
 These are the things I need to address in a rough order:
 
-* PowerPC: Check page table is in rage
-* Interrupts: Parameters to intc_enable (priority, edge/level, active high/low etc)
+* PowerPC: Check page table is in range
 * Target: x86 support
 * Target: ARM support
 * Kernel: Timeouts on pipe (open/read/write)

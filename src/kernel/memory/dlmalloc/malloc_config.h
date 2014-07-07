@@ -14,6 +14,7 @@
 #define DLMALLOC_EXPORT extern
 
 #define size_t uint32_t
+#define ptrdiff_t int32_t
 
 #undef DEBUG
 #define ABORT_ON_ASSERT_FAILURE 1

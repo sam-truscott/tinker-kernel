@@ -11,7 +11,8 @@
 #define INTC_H_
 
 #include "kernel/memory/mem_pool.h"
-#include "kernel/devices/device_type.h"
+#include "kernel/devices/kernel_device.h"
+#include "kernel/devices/kernel_intc_device.h"
 #include "kernel/objects/obj_pipe.h"
 
 typedef struct intc_t intc_t;
@@ -39,6 +40,13 @@ void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_dev
 void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_t * pipe);
 
 error_t intc_handle(const intc_t * const intc);
+
+error_t intc_setup(
+		intc_t * const intc,
+		const uint32_t cause,
+		const intc_priority_t priority,
+		const intc_detection_type detection,
+		const intc_active_type edge_type);
 
 error_t intc_enable(intc_t * const intc, const uint32_t cause);
 

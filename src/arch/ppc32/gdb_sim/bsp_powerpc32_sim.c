@@ -193,6 +193,7 @@ void bsp_setup(void)
 	alarm_set_timer(&ppc32_time_base_timer);
 
 	// route UART -> OPIC -> CPU
+	intc_setup(opic_intc, 1, 1, INTC_LEVEL, INTC_ACTIVE_HIGH);
 	intc_enable(opic_intc, 1);
 	intc_add_device(opic_intc, 1, &rs232_port_1);
 

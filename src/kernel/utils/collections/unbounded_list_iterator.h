@@ -116,7 +116,7 @@
 		 \
 		 if (it && item) \
 		 { \
-			memset(item, 0, sizeof(ITEM_T)); \
+			util_memset(item, 0, sizeof(ITEM_T)); \
 			\
 			 if ( it->current ) \
 			 { \
