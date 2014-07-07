@@ -1,4 +1,4 @@
-Tinker Micro Kernel
+Tinker Microkernel
 ===================
 
 Microkernel written in C and assembly.
