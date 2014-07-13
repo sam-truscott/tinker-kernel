@@ -85,7 +85,7 @@ void kshell_start(void)
 				{
 					kshell_execute_command(ksh_input_buffer);
 					ksh_input_pointer = 0;
-					memset(ksh_input_buffer, 0, MAX_LINE_INPUT);
+					util_memset(ksh_input_buffer, 0, MAX_LINE_INPUT);
 				}
 			}
 		}
