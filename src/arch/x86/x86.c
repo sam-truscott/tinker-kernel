@@ -19,6 +19,8 @@
 #include "x86_vga.h"
 #include "x86_clock.h"
 #include "x86_registers.h"
+#include "x86_gdt.h"
+#include "x86_mode.h"
 
 /**
  * The structure of the saved interrupt vector context
@@ -57,8 +59,6 @@ typedef struct tgt_context_t
 } tgt_context_internal_t;
 #pragma pack(pop)
 
-static void bsp_initialise_gdt(void);
-
 void bsp_initialise(void)
 {
 	x86_vga_initialise();
@@ -69,14 +69,8 @@ void bsp_initialise(void)
 	time_set_system_clock(x86_get_ppc_timebase_clock());
 	x86_vga_writestring("clock setup\n", 100);
 
-	bsp_initialise_gdt();
-}
-
-static void bsp_initialise_gdt(void)
-{
-	const uint32_t cr0 = x86_get_cr0();
-	printp_out("CR0=%X\n", cr0);
-
+	x86_initialise_gdt();
+	x86_enter_protected();
 }
 
 void bsp_setup(void)
