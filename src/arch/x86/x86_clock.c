@@ -15,9 +15,16 @@ static clock_device_t x86_timebase_clock =
 		x86_get_timebase_time
 };
 
+static inline uint64_t x86_rdtsc(void)
+{
+    uint64_t ret;
+    asm volatile ( "rdtsc" : "=A"(ret) );
+    return ret;
+}
+
 uint64_t x86_get_timebase_time(void)
 {
-	return 1;
+	return x86_rdtsc();
 }
 
 clock_device_t * x86_get_ppc_timebase_clock(void)

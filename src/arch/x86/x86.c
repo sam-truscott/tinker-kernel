@@ -15,8 +15,10 @@
 #include "kernel/process/process_manager.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"
+#include "kernel/console/print_out.h"
 #include "x86_vga.h"
 #include "x86_clock.h"
+#include "x86_registers.h"
 
 /**
  * The structure of the saved interrupt vector context
@@ -55,6 +57,8 @@ typedef struct tgt_context_t
 } tgt_context_internal_t;
 #pragma pack(pop)
 
+static void bsp_initialise_gdt(void);
+
 void bsp_initialise(void)
 {
 	x86_vga_initialise();
@@ -64,6 +68,15 @@ void bsp_initialise(void)
 #endif // KERNEL_DEBUGGING
 	time_set_system_clock(x86_get_ppc_timebase_clock());
 	x86_vga_writestring("clock setup\n", 100);
+
+	bsp_initialise_gdt();
+}
+
+static void bsp_initialise_gdt(void)
+{
+	const uin32_t cr0 = x86_get_cr0();
+	printp_out("CR0=%X\n", cr0);
+
 }
 
 void bsp_setup(void)
