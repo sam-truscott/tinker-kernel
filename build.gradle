@@ -17,7 +17,7 @@ model {
                 staticLibArchiver.executable = "powerpc-eabi-ar"
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/ppc32"
-                    args << "-nostdinc"
+                    //args << "-nostdinc"
                     args << "-mcpu=powerpc"
                     args << "-pedantic"
                     //args << "-pedantic-errors"
@@ -46,7 +46,7 @@ model {
                 staticLibArchiver.executable = "i686-elf-ar"
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/x86"
-                    args << "-nostdinc"
+                    //args << "-nostdinc"
                     args << "-march=i686"
                     args << "-pedantic"
                     //args << "-pedantic-errors"

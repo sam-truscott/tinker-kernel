@@ -9,17 +9,20 @@
 #ifndef TGT_TYPES_H_
 #define TGT_TYPES_H_
 
-#include "tgt_ints.h"
+#include <float.h>
+#include <iso646.h>
+#include <limits.h>
+#include <stdalign.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdnoreturn.h>
+
 #include "tgt_mem.h"
 #include "tgt_io.h"
 
-typedef enum bool
-{
-	false = 0,
-	true = 1
-} bool_t;
-
-#define NULL ((void*)0)
+typedef bool bool_t;
 
 typedef volatile uint8_t spinlock_t;
 #define LOCK_ON 0xDE

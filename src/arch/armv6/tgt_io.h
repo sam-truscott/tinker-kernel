@@ -9,7 +9,7 @@
 #ifndef TGT_IO_H_
 #define TGT_IO_H_
 
-#include "tgt_ints.h"
+#include "arch/tgt_types.h"
 
  #define isb(x) asm volatile ("mcr p15, 0, %0, c7, c5, 4" \
                                      : : "r" (0) : "memory")

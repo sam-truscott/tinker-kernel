@@ -9,7 +9,7 @@
 #ifndef TGT_IO_H_
 #define TGT_IO_H_
 
-#include "tgt_ints.h"
+#include "arch/tgt_types.h"
 
 #define out_(N,T) \
 	static inline void out_##N(T * const addr, const T const value) \

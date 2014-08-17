@@ -10,7 +10,7 @@
 #ifndef X86_VGA_H_
 #define X86_VGA_H_
 
-#include "tgt_ints.h"
+#include "arch/tgt_types.h"
 
 void x86_vga_initialise(void);
 

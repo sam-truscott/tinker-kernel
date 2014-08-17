@@ -74,7 +74,7 @@ void bsp_initialise(void)
 
 static void bsp_initialise_gdt(void)
 {
-	const uin32_t cr0 = x86_get_cr0();
+	const uint32_t cr0 = x86_get_cr0();
 	printp_out("CR0=%X\n", cr0);
 
 }

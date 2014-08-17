@@ -10,7 +10,7 @@
 #ifndef X86_REGISTERS_H_
 #define X86_REGISTERS_H_
 
-#include "tgt_ints.h"
+#include "arch/tgt_types.h"
 
 uint32_t x86_get_cr0(void);
 
