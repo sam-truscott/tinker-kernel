@@ -59,6 +59,26 @@ typedef struct tgt_context_t
 } tgt_context_internal_t;
 #pragma pack(pop)
 
+static void x86_enable_a20(void)
+{
+
+}
+
+static void x86_reset_coprocessor(void)
+{
+
+}
+
+static void x86_disable_interrupts(void)
+{
+
+}
+
+static void x86_initialise_idt(void)
+{
+
+}
+
 void bsp_initialise(void)
 {
 	x86_vga_initialise();
@@ -69,8 +89,14 @@ void bsp_initialise(void)
 	time_set_system_clock(x86_get_ppc_timebase_clock());
 	x86_vga_writestring("clock setup\n", 100);
 
+	x86_enable_a20();
+	x86_reset_coprocessor();
+	x86_disable_interrupts();
+	x86_initialise_idt();
 	x86_initialise_gdt();
+	printp_out("Switching to Protected Mode");
 	x86_enter_protected();
+	printp_out("Protected Mode");
 }
 
 void bsp_setup(void)

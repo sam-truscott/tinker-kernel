@@ -63,7 +63,13 @@ typedef struct gdt
 	uint8_t flags;
 } gdt_t;
 
-static uint32_t x86_tss;
+struct gdt_ptr
+{
+	uint16_t len;
+	uint32_t ptr;
+} __attribute__((packed));
+
+static uint32_t x86_tss  __attribute__((aligned(16)));
 
 static const gdt_t x86_gdt_data[MAX_GDT_ENTRIES] =
 {
@@ -74,11 +80,17 @@ static const gdt_t x86_gdt_data[MAX_GDT_ENTRIES] =
 	{0u, 0xFFFFFFFFu, GDT_DATA_PL3},
 	{&x86_tss, sizeof(x86_tss), GDT_DATA_PL0}
 };
-static uint64_t x86_gdt_table[MAX_GDT_ENTRIES];
+static uint64_t x86_gdt_table[MAX_GDT_ENTRIES] __attribute__((aligned(16)));
 
 static void x86_dump_cr0(const uint32_t cr0);
 static void x86_create_gdt_entry(uint8_t index, const gdt_t * const gdt_entry);
-x86_load_gdt(uint64_t * const table);
+
+static inline uint16_t ds(void)
+{
+	uint16_t seg;
+	asm("movw %%ds,%0" : "=rm" (seg));
+	return seg;
+}
 
 void x86_initialise_gdt(void)
 {
@@ -86,7 +98,7 @@ void x86_initialise_gdt(void)
 	x86_dump_cr0(cr0);
 	if (!(cr0 & 1))
 	{
-		printp_out("Setting up GDT");
+		printp_out("Setting up GDT\n");
 		for (int e = 0 ; e < MAX_GDT_ENTRIES ; e++)
 		{
 			printp_out("GDT %d: Base=%x, Limit=%x, Type=%x\n",
@@ -97,7 +109,10 @@ void x86_initialise_gdt(void)
 			x86_create_gdt_entry(e, &(x86_gdt_data[e]));
 		}
 		printp_out("GDT Table build\n");
-		x86_load_gdt(x86_gdt_table);
+		static struct gdt_ptr gdt;
+		gdt.len = sizeof(x86_gdt_table)-1;
+		gdt.ptr = (uint32_t)&x86_gdt_table + (ds() << 4);
+		asm volatile("lgdtl %0" : : "m" (gdt));
 		printp_out("GDT Table loaded\n");
 	}
 }
