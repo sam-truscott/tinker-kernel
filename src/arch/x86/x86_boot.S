@@ -20,17 +20,23 @@
 .long FLAGS
 .long CHECKSUM
 
-//.section .bootstrap_stack,"aw", @nobits
 .section .bootstrap_stack
-stack_bottom:
+stack_bottom: .word
 .skip 16384 # 16 KiB
-stack_top:
+stack_top: .word
 
-.section .text
+.section .boot, "ax"
 .global __kernel_start
 __kernel_start:
+    movw	stack_top, %sp
+    movw    %cs, %ax	// cs->as
+ 	movw    %ax, %ds	// cs->ds
+ 	movw    %ax, %es	// cs->es
+ 	//movw    %ax, %ss	// cs->ss
+ 	sti
+    cld
+    cli
 	movl $stack_top, %esp
-    //cli
     call     kernel_boot
     cli
 	hlt

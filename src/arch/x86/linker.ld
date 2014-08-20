@@ -15,14 +15,16 @@ MEMORY
 	RAM : ORIGIN = 0x00000000, LENGTH = 0x8000000 /* 128MB */
 }
 
-SECTIONS{
-
-	. = 1M;
+SECTIONS
+{
 	
 	/* code */
     .text BLOCK(4K) : ALIGN (0x1000) {
         __text = .;
+        . = ALIGN(4);
     	*(.boot)
+    	. = ALIGN(4);
+    	*(.bootstrap_stack)
     	. = ALIGN(4);
         *(.text)
         __text_end = .;
@@ -56,7 +58,6 @@ SECTIONS{
     .bss ALIGN (0x1000) : {
         *(COMMON)
         *(.bss)
-        *(.bootstrap_stack)
     }>RAM
     
     /* read only data */

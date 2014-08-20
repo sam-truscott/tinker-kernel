@@ -20,6 +20,7 @@
 #include "x86_clock.h"
 #include "x86_registers.h"
 #include "x86_gdt.h"
+#include "x86_a20.h"
 #include "x86_mode.h"
 
 /**
@@ -59,11 +60,6 @@ typedef struct tgt_context_t
 } tgt_context_internal_t;
 #pragma pack(pop)
 
-static void x86_enable_a20(void)
-{
-
-}
-
 static void x86_reset_coprocessor(void)
 {
 
@@ -89,7 +85,13 @@ void bsp_initialise(void)
 	time_set_system_clock(x86_get_ppc_timebase_clock());
 	x86_vga_writestring("clock setup\n", 100);
 
-	x86_enable_a20();
+	asm volatile("cli");
+	out_u8(0x80, 0x70); // NMI off
+	asm volatile("outb %%al,%0" : : "dN" (0x80));
+
+	printp_out("Enabling A20...");
+	const bool_t a20_ok = x86_enable_a20();
+	printp_out("A20 Result=%d\n", a20_ok);
 	x86_reset_coprocessor();
 	x86_disable_interrupts();
 	x86_initialise_idt();
