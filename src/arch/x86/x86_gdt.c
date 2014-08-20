@@ -138,26 +138,26 @@ static void x86_dump_cr0(const uint32_t cr0)
 	printp_out("CR0=%X\n", cr0);
 	if (cr0 & 1)
 	{
-		printp_out("Protected Mode\n");
+		printp_out("CR0: Protected Mode\n");
 	}
 	else
 	{
-		printp_out("Real Mode\n");
+		printp_out("CR0: Real Mode\n");
 	}
 	if (cr0 & 2)
 	{
-		printp_out("Multi-processor system\n");
+		printp_out("CR0: Multi-processor system\n");
 	}
 	else
 	{
-		printp_out("Uniprocessor system\n");
+		printp_out("CR0: Uniprocessor system\n");
 	}
 	if (cr0 & 4)
 	{
-		printp_out("No floating point unit present\n");
+		printp_out("CR0: No floating point unit present\n");
 	}
 	else
 	{
-		printp_out("Floating point unit present\n");
+		printp_out("CR0: Floating point unit present\n");
 	}
 }

@@ -25,7 +25,7 @@ stack_bottom: .word
 .skip 16384 # 16 KiB
 stack_top: .word
 
-.section .boot, "ax"
+.section .boot
 .global __kernel_start
 __kernel_start:
     movw	stack_top, %sp
@@ -37,7 +37,7 @@ __kernel_start:
     cld
     cli
 	movl $stack_top, %esp
-    call     kernel_boot
+    call kernel_boot
     cli
 	hlt
 .Lhang:
