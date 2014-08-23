@@ -20,7 +20,7 @@
  * initialise the both target (processor) and the
  * board / environment
  */
-void bsp_initialise(void);
+void bsp_initialise(void) BOOT_CODE;
 
 void bsp_setup(void);
 

@@ -60,14 +60,24 @@ typedef struct tgt_context_t
 } tgt_context_internal_t;
 #pragma pack(pop)
 
+static void x86_reset_coprocessor(void) BOOT_CODE;
+static void x86_disable_interrupts(void) BOOT_CODE;
+static void x86_initialise_idt(void) BOOT_CODE;
+
 static void x86_reset_coprocessor(void)
 {
-
+	x86_outb(0, 0xF0);
+	DELAY;
+	x86_outb(0, 0xF1);
+	DELAY;
 }
 
 static void x86_disable_interrupts(void)
 {
-
+	x86_outb(0xff, 0xa1);
+	DELAY;
+	x86_outb(0xfb, 0x21);
+	DELAY;
 }
 
 static void x86_initialise_idt(void)
@@ -87,7 +97,7 @@ void bsp_initialise(void)
 
 	asm volatile("cli");
 	out_u8(0x80, 0x70); // NMI off
-	asm volatile("outb %%al,%0" : : "dN" (0x80));
+	DELAY;
 
 	printp_out("Enabling A20...");
 	const bool_t a20_ok = x86_enable_a20();

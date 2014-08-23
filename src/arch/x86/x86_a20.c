@@ -7,11 +7,15 @@
  *  All Rights Reserved.
  */
 
+#include "x86_a20.h"
+
 #include "x86_registers.h"
 #include "kernel/console/print_out.h"
 
 #define MAX_ATTEMPTS 255
 #define TEST_ADDRESS (4*0x80)
+
+static bool_t x86_a20_check(const uint8_t iterations) BOOT_CODE;
 
 static bool_t x86_a20_check(const uint8_t iterations)
 {
@@ -28,7 +32,7 @@ static bool_t x86_a20_check(const uint8_t iterations)
 	{
 		printp_out("A20 Check, attempt %d\n", iteration);
 		out_u32(TEST_ADDRESS, ctr++);
-		asm volatile("outb %%al,%0" : : "dN" (0x80));
+		DELAY;
 		if ((ok=in_u32(TEST_ADDRESS+0x10) ^ ctr)==true)
 		{
 			break;
@@ -52,4 +56,5 @@ bool_t x86_enable_a20(void)
 		}
 		iteration--;
 	}
+	return ok;
 }

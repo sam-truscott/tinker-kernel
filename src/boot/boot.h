@@ -9,6 +9,8 @@
 #ifndef BOOT_H_
 #define BOOT_H_
 
-extern void kernel_boot(void);
+#include "config.h"
+
+extern void kernel_boot(void) BOOT_CODE;
 
 #endif /* BOOT_H_ */

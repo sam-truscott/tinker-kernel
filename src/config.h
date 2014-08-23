@@ -9,6 +9,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#define BOOT_CODE __attribute__((section(".boot")))
+
 #define MAX_SYSCALL_ARGS 7
 
 #define VIRTUAL_ADDRESS_SPACE 0xC0000000u

@@ -11,7 +11,8 @@
 #define X86_A20_H_
 
 #include "arch/tgt_types.h"
+#include "config.h"
 
-bool_t x86_enable_a20(void);
+bool_t x86_enable_a20(void) BOOT_CODE;
 
 #endif /* X86_A20_H_ */
