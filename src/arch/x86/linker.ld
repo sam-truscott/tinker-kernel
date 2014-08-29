@@ -17,21 +17,21 @@ MEMORY
 
 SECTIONS
 {
-	.init_stack : ALIGN(0x1000) {
-		*(.bootstrap_stack)
-	}>RAM
+	. = 1M;
 	
 	/* code */
     .text BLOCK(4K) : ALIGN (0x1000) {
         __text = .;
-        . = ALIGN(4);
         *(.entry)
-    	. = ALIGN(4);
     	*(.boot)
     	. = ALIGN(4);
         *(.text)
         __text_end = .;
     }>RAM
+    
+   	.init_stack : ALIGN(0x1000) {
+		*(.bootstrap_stack)
+	}>RAM
     
     /* code */
     .api ALIGN (0x1000) : {

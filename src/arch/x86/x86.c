@@ -20,8 +20,6 @@
 #include "x86_clock.h"
 #include "x86_registers.h"
 #include "x86_gdt.h"
-#include "x86_a20.h"
-#include "x86_mode.h"
 
 /**
  * The structure of the saved interrupt vector context
@@ -64,22 +62,6 @@ static void x86_reset_coprocessor(void) BOOT_CODE;
 static void x86_disable_interrupts(void) BOOT_CODE;
 static void x86_initialise_idt(void) BOOT_CODE;
 
-static void x86_reset_coprocessor(void)
-{
-	x86_outb(0, 0xF0);
-	DELAY;
-	x86_outb(0, 0xF1);
-	DELAY;
-}
-
-static void x86_disable_interrupts(void)
-{
-	x86_outb(0xff, 0xa1);
-	DELAY;
-	x86_outb(0xfb, 0x21);
-	DELAY;
-}
-
 static void x86_initialise_idt(void)
 {
 
@@ -95,20 +77,8 @@ void bsp_initialise(void)
 	time_set_system_clock(x86_get_ppc_timebase_clock());
 	x86_vga_writestring("clock setup\n", 100);
 
-	asm volatile("cli");
-	out_u8(0x80, 0x70); // NMI off
-	DELAY;
-
-	printp_out("Enabling A20...");
-	const bool_t a20_ok = x86_enable_a20();
-	printp_out("A20 Result=%d\n", a20_ok);
-	x86_reset_coprocessor();
-	x86_disable_interrupts();
 	x86_initialise_idt();
 	x86_initialise_gdt();
-	printp_out("Switching to Protected Mode");
-	x86_enter_protected();
-	printp_out("Protected Mode");
 }
 
 void bsp_setup(void)

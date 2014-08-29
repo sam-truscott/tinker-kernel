@@ -1,7 +1,7 @@
-Tinker Microkernel
+Tinker Hybrid Kernel
 ===================
 
-Microkernel written in C and assembly.
+Hybrid Kernel written in C and assembly.
 
 Supported targets:
 - PowerPC (gdb simulator)
@@ -17,7 +17,7 @@ GPL v3
 Overview
 ========
 
-I've worked on & off on this microkernel for the last few years to help my understanding in operating systems.
+I've worked on & off on this hybrid kernel for the last few years to help my understanding in operating systems.
 
 * SOS1 was essentially a framebuffer - and a very broken scheduler
 * SOS2 was a proper multitasking scheduler with dynamic memory support
@@ -25,9 +25,10 @@ I've worked on & off on this microkernel for the last few years to help my under
 * Tinker was renamed from SOS3!
 
 Tinker is:
-* Limited - it's an RTOS Microkernel so that's the idea
+* Limited - it's an RTOS Kernel so that's the idea
 * In development
 * Single-core at present
+* Written from a clean slate (excluding bits of boot-code from sel4 and osdev)
 
 He is my hobby. The aim is to keep it simple enough for anyone to understand and therefore also
 be simple enough to port and possibly even verify.
@@ -53,16 +54,18 @@ For example, for PowerPC use:
     # Windows
     gradlew releasePpc32GdbExecutable
     gradlew releasex86Executable
+    gradlew clean debugArmRaspPiExecutable
     
     # Linux
     ./gradlew releasePpc32GdbExecutable
     ./gradlew releasex86Executable
+    ./gradlew clean debugArmRaspPiExecutable
 
 Loading
 =======
 
 You can place user-code in tinker.c for now but eventually there'll be a bootstrap that contains
-the microkernel and the required user-services to startup. The bootstrap will place the kernel
+the hybridkernel and the required user-services to startup. The bootstrap will place the kernel
 and services into memory, load the kernel and then start the user-services (much like init).
 
  bootstrap
@@ -91,8 +94,7 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Kernel: Shell should use pipes for reading I/O
-* Target: x86 support
-* Target: ARM support
+* Target: ARM support (Raspberry Pi)
 * Kernel: Timeouts on pipe (open/read/write)
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
@@ -102,6 +104,7 @@ These are the things I need to address in a rough order:
 * Support: Create bootstrap for kernel + services
 * Kernel: Option to make pipes zero-copy via MMU (memory is already aligned)
 * Kernel: Review the powerpc page table code
+* Target: x86 support
 * All: Need to review it all head to toe since refactor
 * Doc: Doc it with doxygen
 

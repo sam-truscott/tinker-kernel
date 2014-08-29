@@ -66,6 +66,34 @@ model {
                     args << "-static"
                 }
             }
+            target("tinkerArm") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "arm-eabi-gcc"
+                cCompiler.executable = "arm-eabi-gcc"
+                assembler.executable = "arm-eabi-as"
+                linker.executable = "arm-eabi-gcc"
+                staticLibArchiver.executable = "arm-eabi-ar"
+                cCompiler.withArguments { args ->
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    //args << "-nostdinc"
+                    args << "-pedantic"
+                    //args << "-pedantic-errors"
+                    args << "-Wall"
+                    args << "-Wextra"
+                    //args << "-Werror"
+                    args << "-c"
+                    args << "-fmessage-length=0"
+                    args << "-std=gnu99"
+                    args << "-fno-builtin"
+                    args << "-ffreestanding"
+                }
+                linker.withArguments { args->
+                    args << "-nostartfiles"
+                    args << "-nodefaultlibs"
+                    args << "-nostdlib"
+                    args << "-static"
+                }
+            }
         }
     }
     platforms {
@@ -88,7 +116,7 @@ libraries {
     archX86 {
         targetPlatforms "tinkerX86"
     }
-    archArm6 {
+    archArm {
         targetPlatforms "tinkerArm"
     }
     archPowerPc {
@@ -101,8 +129,14 @@ libraries {
 }
 
 executables {
-    armv6Pi {
+    armRaspPi {
         targetPlatforms "tinkerArm"
+        binaries.all {
+            File srcDir = new File('src')
+            linker.args "-lgcc",
+                 "-T",
+                 (srcDir.getAbsolutePath() + "\\arch\\arm\\pi\\linker.ld")
+        }
     }
     x86 {
         targetPlatforms "tinkerX86"
@@ -164,6 +198,24 @@ sources {
             }
         }
     }
+    archArm {
+        c {
+            lib libraries.base.static
+            source {
+                srcDirs "src/arch/arm"
+                include "*.c"
+            }
+            exportedHeaders {
+                srcDir "src/arch/arm"
+            }
+        }
+        asm {
+            source {
+                srcDirs "src/arch/arm"
+                include "*.S"
+            }
+        }
+    }
     api {
          c {
              lib libraries.base.static
@@ -202,6 +254,25 @@ sources {
                 srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
                 include "**/*.c"
             }
+        }
+    }
+    armRaspPi {
+        c {
+            lib libraries.base.static        // core
+            lib libraries.api.static         // api layer
+            lib libraries.archArm.static     // powerpc code
+            lib libraries.boot.static        // boot c code into kernel
+            lib libraries.core.static        // the core kernel
+            source {
+                srcDirs "src/arch/arm/pi", "src/tinker"
+                include "**/*.c"
+            }
+        }
+        asm {
+        	source {
+        		srcDirs "src/arch/arm/pi"
+        		include "**/*.S"
+        	}
         }
     }
     x86 {

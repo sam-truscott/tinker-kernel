@@ -8,9 +8,9 @@
  */
  
 /* http://www.redhat.com/docs/manuals/enterprise/RHEL-4-Manual/gnu-linker/memory.html */
-ENTRY (__kernel_start)
+ENTRY (kernel_start)
 
-__VECTOR_SIZE = 0xF00;
+__VECTOR_SIZE = 0x40;
 __VECTOR_STACK_SIZE = 0x1000;
 
 MEMORY 
@@ -21,14 +21,20 @@ MEMORY
 
 SECTIONS{
     
+    . = 0x8000;
+    
     /* interrupt vector table */
-    .ivt 0x100 (NOLOAD) : {
+    .ivt (NOLOAD) : {
         __ivt = .;
         *(.vectors)
         . += __VECTOR_SIZE;
     } > RAM
     
-    .ivts 0x1000 (NOLOAD) : {
+    .entry ALIGN(0x40) : {
+    	*(.entry)
+    } > RAM
+    
+    .ivts (NOLOAD) : {
         __ivts = .;
         . += __VECTOR_STACK_SIZE;
         __ivtse = .;
@@ -40,13 +46,16 @@ SECTIONS{
     }>RAM
     
         /* Block Started by Symbol */
-    .bss ALIGN (0x1000) : {
+    .bss ALIGN (0x64) : {
         *(COMMON)
+        _bss_start = .;
         *(.bss)
+        . = ALIGN(4096); /* align to page size */
+		_bss_end = .;
     }>RAM
     
     /* read only data */
-    .rodata ALIGN (0x1000) : {
+    .rodata ALIGN (0x64) : {
         *(.rodata)
         *(.rodata*)
         *(.eh_frame)

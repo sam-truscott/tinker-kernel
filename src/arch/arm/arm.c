@@ -7,7 +7,7 @@
  *  All Rights Reserved.
  */
 
-#include "armv6.h"
+#include "arm.h"
 
 #include "config.h"
 

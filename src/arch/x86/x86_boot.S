@@ -14,30 +14,22 @@
 .set MAGIC,    0x1BADB002       # 'magic number' lets bootloader find the header
 .set CHECKSUM, -(MAGIC + FLAGS) # checksum required
 
- .section .boot
+ .section .entry, "ax"
 .align 4
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
 
-.section .bootstrap_stack
-stack_bottom: .word
-.skip 16384 # 16 KiB
-stack_top: .word
-
-.section .entry
 .global __kernel_start
 __kernel_start:
-    movw	stack_top, %sp
-    movw    %cs, %ax	// cs->as
- 	movw    %ax, %ds	// cs->ds
- 	movw    %ax, %es	// cs->es
- 	//movw    %ax, %ss	// cs->ss
- 	sti
-    cld
     cli
     call kernel_boot
     cli
 	hlt
 .Lhang:
 	jmp .Lhang
+
+.section .bootstrap_stack
+stack_bottom: .word
+.skip 16384 # 16 KiB
+stack_top: .word

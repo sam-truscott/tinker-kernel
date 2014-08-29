@@ -135,7 +135,11 @@ static void x86_create_gdt_entry(const uint8_t index, const gdt_t * const gdt_en
 
 static void x86_dump_cr0(const uint32_t cr0)
 {
-	printp_out("CR0=%X\n", cr0);
+	uint32_t x = 90000000;
+	while(x--) {}
+	printp_out("CR0=%d\n", cr0);
+	x = 90000000;
+	while(x--) {}
 	if (cr0 & 1)
 	{
 		printp_out("CR0: Protected Mode\n");

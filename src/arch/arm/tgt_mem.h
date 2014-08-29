@@ -9,7 +9,7 @@
 #ifndef TGT_MEM_H_
 #define TGT_MEM_H_
 
-#include "tgt_ints.h"
+#include "arch/tgt_types.h"
 
 #define MMU_PAGE_SIZE 	4096
 
