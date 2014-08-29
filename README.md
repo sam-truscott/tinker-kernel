@@ -49,7 +49,7 @@ Building
 Gradle is used as the build system. It can build debug and release versions of either the parts
 (which are static libraries) or executables
 
-For example, for PowerPC use:
+For example, to build an individual target use:
 
     # Windows
     gradlew releasePpc32GdbExecutable
@@ -60,6 +60,14 @@ For example, for PowerPC use:
     ./gradlew releasePpc32GdbExecutable
     ./gradlew releasex86Executable
     ./gradlew clean debugArmRaspPiExecutable
+    
+To build everything (all targets, debug and release) use:
+
+	# Windows
+	gradlew clean assemble
+	
+	# Linux
+	./gradlew clean assemble
 
 Loading
 =======

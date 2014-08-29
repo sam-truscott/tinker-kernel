@@ -17,24 +17,7 @@ model {
                 staticLibArchiver.executable = "powerpc-eabi-ar"
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/ppc32"
-                    //args << "-nostdinc"
                     args << "-mcpu=powerpc"
-                    args << "-pedantic"
-                    //args << "-pedantic-errors"
-                    args << "-Wall"
-                    args << "-Wextra"
-                    //args << "-Werror"
-                    args << "-c"
-                    args << "-fmessage-length=0"
-                    args << "-std=gnu99"
-                    args << "-fno-builtin"
-                    args << "-ffreestanding"
-                }
-                linker.withArguments { args ->
-                    args << "-nostartfiles"
-                    args << "-nodefaultlibs"
-                    args << "-nostdlib"
-                    args << "-static"
                 }
             }
             target("tinkerX86") {
@@ -46,27 +29,10 @@ model {
                 staticLibArchiver.executable = "i686-elf-ar"
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/x86"
-                    //args << "-nostdinc"
                     args << "-march=i686"
-                    args << "-pedantic"
-                    //args << "-pedantic-errors"
-                    args << "-Wall"
-                    args << "-Wextra"
-                    //args << "-Werror"
-                    args << "-c"
-                    args << "-fmessage-length=0"
-                    args << "-std=gnu99"
-                    args << "-fno-builtin"
-                    args << "-ffreestanding"
-                }
-                linker.withArguments { args->
-                    args << "-nostartfiles"
-                    args << "-nodefaultlibs"
-                    args << "-nostdlib"
-                    args << "-static"
                 }
             }
-            target("tinkerArm") {
+            target("tinkerArmSoft") {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
@@ -75,29 +41,32 @@ model {
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
-                    //args << "-nostdinc"
-                    args << "-pedantic"
-                    //args << "-pedantic-errors"
-                    args << "-Wall"
-                    args << "-Wextra"
-                    //args << "-Werror"
-                    args << "-c"
-                    args << "-fmessage-length=0"
-                    args << "-std=gnu99"
-                    args << "-fno-builtin"
-                    args << "-ffreestanding"
                 }
-                linker.withArguments { args->
-                    args << "-nostartfiles"
-                    args << "-nodefaultlibs"
-                    args << "-nostdlib"
-                    args << "-static"
+            }
+            target("tinkerArmHardVfp") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "arm-eabi-gcc"
+                cCompiler.executable = "arm-eabi-gcc"
+                assembler.executable = "arm-eabi-as"
+                linker.executable = "arm-eabi-gcc"
+                staticLibArchiver.executable = "arm-eabi-ar"
+                cCompiler.withArguments { args ->
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-mfpu=vfp"
+                    args << "-mfloat-abi=hard"
+                }
+                linker.withArguments { args ->
+                	args << "-mfpu=vfp"
+                    args << "-mfloat-abi=hard"
                 }
             }
         }
     }
     platforms {
-        tinkerArm {
+        tinkerArmSoft {
+            architecture "arm"
+        }
+        tinkerArmHardVfp {
             architecture "arm"
         }
         tinkerPpc {
@@ -117,7 +86,7 @@ libraries {
         targetPlatforms "tinkerX86"
     }
     archArm {
-        targetPlatforms "tinkerArm"
+        targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
     }
     archPowerPc {
         targetPlatforms "tinkerPpc"
@@ -130,7 +99,8 @@ libraries {
 
 executables {
     armRaspPi {
-        targetPlatforms "tinkerArm"
+        targetPlatforms "tinkerArmHardVfp"
+        //targetPlatforms "tinkerArmSoft"
         binaries.all {
             File srcDir = new File('src')
             linker.args "-lgcc",
@@ -273,11 +243,7 @@ sources {
         		srcDirs "src/arch/arm/pi"
         		include "**/*.S"
         	}
-        }
-        binaries.all {
-        	cCompiler.args "-mfpu=vfp", "-mfloat-abi=hard", "-march=armv6zk", "-mtune=arm1176jzf-s"
-        	linker.args "-mfpu=vfp", "-mfloat-abi=hard", "-march=armv6zk", "-mtune=arm1176jzf-s"
-        }
+        }  
     }
     x86 {
         c {
@@ -293,7 +259,22 @@ sources {
         }
     }
     binaries.all {
-    	cCompiler.args "-Wno-maybe-uninitialized"
+    	cCompiler.args "-Wno-maybe-uninitialized",
+            //"-nostdinc",
+            "-pedantic",
+            //"-pedantic-errors",
+            "-Wall",
+            "-Wextra",
+            //"-Werror",
+            "-c",
+            "-fmessage-length=0",
+            "-std=gnu99",
+            "-fno-builtin",
+            "-ffreestanding"
+        linker.args "-nostartfiles",
+	        "-nodefaultlibs",
+	        "-nostdlib",
+	        "-static"
         if (buildType == buildTypes.debug) {
             cCompiler.args "-O0", 
                 "-g3",
@@ -305,8 +286,14 @@ sources {
                 "-UDEBUG_COLLECTIONS",
                 "-DPROCESS_DEBUGGING"
         } else if (buildType == buildTypes.release) {
-            cCompiler.args "-Ofast", "-g0"
-            linker.args "-s", "-lgcc"
+            cCompiler.args "-Ofast",
+                "-g0"
+            linker.args "-s",
+                "-lgcc"
         }
     }
 }
+
+binaries.withType(SharedLibraryBinary) {
+     buildable false
+ }
