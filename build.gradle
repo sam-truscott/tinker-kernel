@@ -260,7 +260,7 @@ sources {
         c {
             lib libraries.base.static        // core
             lib libraries.api.static         // api layer
-            lib libraries.archArm.static     // powerpc code
+            lib libraries.archArm.static     // generic arm code
             lib libraries.boot.static        // boot c code into kernel
             lib libraries.core.static        // the core kernel
             source {
