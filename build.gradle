@@ -274,6 +274,10 @@ sources {
         		include "**/*.S"
         	}
         }
+        binaries.all {
+        	cCompiler.args "-mfpu=vfp", "-mfloat-abi=hard", "-march=armv6zk", "-mtune=arm1176jzf-s"
+        	linker.args "-mfpu=vfp", "-mfloat-abi=hard", "-march=armv6zk", "-mtune=arm1176jzf-s"
+        }
     }
     x86 {
         c {
