@@ -293,6 +293,7 @@ sources {
         }
     }
     binaries.all {
+    	cCompiler.args "-Wno-maybe-uninitialized"
         if (buildType == buildTypes.debug) {
             cCompiler.args "-O0", "-g3", "-gdwarf-4", "-DBUILDING_KERNEL","-DKERNEL_SHELL", "-DKERNEL_DEBUGGING", "-UMEMORY_DEBUGGING","-UDEBUG_COLLECTIONS","-DPROCESS_DEBUGGING"
         } else if (buildType == buildTypes.release) {
