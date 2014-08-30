@@ -68,6 +68,10 @@ void bsp_enable_schedule_timer(void)
 void arm_check_timer(timer_t * const t)
 {
 	// TODO move this into generic arm code
+	if (t)
+	{
+		//
+	}
 }
 
 void bsp_check_timers_and_alarms(void)

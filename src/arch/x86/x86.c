@@ -58,8 +58,6 @@ typedef struct tgt_context_t
 } tgt_context_internal_t;
 #pragma pack(pop)
 
-static void x86_reset_coprocessor(void) BOOT_CODE;
-static void x86_disable_interrupts(void) BOOT_CODE;
 static void x86_initialise_idt(void) BOOT_CODE;
 
 static void x86_initialise_idt(void)
