@@ -268,7 +268,7 @@ sources {
             "-Werror",
             "-c",
             "-fmessage-length=0",
-            "-std=gnu99",
+            "-std=gnu11",
             "-fno-builtin",
             "-ffreestanding"
         linker.args "-nostartfiles",
