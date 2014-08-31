@@ -28,30 +28,17 @@ void bsp_initialise(void)
 {
 	uart_init();
 
-	time_set_system_clock(NULL);
-	{
-		const psr_mode_t psr_mode = arm_get_psr_mode();
-		char buffer[20];
-		util_memset(buffer, 0, 20);
-		arm_get_psr_mode_name(psr_mode, buffer, 20);
-		uart_puts("Processor Mode: ");
-		uart_puts(buffer);
-		uart_puts("\n");
-	}
+#if defined(KERNEL_DEBUGGING)
+	uart_puts("UART Up\n\0");
+#endif
 
-	/*
-	 * Initialise the Target Processor
-	 */
+	printp_out("Stack at %x\n", tgt_get_stack_pointer());
+
+	/* Initialise the Target Processor */
 	tgt_initialise();
 
-	/*
-	 * Initialise the Interrupt Vector Table
-	 */
+	/* Initialise the Interrupt Vector Table */
 	ivt_initialise();
-
-#if defined(KERNEL_DEBUGGING)
-	uart_puts("UART 16550 Port 1 Up\n\0");
-#endif
 
 	// TODO Initialise the MMU
 	// TODO Enable the MMU

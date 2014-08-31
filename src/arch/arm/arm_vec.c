@@ -13,7 +13,8 @@
 	uint32_t context; \
 	asm("stmfd sp!,{r0-r12,lr}"); \
 	asm("mrs r0, spsr"); \
-	asm("push {r0}"); \
+	asm("mov r1, sp"); \
+	asm("push {r0, r1}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context));
 
 #define KEXP_TOP3 \
@@ -21,11 +22,13 @@
 	asm("sub lr, lr, #4"); \
 	asm("stmfd sp!,{r0-r12,lr}"); \
 	asm("mrs r0, spsr"); \
-	asm("push {r0}"); \
+	asm("mov r1, sp"); \
+	asm("push {r0, r1}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context));
 
 #define KEXP_BOT3 \
-	asm("pop {r0, r3}"); /* apsr */\
+	asm("nop"); \
+	asm("pop {r0, r1}"); /* spsr */\
 	asm("msr SPSR_cxsf, r0"); \
 	asm("ldm sp!, {r0-r12,pc}^")
 

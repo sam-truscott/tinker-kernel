@@ -27,7 +27,6 @@ int kmain(void)
     tinker_process_t p = 0;
 
     tinker_debug("tinker: initialising test process\n");
-    tinker_debug("tinker: initialising test process 2\n");
 
 	extern char * __utext;
 	extern char * __udata;

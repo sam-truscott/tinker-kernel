@@ -10,5 +10,7 @@
 .section .api
 .global TINKER_API_CALL_7
 TINKER_API_CALL_7:
+    push {fp, lr}
     svc 0
+    pop	{fp, lr}
     bx lr
