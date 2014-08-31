@@ -10,6 +10,7 @@
 #include "arch/tgt.h"
 
 #include "arch/arm/arm.h"
+#include "arch/arm/arm_cpsr.h"
 
 #include "kernel/kernel_initialise.h"
 #include "kernel/interrupts/interrupt_manager.h"
@@ -17,6 +18,7 @@
 #include "kernel/process/process_manager.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"
+#include "kernel/utils/util_memset.h"
 
 #include "uart.h"
 
@@ -27,6 +29,15 @@ void bsp_initialise(void)
 	uart_init();
 
 	time_set_system_clock(NULL);
+	{
+		const psr_mode_t psr_mode = arm_get_psr_mode();
+		char buffer[20];
+		util_memset(buffer, 0, 20);
+		arm_get_psr_mode_name(psr_mode, buffer, 20);
+		uart_puts("Processor Mode: ");
+		uart_puts(buffer);
+		uart_puts("\n");
+	}
 
 	/*
 	 * Initialise the Target Processor

@@ -58,9 +58,12 @@ void kernel_main(void)
 	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
 	sch_set_current_thread(idle_thread);
 
+	debug_print("System: Calling kmain()\n");
 	kmain();
+	debug_print("System: Called kmain()\n");
 
 #if defined (KERNEL_SHELL1)
+	debug_print("System: Creating kshell\n");
 	proc_create_thread(
 			thread_get_parent(idle_thread),
 			"kshell",
@@ -72,6 +75,7 @@ void kernel_main(void)
 			NULL);
 #endif /* HAS_CONSOLE */
 
+	debug_print("System: Entering User mode\n");
 	tgt_enter_usermode();
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }

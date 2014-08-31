@@ -10,24 +10,12 @@
 #include "arm.h"
 
 #include "config.h"
+#include "arm_cpsr.h"
+#include "arm_vec.h"
 
-#define ARM_CONTEXT_GPR 13
+#include "kernel/interrupts/interrupt_manager.h"
 
-/**
- * The structure of the saved interrupt vector context
- */
-#pragma pack(push,1)
-typedef struct tgt_context_t
-{
-    uint32_t sp;
-    uint32_t restore_lr;
-    uint32_t link_area_1;
-    uint32_t link_area_2;
-    uint32_t gpr[ARM_CONTEXT_GPR];
-    uint32_t apsr;
-    uint32_t lr;
-} tgt_context_internal_t;
-#pragma pack(pop)
+static tgt_context_t arm_vec_handler(arm_vec_t type, tgt_context_t context);
 
 void tgt_initialise(void)
 {
@@ -36,8 +24,46 @@ void tgt_initialise(void)
 
 void ivt_initialise(void)
 {
-    // TODO write values into the vector table
+    // write values into the vector table
+	arm_vec_install(VECTOR_RESET, &arm_vec_handler);
+	arm_vec_install(VECTOR_UNDEFINED, &arm_vec_handler);
+	arm_vec_install(VECTOR_SYSTEM_CALL, &arm_vec_handler);
+	arm_vec_install(VECTOR_PRETECH_ABORT, &arm_vec_handler);
+	arm_vec_install(VECTOR_DATA_ABORT, &arm_vec_handler);
+	arm_vec_install(VECTOR_RESERVED, &arm_vec_handler);
+	arm_vec_install(VECTOR_IRQ, &arm_vec_handler);
+	arm_vec_install(VECTOR_FIQ, &arm_vec_handler);
     // TODO external interrupts -> int_handle_external_vector();
+}
+
+static tgt_context_t arm_vec_handler(arm_vec_t type, tgt_context_t context)
+{
+	bool_t timer = false;
+	printp_out("handler lr %d type %d\n", context.lr, type);
+	switch(type)
+	{
+	case VECTOR_RESET:
+	case VECTOR_UNDEFINED:
+	case VECTOR_PRETECH_ABORT:
+	case VECTOR_DATA_ABORT:
+	case VECTOR_RESERVED:
+		int_fatal_program_error_interrupt(&context);
+		break;
+	case VECTOR_SYSTEM_CALL:
+		int_syscall_request_interrupt(&context);
+		break;
+	case VECTOR_IRQ:
+	case VECTOR_FIQ:
+		if (timer)
+		{
+			int_context_switch_interrupt(&context);
+		}
+		else
+		{
+			int_handle_external_vector();
+		}
+	}
+	return context;
 }
 
 error_t tgt_initialise_process(process_t * const process)
@@ -85,7 +111,6 @@ void tgt_initialise_context(
         // use kernel_mode to set stuff up
         (void)kernel_mode; // UNUSED
         arm_context->lr = exit_function;
-        arm_context->restore_lr = 0;
     }
 }
 
@@ -189,7 +214,9 @@ void tgt_disable_external_interrupts(void)
 
 void tgt_enter_usermode(void)
 {
-    // TOOD enter usermode
+	printp_out("Entering user mode\n");
+	arm_set_psr_mode(PSR_MODE_USER);
+	tinker_debug("User mode entered\n");
 }
 
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
