@@ -15,7 +15,7 @@
 
 #include "kernel/interrupts/interrupt_manager.h"
 
-static tgt_context_t arm_vec_handler(arm_vec_t type, tgt_context_t context);
+static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
 
 void tgt_initialise(void)
 {
@@ -36,10 +36,11 @@ void ivt_initialise(void)
     // TODO external interrupts -> int_handle_external_vector();
 }
 
-static tgt_context_t arm_vec_handler(arm_vec_t type, tgt_context_t context)
+static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
+	tgt_context_t * context = (tgt_context_t*)contextp;
 	bool_t timer = false;
-	printp_out("handler lr %d type %d\n", context.lr, type);
+	printp_out("handler lr %d type %d\n", context->lr, type);
 	switch(type)
 	{
 	case VECTOR_RESET:
@@ -47,23 +48,22 @@ static tgt_context_t arm_vec_handler(arm_vec_t type, tgt_context_t context)
 	case VECTOR_PRETECH_ABORT:
 	case VECTOR_DATA_ABORT:
 	case VECTOR_RESERVED:
-		int_fatal_program_error_interrupt(&context);
+		int_fatal_program_error_interrupt(context);
 		break;
 	case VECTOR_SYSTEM_CALL:
-		int_syscall_request_interrupt(&context);
+		int_syscall_request_interrupt(context);
 		break;
 	case VECTOR_IRQ:
 	case VECTOR_FIQ:
 		if (timer)
 		{
-			int_context_switch_interrupt(&context);
+			int_context_switch_interrupt(context);
 		}
 		else
 		{
 			int_handle_external_vector();
 		}
 	}
-	return context;
 }
 
 error_t tgt_initialise_process(process_t * const process)
@@ -231,8 +231,9 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
 
 uint32_t tgt_get_stack_pointer(void)
 {
-    // TODO get the stack pointer - need to move this to ASM
-    return 0;
+	uint32_t sp;
+	asm("mov %[ps], sp" : [ps]"=r" (sp));
+	return sp;
 }
 
 void tgt_load_context(

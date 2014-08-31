@@ -33,12 +33,12 @@ typedef struct tgt_context_t
 {
     uint32_t sp;
     uint32_t gpr[ARM_CONTEXT_GPR];
-    uint32_t apsr;
     uint32_t lr;
+    uint32_t apsr;
 } tgt_context_internal_t;
 #pragma pack(pop)
 
-typedef tgt_context_t arm_vec_handler_t(arm_vec_t type, tgt_context_t context);
+typedef void arm_vec_handler_t(arm_vec_t type, uint32_t contextp);
 
 void arm_vec_install(arm_vec_t vector, arm_vec_handler_t * const handler);
 
