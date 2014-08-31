@@ -9,12 +9,10 @@
 
 #include "arm_vec.h"
 
-#define KSTACKEXC   0x1000
-
 #define KEXP_TOPSWI \
 	uint32_t context; \
 	asm("stmfd sp!,{r0-r12,lr}"); \
-	asm("mrs r0, apsr"); \
+	asm("mrs r0, spsr"); \
 	asm("push {r0}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context));
 
@@ -22,12 +20,13 @@
 	uint32_t context; \
 	asm("sub lr, lr, #4"); \
 	asm("stmfd sp!,{r0-r12,lr}"); \
-	asm("mrs r0, apsr"); \
+	asm("mrs r0, spsr"); \
 	asm("push {r0}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context));
 
 #define KEXP_BOT3 \
-	asm("pop {r0}"); /* apsr */\
+	asm("pop {r0, r3}"); /* apsr */\
+	asm("msr SPSR_cxsf, r0"); \
 	asm("ldm sp!, {r0-r12,pc}^")
 
 static arm_vec_handler_t * vector_table[8];

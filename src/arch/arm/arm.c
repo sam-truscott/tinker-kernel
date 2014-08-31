@@ -40,7 +40,7 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
 	tgt_context_t * context = (tgt_context_t*)contextp;
 	bool_t timer = false;
-	printp_out("handler lr %d type %d\n", context->lr, type);
+	printp_out("handler lr %x type %d\n", context->lr, type);
 	switch(type)
 	{
 	case VECTOR_RESET:
