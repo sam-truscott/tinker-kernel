@@ -109,7 +109,7 @@ error_t proc_create_process(
 	}
 
 #if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Initialising pool for %s\n", image);
+		debug_print("Process: Initialising pool for %s, meminfo=%x, parent=%x\n", image, meminfo, parent_pool);
 #endif
 	mem_pool_info_t * new_mem_pool = NULL;
 	const bool_t pool_allocated = mem_init_process_memory(

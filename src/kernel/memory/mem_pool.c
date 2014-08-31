@@ -65,11 +65,19 @@ bool_t	mem_init_process_memory(
 {
 	bool_t ret = false;
 
+#if defined (MEMORY_DEBUGGING)
+	debug_print("mem: initalising process pool %x size %x\n", pool, size);
+#endif
+
 	/* allocate that from RAM */
 	const uint32_t proc_memory_pool = (uint32_t)mem_alloc_aligned(
 			pool,
 			size,
 			MMU_PAGE_SIZE);
+
+#if defined (MEMORY_DEBUGGING)
+	debug_print("mem: initalised process pool %x size %x result %x\n", pool, size, proc_memory_pool);
+#endif
 
 	if (proc_memory_pool != 0)
 	{
