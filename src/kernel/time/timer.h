@@ -28,7 +28,7 @@ typedef void (timer_cancel)(
 typedef struct
 {
 	timer_setup *		timer_setup;
-	timer_cancel *	timer_cancel;
+	timer_cancel *		timer_cancel;
 	timer_param_t		usr_data;
 	uint32_t 			usr_data_size;
 } timer_t;

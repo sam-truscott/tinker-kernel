@@ -26,6 +26,8 @@ void bsp_initialise(void)
 {
 	uart_init();
 
+	time_set_system_clock(NULL);
+
 	/*
 	 * Initialise the Target Processor
 	 */
