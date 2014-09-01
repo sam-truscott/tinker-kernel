@@ -228,10 +228,10 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
     return sp;
 }
 
-uint32_t tgt_get_stack_pointer(void)
+uint32_t tgt_get_frame_pointer(void)
 {
 	uint32_t sp;
-	asm("mov %[ps], sp" : [ps]"=r" (sp));
+	asm("mov %[ps], fp" : [ps]"=r" (sp));
 	return sp;
 }
 

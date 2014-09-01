@@ -49,8 +49,8 @@ ppc_set_decrementer:
     mtdec   %r3
     blr
 
-.global tgt_get_stack_pointer
-tgt_get_stack_pointer:
+.global tgt_get_frame_pointer
+tgt_get_frame_pointer:
     mr  %r3, %r1
     blr
 

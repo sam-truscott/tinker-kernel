@@ -269,7 +269,7 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
     return sp;
 }
 
-uint32_t tgt_get_stack_pointer(void)
+uint32_t tgt_get_frame_pointer(void)
 {
     // TODO get the stack pointer - need to move this to ASM
     return 0;

@@ -32,7 +32,7 @@ void bsp_initialise(void)
 	uart_puts("UART Up\n\0");
 #endif
 
-	printp_out("Stack at %x\n", tgt_get_stack_pointer());
+	printp_out("Frame at %x\n", tgt_get_frame_pointer());
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
