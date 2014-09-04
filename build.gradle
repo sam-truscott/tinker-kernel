@@ -215,7 +215,7 @@ sources {
     }
     ppc32Gdb {
         c {
-            lib libraries.base.static        // core
+            lib libraries.base.static        // base headers
             lib libraries.api.static         // api layer
             lib libraries.archPowerPc.static // powerpc code
             lib libraries.boot.static        // boot c code into kernel
@@ -228,7 +228,7 @@ sources {
     }
     armRaspPi {
         c {
-            lib libraries.base.static        // core
+            lib libraries.base.static        // base headers
             lib libraries.api.static         // api layer
             lib libraries.archArm.static     // generic arm code
             lib libraries.boot.static        // boot c code into kernel
@@ -247,7 +247,7 @@ sources {
     }
     x86 {
         c {
-            lib libraries.base.static    // core
+            lib libraries.base.static    // base headers
             lib libraries.api.static     // api layer
             lib libraries.archX86.static // x86 code
             lib libraries.boot.static    // boot c code into kernel
@@ -282,7 +282,7 @@ sources {
                 "-DBUILDING_KERNEL",
                 "-DKERNEL_SHELL",
                 "-DKERNEL_DEBUGGING",
-                "-UMEMORY_DEBUGGING",
+                "-DMEMORY_DEBUGGING",
                 "-UDEBUG_COLLECTIONS",
                 "-DPROCESS_DEBUGGING"
         } else if (buildType == buildTypes.release) {
