@@ -148,11 +148,42 @@ void tgt_destroy_context(
     }
 }
 
+static const uint8_t stack_offset[4] =
+{
+		7,
+		6,
+		5,
+		4
+};
+
 uint32_t tgt_get_syscall_param(
         const tgt_context_t * const context,
         const uint8_t param)
 {
-    return context->gpr[param];
+	uint32_t result;
+	switch (param)
+	{
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+		result = context->gpr[param];
+		break;
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+	{
+		uint32_t * const fp = (uint32_t*)context->gpr[11];
+		result = *(fp-stack_offset[param-4]);
+		//result = -1;
+	}
+		break;
+	default:
+		result = 0;
+		break;
+	}
+    return result;
 }
 
 void tgt_set_syscall_return(tgt_context_t * const context, const uint32_t value)
@@ -223,7 +254,7 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
     uint32_t sp = 0;
     if (context)
     {
-        sp = context->sp;
+        sp = context->gpr[11];
     }
     return sp;
 }
