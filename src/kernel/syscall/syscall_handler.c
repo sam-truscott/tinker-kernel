@@ -119,6 +119,20 @@ void syscall_handle_system_call(tgt_context_t * const context)
 	 */
 	switch (api)
 	{
+		case SYSCALL_TEST:
+			if (param[0] != SYSCALL_TEST_1
+					|| param[1] != SYSCALL_TEST_2
+					|| param[2] != SYSCALL_TEST_3
+					|| param[3] != SYSCALL_TEST_4
+					|| param[4] != SYSCALL_TEST_5
+					|| param[5] != SYSCALL_TEST_6
+					|| param[6] != SYSCALL_TEST_7)
+			{
+				kernel_panic();
+			}
+			ret = 0;
+			break;
+
 		case SYSCALL_CREATE_PROCESS:
 			{
 				process_t * process;
