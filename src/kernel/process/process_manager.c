@@ -109,7 +109,11 @@ error_t proc_create_process(
 	}
 
 #if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Initialising pool for %s, meminfo=%x, parent=%x\n", image, meminfo, parent_pool);
+		debug_print("Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
+				image,
+				meminfo->heap_size,
+				meminfo->stack_size,
+				parent_pool);
 #endif
 	mem_pool_info_t * new_mem_pool = NULL;
 	const bool_t pool_allocated = mem_init_process_memory(
@@ -166,11 +170,16 @@ error_t proc_create_process(
 						flags,
 						&thread_obj,
 						NULL);
-
-				if ( ret == NO_ERROR )
+				if (ret == NO_ERROR)
 				{
-					if (process_list_t_add(process_list, proc) == false )
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Adding process to process list: %s\n", image);
+#endif
+					if (process_list_t_add(process_list, proc) == false)
 					{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Failed to add process to process list: %s\n", image);
+#endif
 						process_exit(proc);
 						ret = OUT_OF_MEMORY;
 					}
@@ -219,12 +228,21 @@ error_t proc_create_thread(
 	/* initialise the thread */
 	if (thread)
 	{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Created thread %s on process %s OK\n", name, process_get_image(process));
+#endif
 		/* add the thread to the process list */
 		object_number_t objno = INVALID_OBJECT_ID;
 		if (process_add_thread(process, thread, &objno))
 		{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Added thread %s to process %s OK\n", name, process_get_image(process));
+#endif
 			if (thread_get_state(thread) != THREADY_READY)
 			{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Thread %s is NOT ready\n", name);
+#endif
 				ret = OUT_OF_MEMORY;
 			}
 		}

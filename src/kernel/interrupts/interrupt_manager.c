@@ -58,6 +58,5 @@ void int_syscall_request_interrupt(
 		tgt_context_t * const context)
 {
 	kernel_assert("System Call Interrupt Context missing", context != NULL);
-
 	syscall_handle_system_call(context);
 }

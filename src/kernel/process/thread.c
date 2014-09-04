@@ -68,6 +68,7 @@ thread_t * thread_create(
 	thread_t * const thread = mem_alloc(pool, sizeof(thread_t));
 	if (thread)
 	{
+		util_memset(thread, 0, sizeof(thread_t));
 		thread->parent = (process_t*)parent;
 		thread->thread_id = 0;
 		thread->priority = priority;
@@ -77,6 +78,9 @@ thread_t * thread_create(
 		const uint32_t length = util_strlen(name, MAX_THREAD_NAME_LEN);
 		util_memcpy(thread->name, name, length);
 		thread->name[length] = '\0';
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
+#endif
 		if (thread->stack)
 		{
 			thread->stack_size = stack;

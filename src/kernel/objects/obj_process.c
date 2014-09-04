@@ -48,17 +48,23 @@ error_t obj_create_process(
 	object_process_t * no = NULL;
 	error_t result = NO_ERROR;
 
-	if ( object )
+	if (object)
 	{
-		if ( table)
+		if (table)
 		{
 			no = (object_process_t*)mem_alloc(pool, sizeof(object_process_t));
+#if defined (PROCESS_DEBUGGING)
+			debug_print("Objects: Creating process, address is %x\n", no);
+#endif
 			if (no)
 			{
 				object_number_t objno;
 				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
 				{
+#if defined (PROCESS_DEBUGGING)
+					debug_print("Objects: Process added to object table\n");
+#endif
 					obj_initialise_object(&no->object, objno, PROCESS_OBJ);
 					no->pid = process_id;
 					no->pool = pool;
