@@ -5,6 +5,7 @@
 #include "kernel/utils/util_memcpy.h"
 
 #include "malloc_config.h"
+#include "malloc_failure.h"
 
 extern void memcpy(void * dst, const void * src, const uint32_t size);
 

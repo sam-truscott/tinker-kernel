@@ -18,7 +18,7 @@
 
 #undef DEBUG
 #define ABORT_ON_ASSERT_FAILURE 1
-#define MALLOC_FAILURE_ACTION kernel_panic()
+#define MALLOC_FAILURE_ACTION malloc_failure()
 
 #define LACKS_UNISTD_H 1
 #define LACKS_FCNTL_H 1
