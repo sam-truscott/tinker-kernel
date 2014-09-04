@@ -28,7 +28,7 @@ error_t tinker_create_process(
 		const char * image_name,
 		thread_entry_point * entry,
 		uint8_t priority,
-		const tinker_meminfo_t * const meminfo,
+		tinker_meminfo_t * const meminfo,
 		uint32_t flags,
 		tinker_process_t * process)
 {

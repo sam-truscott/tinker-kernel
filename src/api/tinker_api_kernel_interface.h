@@ -65,6 +65,48 @@ typedef enum syscall_function
 
 } syscall_function_t;
 
+uint32_t TINKER_API_CALL_0(
+		const syscall_function_t api) TINKER_API_SUFFIX;
+
+uint32_t TINKER_API_CALL_1(
+		const syscall_function_t api,
+		uint32_t param_1) TINKER_API_SUFFIX;
+
+uint32_t TINKER_API_CALL_2(
+		const syscall_function_t api,
+		uint32_t param_1,
+		uint32_t param_2) TINKER_API_SUFFIX;
+
+uint32_t TINKER_API_CALL_3(
+		const syscall_function_t api,
+		uint32_t param_1,
+		uint32_t param_2,
+		uint32_t param_3) TINKER_API_SUFFIX;
+
+uint32_t TINKER_API_CALL_4(
+		const syscall_function_t api,
+		uint32_t param_1,
+		uint32_t param_2,
+		uint32_t param_3,
+		uint32_t param_4) TINKER_API_SUFFIX;
+
+uint32_t TINKER_API_CALL_5(
+		const syscall_function_t api,
+		uint32_t param_1,
+		uint32_t param_2,
+		uint32_t param_3,
+		uint32_t param_4,
+		uint32_t param_5) TINKER_API_SUFFIX;
+
+uint32_t TINKER_API_CALL_6(
+		const syscall_function_t api,
+		uint32_t param_1,
+		uint32_t param_2,
+		uint32_t param_3,
+		uint32_t param_4,
+		uint32_t param_5,
+		uint32_t param_6) TINKER_API_SUFFIX;
+
 uint32_t TINKER_API_CALL_7(
 		const syscall_function_t api,
 		uint32_t param_1,
@@ -74,82 +116,5 @@ uint32_t TINKER_API_CALL_7(
 		uint32_t param_5,
 		uint32_t param_6,
 		uint32_t param_7) TINKER_API_SUFFIX;
-
-#define TINKER_API_CALL_0(api) \
-	TINKER_API_CALL_7( \
-		api,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM)
-
-#define TINKER_API_CALL_1(api, param_1) \
-	TINKER_API_CALL_7( \
-		api,\
-		param_1,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM)
-
-#define TINKER_API_CALL_2(api, param_1, param_2) \
-	TINKER_API_CALL_7( \
-		api,\
-		param_1,\
-		param_2,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM)
-
-#define TINKER_API_CALL_3(api, param_1, param_2, param_3) \
-	TINKER_API_CALL_7( \
-		api,\
-		param_1,\
-		param_2,\
-		param_3,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM)
-
-#define TINKER_API_CALL_4(api, param_1, param_2, param_3, param_4) \
-	TINKER_API_CALL_7( \
-		api,\
-		param_1,\
-		param_2,\
-		param_3,\
-		param_4,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM)
-
-#define TINKER_API_CALL_5(api, param_1, param_2, param_3, param_4, param_5) \
-	TINKER_API_CALL_7( \
-		api,\
-		param_1,\
-		param_2,\
-		param_3,\
-		param_4,\
-		param_5,\
-		UNUSED_PARAM,\
-		UNUSED_PARAM)
-
-#define TINKER_API_CALL_6(api, param_1, param_2, param_3, param_4, param_5, param_6) \
-	TINKER_API_CALL_7( \
-		api,\
-		param_1,\
-		param_2,\
-		param_3,\
-		param_4,\
-		param_5,\
-		param_6,\
-		UNUSED_PARAM)
 
 #endif /* TINKER_API_KERNEL_INTERFACE_H_ */

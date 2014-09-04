@@ -282,7 +282,7 @@ sources {
                 "-DBUILDING_KERNEL",
                 "-DKERNEL_SHELL",
                 "-DKERNEL_DEBUGGING",
-                "-DMEMORY_DEBUGGING",
+                "-UMEMORY_DEBUGGING",
                 "-UDEBUG_COLLECTIONS",
                 "-DPROCESS_DEBUGGING"
         } else if (buildType == buildTypes.release) {

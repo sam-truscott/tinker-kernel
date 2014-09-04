@@ -36,8 +36,8 @@ int kmain(void)
 	char * user_data_end = (char*)&__euser;
 	const tinker_meminfo_t meminfo =
 	{
-		.heap_size = 0x10000,
-		.stack_size = 0x1000,
+		.heap_size = 0x10000u,
+		.stack_size = 0x1000u,
 		.text_start = (uint32_t)user_text_pos,
 		.text_size = (uint32_t)(user_data_pos - user_text_pos),
 		.data_start = (uint32_t)user_data_pos,

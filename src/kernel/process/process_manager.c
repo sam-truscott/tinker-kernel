@@ -58,8 +58,13 @@ error_t proc_create_process(
 {
 	error_t ret = NO_ERROR;
 	process_t * proc = NULL;
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Create process with image %s, entry %x, priority %d, meminfo %x, flags %x\n",
+				image, entry_point, priority, meminfo, flags);
+		debug_print("Process: Create process with heap %x stack %x\n", meminfo->heap_size, meminfo->stack_size);
+#endif
 
-	if ( process )
+	if (process)
 	{
 		* process = 0;
 	}
