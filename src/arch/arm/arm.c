@@ -160,6 +160,8 @@ uint32_t tgt_get_syscall_param(
         const tgt_context_t * const context,
         const uint8_t param)
 {
+	return context->gpr[param];
+	/*
 	uint32_t result;
 	switch (param)
 	{
@@ -176,7 +178,6 @@ uint32_t tgt_get_syscall_param(
 	{
 		uint32_t * const fp = (uint32_t*)context->gpr[11];
 		result = *(fp-stack_offset[param-4]);
-		//result = -1;
 	}
 		break;
 	default:
@@ -184,6 +185,7 @@ uint32_t tgt_get_syscall_param(
 		break;
 	}
     return result;
+    */
 }
 
 void tgt_set_syscall_return(tgt_context_t * const context, const uint32_t value)

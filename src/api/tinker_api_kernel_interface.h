@@ -65,47 +65,13 @@ typedef enum syscall_function
 
 } syscall_function_t;
 
-uint32_t TINKER_API_CALL_0(
-		const syscall_function_t api) TINKER_API_SUFFIX;
-
-uint32_t TINKER_API_CALL_1(
-		const syscall_function_t api,
-		uint32_t param_1) TINKER_API_SUFFIX;
-
-uint32_t TINKER_API_CALL_2(
-		const syscall_function_t api,
-		uint32_t param_1,
-		uint32_t param_2) TINKER_API_SUFFIX;
-
-uint32_t TINKER_API_CALL_3(
-		const syscall_function_t api,
-		uint32_t param_1,
-		uint32_t param_2,
-		uint32_t param_3) TINKER_API_SUFFIX;
-
-uint32_t TINKER_API_CALL_4(
-		const syscall_function_t api,
-		uint32_t param_1,
-		uint32_t param_2,
-		uint32_t param_3,
-		uint32_t param_4) TINKER_API_SUFFIX;
-
-uint32_t TINKER_API_CALL_5(
-		const syscall_function_t api,
-		uint32_t param_1,
-		uint32_t param_2,
-		uint32_t param_3,
-		uint32_t param_4,
-		uint32_t param_5) TINKER_API_SUFFIX;
-
-uint32_t TINKER_API_CALL_6(
-		const syscall_function_t api,
-		uint32_t param_1,
-		uint32_t param_2,
-		uint32_t param_3,
-		uint32_t param_4,
-		uint32_t param_5,
-		uint32_t param_6) TINKER_API_SUFFIX;
+#define TINKER_API_CALL_0(s) TINKER_API_CALL_7(s,0,0,0,0,0,0,0)
+#define TINKER_API_CALL_1(s,a) TINKER_API_CALL_7(s,a,0,0,0,0,0,0)
+#define TINKER_API_CALL_2(s,a,b) TINKER_API_CALL_7(s,a,b,0,0,0,0,0)
+#define TINKER_API_CALL_3(s,a,b,c) TINKER_API_CALL_7(s,a,b,c,0,0,0,0)
+#define TINKER_API_CALL_4(s,a,b,c,d) TINKER_API_CALL_7(s,a,b,c,d,0,0,0)
+#define TINKER_API_CALL_5(s,a,b,c,d,e) TINKER_API_CALL_7(s,a,b,c,d,e,0,0)
+#define TINKER_API_CALL_6(s,a,b,c,d,e,f) TINKER_API_CALL_7(s,a,b,c,d,e,f,0)
 
 uint32_t TINKER_API_CALL_7(
 		const syscall_function_t api,
