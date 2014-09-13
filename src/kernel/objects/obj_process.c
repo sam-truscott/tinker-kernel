@@ -103,7 +103,7 @@ error_t obj_process_thread_exit(
 	kernel_assert("obj_process_thread - check thread object exists\n", thread != NULL);
 
 #if defined(PROCESS_DEBUGGING)
-		debug_print("proc %d (%s) is exiting\n", o->pid, process_get_image(o->process));
+		debug_print("Objects: Process %d (%s) is exiting\n", o->pid, process_get_image(o->process));
 #endif
 
 	process_thread_exit(o->process, obj_get_thread(thread));
@@ -129,7 +129,7 @@ void obj_process_exit(object_process_t * const o)
 			process_get_object_table(o->process),
 			o->object.object_number);
 #if defined(PROCESS_DEBUGGING)
-	debug_print("process %d exit\n", o->pid);
+	debug_print("Objects: Process %d exit\n", o->pid);
 #endif
 	process_t * const proc = o->process;
 	obj_delete_process(o);

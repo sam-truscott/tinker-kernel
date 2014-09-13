@@ -74,7 +74,7 @@ void kernel_main(void)
 	kmain();
 	debug_print("System: Called kmain()\n");
 
-#if defined (KERNEL_SHELL1)
+#if defined (KERNEL_SHELL)
 	debug_print("System: Creating kshell\n");
 	proc_create_thread(
 			thread_get_parent(idle_thread),
@@ -89,5 +89,6 @@ void kernel_main(void)
 
 	debug_print("System: Entering User mode\n");
 	tgt_enter_usermode();
+	debug_print("System: Loading thread\n");
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }
