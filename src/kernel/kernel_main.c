@@ -74,7 +74,7 @@ void kernel_main(void)
 	kmain();
 	debug_print("System: Called kmain()\n");
 
-#if defined (KERNEL_SHELL)
+#if defined (KERNEL_SHELL1)
 	debug_print("System: Creating kshell\n");
 	proc_create_thread(
 			thread_get_parent(idle_thread),

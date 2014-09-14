@@ -28,6 +28,8 @@ typedef enum arm_vec
  * The structure of the saved interrupt vector context
  */
 #define ARM_CONTEXT_GPR 13
+#define ARM_FP_REGISTER 11
+
 #pragma pack(push,1)
 typedef struct tgt_context_t
 {
