@@ -234,7 +234,7 @@ error_t proc_create_thread(
 	if (thread)
 	{
 #if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Created thread %s on process %s OK\n", name, process_get_image(process));
+		debug_print("Process: Created thread %s on process %s, entry %x OK\n", name, process_get_image(process), entry_point);
 #endif
 		/* add the thread to the process list */
 		object_number_t objno = INVALID_OBJECT_ID;

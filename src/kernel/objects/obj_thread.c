@@ -121,7 +121,7 @@ error_t obj_exit_thread(object_thread_t * const o)
 
 #if defined(PROCESS_DEBUGGING)
 		const uint32_t pid = process_get_pid(thread_get_parent(t));
-		debug_print("proc %d thread %d (%s) is exiting\n", pid, o->tid, thread_get_name(o->thread));
+		debug_print("Objects: proc %d thread %d (%s) is exiting\n", pid, o->tid, thread_get_name(o->thread));
 #endif
 
 		const thread_state_t state = thread_get_state(t);

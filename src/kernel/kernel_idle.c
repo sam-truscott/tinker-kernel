@@ -22,6 +22,7 @@ static uint32_t kernel_idle_check(uint32_t count)
 
 void kernel_idle(void)
 {
+	printp_out("IDLE: kernel idle starting\n");
 	const uint32_t testing_a = 0x55AA55AA;
 	uint32_t count = 0;
 	while( 1 != 2 && testing_a)
