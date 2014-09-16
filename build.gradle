@@ -93,7 +93,23 @@ libraries {
     }
     // the core
     core {}
+    // drivers
+    driverIntcOpic {
+    	targetPlatforms "tinkerPpc"
+    }
+    driverTimerBcm2835 {
+    	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
+    }
+    driverTimerOpic {
+    	targetPlatforms "tinkerPpc"
+    }
+    driverTimerPpc32tbr {
+    	targetPlatforms "tinkerPpc"
+    }
+    driverSerialUart16550 {}
+    // low-level
     boot {}
+    // api
     api {}
 }
 
@@ -204,11 +220,56 @@ sources {
              }
          }
     }
+    driverIntcOpic {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/intc/opic"
+                 include "**/*.c"
+             }
+    	}
+    }
+    driverTimerBcm2835 {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/timer/bcm2835"
+                 include "**/*.c"
+             }
+    	}
+    }
+    driverTimerOpic {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/timer/opic"
+                 include "**/*.c"
+             }
+    	}
+    }
+    driverTimerPpc32tbr {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/timer/ppc32tbr"
+                 include "**/*.c"
+             }
+    	}
+    }
+    driverSerialUart16550 {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/serial/uart16550"
+                 include "**/*.c"
+             }
+    	}
+    }
     core {
          c {
              lib libraries.base.static
              source {
-                 srcDirs "src/kernel", "src/devices"
+                 srcDirs "src/kernel"
                  include "**/*.c"
              }
          }
@@ -220,6 +281,10 @@ sources {
             lib libraries.archPowerPc.static // powerpc code
             lib libraries.boot.static        // boot c code into kernel
             lib libraries.core.static        // the core kernel
+            lib libraries.driverSerialUart16550.static
+            lib libraries.driverTimerPpc32tbr.static
+            lib libraries.driverTimerOpic.static
+            lib libraries.driverIntcOpic.static
             source {
                 srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
                 include "**/*.c"
@@ -233,6 +298,7 @@ sources {
             lib libraries.archArm.static     // generic arm code
             lib libraries.boot.static        // boot c code into kernel
             lib libraries.core.static        // the core kernel
+            lib libraries.driverTimerBcm2835.static
             source {
                 srcDirs "src/arch/arm/pi", "src/tinker"
                 include "**/*.c"
