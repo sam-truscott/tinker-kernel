@@ -48,6 +48,8 @@ void tinker_time_microseconds(const uint32_t microseconds, tinker_time_t * const
 
 void tinker_time_nanoseconds(const uint64_t nanoseconds, tinker_time_t * const a) TINKER_API_SUFFIX;
 
+uint32_t tinker_timer_get_microseconds(const tinker_time_t * const t) TINKER_API_SUFFIX;
+
 error_t tinker_get_time(tinker_time_t * const time) TINKER_API_SUFFIX;
 
 error_t tinker_sleep(const tinker_time_t * const time) TINKER_API_SUFFIX;

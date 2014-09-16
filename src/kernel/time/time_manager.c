@@ -29,7 +29,7 @@ void time_get_system_time(tinker_time_t * const time)
 {
 	if (time_system_clock && time)
 	{
-		time_system_time_ns = time_system_clock->get_time();
+		time_system_time_ns = time_system_clock->get_time(time_system_clock->user_data);
 		time->seconds = time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
 		time->nanoseconds = (int64_t)(time_system_time_ns - ((int64_t)time->seconds * ONE_SECOND_AS_NANOSECONDS));
 	}

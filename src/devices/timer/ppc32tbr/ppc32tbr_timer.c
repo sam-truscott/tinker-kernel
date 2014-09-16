@@ -36,8 +36,6 @@ void ppc_get_timer(const process_t * const parent, timer_t * const timer)
 		if (timer->usr_data)
 		{
 			timer->usr_data_size = sizeof(ppc_timer_usr_data_t);
-
-
 		}
 		else
 		{

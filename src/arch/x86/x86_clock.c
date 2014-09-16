@@ -8,11 +8,12 @@
  */
 #include "x86_clock.h"
 
-static uint64_t x86_get_timebase_time(void);
+static uint64_t x86_get_time(void * const user_data);
 
 static clock_device_t x86_timebase_clock =
 {
-		x86_get_timebase_time
+		.get_time = x86_get_time,
+		.user_data = 0
 };
 
 static inline uint64_t x86_rdtsc(void)
@@ -22,8 +23,9 @@ static inline uint64_t x86_rdtsc(void)
     return ret;
 }
 
-uint64_t x86_get_timebase_time(void)
+uint64_t x86_get_time(void * const user_data)
 {
+	(void)user_data;
 	return x86_rdtsc();
 }
 

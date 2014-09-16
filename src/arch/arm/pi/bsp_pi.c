@@ -19,10 +19,11 @@
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"
 #include "kernel/utils/util_memset.h"
+#include "devices/timer/bcm2835/bcm2835_timer.h"
 
 #include "uart.h"
 
-static timer_t arm_internal_clock;
+static timer_t bcm2835_system_timer;
 
 void bsp_initialise(void)
 {
@@ -49,7 +50,10 @@ void bsp_setup(void)
 	//opic_intc = opic_intc_create(mem_get_default_pool(), (void*)0x80000000);
 	//int_install_isr(opic_intc);
 
-	alarm_set_timer(&arm_internal_clock);
+	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
+
+	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 1);
+	alarm_set_timer(&bcm2835_system_timer);
 
 	// route UART -> OPIC -> CPU
 	//intc_enable(opic_intc, 1);
@@ -76,7 +80,7 @@ void arm_check_timer(timer_t * const t)
 
 void bsp_check_timers_and_alarms(void)
 {
-	arm_check_timer(&arm_internal_clock);
+	arm_check_timer(&bcm2835_system_timer);
 }
 
 uint32_t bsp_get_usable_memory_start()
