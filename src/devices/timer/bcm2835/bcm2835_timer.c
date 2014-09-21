@@ -21,7 +21,6 @@ typedef struct
 {
 	bool_t enabled;
 	const tinker_time_t * alarm_time;
-	timer_callback * call_back;
 	uint8_t instance;
 	void * base;
 } bcm2835_timer_usr_data_t;
@@ -31,10 +30,10 @@ static void bcm2835_timer_setup(
 		const tinker_time_t * const timeout,
 		timer_callback * const call_back)
 {
-	if (usr_data && call_back)
+	(void)call_back;
+	if (usr_data)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
-		data->call_back = call_back;
 		*((tinker_time_t*)data->alarm_time) = *timeout;
 		data->enabled = true;
 		uint8_t offset;
@@ -77,7 +76,6 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 			timer->usr_data_size = sizeof(bcm2835_timer_usr_data_t);
 			((bcm2835_timer_usr_data_t*)timer)->enabled = false;
 			((bcm2835_timer_usr_data_t*)timer)->alarm_time = &TINKER_ZERO_TIME;
-			((bcm2835_timer_usr_data_t*)timer)->call_back = NULL;
 			((bcm2835_timer_usr_data_t*)timer)->instance = instance;
 			((bcm2835_timer_usr_data_t*)timer)->base = base;
 		}

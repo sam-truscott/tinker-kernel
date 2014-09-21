@@ -10,6 +10,7 @@
 #include "arch/tgt.h"
 
 #include "arch/arm/arm.h"
+#include "arch/arm/arm_vec.h"
 #include "arch/arm/arm_cpsr.h"
 
 #include "kernel/kernel_initialise.h"
@@ -24,6 +25,7 @@
 
 static timer_t bcm2835_scheduler_timer;
 static timer_t bcm2835_system_timer;
+static tinker_time_t scheduler_time;
 
 void bsp_initialise(void)
 {
@@ -32,8 +34,6 @@ void bsp_initialise(void)
 #if defined(KERNEL_DEBUGGING)
 	uart_puts("UART Up\n\0");
 #endif
-
-	printp_out("Frame at %x\n", tgt_get_frame_pointer());
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
@@ -53,6 +53,8 @@ void bsp_setup(void)
 	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
+	tinker_time_milliseconds(10, &scheduler_time);
+
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
 	alarm_set_timer(&bcm2835_system_timer);
 
@@ -64,24 +66,58 @@ void bsp_setup(void)
 	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 }
 
-void bsp_enable_schedule_timer(void)
+static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
+
+void ivt_initialise(void)
 {
-    // TODO schedule an alarm to generate an external
-    // interrupt at the scheduling rate
+    // write values into the vector table
+	arm_vec_install(VECTOR_RESET, &arm_vec_handler);
+	arm_vec_install(VECTOR_UNDEFINED, &arm_vec_handler);
+	arm_vec_install(VECTOR_SYSTEM_CALL, &arm_vec_handler);
+	arm_vec_install(VECTOR_PRETECH_ABORT, &arm_vec_handler);
+	arm_vec_install(VECTOR_DATA_ABORT, &arm_vec_handler);
+	arm_vec_install(VECTOR_RESERVED, &arm_vec_handler);
+	arm_vec_install(VECTOR_IRQ, &arm_vec_handler);
+	arm_vec_install(VECTOR_FIQ, &arm_vec_handler);
 }
 
-void arm_check_timer(timer_t * const t)
+static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
-	// TODO move this into generic arm code
-	if (t)
+	tgt_context_t * context = (tgt_context_t*)contextp;
+	bool_t timer = false;
+	switch(type)
 	{
-		//
+	case VECTOR_RESET:
+	case VECTOR_UNDEFINED:
+	case VECTOR_PRETECH_ABORT:
+	case VECTOR_DATA_ABORT:
+	case VECTOR_RESERVED:
+		int_fatal_program_error_interrupt(context);
+		break;
+	case VECTOR_SYSTEM_CALL:
+		int_syscall_request_interrupt(context);
+		break;
+	case VECTOR_IRQ:
+	case VECTOR_FIQ:
+		if (timer)
+		{
+			int_context_switch_interrupt(context);
+		}
+		else
+		{
+			int_handle_external_vector();
+		}
 	}
+}
+
+void bsp_enable_schedule_timer(void)
+{
+	bcm2835_scheduler_timer.timer_setup(NULL, &scheduler_time, NULL);
 }
 
 void bsp_check_timers_and_alarms(void)
 {
-	arm_check_timer(&bcm2835_system_timer);
+	// unused - we don't need this as we have two timers
 }
 
 uint32_t bsp_get_usable_memory_start()

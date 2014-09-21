@@ -16,54 +16,9 @@
 #include "tinker_api_types.h"
 #include "kernel/interrupts/interrupt_manager.h"
 
-static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
-
 void tgt_initialise(void)
 {
     // TODO initialise the core system registers
-}
-
-void ivt_initialise(void)
-{
-    // write values into the vector table
-	arm_vec_install(VECTOR_RESET, &arm_vec_handler);
-	arm_vec_install(VECTOR_UNDEFINED, &arm_vec_handler);
-	arm_vec_install(VECTOR_SYSTEM_CALL, &arm_vec_handler);
-	arm_vec_install(VECTOR_PRETECH_ABORT, &arm_vec_handler);
-	arm_vec_install(VECTOR_DATA_ABORT, &arm_vec_handler);
-	arm_vec_install(VECTOR_RESERVED, &arm_vec_handler);
-	arm_vec_install(VECTOR_IRQ, &arm_vec_handler);
-	arm_vec_install(VECTOR_FIQ, &arm_vec_handler);
-    // TODO external interrupts -> int_handle_external_vector();
-}
-
-static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
-{
-	tgt_context_t * context = (tgt_context_t*)contextp;
-	bool_t timer = false;
-	switch(type)
-	{
-	case VECTOR_RESET:
-	case VECTOR_UNDEFINED:
-	case VECTOR_PRETECH_ABORT:
-	case VECTOR_DATA_ABORT:
-	case VECTOR_RESERVED:
-		int_fatal_program_error_interrupt(context);
-		break;
-	case VECTOR_SYSTEM_CALL:
-		int_syscall_request_interrupt(context);
-		break;
-	case VECTOR_IRQ:
-	case VECTOR_FIQ:
-		if (timer)
-		{
-			int_context_switch_interrupt(context);
-		}
-		else
-		{
-			int_handle_external_vector();
-		}
-	}
 }
 
 error_t tgt_initialise_process(process_t * const process)
