@@ -20,9 +20,9 @@
 #include "kernel/time/alarm_manager.h"
 #include "kernel/utils/util_memset.h"
 #include "devices/timer/bcm2835/bcm2835_timer.h"
+#include "devices/serial/bcm2835/bcm2835_uart.h"
 
-#include "uart.h"
-
+static timer_t bcm2835_scheduler_timer;
 static timer_t bcm2835_system_timer;
 
 void bsp_initialise(void)
@@ -52,7 +52,8 @@ void bsp_setup(void)
 
 	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
-	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 1);
+	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
+	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
 	alarm_set_timer(&bcm2835_system_timer);
 
 	// route UART -> OPIC -> CPU

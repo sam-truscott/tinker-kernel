@@ -109,6 +109,9 @@ libraries {
     	targetPlatforms "tinkerPpc"
     }
     driverSerialUart16550 {}
+    driverSerialBcm2835 {
+    	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
+    }
     // low-level
     boot {}
     // api
@@ -267,6 +270,15 @@ sources {
              }
     	}
     }
+    driverSerialBcm2835 {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/serial/bcm2835"
+                 include "**/*.c"
+             }
+    	}
+    }
     core {
          c {
              lib libraries.base.static
@@ -301,6 +313,7 @@ sources {
             lib libraries.boot.static        // boot c code into kernel
             lib libraries.core.static        // the core kernel
             lib libraries.driverTimerBcm2835.static
+            lib libraries.driverSerialBcm2835.static
             source {
                 srcDirs "src/arch/arm/pi", "src/tinker"
                 include "**/*.c"

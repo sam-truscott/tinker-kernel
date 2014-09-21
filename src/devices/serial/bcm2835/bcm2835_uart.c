@@ -15,7 +15,7 @@
 
 #include "arch/tgt_types.h"
 #include "tgt_io.h"
-#include "uart.h"
+#include "bcm2835_uart.h"
 
     // The GPIO registers base address.
 #define GPIO_BASE 0x20200000
@@ -137,7 +137,7 @@ void uart_putc(uint8_t byte) {
  * print a string to the UART one character at a time
  * const char *str: 0-terminated string
  */
-void uart_puts(const char *str) {
+void uart_puts(const char * str) {
     while (*str) {
         uart_putc(*str++);
     }
