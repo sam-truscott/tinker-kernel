@@ -58,7 +58,7 @@ void kernel_main(void)
 	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
 	sch_set_current_thread(idle_thread);
 
-	debug_print("Testing Syscall... ");
+	debug_print("Testing Syscall...\n");
 	TINKER_API_CALL_7(
 			SYSCALL_TEST,
 			SYSCALL_TEST_1,
