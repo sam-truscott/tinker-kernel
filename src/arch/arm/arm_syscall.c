@@ -32,7 +32,7 @@ uint32_t TINKER_API_CALL_7(
 	__asm__ __volatile__(
 			"svc 0"
 			:
-			: "i"(TINKER_API_CALL_7), "r"(_r0), "r"(_r1),
+			: "r"(_r0), "r"(_r1),
 			"r"(_r2), "r"(_r3), "r"(_r4), "r"(_r5),
 			"r"(_r6), "r"(_r7)
 			: "memory");

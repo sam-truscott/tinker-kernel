@@ -41,6 +41,7 @@ model {
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-fpic"
                 }
             }
             target("tinkerArmHardVfp") {
@@ -54,6 +55,7 @@ model {
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
+                    args << "-fpic"
                 }
                 linker.withArguments { args ->
                 	args << "-mfpu=vfp"
@@ -336,7 +338,9 @@ sources {
             "-fmessage-length=0",
             "-std=gnu11",
             "-fno-builtin",
-            "-ffreestanding"
+            "-ffreestanding",
+            "-MD",
+            "-MP"
         linker.args "-nostartfiles",
 	        "-nodefaultlibs",
 	        "-nostdlib",

@@ -16,7 +16,6 @@ __VECTOR_STACK_SIZE = 0x1000;
 MEMORY 
 {
 	RAM : ORIGIN = 0x00000000, LENGTH = 0x8000000 /* 128MB */
-	/* FLASH : ORIGIN = 0xFE000000, LENGTH = 0xetc */
 }
 
 SECTIONS{
@@ -29,8 +28,7 @@ SECTIONS{
     } > RAM
     
     . = 0x8000;
-    
-    .entry : {
+    .entry 0x8000 : {
     	*(.entry)
     } > RAM
     
@@ -46,7 +44,7 @@ SECTIONS{
     }>RAM
     
         /* Block Started by Symbol */
-    .bss ALIGN (0x64) : {
+    .bss ALIGN (0x1000) : {
         *(COMMON)
         _bss_start = .;
         *(.bss)
@@ -54,7 +52,7 @@ SECTIONS{
     }>RAM
     
     /* read only data */
-    .rodata ALIGN (0x64) : {
+    .rodata ALIGN (0x1000) : {
         *(.rodata)
         *(.rodata*)
         *(.eh_frame)
@@ -62,12 +60,12 @@ SECTIONS{
     }>RAM
     
     /* static data */
-    .sdata ALIGN (0x4) : {
+    .sdata ALIGN (0x1000) : {
         *(.sdata)
     }>RAM
     
     /* data */
-    .data ALIGN (0x4) : {
+    .data ALIGN (0x1000) : {
         *(.data.*)
         *(.got2)
         *(.fixup)

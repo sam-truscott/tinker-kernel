@@ -16,15 +16,16 @@
 .set MAGIC,    0x1BADB002
 .set CHECKSUM, -(MAGIC + FLAGS)
 
+/*
 .align 4
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
+*/
 
 .global kernel_start
 kernel_start:
-	//ldr	sp, =__ivtse
-	mov	sp, #0x8000
+	ldr	sp, =__ivtse
 	// Clear out bss.
 	ldr	r4, =_bss_start
 	ldr	r9, =_bss_end

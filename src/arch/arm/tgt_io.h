@@ -11,25 +11,17 @@
 
 #include "arch/tgt_types.h"
 
- #define isb(x) asm volatile ("mcr p15, 0, %0, c7, c5, 4" \
-                                     : : "r" (0) : "memory")
- #define dsb(x) asm volatile ("mcr p15, 0, %0, c7, c10, 4" \
-                                     : : "r" (0) : "memory")
- #define dmb(x) asm volatile ("mcr p15, 0, %0, c7, c10, 5" \
-                                     : : "r" (0) : "memory")
-
 #define out_(N,T) \
-	static inline void out_##N(T * const addr, const T const value) \
+	static inline void out_##N(T * const addr, T value) \
 	{ \
 		*((volatile T *)(addr)) = value; \
-		dmb(); \
+		asm volatile ("mcr	p15, 0, r0, c7, c10, 4"); \
 	}
-
 
 #define in_(N,T) \
 	static inline T in_##N(const T * const addr) \
 	{ \
-		dmb(); \
+		asm volatile ("mcr	p15, 0, r0, c7, c10, 4"); \
 		return *((volatile T*)(addr)); \
 	}
 
