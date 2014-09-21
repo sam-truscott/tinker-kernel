@@ -22,6 +22,7 @@
 #include "kernel/utils/util_memset.h"
 #include "devices/timer/bcm2835/bcm2835_timer.h"
 #include "devices/serial/bcm2835/bcm2835_uart.h"
+#include "devices/intc/bcm2835/bcm2835_intc.h"
 
 static timer_t bcm2835_scheduler_timer;
 static timer_t bcm2835_system_timer;
@@ -83,7 +84,7 @@ void ivt_initialise(void)
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
-	tgt_context_t * context = (tgt_context_t*)contextp;
+	tgt_context_t * const context = (tgt_context_t*)contextp;
 	bool_t timer = false;
 	switch(type)
 	{

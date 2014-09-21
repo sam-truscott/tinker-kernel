@@ -99,6 +99,9 @@ libraries {
     driverIntcOpic {
     	targetPlatforms "tinkerPpc"
     }
+    driverIntcBcm2835 {
+    	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
+    }
     driverTimerBcm2835 {
     	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
     }
@@ -234,6 +237,15 @@ sources {
              }
     	}
     }
+    driverIntcBcm2835 {
+    	c {
+    		lib libraries.base.static
+    		source {
+                 srcDirs "src/devices/intc/bcm2835"
+                 include "**/*.c"
+             }
+    	}
+    }
     driverTimerBcm2835 {
     	c {
     		lib libraries.base.static
@@ -314,6 +326,7 @@ sources {
             lib libraries.core.static        // the core kernel
             lib libraries.driverTimerBcm2835.static
             lib libraries.driverSerialBcm2835.static
+            lib libraries.driverIntcBcm2835.static
             source {
                 srcDirs "src/arch/arm/pi", "src/tinker"
                 include "**/*.c"
