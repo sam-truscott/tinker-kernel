@@ -20,17 +20,17 @@ MEMORY
 }
 
 SECTIONS{
-    
-    . = 0x8000;
-    
-    /* interrupt vector table */
+
+	/* interrupt vector table */
     .ivt (NOLOAD) : {
         __ivt = .;
         *(.vectors)
         . += __VECTOR_SIZE;
     } > RAM
     
-    .entry ALIGN(0x40) : {
+    . = 0x8000;
+    
+    .entry : {
     	*(.entry)
     } > RAM
     
@@ -50,7 +50,6 @@ SECTIONS{
         *(COMMON)
         _bss_start = .;
         *(.bss)
-        . = ALIGN(4096); /* align to page size */
 		_bss_end = .;
     }>RAM
     
