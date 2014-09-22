@@ -64,6 +64,8 @@ void bsp_setup(void)
 	//intc_enable(opic_intc, 1);
 	//intc_add_device(opic_intc, 1, &rs232_port_1);
 
+	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
+
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
 
@@ -89,7 +91,6 @@ void ivt_initialise(void)
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
 	tgt_context_t * const context = (tgt_context_t*)contextp;
-	bool_t timer = false;
 	switch(type)
 	{
 	case VECTOR_RESET:
@@ -104,14 +105,14 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 		break;
 	case VECTOR_IRQ:
 	case VECTOR_FIQ:
-		if (timer)
-		{
-			int_context_switch_interrupt(context);
-		}
-		else
-		{
-			int_handle_external_vector();
-		}
+	{
+		const error_t handled = int_handle_external_vector(context);
+		printp_out("BSP: Failed to handle external interrupt, error = %d\n", handled);
+	}
+		break;
+	default:
+		printp_out("BSP: Unknown interrupt type %d\n", type);
+		break;
 	}
 }
 

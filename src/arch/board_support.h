@@ -30,7 +30,7 @@ void bsp_setup(void);
  */
 void bsp_enable_schedule_timer(void);
 
-void bsp_check_timers_and_alarms(void);
+void bsp_check_timers_and_alarms(const tgt_context_t * const context);
 
 uint32_t bsp_get_usable_memory_start();
 

@@ -21,6 +21,7 @@
 
 typedef struct
 {
+	timer_callback * callback;
 	uint8_t instance;
 	void * base;
 } bcm2835_timer_usr_data_t;
@@ -30,7 +31,6 @@ static void bcm2835_timer_setup(
 		const tinker_time_t * const timeout,
 		timer_callback * const call_back)
 {
-	(void)call_back;
 #if defined(TIMER_DEBUGGING)
 	printp_out("BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
 			usr_data, timeout->seconds, timeout->nanoseconds, call_back);
@@ -42,13 +42,14 @@ static void bcm2835_timer_setup(
 #if defined(TIMER_DEBUGGING)
 	printp_out("BCM2835: Setting up timer for instance %d\n", data->instance);
 #endif
+		data->callback = call_back;
 		switch (data->instance)
 		{
-		case 0: offset = CLOCK_TIMER_COMPARE_0; break;
-		case 1: offset = CLOCK_TIMER_COMPARE_1; break;
-		case 2: offset = CLOCK_TIMER_COMPARE_2; break;
-		case 3: offset = CLOCK_TIMER_COMPARE_3; break;
-		default: offset = 0; break;
+			case 0: offset = CLOCK_TIMER_COMPARE_0; break;
+			case 1: offset = CLOCK_TIMER_COMPARE_1; break;
+			case 2: offset = CLOCK_TIMER_COMPARE_2; break;
+			case 3: offset = CLOCK_TIMER_COMPARE_3; break;
+			default: offset = 0; break;
 		}
 		if (offset != 0)
 		{
@@ -83,12 +84,39 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 	}
 }
 
+static error_t bcm2835_timer_isr(const tgt_context_t * const context, timer_param_t param)
+{
+	error_t result;
+#if defined(TIMER_DEBUGGING)
+	printp_out("BCM2835: ISR for timer\n");
+#endif
+	if (param)
+	{
+		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)param;
+		if (data->callback)
+		{
+			data->callback(context);
+			result = NO_ERROR;
+		}
+		else
+		{
+			result = TIMER_CALLBACK_MISSING;
+		}
+	}
+	else
+	{
+		result = PARAMETERS_INVALID;
+	}
+	return result;
+}
+
 void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void * const base, const uint8_t instance)
 {
 	if (pool && timer)
 	{
 		timer->timer_setup = &bcm2835_timer_setup;
 		timer->timer_cancel = &bcm2835_timer_cancel;
+		timer->timer_isr = &bcm2835_timer_isr;
 		timer->usr_data = (timer_param_t)mem_alloc(pool, sizeof(bcm2835_timer_usr_data_t));
 		if (timer->usr_data)
 		{

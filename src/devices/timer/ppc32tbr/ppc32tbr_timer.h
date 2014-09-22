@@ -14,6 +14,6 @@
 
 void ppc_get_timer(const process_t * const parent, timer_t * const timer);
 
-void ppc_check_timer(timer_t * const timer);
+void ppc_check_timer(timer_t * const timer, const tgt_context_t * const context);
 
 #endif /* PPC32TBR_TIMER_H_ */

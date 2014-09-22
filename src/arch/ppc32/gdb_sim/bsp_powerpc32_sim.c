@@ -214,14 +214,13 @@ static void bsp_external_interrupt(
 		const uint32_t vector,
 		tgt_context_t * const context)
 {
-	// TODO use or remove
-	if (vector && context) {}
-	int_handle_external_vector();
+	(void)vector;
+	int_handle_external_vector(context);
 }
 
-void bsp_check_timers_and_alarms(void)
+void bsp_check_timers_and_alarms(const tgt_context_t * const context)
 {
-	ppc_check_timer(&ppc32_time_base_timer);
+	ppc_check_timer(&ppc32_time_base_timer, context);
 }
 
 uint32_t bsp_get_usable_memory_start()

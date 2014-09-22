@@ -25,9 +25,9 @@ void int_install_isr(const intc_t * const intc)
 	interrupt_manager_root = intc;
 }
 
-error_t int_handle_external_vector(void)
+error_t int_handle_external_vector(const tgt_context_t * const context)
 {
-	return intc_handle(interrupt_manager_root);
+	return intc_handle(interrupt_manager_root, context);
 }
 
 void int_context_switch_interrupt(

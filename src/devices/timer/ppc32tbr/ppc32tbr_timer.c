@@ -45,7 +45,7 @@ void ppc_get_timer(const process_t * const parent, timer_t * const timer)
 	}
 }
 
-void ppc_check_timer(timer_t * const timer)
+void ppc_check_timer(timer_t * const timer, const tgt_context_t * const context)
 {
 	if (timer)
 	{
@@ -57,7 +57,7 @@ void ppc_check_timer(timer_t * const timer)
 			if (tinker_time_gt(&now, &data->alarm_time))
 			{
 				data->enabled = false;
-				data->call_back();
+				data->call_back(context);
 			}
 		}
 	}

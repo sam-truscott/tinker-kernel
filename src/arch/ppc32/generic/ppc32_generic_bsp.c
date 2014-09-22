@@ -61,7 +61,7 @@ void bsp_decrementer_interrupt(
 	if ( vector == ppc32_vector_decrementer )
 	{
 		/* check for any timers that may have expired */
-		bsp_check_timers_and_alarms();
+		bsp_check_timers_and_alarms(context);
 
 		/* switch the context afterwards as what we change to may
 		 * have changed because of any alarms/timers */

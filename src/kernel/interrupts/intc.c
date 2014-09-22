@@ -19,6 +19,7 @@ typedef struct
 		const intc_t * child;
 		const kernel_device_t * device;
 		const object_pipe_t * pipe;
+		const timer_t * timer;
 	} devices;
 } intc_internal_t;
 
@@ -69,7 +70,7 @@ void intc_delete(intc_t * const intc)
 	}
 }
 
-void intc_add_child(intc_t * const intc, const uint32_t cause, const intc_t * child)
+void intc_add_child(intc_t * const intc, const uint32_t cause, const intc_t * const child)
 {
 	if (intc)
 	{
@@ -84,7 +85,7 @@ void intc_add_child(intc_t * const intc, const uint32_t cause, const intc_t * ch
 	}
 }
 
-void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_device_t * device)
+void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_device_t * const device)
 {
 	if (intc)
 	{
@@ -99,7 +100,7 @@ void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_dev
 	}
 }
 
-void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_t * pipe)
+void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_t * const pipe)
 {
 	if (intc)
 	{
@@ -114,7 +115,22 @@ void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_
 	}
 }
 
-error_t intc_handle(const intc_t * const intc)
+void intc_add_timer(intc_t * const intc, const uint32_t cause, const timer_t * const timer)
+{
+	if (intc)
+	{
+		intc_internal_t * const internal = mem_alloc(intc->pool, sizeof(intc_internal_t));
+		if (internal)
+		{
+			internal->type = TIMER_INTC;
+			internal->devices.timer = timer;
+			const bool_t put_ok = isr_map_t_put(intc->isr_map, cause, internal);
+			kernel_assert("failed to add interrupt device to controller", put_ok);
+		}
+	}
+}
+
+error_t intc_handle(const intc_t * const intc, const tgt_context_t * const context)
 {
 	error_t ret = NO_ERROR;
 	if (intc)
@@ -130,10 +146,10 @@ error_t intc_handle(const intc_t * const intc)
 					switch(dev->type)
 					{
 					case DEVICE_INTC:
-						dev->devices.device->isr(dev->devices.device->user_data, cause);
+						ret = dev->devices.device->isr(dev->devices.device->user_data, cause);
 						break;
 					case CHILD_INTC:
-						intc_handle(dev->devices.child);
+						ret = intc_handle(dev->devices.child, context);
 						break;
 					case PIPE_INTC:
 						ret = obj_pipe_send_message(
@@ -142,6 +158,16 @@ error_t intc_handle(const intc_t * const intc)
 								PIPE_TX_SEND_AVAILABLE,
 								(void*)&cause, sizeof(cause),
 								false);
+						break;
+					case TIMER_INTC:
+						if (dev->devices.timer && dev->devices.timer->timer_isr)
+						{
+							ret = dev->devices.timer->timer_isr(context, dev->devices.timer->usr_data);
+						}
+						else
+						{
+							ret = UNKNOWN_INTERRUPT_CAUSE;
+						}
 						break;
 					case EMPTY_DEVICE:
 						ret = UNKNOWN_INTERRUPT_CAUSE;

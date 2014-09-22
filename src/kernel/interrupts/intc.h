@@ -14,6 +14,7 @@
 #include "kernel/devices/kernel_device.h"
 #include "kernel/devices/kernel_intc_device.h"
 #include "kernel/objects/obj_pipe.h"
+#include "kernel/time/timer.h"
 
 typedef struct intc_t intc_t;
 
@@ -26,20 +27,24 @@ typedef enum
 	/* a device isr is hanging off the pin */
 	DEVICE_INTC,
 	/* a pipe is hanging off the pin */
-	PIPE_INTC
+	PIPE_INTC,
+	/* an interrupt driven timer */
+	TIMER_INTC
 } intc_device_type;
 
 intc_t * intc_create(mem_pool_info_t * const pool, kernel_intc_t * const kernel_intc);
 
 void intc_delete(intc_t * const intc);
 
-void intc_add_child(intc_t * const intc, const uint32_t cause, const intc_t * child);
+void intc_add_child(intc_t * const intc, const uint32_t cause, const intc_t * const child);
 
-void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_device_t * device);
+void intc_add_device(intc_t * const intc, const uint32_t cause, const kernel_device_t * const device);
 
-void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_t * pipe);
+void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_t * const pipe);
 
-error_t intc_handle(const intc_t * const intc);
+void intc_add_timer(intc_t * const intc, const uint32_t cause, const timer_t * const timer);
+
+error_t intc_handle(const intc_t * const intc, const tgt_context_t * const context);
 
 error_t intc_setup(
 		intc_t * const intc,

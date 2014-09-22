@@ -38,7 +38,7 @@ static void alarm_enable_timer(void);
 
 static void alarm_disable_timer(void);
 
-static void alarm_handle_timer_timeout(void);
+static void alarm_handle_timer_timeout(const tgt_context_t * const context);
 
 static alarm_list_t * alarm_list;
 
@@ -191,8 +191,9 @@ void alarm_calculate_next_alarm(alarm_t * const new_alarm)
 	}
 }
 
-void alarm_handle_timer_timeout(void)
+void alarm_handle_timer_timeout(const tgt_context_t * const context)
 {
+	(void)context;
 	if (alarm_next_alarm)
 	{
 		alarm_fire_callback(alarm_next_alarm);
