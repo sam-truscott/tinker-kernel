@@ -21,8 +21,6 @@
 
 typedef struct
 {
-	bool_t enabled;
-	tinker_time_t alarm_time;
 	uint8_t instance;
 	void * base;
 } bcm2835_timer_usr_data_t;
@@ -40,8 +38,6 @@ static void bcm2835_timer_setup(
 	if (usr_data)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
-		data->alarm_time = *timeout;
-		data->enabled = true;
 		uint8_t offset;
 #if defined(TIMER_DEBUGGING)
 	printp_out("BCM2835: Setting up timer for instance %d\n", data->instance);
@@ -68,7 +64,21 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
 		if (data)
 		{
-			*((uint32_t*)usr_data) = 0;
+			uint8_t offset;
+			switch (data->instance)
+			{
+			case 0: offset = CLOCK_TIMER_COMPARE_0; break;
+			case 1: offset = CLOCK_TIMER_COMPARE_1; break;
+			case 2: offset = CLOCK_TIMER_COMPARE_2; break;
+			case 3: offset = CLOCK_TIMER_COMPARE_3; break;
+			default: offset = 0; break;
+			}
+			if (offset != 0)
+			{
+				out_u32((uint32_t*)(((uint8_t*)data->base) + offset), 0);
+				const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
+				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), control & ~(1 << data->instance));
+			}
 		}
 	}
 }
@@ -83,8 +93,6 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 		if (timer->usr_data)
 		{
 			timer->usr_data_size = sizeof(bcm2835_timer_usr_data_t);
-			((bcm2835_timer_usr_data_t*)timer->usr_data)->enabled = false;
-			((bcm2835_timer_usr_data_t*)timer->usr_data)->alarm_time = TINKER_ZERO_TIME;
 			((bcm2835_timer_usr_data_t*)timer->usr_data)->instance = instance;
 			((bcm2835_timer_usr_data_t*)timer->usr_data)->base = base;
 		}
