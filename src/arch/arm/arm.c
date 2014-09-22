@@ -179,7 +179,8 @@ void tgt_unmap_memory(
 
 void tgt_disable_external_interrupts(void)
 {
-    // TODO disable inerrupts
+	arm_disable_irq();
+	arm_disable_fiq();
 }
 
 void tgt_enter_usermode(void)

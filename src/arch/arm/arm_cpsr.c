@@ -9,7 +9,7 @@
 #include "arm_cpsr.h"
 #include "kernel/utils/util_memcpy.h"
 
-static uint32_t arm_get_cpsr(void)
+uint32_t arm_get_cpsr(void)
 {
 	uint32_t r;
 	asm("mrs %[ps], cpsr" : [ps]"=r" (r));
@@ -19,6 +19,26 @@ static uint32_t arm_get_cpsr(void)
 static void arm_set_cpsr(const uint32_t r)
 {
     asm("msr cpsr, %[ps]" : : [ps]"r" (r));
+}
+
+void arm_enable_irq(void)
+{
+	arm_set_cpsr(arm_get_cpsr() & ~(1 << 7));
+}
+
+void arm_enable_fiq(void)
+{
+	arm_set_cpsr(arm_get_cpsr() & ~(1 << 6));
+}
+
+void arm_disable_irq(void)
+{
+	arm_set_cpsr(arm_get_cpsr() | (1 << 7));
+}
+
+void arm_disable_fiq(void)
+{
+	arm_set_cpsr(arm_get_cpsr() | (1 << 6));
 }
 
 psr_mode_t arm_get_psr_mode(void)

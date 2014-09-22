@@ -71,6 +71,8 @@ void bsp_setup(void)
 
 	// enable UART interrupts
 	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
+
+	printp_out("BSP: Enabling external interrupts\n");
 }
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
@@ -90,6 +92,7 @@ void ivt_initialise(void)
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
+	printp_out("BSP: Vector %d\n", type);
 	tgt_context_t * const context = (tgt_context_t*)contextp;
 	switch(type)
 	{
@@ -119,13 +122,16 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 void bsp_enable_schedule_timer(void)
 {
 #if defined(KERNEL_DEBUGGING)
-	printp_out("BSP: Enabling scheduler timer %x\n", bcm2835_scheduler_timer.timer_setup);
+	printp_out("BSP: Enabling scheduler timer\n");
 #endif
 	tinker_time_t now;
 	tinker_get_time(&now);
 	tinker_time_milliseconds(10, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
 	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, NULL);
+	printp_out("BSP: CPSR %x\n", arm_get_cpsr());
+	arm_enable_irq();
+	printp_out("BSP: CPSR %x\n", arm_get_cpsr());
 }
 
 void bsp_check_timers_and_alarms(void)

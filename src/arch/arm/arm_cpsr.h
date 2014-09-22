@@ -23,6 +23,16 @@ typedef enum psr_mode
 	PSR_MODE_SYSTEM = 0x1F
 } psr_mode_t;
 
+uint32_t arm_get_cpsr(void);
+
+void arm_enable_irq(void);
+
+void arm_enable_fiq(void);
+
+void arm_disable_irq(void);
+
+void arm_disable_fiq(void);
+
 psr_mode_t arm_get_psr_mode(void);
 
 void arm_set_psr_mode(const psr_mode_t psr_mode);

@@ -54,13 +54,6 @@ tgt_get_frame_pointer:
     mr  %r3, %r1
     blr
 
-     .global tgt_enable_external_interrupts
- tgt_enable_external_interrupts:
-    mfmsr   %r10
-    oris    %r10,    %r10,    0x8
-    mtmsr   %r10
-    blr
-
 .global tgt_disable_external_interrupts
 tgt_disable_external_interrupts:
     mfmsr   %r10

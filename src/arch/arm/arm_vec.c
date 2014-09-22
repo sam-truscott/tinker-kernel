@@ -8,6 +8,7 @@
  */
 
 #include "arm_vec.h"
+#include "kernel/console/print_out.h"
 
 #define KEXP_TOPSWI \
 	uint32_t context; \
@@ -90,35 +91,42 @@ static void __attribute__((naked)) arm_vector_system_call()
 	KEXP_BOT3;
 }
 
+#define OFFSET_FOR_PREFETCH 8
+#define ALIGNMENT_SHIFT 2
+#define BRANCH_INSTRUCTION 0xEA000000
+#define GET_BRANCH_FOR_VECTOR(v, i) \
+	((((uint32_t)v - (i*4) - (OFFSET_FOR_PREFETCH)) >> ALIGNMENT_SHIFT) | BRANCH_INSTRUCTION)
+
 void arm_vec_install(arm_vec_t vector, arm_vec_handler_t * const handler)
 {
+	printp_out("Installing vector %d to route to %x\n", vector, handler);
 	vector_table[vector] = handler;
-	uint32_t * v = (uint32_t*)0x0;
+	volatile uint32_t * const vector_root = (uint32_t*)0x0;
 	switch(vector)
 	{
 	case VECTOR_RESET:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_reset - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_reset, vector);
 		break;
 	case VECTOR_UNDEFINED:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_undefined - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_undefined, vector);
 		break;
 	case VECTOR_PRETECH_ABORT:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_prefetch_abort - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_prefetch_abort, vector);
 		break;
 	case VECTOR_DATA_ABORT:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_data_abort - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_data_abort, vector);
 		break;
 	case VECTOR_RESERVED:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_reserved - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_reserved, vector);
 		break;
 	case VECTOR_IRQ:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_irq - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_irq, vector);
 		break;
 	case VECTOR_FIQ:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_fiq - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_fiq, vector);
 		break;
 	case VECTOR_SYSTEM_CALL:
-		v[vector] = 0xEA000000 | (((uint32_t)arm_vector_system_call - (8 + (4 * vector))) >> 2);
+		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_system_call, vector);
 		break;
 	}
 }

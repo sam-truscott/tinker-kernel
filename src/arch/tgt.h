@@ -20,8 +20,6 @@ void tgt_initialise(void);
 
 void tgt_enter_usermode(void);
 
-void tgt_enable_external_interrupts(void);
-
 void tgt_disable_external_interrupts(void);
 
 error_t tgt_initialise_process(process_t * const process);
