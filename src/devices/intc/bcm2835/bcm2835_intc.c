@@ -132,6 +132,9 @@ static bool_t bcm2835_get(
 		uint32_t * const cause,
 		const void * const user_data)
 {
+#if defined(INTC_DEBUGGING)
+	printp_out("BCM2835: determining cause of interrupt\n");
+#endif
 	bool_t fired = false;
 	if (cause && user_data)
 	{
@@ -182,6 +185,9 @@ static bool_t bcm2835_get(
 			}
 		}
 	}
+#if defined(INTC_DEBUGGING)
+	printp_out("BCM2835: fired? %d cause=%d\n", fired, *cause);
+#endif
 	return fired;
 }
 
@@ -198,10 +204,16 @@ static void bcm2835_mask(
 		const uint32_t cause,
 		const void * const user_data)
 {
+#if defined(INTC_DEBUGGING)
+	printp_out("BCM2835: disabling %d\n", cause);
+#endif
 	if (cause && user_data)
 	{
 		const uint8_t bank = (uint8_t)(cause/MAX_IRQS_PER_REQ);
 		const uint8_t index = (uint8_t)(cause % MAX_IRQS_PER_REQ);
+#if defined(INTC_DEBUGGING)
+		printp_out("BCM2835: disabling %d bank %d index %d\n", cause, bank, index);
+#endif
 		uint32_t disable;
 		switch (bank)
 		{
@@ -230,10 +242,16 @@ static void bcm2835_enable(
 		const uint32_t cause,
 		const void * const user_data)
 {
+#if defined(INTC_DEBUGGING)
+	printp_out("BCM2835: enabling %d\n", cause);
+#endif
 	if (cause && user_data)
 	{
 		const uint8_t bank = (uint8_t)(cause/MAX_IRQS_PER_REQ);
 		const uint8_t index = (uint8_t)(cause % MAX_IRQS_PER_REQ);
+#if defined(INTC_DEBUGGING)
+		printp_out("BCM2835: enabling %d bank %d index %d\n", cause, bank, index);
+#endif
 		uint32_t enabled;
 		switch (bank)
 		{

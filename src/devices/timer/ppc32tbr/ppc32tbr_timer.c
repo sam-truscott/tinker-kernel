@@ -15,7 +15,7 @@
 typedef struct
 {
 	bool_t enabled;
-	const tinker_time_t* alarm_time;
+	tinker_time_t alarm_time;
 	timer_callback * call_back;
 } ppc_timer_usr_data_t;
 
@@ -54,7 +54,7 @@ void ppc_check_timer(timer_t * const timer)
 		{
 		    tinker_time_t now = TINKER_ZERO_TIME;
 			time_get_system_time(&now);
-			if (tinker_time_gt(&now, data->alarm_time))
+			if (tinker_time_gt(&now, &data->alarm_time))
 			{
 				data->enabled = false;
 				data->call_back();
@@ -72,7 +72,7 @@ void ppc_timer_setup(
 	{
 		ppc_timer_usr_data_t * const data = (ppc_timer_usr_data_t*)usr_data;
 		data->call_back = call_back;
-		*((tinker_time_t*)data->alarm_time) = *timeout;
+		data->alarm_time = *timeout;
 		data->enabled = true;
 	}
 }

@@ -27,6 +27,8 @@
 static timer_t bcm2835_scheduler_timer;
 static timer_t bcm2835_system_timer;
 static tinker_time_t scheduler_time;
+static tinker_time_t scheduler_period;
+static intc_t * bcm2835_intc;
 
 void bsp_initialise(void)
 {
@@ -48,13 +50,12 @@ void bsp_initialise(void)
 
 void bsp_setup(void)
 {
-	//opic_intc = opic_intc_create(mem_get_default_pool(), (void*)0x80000000);
-	//int_install_isr(opic_intc);
+	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x20000200);
+	int_install_isr(bcm2835_intc);
 
 	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
-	tinker_time_milliseconds(10, &scheduler_time);
 
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
 	alarm_set_timer(&bcm2835_system_timer);
@@ -62,6 +63,9 @@ void bsp_setup(void)
 	// route UART -> OPIC -> CPU
 	//intc_enable(opic_intc, 1);
 	//intc_add_device(opic_intc, 1, &rs232_port_1);
+
+	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
+	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
 
 	// enable UART interrupts
 	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
@@ -113,7 +117,14 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 
 void bsp_enable_schedule_timer(void)
 {
-	bcm2835_scheduler_timer.timer_setup(NULL, &scheduler_time, NULL);
+#if defined(KERNEL_DEBUGGING)
+	printp_out("BSP: Enabling scheduler timer %x\n", bcm2835_scheduler_timer.timer_setup);
+#endif
+	tinker_time_t now;
+	tinker_get_time(&now);
+	tinker_time_milliseconds(10, &scheduler_period);
+	tinker_time_add(&now, &scheduler_period, &scheduler_time);
+	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, NULL);
 }
 
 void bsp_check_timers_and_alarms(void)

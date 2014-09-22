@@ -103,6 +103,8 @@
 #define INTERRUPT_UART                 (ARM_IRQ0_BASE + 19)
 #define INTERRUPT_ARASANSDIO           (ARM_IRQ0_BASE + 20)
 
-
+intc_t* bcm2835_intc_create(
+		mem_pool_info_t * const pool,
+		const uint8_t * const base_address);
 
 #endif /* BCM2835_INTC_H_ */

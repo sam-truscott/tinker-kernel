@@ -10,6 +10,8 @@
 #include "bcm2835_timer.h"
 #include "tinker_api_time.h"
 
+#include "kernel/console/print_out.h"
+
 #define CONTROL_OFFSET 0
 #define CLOCK_OFFSET 4
 #define CLOCK_TIMER_COMPARE_0 0x0c
@@ -20,7 +22,7 @@
 typedef struct
 {
 	bool_t enabled;
-	const tinker_time_t * alarm_time;
+	tinker_time_t alarm_time;
 	uint8_t instance;
 	void * base;
 } bcm2835_timer_usr_data_t;
@@ -31,12 +33,19 @@ static void bcm2835_timer_setup(
 		timer_callback * const call_back)
 {
 	(void)call_back;
+#if defined(TIMER_DEBUGGING)
+	printp_out("BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
+			usr_data, timeout->seconds, timeout->nanoseconds, call_back);
+#endif
 	if (usr_data)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
-		*((tinker_time_t*)data->alarm_time) = *timeout;
+		data->alarm_time = *timeout;
 		data->enabled = true;
 		uint8_t offset;
+#if defined(TIMER_DEBUGGING)
+	printp_out("BCM2835: Setting up timer for instance %d\n", data->instance);
+#endif
 		switch (data->instance)
 		{
 		case 0: offset = CLOCK_TIMER_COMPARE_0; break;
@@ -68,16 +77,16 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 {
 	if (pool && timer)
 	{
-		timer->timer_setup = bcm2835_timer_setup;
-		timer->timer_cancel = bcm2835_timer_cancel;
+		timer->timer_setup = &bcm2835_timer_setup;
+		timer->timer_cancel = &bcm2835_timer_cancel;
 		timer->usr_data = (timer_param_t)mem_alloc(pool, sizeof(bcm2835_timer_usr_data_t));
 		if (timer->usr_data)
 		{
 			timer->usr_data_size = sizeof(bcm2835_timer_usr_data_t);
-			((bcm2835_timer_usr_data_t*)timer)->enabled = false;
-			((bcm2835_timer_usr_data_t*)timer)->alarm_time = &TINKER_ZERO_TIME;
-			((bcm2835_timer_usr_data_t*)timer)->instance = instance;
-			((bcm2835_timer_usr_data_t*)timer)->base = base;
+			((bcm2835_timer_usr_data_t*)timer->usr_data)->enabled = false;
+			((bcm2835_timer_usr_data_t*)timer->usr_data)->alarm_time = TINKER_ZERO_TIME;
+			((bcm2835_timer_usr_data_t*)timer->usr_data)->instance = instance;
+			((bcm2835_timer_usr_data_t*)timer->usr_data)->base = base;
 		}
 		else
 		{

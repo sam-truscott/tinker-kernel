@@ -50,7 +50,6 @@ error_t tgt_initialise_process(process_t * const process)
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function) TINKER_API_SUFFIX;
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function)
 {
-	printp_out("Starting %x, %x\n", entry, exit_function);
 	uint32_t t = 1000000;
 	while(t--)
 	{
@@ -185,9 +184,9 @@ void tgt_disable_external_interrupts(void)
 
 void tgt_enter_usermode(void)
 {
-	printp_out("Entering user mode\n");
+	printp_out("Kernel: Entering user mode\n");
 	arm_set_psr_mode(PSR_MODE_USER);
-	tinker_debug("User mode entered\n");
+	tinker_debug("Kernel: User mode entered\n");
 }
 
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)

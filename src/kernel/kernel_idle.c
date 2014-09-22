@@ -13,7 +13,7 @@
 #pragma GCC optimize ("-O0") // easier to debug release build
 static uint32_t kernel_idle_check(uint32_t count)
 {
-	if ( count % 200000 == 0)
+	if ( count % 800000 == 0)
 	{
 		debug_print("IDLE\n");
 	}
