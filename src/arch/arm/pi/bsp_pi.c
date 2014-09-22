@@ -129,9 +129,7 @@ void bsp_enable_schedule_timer(void)
 	tinker_time_milliseconds(10, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
 	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, NULL);
-	printp_out("BSP: CPSR %x\n", arm_get_cpsr());
 	arm_enable_irq();
-	printp_out("BSP: CPSR %x\n", arm_get_cpsr());
 }
 
 void bsp_check_timers_and_alarms(void)
