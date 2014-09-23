@@ -31,7 +31,7 @@
 	asm("nop"); \
 	asm("mrs r3, cpsr"); 			/* backup cpsr */ \
 	asm("msr cpsr, #0x12");			/* enter irq mode */ \
-	asm("mov sp, #0x8000");			/* setup irq stack */ \
+	asm("ldr sp, =__ivtse");			/* setup irq stack */ \
 	asm("msr cpsr, r3");			/* restore old cpsr */ \
 	asm("pop {r0, r1}"); 			/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \

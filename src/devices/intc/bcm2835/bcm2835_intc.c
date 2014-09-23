@@ -138,19 +138,18 @@ static bool_t bcm2835_get(
 	bool_t fired = false;
 	if (cause && user_data)
 	{
-		const uint32_t pending_basic = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_BASIC));
-		const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1));
-		const uint32_t pending_2 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_2));
-		const uint32_t enabled_basic = in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_BASIC));
-		const uint32_t enabled_1 = in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_1));
-		const uint32_t enabled_2 = in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_2));
+		const uint32_t pending_basic = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_BASIC))
+				& in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_BASIC));
+		const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1))
+				& in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_1));
+		const uint32_t pending_2 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_2))
+				& in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_2));
 		uint8_t irq;
-		if (pending_basic && enabled_basic)
+		if (pending_basic)
 		{
 			for (irq = 0 ; irq < MAX_IRQS_BASIC ; irq++)
 			{
-				if ((pending_basic & CAUSE_TABLE[0][irq].bit)
-						&& (enabled_basic & CAUSE_TABLE[0][irq].bit))
+				if (pending_basic & CAUSE_TABLE[0][irq].bit)
 				{
 					*cause = CAUSE_TABLE[0][irq].cause;
 					fired = true;
@@ -158,12 +157,11 @@ static bool_t bcm2835_get(
 				}
 			}
 		}
-		if (!fired && pending_1 && enabled_1)
+		if (!fired && pending_1)
 		{
 			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 			{
-				if ((pending_1 & CAUSE_TABLE[1][irq].bit)
-					&& (enabled_1 & CAUSE_TABLE[1][irq].bit))
+				if (pending_1 & CAUSE_TABLE[1][irq].bit)
 				{
 					*cause = CAUSE_TABLE[1][irq].cause;
 					fired = true;
@@ -171,12 +169,11 @@ static bool_t bcm2835_get(
 				}
 			}
 		}
-		if (!fired && pending_2 && enabled_2)
+		if (!fired && pending_2)
 		{
 			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 			{
-				if ((pending_2 & CAUSE_TABLE[2][irq].bit)
-					&& (enabled_2 & CAUSE_TABLE[2][irq].bit))
+				if (pending_2 & CAUSE_TABLE[2][irq].bit)
 				{
 					*cause = CAUSE_TABLE[2][irq].cause;
 					fired = true;
