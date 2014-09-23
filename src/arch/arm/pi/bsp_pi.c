@@ -122,26 +122,23 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	}
 }
 
-static void bsp_scheduler_timeout(const tgt_context_t * const context)
+static void bsp_scheduler_timeout(tgt_context_t * const context)
 {
 #if defined(KERNEL_DEBUGGING)
 	printp_out("BSP: Scheduler timeout\n");
 #endif
-	int_context_switch_interrupt((tgt_context_t*)context);
+	int_context_switch_interrupt(context);
+#if defined(KERNEL_DEBUGGING)
+	printp_out("BSP: Scheduler timeout done\n");
+#endif
 }
 
 void bsp_enable_schedule_timer(void)
 {
-#if defined(KERNEL_DEBUGGING)
-	printp_out("BSP: Enabling scheduler timer\n");
-#endif
 	tinker_time_t now;
 	time_get_system_time(&now);
 	tinker_time_milliseconds(100, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
-#if defined(KERNEL_DEBUGGING)
-	printp_out("BSP: Enabling scheduler timer s=%d, ns=%d\n", scheduler_time.seconds, scheduler_time.nanoseconds);
-#endif
 	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, &bsp_scheduler_timeout);
 	arm_enable_irq();
 	arm_disable_fiq();

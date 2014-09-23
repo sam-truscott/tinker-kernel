@@ -218,7 +218,7 @@ static void bsp_external_interrupt(
 	int_handle_external_vector(context);
 }
 
-void bsp_check_timers_and_alarms(const tgt_context_t * const context)
+void bsp_check_timers_and_alarms(tgt_context_t * const context)
 {
 	ppc_check_timer(&ppc32_time_base_timer, context);
 }

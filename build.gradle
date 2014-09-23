@@ -378,7 +378,7 @@ sources {
                 "-DBUILDING_KERNEL",
                 "-DKERNEL_SHELL",
                 "-UTIMER_DEBUGGING",
-                "-DINTC_DEBUGGING",
+                "-UINTC_DEBUGGING",
                 "-DKERNEL_DEBUGGING",
                 "-UMEMORY_DEBUGGING",
                 "-UDEBUG_COLLECTIONS",

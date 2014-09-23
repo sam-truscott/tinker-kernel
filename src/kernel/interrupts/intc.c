@@ -130,7 +130,7 @@ void intc_add_timer(intc_t * const intc, const uint32_t cause, const timer_t * c
 	}
 }
 
-error_t intc_handle(const intc_t * const intc, const tgt_context_t * const context)
+error_t intc_handle(const intc_t * const intc, tgt_context_t * const context)
 {
 	error_t ret = NO_ERROR;
 	if (intc)

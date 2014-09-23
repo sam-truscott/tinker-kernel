@@ -97,7 +97,7 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 	}
 }
 
-static error_t bcm2835_timer_isr(const tgt_context_t * const context, timer_param_t param)
+static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t param)
 {
 	error_t result;
 #if defined(TIMER_DEBUGGING)

@@ -14,7 +14,7 @@
 
  void int_install_isr(const intc_t * const intc);
 
- error_t int_handle_external_vector(const tgt_context_t * const context);
+ error_t int_handle_external_vector(tgt_context_t * const context);
 
 /**
  * Interrupt that occurs when a the BSP requests a context
