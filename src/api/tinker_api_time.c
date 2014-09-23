@@ -115,8 +115,8 @@ uint32_t tinker_timer_get_microseconds(const tinker_time_t * const t)
 	uint32_t micro = 0;
 	if (t)
 	{
-		micro += t->seconds / (1000 * 1000);
-		micro += (t->nanoseconds * 1000);
+		micro = t->seconds * ONE_SECOND_AS_US;
+		micro += t->nanoseconds / ONE_NS_AS_US;
 	}
 	return micro;
 }

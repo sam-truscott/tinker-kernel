@@ -50,7 +50,7 @@ void bsp_initialise(void)
 
 void bsp_setup(void)
 {
-	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x20000200);
+	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(bcm2835_intc);
 
 	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
@@ -126,10 +126,14 @@ void bsp_enable_schedule_timer(void)
 #endif
 	tinker_time_t now;
 	tinker_get_time(&now);
-	tinker_time_milliseconds(10, &scheduler_period);
+	tinker_time_milliseconds(100, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
+#if defined(KERNEL_DEBUGGING)
+	printp_out("BSP: Enabling scheduler timer s=%d, ns=%d\n", scheduler_time.seconds, scheduler_time.nanoseconds);
+#endif
 	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, NULL);
 	arm_enable_irq();
+	arm_disable_fiq();
 }
 
 void bsp_check_timers_and_alarms(void)

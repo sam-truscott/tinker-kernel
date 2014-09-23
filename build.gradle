@@ -377,7 +377,7 @@ sources {
                 "-gdwarf-4",
                 "-DBUILDING_KERNEL",
                 "-DKERNEL_SHELL",
-                "-DTIMER_DEBUGGING",
+                "-UTIMER_DEBUGGING",
                 "-DINTC_DEBUGGING",
                 "-DKERNEL_DEBUGGING",
                 "-UMEMORY_DEBUGGING",

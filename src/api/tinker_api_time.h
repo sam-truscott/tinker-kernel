@@ -21,8 +21,10 @@ typedef struct
 
 #define TINKER_ZERO_TIME ((tinker_time_t){0,0})
 #define ONE_SECOND_AS_NANOSECONDS	1000000000
+#define ONE_SECOND_AS_US	 		1000000
 #define ONE_MS_AS_NANOSECONDS 		1000000
 #define ONE_US_AS_NANOSECONDS 		1000
+#define ONE_NS_AS_US 				1000
 
 void tinker_time_add(
 		const tinker_time_t * const l,

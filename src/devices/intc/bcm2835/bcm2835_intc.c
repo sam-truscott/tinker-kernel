@@ -217,17 +217,17 @@ static void bcm2835_mask(
 		uint32_t disable;
 		switch (bank)
 		{
-		case 0:
+		case 2:
 			disable = in_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_BASIC));
 			disable |= CAUSE_TABLE[0][index].bit;
 			out_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_BASIC), disable);
 			break;
-		case 1:
+		case 0:
 			disable = in_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_1));
 			disable |= CAUSE_TABLE[1][index].bit;
 			out_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_1), disable);
 			break;
-		case 2:
+		case 1:
 			disable = in_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_2));
 			disable |= CAUSE_TABLE[2][index].bit;
 			out_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_2), disable);
@@ -252,27 +252,31 @@ static void bcm2835_enable(
 #if defined(INTC_DEBUGGING)
 		printp_out("BCM2835: enabling %d bank %d index %d\n", cause, bank, index);
 #endif
-		uint32_t enabled;
+		//uint32_t enabled;
+		uint16_t offset;
+		uint32_t bit;
 		switch (bank)
 		{
+		case 2:
+			offset = ENABLE_IRQ_BASIC;
+			bit = CAUSE_TABLE[0][index].bit;
+			break;
 		case 0:
-			enabled = in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_BASIC));
-			enabled |= CAUSE_TABLE[0][index].bit;
-			out_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_BASIC), enabled);
+			offset = ENABLE_IRQ_1;
+			bit = CAUSE_TABLE[1][index].bit;
 			break;
 		case 1:
-			enabled = in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_1));
-			enabled |= CAUSE_TABLE[1][index].bit;
-			out_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_1), enabled);
-			break;
-		case 2:
-			enabled = in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_2));
-			enabled |= CAUSE_TABLE[2][index].bit;
-			out_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_2), enabled);
+			offset = ENABLE_IRQ_2;
+			bit = CAUSE_TABLE[2][index].bit;
 			break;
 		default:
 			break;
 		}
+		const uint32_t enabled = in_u32((uint32_t*)((uint8_t*)user_data + offset));
+#if defined(INTC_DEBUGGING)
+		printp_out("BCM2835: enabling base %x, offset %x, enabled %x -> %x\n", user_data, offset, enabled, enabled | bit);
+#endif
+		out_u32((uint32_t*)((uint8_t*)user_data + offset), enabled | bit);
 	}
 }
 

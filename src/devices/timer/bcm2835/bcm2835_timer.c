@@ -39,9 +39,6 @@ static void bcm2835_timer_setup(
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
 		uint8_t offset;
-#if defined(TIMER_DEBUGGING)
-	printp_out("BCM2835: Setting up timer for instance %d\n", data->instance);
-#endif
 		data->callback = call_back;
 		switch (data->instance)
 		{
@@ -53,7 +50,23 @@ static void bcm2835_timer_setup(
 		}
 		if (offset != 0)
 		{
-			out_u32((uint32_t*)(((uint8_t*)data->base) + offset), tinker_timer_get_microseconds(timeout));
+			const uint32_t timeAsUs = tinker_timer_get_microseconds(timeout);
+#if defined(TIMER_DEBUGGING)
+			const uint64_t current = *(uint64_t*)((uint8_t*)data->base + (CLOCK_OFFSET*2));
+			printp_out("BCM2835: Setting up timer for instance %d, base %x, offset %x, value %d, current %d\n",
+					data->instance,
+					data->base,
+					offset,
+					timeAsUs,
+					(current | 0xFFFFFFFF));
+#endif
+			out_u32((uint32_t*)(((uint8_t*)data->base) + offset), timeAsUs);
+
+			const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET))) | (1 << data->instance);
+			out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), control);
+#if defined(TIMER_DEBUGGING)
+			printp_out("BCM2835: Enabling timer for instance %d, base %x, offset %x, control %x\n", data->instance, data->base, CONTROL_OFFSET, control);
+#endif
 		}
 	}
 }
@@ -78,7 +91,7 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 			{
 				out_u32((uint32_t*)(((uint8_t*)data->base) + offset), 0);
 				const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
-				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), control & ~(1 << data->instance));
+				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), control | (1 << data->instance));
 			}
 		}
 	}
@@ -123,6 +136,8 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 			timer->usr_data_size = sizeof(bcm2835_timer_usr_data_t);
 			((bcm2835_timer_usr_data_t*)timer->usr_data)->instance = instance;
 			((bcm2835_timer_usr_data_t*)timer->usr_data)->base = base;
+			const uint32_t control = in_u32((uint32_t*)(((uint8_t*)base + CONTROL_OFFSET)));
+			out_u32((uint32_t*)(((uint8_t*)base + CONTROL_OFFSET)), control | (1 << instance));
 		}
 		else
 		{

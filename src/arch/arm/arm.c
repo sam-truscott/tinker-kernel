@@ -50,11 +50,6 @@ error_t tgt_initialise_process(process_t * const process)
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function) TINKER_API_SUFFIX;
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function)
 {
-	uint32_t t = 1000000;
-	while(t--)
-	{
-
-	}
 	entry();
 	((thread_entry_point*)(exit_function))();
 }

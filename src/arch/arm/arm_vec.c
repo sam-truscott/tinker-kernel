@@ -12,26 +12,30 @@
 
 #define KEXP_TOPSWI \
 	uint32_t context; \
-	asm("stmfd sp!,{r0-r12,lr}"); \
-	asm("mrs r0, spsr"); \
-	asm("mov r1, sp"); \
-	asm("push {r0, r1}"); \
-	asm("mov %[ps], sp" : [ps]"=r" (context));
+	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
+	asm("mrs r0, spsr"); 			/* get the spsr */ \
+	asm("mov r1, sp"); 				/* get the new sp */ \
+	asm("push {r0, r1}"); 			/* store the spsr and sp */ \
+	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
 #define KEXP_TOP3 \
 	uint32_t context; \
-	asm("sub lr, lr, #4"); \
-	asm("stmfd sp!,{r0-r12,lr}"); \
-	asm("mrs r0, spsr"); \
-	asm("mov r1, sp"); \
-	asm("push {r0, r1}"); \
-	asm("mov %[ps], sp" : [ps]"=r" (context));
+	asm("sub lr, lr, #4"); 			/* update return addr */ \
+	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
+	asm("mrs r0, spsr"); 			/* get the spsr */ \
+	asm("mov r1, sp"); 				/* get the new sp */ \
+	asm("push {r0, r1}"); 			/* store the spsr and sp */ \
+	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
 #define KEXP_BOT3 \
 	asm("nop"); \
-	asm("pop {r0, r1}"); /* spsr */\
-	asm("msr SPSR_cxsf, r0"); \
-	asm("ldm sp!, {r0-r12,pc}^")
+	asm("mrs r3, cpsr"); 			/* backup cpsr */ \
+	asm("msr cpsr, #0x12");			/* enter irq mode */ \
+	asm("mov sp, #0x8000");			/* setup irq stack */ \
+	asm("msr cpsr, r3");			/* restore old cpsr */ \
+	asm("pop {r0, r1}"); 			/* get the spsr back */ \
+	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \
+	asm("ldm sp!, {r0-r12,pc}^")	/* return! */
 
 static arm_vec_handler_t * vector_table[8];
 
