@@ -113,6 +113,8 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		}
 	}
 
+	printp_out("Syscall: API %d\n", api);
+
 	/*
 	 * This could use a jump table but I think in this
 	 * case this is a bit more readable.
@@ -533,9 +535,6 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		break;
 		case SYSCALL_LOAD_THREAD:
 			/* uses the current thread from the scheduler */
-			printp_out("Syscall: Loading process %s thread %s\n",
-					process_get_image(thread_get_parent(this_thread)),
-					thread_get_name(this_thread));
 			tgt_prepare_context(context, this_thread, NULL);
 			break;
 

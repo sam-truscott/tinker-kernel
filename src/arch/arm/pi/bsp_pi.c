@@ -110,7 +110,10 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	case VECTOR_FIQ:
 	{
 		const error_t handled = int_handle_external_vector(context);
-		printp_out("BSP: Failed to handle external interrupt, error = %d\n", handled);
+		if (handled != NO_ERROR)
+		{
+			printp_out("BSP: Failed to handle external interrupt, error = %d\n", handled);
+		}
 	}
 		break;
 	default:
@@ -133,7 +136,7 @@ void bsp_enable_schedule_timer(void)
 	printp_out("BSP: Enabling scheduler timer\n");
 #endif
 	tinker_time_t now;
-	tinker_get_time(&now);
+	time_get_system_time(&now);
 	tinker_time_milliseconds(100, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
 #if defined(KERNEL_DEBUGGING)
