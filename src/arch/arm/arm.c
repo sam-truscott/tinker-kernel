@@ -74,8 +74,15 @@ void tgt_initialise_context(
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         // TODO initialise the other registers
         // use kernel_mode to set stuff up
-        (void)kernel_mode; // UNUSED
         arm_context->lr = (uint32_t)arm_bootstrap;
+        if (kernel_mode)
+        {
+        	arm_context->apsr = PSR_MODE_SUPERVISOR;
+        }
+        else
+        {
+        	arm_context->apsr = PSR_MODE_USER;
+        }
     }
 }
 
