@@ -42,6 +42,7 @@ model {
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-fpic"
+                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
                 }
             }
             target("tinkerArmHardVfp") {
@@ -56,6 +57,7 @@ model {
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
                     args << "-fpic"
+                    args << "-DVIRTUAL_ADDRESS_SPACE=0u"
                 }
                 linker.withArguments { args ->
                 	args << "-mfpu=vfp"

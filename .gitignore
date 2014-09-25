@@ -6,3 +6,4 @@
 /.gradle
 /debug_*
 /release_*
+/.nb-gradle/private/

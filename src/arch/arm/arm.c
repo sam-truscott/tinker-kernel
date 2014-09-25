@@ -83,6 +83,10 @@ void tgt_initialise_context(
         {
         	arm_context->apsr = PSR_MODE_USER;
         }
+    	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
+    	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
+    	printp_out("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
+    	printp_out("ARM: lr %x sp %x\n", arm_context->lr, arm_context->sp);
     }
 }
 

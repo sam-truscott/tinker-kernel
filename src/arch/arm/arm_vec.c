@@ -10,7 +10,7 @@
 #include "arm_vec.h"
 #include "kernel/console/print_out.h"
 
-#define KEXP_TOPSWI \
+#define EXCEPTION_START_SYSCALL \
 	uint32_t context; \
 	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
 	asm("mrs r0, spsr"); 			/* get the spsr */ \
@@ -18,7 +18,7 @@
 	asm("push {r0, r1}"); 			/* store the spsr and sp */ \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
-#define KEXP_TOP3 \
+#define EXCEPTION_START \
 	uint32_t context; \
 	asm("sub lr, lr, #4"); 			/* update return addr */ \
 	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
@@ -27,11 +27,11 @@
 	asm("push {r0, r1}"); 			/* store the spsr and sp */ \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
-#define KEXP_BOT3 \
+#define EXCEPTION_END \
 	asm("nop"); \
 	asm("mrs r3, cpsr"); 			/* backup cpsr */ \
 	asm("msr cpsr, #0x12");			/* enter irq mode */ \
-	asm("ldr sp, =__ivtse");			/* setup irq stack */ \
+	asm("ldr sp, =__ivtse");		/* setup irq stack */ \
 	asm("msr cpsr, r3");			/* restore old cpsr */ \
 	asm("pop {r0, r1}"); 			/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \
@@ -41,58 +41,58 @@ static arm_vec_handler_t * vector_table[8];
 
 static void __attribute__((naked)) arm_vector_reset()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_RESET](VECTOR_RESET, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_undefined()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_UNDEFINED](VECTOR_UNDEFINED, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_prefetch_abort()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_PRETECH_ABORT](VECTOR_PRETECH_ABORT, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_data_abort()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_DATA_ABORT](VECTOR_DATA_ABORT, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_reserved()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_RESERVED](VECTOR_RESERVED, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_irq()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_IRQ](VECTOR_IRQ, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_fiq()
 {
-	KEXP_TOP3;
+	EXCEPTION_START;
 	vector_table[VECTOR_FIQ](VECTOR_FIQ, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_system_call()
 {
-	KEXP_TOPSWI;
+	EXCEPTION_START_SYSCALL;
 	vector_table[VECTOR_SYSTEM_CALL](VECTOR_SYSTEM_CALL, context);
-	KEXP_BOT3;
+	EXCEPTION_END;
 }
 
 #define OFFSET_FOR_PREFETCH 8
@@ -103,9 +103,8 @@ static void __attribute__((naked)) arm_vector_system_call()
 
 void arm_vec_install(arm_vec_t vector, arm_vec_handler_t * const handler)
 {
-	printp_out("Installing vector %d to route to %x\n", vector, handler);
-	vector_table[vector] = handler;
 	volatile uint32_t * const vector_root = (uint32_t*)0x0;
+	vector_table[vector] = handler;
 	switch(vector)
 	{
 	case VECTOR_RESET:

@@ -27,6 +27,7 @@ void print_stack_trace(const uint32_t frame_pointer)
 	while (*fp != 0 && --limit)
 	{
 		fp = (uint32_t*)*fp;
+#if defined(VIRTUAL_ADDRESS_SPACE) && VIRTUAL_ADDRESS_SPACE > 0
 		if ((uint32_t)fp >= VIRTUAL_ADDRESS_SPACE)
 		{
 			const uint32_t * real_fp;
@@ -34,6 +35,9 @@ void print_stack_trace(const uint32_t frame_pointer)
 			error_print("0x%X -> 0x%X: ", fp, real_fp);
 			fp = real_fp;
 		}
+#else
+		(void)proc;
+#endif
 		pc = *(fp + 1);
 
 		/* TODO can we interrogate the symbol table?
