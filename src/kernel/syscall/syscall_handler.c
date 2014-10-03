@@ -180,6 +180,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 				print_time();
 				print_out(msg);
 			}
+			ret = NO_ERROR;
 		}
 			break;
 
@@ -567,4 +568,6 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		/* save the existing data - i.e. the return & run the scheduler */
 		sch_set_context_for_next_thread(context);
 	}
+
+	printp_out("Syscall: API %d RET %d\n", api, ret);
 }

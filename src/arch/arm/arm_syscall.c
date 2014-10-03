@@ -19,7 +19,10 @@ uint32_t TINKER_API_CALL_7(
 		uint32_t param_6,
 		uint32_t param_7)
 {
-	__asm__ __volatile__("push {lr}");
+	if (api>MAX_SYSCALL)
+	{
+		tinker_debug("tinker: syscall error\n");
+	}
 #if !defined(__thumb__)
 	register long _r0 __asm__("r0")=(long)(api);
 	register long _r7 __asm__("r7")=(long)(param_7);
@@ -31,7 +34,7 @@ uint32_t TINKER_API_CALL_7(
 	register long _r1 __asm__("r1")=(long)(param_1);
 	__asm__ __volatile__(
 			"svc 0"
-			:
+			: "=r"(_r0)
 			: "r"(_r0), "r"(_r1),
 			"r"(_r2), "r"(_r3), "r"(_r4), "r"(_r5),
 			"r"(_r6), "r"(_r7)
@@ -47,11 +50,10 @@ uint32_t TINKER_API_CALL_7(
 	register long _r0 __asm__("r0")=(long)(param_1);
 	__asm__ __volatile__(
 			"svc 0"
-			:
+			: "=r"(_r0)
 			: "r"(_r0), "r"(_r1), "r"(_r2), "r"(_r3),
 			"r"(_r4), "r"(_r5), "r"(_r6), "r"(_r7)
 			: "memory");
 #endif
-	__asm__ __volatile__("pop {lr}");
 	return (long) _r0;
 }
