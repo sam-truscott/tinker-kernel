@@ -50,6 +50,7 @@ error_t tgt_initialise_process(process_t * const process)
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function) TINKER_API_SUFFIX;
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function)
 {
+	printp_out("ARM: Bootstrap, calling %x\n", entry);
 	entry();
 	((thread_entry_point*)(exit_function))();
 }
@@ -86,7 +87,7 @@ void tgt_initialise_context(
     	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
     	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
     	printp_out("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
-    	printp_out("ARM: lr %x sp %x\n", arm_context->lr, arm_context->sp);
+    	printp_out("ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
     }
 }
 

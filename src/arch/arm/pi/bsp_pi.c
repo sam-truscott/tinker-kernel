@@ -125,15 +125,25 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 static void bsp_scheduler_timeout(tgt_context_t * const context)
 {
 #if defined(KERNEL_DEBUGGING)
+	printp_out("BSP: ----------------------\n");
 	printp_out("BSP: Scheduler timeout\n");
-#endif
-	int_context_switch_interrupt(context);
-#if defined(KERNEL_DEBUGGING)
-	printp_out("BSP: Scheduler timeout done\n");
+	printp_out("BSP: Mode %d\n", arm_get_psr_mode());
 	printp_out("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
 	printp_out("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
 	printp_out("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
 	printp_out("BSP: sp %x lr %x\n", context->sp, context->lr);
+	printp_out("BSP: ----------------------\n");
+#endif
+	int_context_switch_interrupt(context);
+#if defined(KERNEL_DEBUGGING)
+	printp_out("BSP: ----------------------\n");
+	printp_out("BSP: Scheduler timeout done\n");
+	printp_out("BSP: Mode %d\n", arm_get_psr_mode());
+	printp_out("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+	printp_out("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+	printp_out("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+	printp_out("BSP: sp %x lr %x\n", context->sp, context->lr);
+	printp_out("BSP: ----------------------\n");
 #endif
 }
 
