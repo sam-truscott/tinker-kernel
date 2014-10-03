@@ -29,10 +29,6 @@
 
 #define EXCEPTION_END \
 	asm("nop"); \
-	asm("mrs r3, cpsr"); 			/* backup cpsr */ \
-	asm("msr cpsr, #0x12");			/* enter irq mode */ \
-	asm("ldr sp, =__ivtse");		/* setup irq stack */ \
-	asm("msr cpsr, r3");			/* restore old cpsr */ \
 	asm("pop {r0, r1}"); 			/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \
 	asm("ldm sp!, {r0-r12,pc}^")	/* return! */

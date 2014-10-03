@@ -48,8 +48,13 @@ error_t tgt_initialise_process(process_t * const process)
 }
 
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function) TINKER_API_SUFFIX;
-static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function)
+static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function)
 {
+
+	asm("mrs r3, cpsr"); 			/* backup cpsr */
+	asm("msr cpsr, #0x12");			/* enter irq mode */
+	asm("ldr sp, =__ivtse");		/* setup irq stack */
+	asm("msr cpsr, r3");			/* restore old cpsr */
 	printp_out("ARM: Bootstrap, calling %x\n", entry);
 	entry();
 	((thread_entry_point*)(exit_function))();
