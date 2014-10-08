@@ -78,6 +78,7 @@ void tgt_initialise_context(
         const bool_t kernel_mode,
         const uint32_t exit_function)
 {
+    uint16_t gpr = 3;
     if (context)
     {
         *context = mem_alloc(process_get_mem_pool(thread_get_parent(thread)), sizeof(tgt_context_t));
@@ -86,7 +87,7 @@ void tgt_initialise_context(
         arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
         arm_context->gpr[1] = exit_function;
         arm_context->gpr[2] = arm_context->sp;
-        for (uint8_t gpr = 3 ; gpr < ARM_CONTEXT_GPR ; gpr++)
+        for (; gpr < ARM_CONTEXT_GPR ; gpr++)
         {
             arm_context->gpr[gpr] = 0;
         }
