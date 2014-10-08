@@ -47,17 +47,29 @@ error_t tgt_initialise_process(process_t * const process)
     return ok;
 }
 
-static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function) TINKER_API_SUFFIX;
-static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function)
+static uint32_t arm_get_sp(void)
 {
+	uint32_t sp;
+	asm("mov %[ps], sp" : [ps]"=r" (sp));
+	return sp;
+}
 
+static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp) TINKER_API_SUFFIX;
+static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp)
+{
 	asm("mrs r3, cpsr"); 			/* backup cpsr */
-	asm("msr cpsr, #0x12");			/* enter irq mode */
+	asm("msr cpsr, #0x51");			/* enter fiq mode*/
+	asm("ldr sp, =__ivtse");		/* setup fiq stack */
+	asm("msr cpsr, #0x72");			/* enter irq mode */
 	asm("ldr sp, =__ivtse");		/* setup irq stack */
 	asm("msr cpsr, r3");			/* restore old cpsr */
+	asm("mov sp, r2");				/* set the programs stack */
+	printp_out("ARM: Mode %d\n", arm_get_cpsr());
+	printp_out("ARM: Stack %x\n", arm_get_sp());
 	printp_out("ARM: Bootstrap, calling %x\n", entry);
 	entry();
 	((thread_entry_point*)(exit_function))();
+	(void)sp;
 }
 
 void tgt_initialise_context(
@@ -73,7 +85,8 @@ void tgt_initialise_context(
         arm_context->sp = thread_get_virt_stack_base(thread);
         arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
         arm_context->gpr[1] = exit_function;
-        for (uint8_t gpr = 2 ; gpr < ARM_CONTEXT_GPR ; gpr++)
+        arm_context->gpr[2] = arm_context->sp;
+        for (uint8_t gpr = 3 ; gpr < ARM_CONTEXT_GPR ; gpr++)
         {
             arm_context->gpr[gpr] = 0;
         }
@@ -198,7 +211,7 @@ void tgt_disable_external_interrupts(void)
 void tgt_enter_usermode(void)
 {
 	printp_out("Kernel: Entering user mode\n");
-	arm_set_psr_mode(PSR_MODE_USER);
+	arm_set_psr_mode(PSR_MODE_SUPERVISOR);
 	tinker_debug("Kernel: User mode entered\n");
 }
 

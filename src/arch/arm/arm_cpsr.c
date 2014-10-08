@@ -48,7 +48,10 @@ psr_mode_t arm_get_psr_mode(void)
 
 void arm_set_psr_mode(const psr_mode_t psr_mode)
 {
-	arm_set_cpsr((arm_get_cpsr() & 0x1F) | psr_mode);
+	const uint32_t cpsr = arm_get_cpsr();
+	const uint32_t masked_cpsr = cpsr & (~0x1F);
+	const uint32_t new_cpsr = masked_cpsr | psr_mode;
+	arm_set_cpsr(new_cpsr);
 }
 
 void arm_get_psr_mode_name(const psr_mode_t psr_mode, char * const buffer, const uint32_t size)

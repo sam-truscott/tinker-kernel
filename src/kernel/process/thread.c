@@ -41,12 +41,16 @@ static void thread_setup_stack(thread_t * const thread)
 	const uint32_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
 	uint32_t vsp;
 
-	if ( !process_is_kernel(thread->parent) )
+	if (!process_is_kernel(thread->parent))
 	{
+#if defined (VIRTUAL_ADDRESS_SPACE) && VIRTUAL_ADDRESS_SPACE > 0
 		vsp = VIRTUAL_ADDRESS_SPACE
 				+ (((uint32_t)thread->stack
 						- mem_get_start_addr(process_get_mem_pool(thread->parent)))
 						+ stack_size - 12);
+#else
+		vsp = rsp;
+#endif
 	}
 	else
 	{

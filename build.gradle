@@ -1,6 +1,5 @@
 apply plugin: 'assembler'
 apply plugin: 'c'
-//apply plugin: 'eclipse-cdt'
 
 model {
     buildTypes {
