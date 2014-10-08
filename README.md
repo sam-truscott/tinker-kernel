@@ -101,8 +101,10 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Shell should use pipes for reading I/O
 * Target: ARM support (Raspberry Pi)
+	* Fix the reboot issue
+	* Fix the system timer - test app waits but the interrupt doesn't map/callback
+* Kernel: Shell should use pipes for reading I/O
 * Kernel: Timeouts on pipe (open/read/write)
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
@@ -120,3 +122,25 @@ Toolchain
 =========
 
 A standard stage 1 gcc compiler will work (i.e. C compiler without libc support).
+
+Helpful Commands
+================
+
+Starting QEMU for the Raspberry Pi build
+
+	# Disassemble the Raspberry Pi build so we can look at addresses
+	arm-eabi-objdump -dS build\binaries\armRaspPiExecutable\debug\armRaspPi.exe > dis.txt
+	
+	# Start a listening netcat port to listen to the UART
+	nc64 -L -p 5555 -vv
+	# Start the emulator
+	qemu-system-arm -m 512M -kernel build\binaries\armRaspPiExecutable\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:5555 -s
+
+	# Start a debugger
+	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi.exe
+	# Connect to the debugger
+	target remote localhost:1234
+	# Set a breakpoint at the start
+	b kernel_main
+	# Start the kernel
+	continue
