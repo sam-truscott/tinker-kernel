@@ -108,6 +108,9 @@ static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t pa
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)param;
 		if (data->callback)
 		{
+#if defined(TIMER_DEBUGGING)
+			printp_out("BCM2835: Calling back to %x\n", data->callback);
+#endif
 			data->callback(context);
 			result = NO_ERROR;
 		}

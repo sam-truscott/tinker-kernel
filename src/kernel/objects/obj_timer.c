@@ -68,10 +68,16 @@ static void obj_timer_timeout(
 		void * const usr_data)
 {
 	object_timer_t * const timer = (object_timer_t*)usr_data;
+#if defined(TIMER_DEBUGGING)
+	printp_out("Timer: My alarm is id %d, fired alarm is %d\n", timer->alarm_id, alarm_id);
+#endif
 	if (timer && alarm_id == timer->alarm_id)
 	{
 		thread_set_state(timer->callback_thread, THREADY_READY);
 		thread_set_waiting_on(timer->callback_thread, NULL);
+#if defined(TIMER_DEBUGGING)
+		printp_out("Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);
+#endif
 		sch_notify_resume_thread(timer->callback_thread);
 		thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
 		thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);

@@ -10,6 +10,7 @@
 #include "alarm.h"
 
 #include "kernel/time/time.h"
+#include "kernel/console/print_out.h"
 
 typedef struct alarm_t
 {
@@ -59,5 +60,8 @@ const tinker_time_t* alarm_get_time(const alarm_t * const alarm)
 
 void alarm_fire_callback(const alarm_t * const alarm)
 {
+#if defined(ALARM_DEBUGGING)
+	printp_out("Alarms: Alarm Id %d calling %x\n", alarm->id, alarm->call_back);
+#endif
 	alarm->call_back(alarm->id, alarm->usr_data);
 }
