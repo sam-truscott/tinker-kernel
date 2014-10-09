@@ -47,28 +47,34 @@ error_t tgt_initialise_process(process_t * const process)
     return ok;
 }
 
+/*
 static uint32_t arm_get_sp(void)
 {
 	uint32_t sp;
 	asm("mov %[ps], sp" : [ps]"=r" (sp));
 	return sp;
 }
+*/
 
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp) TINKER_API_SUFFIX;
 static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp)
 {
-	asm("mrs r3, cpsr"); 			/* backup cpsr */
+	asm("mrs r7, cpsr"); 			/* backup cpsr */
 	asm("msr cpsr, #0x51");			/* enter fiq mode*/
 	asm("ldr sp, =__ivtse");		/* setup fiq stack */
 	asm("msr cpsr, #0x72");			/* enter irq mode */
 	asm("ldr sp, =__ivtse");		/* setup irq stack */
-	asm("msr cpsr, r3");			/* restore old cpsr */
+	asm("msr cpsr, r7");			/* restore old cpsr */
 	asm("mov sp, r2");				/* set the programs stack */
-	printp_out("ARM: Mode %d\n", arm_get_cpsr());
-	printp_out("ARM: Stack %x\n", arm_get_sp());
-	printp_out("ARM: Bootstrap, calling %x\n", entry);
+	asm("push {fp, lr}");
+	//printp_out("ARM: Mode %d\n", arm_get_cpsr());
+	//printp_out("ARM: Stack %x\n", arm_get_sp());
+	//printp_out("ARM: Bootstrap, calling %x\n", entry);
+	asm("mov r0, r5");				/* set arg1 */
+	asm("mov r1, r6");				/* set arg2 */
 	entry();
 	((thread_entry_point*)(exit_function))();
+	asm("pop {fp, lr}");
 	(void)sp;
 }
 
@@ -164,10 +170,10 @@ void tgt_set_context_param(
 {
     switch (index) {
     case 0:
-        context->gpr[0] = parameter;
+        context->gpr[5] = parameter;
         break;
     case 1:
-        context->gpr[1] = parameter;
+        context->gpr[6] = parameter;
         break;
     }
 }
