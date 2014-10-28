@@ -67,7 +67,7 @@ error_t alarm_set_alarm(
 {
 	error_t ret = NO_ERROR;
 #if defined(ALARM_DEBUGGING)
-	printp_out("Alarms: Setting up a new alarm for %d.%d\n", timeout->seconds, timeout->nanoseconds);
+	debug_print("Alarms: Setting up a new alarm for %d.%d\n", timeout->seconds, timeout->nanoseconds);
 #endif
 	if (pool && timeout)
 	{
@@ -108,7 +108,7 @@ error_t alarm_set_alarm(
 					if (alarm_id)
 					{
 #if defined(ALARM_DEBUGGING)
-	printp_out("Alarms: New alarm id is %d\n", new_alarm_id);
+						debug_print("Alarms: New alarm id is %d\n", new_alarm_id);
 #endif
 						*alarm_id = new_alarm_id;
 					}
@@ -148,7 +148,7 @@ error_t alarm_unset_alarm(const uint32_t alarm_id)
 {
 	error_t ret = NO_ERROR;
 #if defined(ALARM_DEBUGGING)
-	printp_out("Alarms: Unset alarm id %d\n", alarm_id);
+	debug_print("Alarms: Unset alarm id %d\n", alarm_id);
 #endif
 	alarm_t * alarm = NULL;
 	const bool_t got = alarm_list_t_get(alarm_list, alarm_id, &alarm);
@@ -206,7 +206,7 @@ static void alarm_handle_timer_timeout(tgt_context_t * const context)
 	if (alarm_next_alarm)
 	{
 #if defined(ALARM_DEBUGGING)
-	printp_out("Alarms: An alarm needs to fire\n");
+		debug_print("Alarms: An alarm needs to fire\n");
 #endif
 		alarm_fire_callback(alarm_next_alarm);
 		alarm_calculate_next_alarm(NULL);

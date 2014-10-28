@@ -57,7 +57,7 @@ object_number_t obj_timer_get_oid
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 {
-	printp_out("Timer: Callback thread\n");
+	debug_print("Timer: Callback thread\n");
 	if (t)
 	{
 		t(p);
@@ -70,14 +70,14 @@ static void obj_timer_timeout(
 {
 	object_timer_t * const timer = (object_timer_t*)usr_data;
 #if defined(TIMER_DEBUGGING)
-	printp_out("Timer: My alarm is id %d, fired alarm is %d\n", timer->alarm_id, alarm_id);
+	debug_print("Timer: My alarm is id %d, fired alarm is %d\n", timer->alarm_id, alarm_id);
 #endif
 	if (timer && alarm_id == timer->alarm_id)
 	{
 		thread_set_state(timer->callback_thread, THREADY_READY);
 		thread_set_waiting_on(timer->callback_thread, NULL);
 #if defined(TIMER_DEBUGGING)
-		printp_out("Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);
+		debug_print("Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);
 #endif
 		sch_notify_resume_thread(timer->callback_thread);
 		thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);

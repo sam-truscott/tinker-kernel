@@ -110,7 +110,7 @@ void ppc_isr_default_handler(const uint32_t vector, tgt_context_t * const contex
 {
 	if (context)
 	{
-		printp_out("Unexpected exception: isr %d\n", vector);
+		debug_print("Unexpected exception: isr %d\n", vector);
 	}
 }
 

@@ -91,10 +91,10 @@ void tgt_initialise_context(
         	arm_context->apsr = PSR_MODE_USER;
         }
 #if defined(TARGET_DEBUGGING)
-    	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
-    	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
-    	printp_out("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
-    	printp_out("ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
+        debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
+        debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
+        debug_print("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
+        debug_print("ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
 #endif
     }
 }

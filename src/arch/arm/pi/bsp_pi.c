@@ -74,7 +74,7 @@ void bsp_setup(void)
 	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 
 #if defined(TARGET_DEBUGGING)
-	printp_out("BSP: Enabling external interrupts\n");
+	debug_print("BSP: Enabling external interrupts\n");
 #endif
 }
 
@@ -96,7 +96,7 @@ void ivt_initialise(void)
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
 #if defined(TARGET_DEBUGGING)
-	printp_out("BSP: Vector %d\n", type);
+	debug_print("BSP: Vector %d\n", type);
 #endif
 	tgt_context_t * const context = (tgt_context_t*)contextp;
 	switch(type)
@@ -117,12 +117,12 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 		const error_t handled = int_handle_external_vector(context);
 		if (handled != NO_ERROR)
 		{
-			printp_out("BSP: Failed to handle external interrupt, error = %d\n", handled);
+			debug_print("BSP: Failed to handle external interrupt, error = %d\n", handled);
 		}
 	}
 		break;
 	default:
-		printp_out("BSP: Unknown interrupt type %d\n", type);
+		debug_print("BSP: Unknown interrupt type %d\n", type);
 		break;
 	}
 }
@@ -130,25 +130,25 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 static void bsp_scheduler_timeout(tgt_context_t * const context)
 {
 #if defined(TARGET_DEBUGGING)
-	printp_out("BSP: ----------------------\n");
-	printp_out("BSP: Scheduler timeout\n");
-	printp_out("BSP: Mode %d\n", arm_get_psr_mode());
-	printp_out("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
-	printp_out("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
-	printp_out("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-	printp_out("BSP: sp %x lr %x\n", context->sp, context->lr);
-	printp_out("BSP: ----------------------\n");
+	debug_print("BSP: ----------------------\n");
+	debug_print("BSP: Scheduler timeout\n");
+	debug_print("BSP: Mode %d\n", arm_get_psr_mode());
+	debug_print("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+	debug_print("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+	debug_print("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+	debug_print("BSP: sp %x lr %x\n", context->sp, context->lr);
+	debug_print("BSP: ----------------------\n");
 #endif
 	int_context_switch_interrupt(context);
 #if defined(TARGET_DEBUGGING)
-	printp_out("BSP: ----------------------\n");
-	printp_out("BSP: Scheduler timeout done\n");
-	printp_out("BSP: Mode %d\n", arm_get_psr_mode());
-	printp_out("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
-	printp_out("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
-	printp_out("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-	printp_out("BSP: sp %x lr %x\n", context->sp, context->lr);
-	printp_out("BSP: ----------------------\n");
+	debug_print("BSP: ----------------------\n");
+	debug_print("BSP: Scheduler timeout done\n");
+	debug_print("BSP: Mode %d\n", arm_get_psr_mode());
+	debug_print("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+	debug_print("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+	debug_print("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+	debug_print("BSP: sp %x lr %x\n", context->sp, context->lr);
+	debug_print("BSP: ----------------------\n");
 #endif
 }
 

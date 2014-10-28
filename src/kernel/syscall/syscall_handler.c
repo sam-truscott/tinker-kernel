@@ -116,7 +116,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 #endif
 
 #if defined(SYSCALL_DEBUGGING)
-	printp_out("Syscall: API %d\n", api);
+	debug_print("Syscall: API %d\n", api);
 #endif
 
 	/*
@@ -570,6 +570,6 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		bsp_enable_schedule_timer();
 	}
 #if defined(SYSCALL_DEBUGGING)
-	printp_out("Syscall: API %d RET %d\n", api, ret);
+	debug_print("Syscall: API %d RET %d\n", api, ret);
 #endif
 }

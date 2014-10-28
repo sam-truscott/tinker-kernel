@@ -98,17 +98,17 @@ void x86_initialise_gdt(void)
 	x86_dump_cr0(cr0);
 	if (!(cr0 & 1))
 	{
-		printp_out("Setting up GDT\n");
+		debug_print("Setting up GDT\n");
 		for (uint8_t e = 0 ; e < MAX_GDT_ENTRIES ; e++)
 		{
-			printp_out("GDT %d: Base=%x, Limit=%x, Type=%x\n",
+			debug_print("GDT %d: Base=%x, Limit=%x, Type=%x\n",
 					e,
 					x86_gdt_data[e].base,
 					x86_gdt_data[e].limit,
 					x86_gdt_data[e].flags);
 			x86_create_gdt_entry(e, &(x86_gdt_data[e]));
 		}
-		printp_out("GDT Table build\n");
+		debug_print("GDT Table build\n");
 		static struct gdt_ptr gdt;
 		gdt.len = sizeof(x86_gdt_table)-1;
 		gdt.ptr = (uint32_t)&x86_gdt_table + (ds() << 4);
@@ -137,31 +137,31 @@ static void x86_dump_cr0(const uint32_t cr0)
 {
 	uint32_t x = 90000000;
 	while(x--) {}
-	printp_out("CR0=%d\n", cr0);
+	debug_print("CR0=%d\n", cr0);
 	x = 90000000;
 	while(x--) {}
 	if (cr0 & 1)
 	{
-		printp_out("CR0: Protected Mode\n");
+		debug_print("CR0: Protected Mode\n");
 	}
 	else
 	{
-		printp_out("CR0: Real Mode\n");
+		debug_print("CR0: Real Mode\n");
 	}
 	if (cr0 & 2)
 	{
-		printp_out("CR0: Multi-processor system\n");
+		debug_print("CR0: Multi-processor system\n");
 	}
 	else
 	{
-		printp_out("CR0: Uniprocessor system\n");
+		debug_print("CR0: Uniprocessor system\n");
 	}
 	if (cr0 & 4)
 	{
-		printp_out("CR0: No floating point unit present\n");
+		debug_print("CR0: No floating point unit present\n");
 	}
 	else
 	{
-		printp_out("CR0: Floating point unit present\n");
+		debug_print("CR0: Floating point unit present\n");
 	}
 }

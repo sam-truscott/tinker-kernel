@@ -37,13 +37,13 @@ error_t int_handle_external_vector(tgt_context_t * const context)
 	if (!is_scheduler && current_thread != new_thread)
 	{
 #if defined(INTC_DEBUGGING)
-		printp_out("INTC: Switching thread due to external interrupt\n");
+		debug_print("INTC: Switching thread due to external interrupt\n");
 #endif
 		sch_set_context_for_next_thread(context);
 		bsp_enable_schedule_timer();
 	}
 #if defined(INTC_DEBUGGING)
-	printp_out("INTC: Current thread after external vector: %s\n", thread_get_name(new_thread));
+	debug_print("INTC: Current thread after external vector: %s\n", thread_get_name(new_thread));
 #endif
 	is_scheduler = false;
 	is_external = false;
