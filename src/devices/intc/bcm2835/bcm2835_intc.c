@@ -155,7 +155,6 @@ static bool_t bcm2835_get(
 		if (fired && *cause == INTERRUPT_PENDING1)
 		{
 			const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1));
-			printp_out("BCM2835: Interrupts Pending 1: %x\n", pending_1);
 			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 			{
 				if (pending_1 & CAUSE_TABLE[1][irq].bit)

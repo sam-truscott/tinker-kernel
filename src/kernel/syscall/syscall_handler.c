@@ -560,9 +560,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		bsp_enable_schedule_timer();
 	}
 
-	/*
-	 * If the thread has been un-scheduled we need to switch process
-	 */
+	/* If the thread has been un-scheduled we need to switch process */
 	const thread_state_t state = thread_get_state(this_thread);
 	if ( (state != THREAD_SYSTEM) &&
 		 (state != THREAD_RUNNING) )

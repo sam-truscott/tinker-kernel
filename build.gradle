@@ -378,15 +378,15 @@ sources {
                 "-gdwarf-4",
                 "-DBUILDING_KERNEL",
                 "-DKERNEL_SHELL",
-                "-DTIMER_DEBUGGING",
-                "-DINTC_DEBUGGING",
+                "-UTIMER_DEBUGGING",
+                "-UINTC_DEBUGGING",
                 "-DKERNEL_DEBUGGING",
                 "-UMEMORY_DEBUGGING",
                 "-UDEBUG_COLLECTIONS",
                 "-DPROCESS_DEBUGGING",
-                "-DTARGET_DEBUGGING",
+                "-UTARGET_DEBUGGING",
                 "-USYSCALL_DEBUGGING"
-                "-DALARM_DEBUGGING"
+                "-UALARM_DEBUGGING"
         } else if (buildType == buildTypes.release) {
             cCompiler.args "-Ofast",
                 "-g0"
