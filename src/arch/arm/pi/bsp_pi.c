@@ -34,7 +34,7 @@ void bsp_initialise(void)
 {
 	uart_init();
 
-#if defined(KERNEL_DEBUGGING)
+#if defined(TARGET_DEBUGGING)
 	uart_puts("UART Up\n\0");
 #endif
 
@@ -73,7 +73,9 @@ void bsp_setup(void)
 	// enable UART interrupts
 	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
 
+#if defined(TARGET_DEBUGGING)
 	printp_out("BSP: Enabling external interrupts\n");
+#endif
 }
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
@@ -93,7 +95,9 @@ void ivt_initialise(void)
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
+#if defined(TARGET_DEBUGGING)
 	printp_out("BSP: Vector %d\n", type);
+#endif
 	tgt_context_t * const context = (tgt_context_t*)contextp;
 	switch(type)
 	{
@@ -125,7 +129,7 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 
 static void bsp_scheduler_timeout(tgt_context_t * const context)
 {
-#if defined(KERNEL_DEBUGGING)
+#if defined(TARGET_DEBUGGING)
 	printp_out("BSP: ----------------------\n");
 	printp_out("BSP: Scheduler timeout\n");
 	printp_out("BSP: Mode %d\n", arm_get_psr_mode());
@@ -136,7 +140,7 @@ static void bsp_scheduler_timeout(tgt_context_t * const context)
 	printp_out("BSP: ----------------------\n");
 #endif
 	int_context_switch_interrupt(context);
-#if defined(KERNEL_DEBUGGING)
+#if defined(TARGET_DEBUGGING)
 	printp_out("BSP: ----------------------\n");
 	printp_out("BSP: Scheduler timeout done\n");
 	printp_out("BSP: Mode %d\n", arm_get_psr_mode());
@@ -155,8 +159,6 @@ void bsp_enable_schedule_timer(void)
 	tinker_time_milliseconds(100, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
 	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, &bsp_scheduler_timeout);
-	arm_enable_irq();
-	arm_disable_fiq();
 }
 
 void bsp_check_timers_and_alarms(void)

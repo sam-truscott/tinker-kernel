@@ -138,12 +138,7 @@ static bool_t bcm2835_get(
 	bool_t fired = false;
 	if (cause && user_data)
 	{
-		const uint32_t pending_basic = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_BASIC))
-				& in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_BASIC));
-		const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1))
-				& in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_1));
-		const uint32_t pending_2 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_2))
-				& in_u32((uint32_t*)((uint8_t*)user_data + ENABLE_IRQ_2));
+		const uint32_t pending_basic = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_BASIC));
 		uint8_t irq;
 		if (pending_basic)
 		{
@@ -157,8 +152,10 @@ static bool_t bcm2835_get(
 				}
 			}
 		}
-		if (!fired && pending_1)
+		if (fired && *cause == INTERRUPT_PENDING1)
 		{
+			const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1));
+			printp_out("BCM2835: Interrupts Pending 1: %x\n", pending_1);
 			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 			{
 				if (pending_1 & CAUSE_TABLE[1][irq].bit)
@@ -169,8 +166,9 @@ static bool_t bcm2835_get(
 				}
 			}
 		}
-		if (!fired && pending_2)
+		if (fired && *cause == INTERRUPT_PENDING2)
 		{
+			const uint32_t pending_2 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_2));
 			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 			{
 				if (pending_2 & CAUSE_TABLE[2][irq].bit)

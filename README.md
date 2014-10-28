@@ -7,7 +7,7 @@ Supported targets:
 - PowerPC (gdb simulator)
 
 In development:
-- x86, arm6 (Raspberry Pi)
+- arm6 (Raspberry Pi), x86
 
 Licence
 =======

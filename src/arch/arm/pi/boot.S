@@ -9,22 +9,14 @@
 
  .section .entry, "ax"
 
- # setting up the Multiboot header - see GRUB docs for details
-.set ALIGN,    1<<0
-.set MEMINFO,  1<<1
-.set FLAGS,    ALIGN | MEMINFO
-.set MAGIC,    0x1BADB002
-.set CHECKSUM, -(MAGIC + FLAGS)
-
-/*
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
-*/
-
 .global kernel_start
 kernel_start:
+	mrs r3, cpsr 			/* backup cpsr */
+	msr cpsr, #0x51			/* enter fiq mode*/
+	ldr sp, =__ivtse		/* setup fiq stack */
+	msr cpsr, #0x72			/* enter irq mode */
+	ldr sp, =__ivtse		/* setup irq stack */
+	msr cpsr, r3			/* restore old cpsr */
 	ldr	sp, =__ivtse
 	// Clear out bss.
 	ldr	r4, =_bss_start

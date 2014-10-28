@@ -57,6 +57,7 @@ object_number_t obj_timer_get_oid
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 {
+	printp_out("Timer: Callback thread\n");
 	if (t)
 	{
 		t(p);
@@ -68,6 +69,7 @@ static void obj_timer_timeout(
 		void * const usr_data)
 {
 	object_timer_t * const timer = (object_timer_t*)usr_data;
+	printp_out("Timer: Timeout\n");
 	if (timer && alarm_id == timer->alarm_id)
 	{
 		thread_set_state(timer->callback_thread, THREADY_READY);

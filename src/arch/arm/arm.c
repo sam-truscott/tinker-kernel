@@ -47,26 +47,28 @@ error_t tgt_initialise_process(process_t * const process)
     return ok;
 }
 
+#if defined (TARGET_DEBUGGING)
 static uint32_t arm_get_sp(void)
 {
 	uint32_t sp;
 	asm("mov %[ps], sp" : [ps]"=r" (sp));
 	return sp;
 }
+#endif
 
 static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp) TINKER_API_SUFFIX;
 static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp)
 {
-	asm("mrs r3, cpsr"); 			/* backup cpsr */
-	asm("msr cpsr, #0x51");			/* enter fiq mode*/
-	asm("ldr sp, =__ivtse");		/* setup fiq stack */
-	asm("msr cpsr, #0x72");			/* enter irq mode */
-	asm("ldr sp, =__ivtse");		/* setup irq stack */
-	asm("msr cpsr, r3");			/* restore old cpsr */
 	asm("mov sp, r2");				/* set the programs stack */
+	asm("mov fp, sp");				/* frame pointer */
+#if defined(TARGET_DEBUGGING)
+	asm("push {r3, r4}");			/* backup two args */
 	printp_out("ARM: Mode %d\n", arm_get_cpsr());
 	printp_out("ARM: Stack %x\n", arm_get_sp());
 	printp_out("ARM: Bootstrap, calling %x\n", entry);
+	printp_out("ARM: Bootstrap, exit %x\n", exit_function);
+	asm("pop {r3, r4}");			/* restore two args */
+#endif
 	entry();
 	((thread_entry_point*)(exit_function))();
 	(void)sp;
@@ -103,10 +105,12 @@ void tgt_initialise_context(
         {
         	arm_context->apsr = PSR_MODE_USER;
         }
+#if defined(TARGET_DEBUGGING)
     	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
     	printp_out("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
     	printp_out("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
     	printp_out("ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
+#endif
     }
 }
 
@@ -164,10 +168,10 @@ void tgt_set_context_param(
 {
     switch (index) {
     case 0:
-        context->gpr[0] = parameter;
+        context->gpr[3] = parameter;
         break;
     case 1:
-        context->gpr[1] = parameter;
+        context->gpr[4] = parameter;
         break;
     }
 }
@@ -211,9 +215,14 @@ void tgt_disable_external_interrupts(void)
 
 void tgt_enter_usermode(void)
 {
+#if defined(TARGET_DEBUGGING)
 	printp_out("Kernel: Entering user mode\n");
+#endif
 	arm_set_psr_mode(PSR_MODE_SUPERVISOR);
+	arm_enable_irq();
+#if defined(TARGET_DEBUGGING)
 	tinker_debug("Kernel: User mode entered\n");
+#endif
 }
 
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)

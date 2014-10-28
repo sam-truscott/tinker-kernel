@@ -50,6 +50,16 @@ static void bcm2835_timer_setup(
 		}
 		if (offset != 0)
 		{
+			const uint32_t old_control = in_u32((uint32_t*)(((uint8_t*)data->base) + CONTROL_OFFSET));
+			if (old_control & 1 << data->instance)
+			{
+				const uint32_t new_control = old_control | (1 << data->instance);
+				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), new_control);
+#if defined(TIMER_DEBUGGING)
+				printp_out("BCM2835: Clearing status for instance %d, base %x, offset %x, control %x -> %x\n",
+						data->instance, data->base, CONTROL_OFFSET, old_control, new_control);
+#endif
+			}
 			const uint32_t timeAsUs = tinker_timer_get_microseconds(timeout);
 #if defined(TIMER_DEBUGGING)
 			const uint64_t current = *(uint64_t*)((uint8_t*)data->base + (CLOCK_OFFSET*2));
@@ -61,12 +71,6 @@ static void bcm2835_timer_setup(
 					(current | 0xFFFFFFFF));
 #endif
 			out_u32((uint32_t*)(((uint8_t*)data->base) + offset), timeAsUs);
-
-			const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET))) | (1 << data->instance);
-			out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), control);
-#if defined(TIMER_DEBUGGING)
-			printp_out("BCM2835: Enabling timer for instance %d, base %x, offset %x, control %x\n", data->instance, data->base, CONTROL_OFFSET, control);
-#endif
 		}
 	}
 }
@@ -89,9 +93,14 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 			}
 			if (offset != 0)
 			{
-				out_u32((uint32_t*)(((uint8_t*)data->base) + offset), 0);
+				// read the control
 				const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
+				// clear the bit in control
 				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), control | (1 << data->instance));
+#if defined(TIMER_DEBUGGING)
+			printp_out("BCM2835: Cancelling status for instance %d, base %x, offset %x, control %x -> %x\n",
+					data->instance, data->base, CONTROL_OFFSET, control, control | (1 << data->instance));
+#endif
 			}
 		}
 	}
@@ -105,6 +114,7 @@ static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t pa
 #endif
 	if (param)
 	{
+		bcm2835_timer_cancel(param);
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)param;
 		if (data->callback)
 		{

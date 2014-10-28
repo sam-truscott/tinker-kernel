@@ -152,7 +152,10 @@ error_t alarm_unset_alarm(const uint32_t alarm_id)
 			alarm_disable_timer();
 			alarm_next_alarm = NULL;
 			alarm_calculate_next_alarm(NULL);
-			alarm_enable_timer();
+			if (alarm_next_alarm)
+			{
+				alarm_enable_timer();
+			}
 		}
 		alarm_delete(alarm);
 	}
@@ -171,14 +174,12 @@ void alarm_calculate_next_alarm(alarm_t * const new_alarm)
 		if (alarm_next_alarm == NULL)
 		{
 			alarm_next_alarm = new_alarm;
-			alarm_enable_timer();
 		}
 		else if (tinker_time_lt(
 				alarm_get_time(new_alarm),
 				alarm_get_time(alarm_next_alarm)))
 		{
 			alarm_next_alarm = new_alarm;
-			alarm_enable_timer();
 		}
 	}
 	else

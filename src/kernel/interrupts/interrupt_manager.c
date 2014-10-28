@@ -18,7 +18,9 @@
 #include "kernel/utils/util_memcpy.h"
 #include "arch/tgt.h"
 
-const intc_t * interrupt_manager_root = NULL;
+static const intc_t * interrupt_manager_root = NULL;
+static volatile bool_t is_external = false;
+static volatile bool_t is_scheduler = false;
 
 void int_install_isr(const intc_t * const intc)
 {
@@ -27,14 +29,25 @@ void int_install_isr(const intc_t * const intc)
 
 error_t int_handle_external_vector(tgt_context_t * const context)
 {
-	return intc_handle(interrupt_manager_root, context);
+	is_external = true;
+	is_scheduler = false;
+	const thread_t * const current_thread = sch_get_current_thread();
+	const error_t intc_result = intc_handle(interrupt_manager_root, context);
+	if (!is_scheduler && current_thread != sch_get_current_thread())
+	{
+		sch_set_context_for_next_thread(context);
+		bsp_enable_schedule_timer();
+	}
+	is_scheduler = false;
+	is_external = false;
+	return intc_result;
 }
 
 void int_context_switch_interrupt(
 		tgt_context_t * const context)
 {
 	kernel_assert("Context Switch Context missing", context != NULL);
-
+	is_scheduler = true;
 	/* Copy over the context for the scheduler */
 	sch_set_context_for_next_thread(context);
 	bsp_enable_schedule_timer();

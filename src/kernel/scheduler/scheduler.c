@@ -271,8 +271,8 @@ void sch_notify_change_priority(
 void sch_terminate_current_thread(
 		const tgt_context_t * const context)
 {
-	thread_t * thread = sch_get_current_thread();
-
+	thread_t * const thread = sch_get_current_thread();
+	kernel_assert("Attempted to terminate idle thread\n", thread!=kernel_get_idle_thread());
 	if (thread)
 	{
 		thread_set_state(thread, THREAD_TERMINATED);

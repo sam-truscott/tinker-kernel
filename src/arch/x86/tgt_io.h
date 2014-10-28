@@ -20,7 +20,7 @@
 
 
 #define in_(N,T) \
-	static inline T in_##N(const T * const addr) \
+	static inline volatile T in_##N(const T * const addr) \
 	{ \
 		asm volatile ("" : : : "memory"); \
 		return *((volatile T*)(addr)); \

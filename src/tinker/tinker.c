@@ -75,7 +75,7 @@ static void my_other_thread(void)
 		error = tinker_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("tinker: error sending on pipe\n");
+			tinker_debug("tinker: other thread: error sending on pipe\n");
 		}
 		const char * message = NULL;
 		uint32_t size = 0;
@@ -83,7 +83,7 @@ static void my_other_thread(void)
 		error = tinker_receive_message(rx_pipe, (const void**)(&message), &size, true);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("tinker: error receiving on pipe\n");
+			tinker_debug("tinker: other thread: error receiving on pipe\n");
 		}
 		else
 		{
@@ -93,13 +93,13 @@ static void my_other_thread(void)
 			error = tinker_received_message(rx_pipe);
 			if (error != NO_ERROR)
 			{
-				tinker_debug("tinker: error marking pipe message as received\n");
+				tinker_debug("tinker: other thread: error marking pipe message as received\n");
 			}
 		}
 		error = tinker_close_pipe(rx_pipe);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("tinker: error closing pipe\n");
+			tinker_debug("tinker: other thread: error closing pipe\n");
 		}
 	}
 
@@ -107,7 +107,7 @@ static void my_other_thread(void)
 	error = tinker_sem_open(&sem2, "tinker_test_1");
 	if (error != NO_ERROR)
 	{
-		tinker_debug("tinker: failed to open semaphore\n");
+		tinker_debug("tinker: other thread: failed to open semaphore\n");
 	}
 	else
 	{
@@ -115,7 +115,7 @@ static void my_other_thread(void)
 		error = tinker_sem_get(sem2);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("tinker: failed to get semaphore\n");
+			tinker_debug("tinker: other thread: failed to get semaphore\n");
 		}
 		else
 		{
@@ -123,14 +123,14 @@ static void my_other_thread(void)
 			error = tinker_sem_release(sem2);
 			if (error != NO_ERROR)
 			{
-				tinker_debug("tinker: failed to release the semaphore\n");
+				tinker_debug("tinker: other thread: failed to release the semaphore\n");
 			}
 			else
 			{
 				error = tinker_sem_close(sem2);
 				if (error != NO_ERROR)
 				{
-					tinker_debug("tinker: failed to close the semaphore\n");
+					tinker_debug("tinker: other thread: failed to close the semaphore\n");
 				}
 			}
 		}
@@ -147,12 +147,12 @@ static void my_other_thread(void)
 		error = tinker_shm_destroy(shm2);
 		if (error != NO_ERROR)
 		{
-			tinker_debug("tinker: error destroying shm\n");
+			tinker_debug("tinker: other thread: error destroying shm\n");
 		}
 	}
 	else
 	{
-		tinker_debug("tinker: error opening shm\n");
+		tinker_debug("tinker: other thread: error opening shm\n");
 	}
 
 	tinker_debug("tinker: other thread: done\n");

@@ -58,7 +58,9 @@ void kernel_main(void)
 	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
 	sch_set_current_thread(idle_thread);
 
+#if defined(SYSCALL_DEBUGGING)
 	debug_print("System: Testing Syscall...\n");
+#endif
 	TINKER_API_CALL_7(
 			SYSCALL_TEST,
 			SYSCALL_TEST_1,
@@ -68,14 +70,22 @@ void kernel_main(void)
 			SYSCALL_TEST_5,
 			SYSCALL_TEST_6,
 			SYSCALL_TEST_7);
+#if defined(SYSCALL_DEBUGGING)
 	debug_print("System: Syscall OK\n");
+#endif
 
+#if defined(KERNEL_DEBUGGING)
 	debug_print("System: Calling kmain()\n");
+#endif
 	kmain();
+#if defined(KERNEL_DEBUGGING)
 	debug_print("System: Called kmain()\n");
+#endif
 
-#if defined (KERNEL_SHELL1)
+#if defined (KERNEL_SHELL)
+#if defined (KERNEL_DEBUGGING)
 	debug_print("System: Creating kshell\n");
+#endif
 	proc_create_thread(
 			thread_get_parent(idle_thread),
 			"kshell",
@@ -87,8 +97,12 @@ void kernel_main(void)
 			NULL);
 #endif /* HAS_CONSOLE */
 
+#if defined (KERNEL_DEBUGGING)
 	debug_print("System: Entering User mode\n");
+#endif
 	tgt_enter_usermode();
+#if defined (KERNEL_DEBUGGING)
 	debug_print("System: Loading thread\n");
+#endif
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }

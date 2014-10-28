@@ -115,7 +115,9 @@ void syscall_handle_system_call(tgt_context_t * const context)
 	}
 #endif
 
+#if defined(SYSCALL_DEBUGGING)
 	printp_out("Syscall: API %d\n", api);
+#endif
 
 	/*
 	 * This could use a jump table but I think in this
@@ -567,7 +569,9 @@ void syscall_handle_system_call(tgt_context_t * const context)
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
 		sch_set_context_for_next_thread(context);
+		bsp_enable_schedule_timer();
 	}
-
+#if defined(SYSCALL_DEBUGGING)
 	printp_out("Syscall: API %d RET %d\n", api, ret);
+#endif
 }
