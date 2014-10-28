@@ -16,7 +16,7 @@ static tinker_pipe_t rx_pipe __attribute__((section(".udata")));
 static tinker_shm_t shm __attribute__((section(".udata")));
 static tinker_shm_t shm2 __attribute__((section(".udata")));
 static tinker_timer_t tinker_timer __attribute__((section(".udata")));
-static uint8_t timer_expired __attribute__((section(".udata")));
+static volatile uint8_t timer_expired __attribute__((section(".udata")));
 
 static void my_initial_thread(void) __attribute__((section(".utext")));
 static void my_other_thread(void) __attribute__((section(".utext")));

@@ -47,30 +47,15 @@ error_t tgt_initialise_process(process_t * const process)
     return ok;
 }
 
-#if defined (TARGET_DEBUGGING)
-static uint32_t arm_get_sp(void)
-{
-	uint32_t sp;
-	asm("mov %[ps], sp" : [ps]"=r" (sp));
-	return sp;
-}
-#endif
-
-static void arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp) TINKER_API_SUFFIX;
 static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp)
 {
 	asm("mov sp, r2");				/* set the programs stack */
-	asm("mov fp, sp");				/* frame pointer */
-#if defined(TARGET_DEBUGGING)
-	asm("push {r3, r4}");			/* backup two args */
-	printp_out("ARM: Mode %d\n", arm_get_cpsr());
-	printp_out("ARM: Stack %x\n", arm_get_sp());
-	printp_out("ARM: Bootstrap, calling %x\n", entry);
-	printp_out("ARM: Bootstrap, exit %x\n", exit_function);
-	asm("pop {r3, r4}");			/* restore two args */
-#endif
+	asm("push {fp, lr}");
+	asm("mov r0, r5");				/* set arg1 */
+	asm("mov r1, r6");				/* set arg2 */
 	entry();
 	((thread_entry_point*)(exit_function))();
+	asm("pop {fp, lr}");
 	(void)sp;
 }
 
@@ -168,10 +153,10 @@ void tgt_set_context_param(
 {
     switch (index) {
     case 0:
-        context->gpr[3] = parameter;
+        context->gpr[5] = parameter;
         break;
     case 1:
-        context->gpr[4] = parameter;
+        context->gpr[6] = parameter;
         break;
     }
 }
