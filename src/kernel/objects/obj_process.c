@@ -103,7 +103,7 @@ error_t obj_process_thread_exit(
 	kernel_assert("obj_process_thread - check thread object exists\n", thread != NULL);
 
 #if defined(PROCESS_DEBUGGING)
-		debug_print("Objects: Process %d (%s) is exiting\n", o->pid, process_get_image(o->process));
+		debug_print("Objects: Process %d (%s) Thread %s is exiting\n", o->pid, process_get_image(o->process), thread_get_name(obj_get_thread(thread)));
 #endif
 
 	process_thread_exit(o->process, obj_get_thread(thread));

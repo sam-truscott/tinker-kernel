@@ -238,5 +238,8 @@ void tgt_save_context(
         tgt_context_t * const thread,
         const tgt_context_t * const context)
 {
-    util_memcpy(thread, context, sizeof(tgt_context_t));
+	if (thread)
+	{
+		util_memcpy(thread, context, sizeof(tgt_context_t));
+	}
 }
