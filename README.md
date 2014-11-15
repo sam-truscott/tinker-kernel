@@ -112,7 +112,7 @@ These are the things I need to address in a rough order:
 * Support: Create newlib port
 * Support: Create bootstrap for kernel + services
 * Kernel: Option to make pipes zero-copy via MMU (memory is already aligned)
-* Kernel: Review the powerpc page table code
+* Target: Review the powerpc page table code
 * Target: x86 support
 * All: Need to review it all head to toe since refactor
 * Doc: Doc it with doxygen
