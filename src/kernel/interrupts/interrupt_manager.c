@@ -39,7 +39,7 @@ error_t int_handle_external_vector(tgt_context_t * const context)
 #if defined(INTC_DEBUGGING)
 		debug_print("INTC: Switching thread due to external interrupt\n");
 #endif
-		sch_set_context_for_next_thread(context);
+		sch_set_context_for_next_thread(context, thread_get_state(current_thread));
 		bsp_enable_schedule_timer();
 	}
 #if defined(INTC_DEBUGGING)
@@ -56,7 +56,7 @@ void int_context_switch_interrupt(
 	kernel_assert("Context Switch Context missing", context != NULL);
 	is_scheduler = true;
 	/* Copy over the context for the scheduler */
-	sch_set_context_for_next_thread(context);
+	sch_set_context_for_next_thread(context, thread_get_state(sch_get_current_thread()));
 	bsp_enable_schedule_timer();
 }
 
@@ -71,7 +71,7 @@ void int_fatal_program_error_interrupt(
 			thread_get_name(current));
 	print_stack_trace(tgt_get_context_stack_pointer(context));
 	sch_terminate_current_thread(context);
-	sch_set_context_for_next_thread(context);
+	sch_set_context_for_next_thread(context, thread_get_state(current));
 }
 
 void int_syscall_request_interrupt(

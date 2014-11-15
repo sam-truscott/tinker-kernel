@@ -176,7 +176,10 @@ void thread_save_context(
 		thread_t * const thread,
 		const tgt_context_t * const context)
 {
-	tgt_save_context(thread->context, context);
+	if (thread && context)
+	{
+		tgt_save_context(thread->context, context);
+	}
 }
 
 void thread_set_context_param(

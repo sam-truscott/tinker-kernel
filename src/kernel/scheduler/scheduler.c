@@ -318,7 +318,8 @@ static void sch_priority_find_next_queue(thread_t * const t)
 }
 
 void sch_set_context_for_next_thread(
-		tgt_context_t * const context)
+		tgt_context_t * const context,
+		const thread_state_t thread_state)
 {
 	thread_t * const current_thread = sch_current_thread;
 
@@ -353,9 +354,7 @@ void sch_set_context_for_next_thread(
 	// the thread changed so save the state of the previous thread
 	if (current_thread != sch_current_thread)
 	{
-		// Move the thread from the running state to the ready state
-		const thread_state_t state = thread_get_state(current_thread);
-		if (state == THREAD_RUNNING)
+		if (thread_state == THREAD_RUNNING)
 		{
 			thread_set_state(current_thread, THREADY_READY);
 		}

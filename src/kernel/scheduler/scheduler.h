@@ -29,6 +29,7 @@ void sch_terminate_current_thread(
 		const tgt_context_t * const context);
 
 void sch_set_context_for_next_thread(
-		tgt_context_t * const context);
+		tgt_context_t * const context,
+		const thread_state_t thread_state);
 
 #endif /* SCHEDULER_IMPL_H_ */

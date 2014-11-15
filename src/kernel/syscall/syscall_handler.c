@@ -551,7 +551,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 
 	/* This will over-ride the result of a system-call
 	 * if the exception occurs just after the system call has been made. */
-	if (api != SYSCALL_LOAD_THREAD)
+	if (api != SYSCALL_LOAD_THREAD && api != SYSCALL_EXIT_THREAD)
 	{
 		tgt_set_syscall_return(context, ret);
 	}
@@ -561,12 +561,20 @@ void syscall_handle_system_call(tgt_context_t * const context)
 	}
 
 	/* If the thread has been un-scheduled we need to switch process */
-	const thread_state_t state = thread_get_state(this_thread);
+	thread_state_t state;
+	if (api == SYSCALL_EXIT_THREAD && ret == NO_ERROR)
+	{
+		state = THREAD_TERMINATED;
+	}
+	else
+	{
+		state = thread_get_state(this_thread);
+	}
 	if ( (state != THREAD_SYSTEM) &&
 		 (state != THREAD_RUNNING) )
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
-		sch_set_context_for_next_thread(context);
+		sch_set_context_for_next_thread(context, state);
 		bsp_enable_schedule_timer();
 	}
 #if defined(SYSCALL_DEBUGGING)
