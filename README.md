@@ -7,7 +7,7 @@ Supported targets:
 - PowerPC (gdb simulator)
 
 In development:
-- arm6 (Raspberry Pi), x86
+- arm6 (Raspberry Pi)
 
 Licence
 =======
@@ -53,12 +53,10 @@ For example, to build an individual target use:
 
     # Windows
     gradlew releasePpc32GdbExecutable
-    gradlew releasex86Executable
     gradlew clean debugArmRaspPiExecutable
     
     # Linux
     ./gradlew releasePpc32GdbExecutable
-    ./gradlew releasex86Executable
     ./gradlew clean debugArmRaspPiExecutable
     
 To build everything (all targets, debug and release) use:
@@ -102,12 +100,14 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Target: ARM support (Raspberry Pi)
-	* Fix the reboot issue
+	* Fix the reboot issue - caused by threads exiting
 	* Fix the system timer - test app waits but the interrupt doesn't map/callback
+	* Add ARM MMU support
 * Kernel: Shell should use pipes for reading I/O
 * Kernel: Timeouts on pipe (open/read/write)
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
+* Kernel: Add DMA support for pipes    
 * Kernel: Break up the syscalls into seperate static/inline functions
 * Kernel: Add mechanism to load elfs
 * Support: Create newlib port

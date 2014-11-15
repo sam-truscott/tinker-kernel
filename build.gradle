@@ -20,18 +20,6 @@ model {
                     args << "-mcpu=powerpc"
                 }
             }
-            target("tinkerX86") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "i686-elf-gcc"
-                cCompiler.executable = "i686-elf-gcc"
-                assembler.executable = "i686-elf-as"
-                linker.executable = "i686-elf-gcc"
-                staticLibArchiver.executable = "i686-elf-ar"
-                cCompiler.withArguments { args ->
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/x86"
-                    args << "-march=i686"
-                }
-            }
             target("tinkerArmSoft") {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
@@ -76,9 +64,6 @@ model {
         tinkerPpc {
             architecture "ppc"
         }
-        tinkerX86 {
-            architecture "x86"
-        }
     }
 }
 
@@ -86,9 +71,6 @@ libraries {
     // the base (headers)
     base {}
     // architectures
-    archX86 {
-        targetPlatforms "tinkerX86"
-    }
     archArm {
         targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
     }
@@ -133,15 +115,6 @@ executables {
                  (srcDir.getAbsolutePath() + "/arch/arm/pi/linker.ld")
         }
     }
-    x86 {
-        targetPlatforms "tinkerX86"
-        binaries.all {
-            File srcDir = new File('src')
-            linker.args "-lgcc",
-                 "-T",
-                 (srcDir.getAbsolutePath() + "\\arch\\x86\\linker.ld")
-        }
-    }
     ppc32Gdb {
         targetPlatforms "tinkerPpc"
         binaries.all {
@@ -158,20 +131,6 @@ sources {
         c {
             exportedHeaders {
                 srcDirs "src", "src/api"
-            }
-        }
-    }
-    archX86 {
-        c {
-            lib libraries.base.static
-            exportedHeaders {
-                srcDir "src/arch/x86"
-            }
-        }
-        asm {
-            source {
-                srcDirs "src/arch/x86"
-                include "*.S"
             }
         }
     }
@@ -339,19 +298,6 @@ sources {
         		include "**/*.S"
         	}
         }  
-    }
-    x86 {
-        c {
-            lib libraries.base.static    // base headers
-            lib libraries.api.static     // api layer
-            lib libraries.archX86.static // x86 code
-            lib libraries.boot.static    // boot c code into kernel
-            lib libraries.core.static    // the core kernel
-            source {
-                srcDirs "src/tinker", "src/arch/x86"
-                include "**/*.c"
-            }
-        }
     }
     binaries.all {
     	cCompiler.args "-Wno-maybe-uninitialized",
