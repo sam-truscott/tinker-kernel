@@ -100,8 +100,7 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Target: ARM support (Raspberry Pi)
-	* Fix the reboot issue - caused by threads exiting
-	* Fix the system timer - test app waits but the interrupt doesn't map/callback
+	* Fix: sometimes locks up - threading or memory corruption
 	* Add ARM MMU support
 * Kernel: Shell should use pipes for reading I/O
 * Kernel: Timeouts on pipe (open/read/write)
