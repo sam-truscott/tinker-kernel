@@ -333,7 +333,8 @@ sources {
                 "-UTARGET_DEBUGGING",
                 "-USYSCALL_DEBUGGING",
                 "-UALARM_DEBUGGING",
-                "-DREGISTRY_DEBUGGING"
+                "-UREGISTRY_DEBUGGING",
+                "-DPIPE_DEBUGGING"
         } else if (buildType == buildTypes.release) {
             cCompiler.args "-Ofast",
                 "-g0"

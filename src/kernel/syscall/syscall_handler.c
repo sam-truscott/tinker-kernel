@@ -367,7 +367,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		}
 			break;
 		case SYSCALL_OPEN_PIPE:
-			ret = object_open_pipe(
+			ret = obj_open_pipe(
 					thread_get_parent(this_thread),
 					syscall_get_thread_object(this_thread),
 					(object_number_t*)param[0],

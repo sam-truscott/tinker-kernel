@@ -31,7 +31,7 @@ error_t obj_create_pipe(
 		const uint32_t message_size,
 		const uint32_t messages);
 
-error_t object_open_pipe(
+error_t obj_open_pipe(
 		process_t * const process,
 		object_thread_t * const thread,
 		object_number_t * objectno,

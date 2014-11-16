@@ -107,6 +107,9 @@ static void pipe_receive_message(
 		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+4);
 	}
 	receiver->rx_data.free_messages--;
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Receiver has %d free messages\n", receiver->rx_data.free_messages);
+#endif
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
 		obj_set_thread_ready(receiver->rx_data.blocked_owner);
@@ -167,6 +170,10 @@ error_t obj_create_pipe(
 	object_pipe_t * no = NULL;
 	error_t result = NO_ERROR;
 
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Creating pipe named %s\n", name);
+#endif
+
 	if (process && objectno)
 	{
 		*objectno = INVALID_OBJECT_ID;
@@ -202,6 +209,9 @@ error_t obj_create_pipe(
 				{
 					result = OUT_OF_MEMORY;
 				}
+#if defined(PIPE_DEBUGGING)
+				debug_print("Pipe: Memory at %x\n", memory);
+#endif
 				rx_queue = pipe_list_t_create(pool);
 				if (!rx_queue)
 				{
@@ -271,7 +281,7 @@ error_t obj_create_pipe(
 	return result;
 }
 
-error_t object_open_pipe(
+error_t obj_open_pipe(
 		process_t * const process,
 		object_thread_t * const thread,
 		object_number_t * objectno,
@@ -282,6 +292,10 @@ error_t object_open_pipe(
 {
 	object_pipe_t * no = NULL;
 	error_t result;
+
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Opening pipe %s\n", name);
+#endif
 
 	process_t * other_proc = NULL;
 	object_pipe_t * other_pipe = NULL;
@@ -377,6 +391,9 @@ error_t object_open_pipe(
 					{
 						result = OUT_OF_MEMORY;
 					}
+#if defined(PIPE_DEBUGGING)
+					debug_print("Pipe: Memory at %x\n", memory);
+#endif
 					rx_queue = pipe_list_t_create(pool);
 					if (!rx_queue)
 					{
@@ -490,12 +507,19 @@ error_t obj_pipe_send_message(
 {
 	error_t result = NO_ERROR;
 
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Sending %d bytes\n", message_size);
+#endif
+
 	if (pipe)
 	{
 		if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
 			{
+#if defined(PIPE_DEBUGGING)
+				debug_print("Pipe: Can't send to all receivers\n");
+#endif
 				// we can't send to everyone
 				if (block)
 				{
@@ -550,6 +574,11 @@ error_t obj_pipe_receive_message(
 		const bool_t block)
 {
 	error_t result = NO_ERROR;
+
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Recieving message\n");
+#endif
+
 	if (pipe)
 	{
 		if (message && message_size)
@@ -561,6 +590,9 @@ error_t obj_pipe_receive_message(
 
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
+#if defined(PIPE_DEBUGGING)
+				debug_print("Pipe: Receiver has free messages? %d\n", messages_in_buffer);
+#endif
 				if (!messages_in_buffer)
 				{
 					if (block)
@@ -602,6 +634,10 @@ error_t obj_pipe_receive_message(
 error_t obj_pipe_received_message(object_pipe_t * const pipe)
 {
 	error_t result = NO_ERROR;
+
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Acknowledging message received\n");
+#endif
 
 	if (pipe)
 	{
