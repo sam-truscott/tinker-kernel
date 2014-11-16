@@ -27,7 +27,7 @@ void print_stack_trace(const uint32_t frame_pointer)
 	while (*fp != 0 && --limit)
 	{
 		fp = (uint32_t*)*fp;
-#if defined(VIRTUAL_ADDRESS_SPACE) && VIRTUAL_ADDRESS_SPACE > 0
+#if defined(VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE > 0)
 		if ((uint32_t)fp >= VIRTUAL_ADDRESS_SPACE)
 		{
 			const uint32_t * real_fp;

@@ -105,7 +105,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 	/* This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
 	 * at some weird virtual address */
-#if defined(VIRTUAL_ADDRESS_SPACE) && VIRTUAL_ADDRESS_SPACE > 0
+#if defined(VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE > 0)
 	for (uint8_t i = 0 ; i < MAX_SYSCALL_ARGS ; i++)
 	{
 		if (param[i] >= VIRTUAL_ADDRESS_SPACE)

@@ -57,7 +57,9 @@ object_number_t obj_timer_get_oid
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 {
+#if defined(TIMER_DEBUGGING)
 	debug_print("Timer: Callback thread\n");
+#endif
 	if (t)
 	{
 		t(p);
