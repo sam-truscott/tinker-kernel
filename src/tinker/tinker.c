@@ -313,7 +313,10 @@ static void my_initial_thread(void)
 	timer = 5000000;
 	while(timer-- && !timer_expired)
 	{
-		tinker_debug("tinker: waiting for timer...\n");
+		if ((timer % 100000) == 0)
+		{
+			tinker_debug("tinker: waiting for timer...\n");
+		}
 	}
 
 	if (!timer_expired)
