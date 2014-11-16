@@ -110,9 +110,12 @@ static void pipe_receive_message(
 		receiver->rx_data.current_message++;
 		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+4);
 	}
+#if defined(PIPE_DEBUGGING)
+	const uint32_t old_free = receiver->rx_data.free_messages;
+#endif
 	receiver->rx_data.free_messages--;
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Receiver has %d free messages\n", receiver->rx_data.free_messages);
+	debug_print("Pipe: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
 #endif
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{

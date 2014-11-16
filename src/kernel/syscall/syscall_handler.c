@@ -428,6 +428,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 					msg_size,
 					(const bool_t)param[3]);
 
+#if defined (VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE >0u)
 			const uint32_t pool_start = mem_get_start_addr(
 					process_get_mem_pool(
 							thread_get_parent(this_thread)));
@@ -435,6 +436,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			*msg -= pool_start;
 			msg_size += VIRTUAL_ADDRESS_SPACE;
 			msg_size -= pool_start;
+#endif
 		}
 			break;
 		case SYSCALL_RECEIVED_MESSAGE:

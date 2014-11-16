@@ -72,7 +72,7 @@ static void my_other_thread(void)
 	if (error == NO_ERROR)
 	{
 		tinker_debug("tinker: other thread: sending message\n");
-		error = tinker_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\0", 6, true);
+		error = tinker_send_message(rx_pipe, PIPE_TX_SEND_ALL, "hello\n\0", 7, true);
 		if (error != NO_ERROR)
 		{
 			tinker_debug("tinker: other thread: error sending on pipe\n");
@@ -293,7 +293,7 @@ static void my_initial_thread(void)
 	tinker_debug(message);
 	tinker_debug("\n");
 	tinker_debug("tinker: initial thread: sending message\n");
-	error = tinker_send_message(tx_pipe, PIPE_TX_SEND_ALL, "olleh\0", 6, true);
+	error = tinker_send_message(tx_pipe, PIPE_TX_SEND_ALL, "olleh\n\0", 7, true);
 	if (error != NO_ERROR)
 	{
 		tinker_debug("tinker: failed to send a message\n");
