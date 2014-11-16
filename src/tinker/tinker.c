@@ -87,9 +87,9 @@ static void my_other_thread(void)
 		}
 		else
 		{
-			tinker_debug("tinker: other thread: got (");
+			tinker_debug("tinker: other thread: got the following:\n");
 			tinker_debug(message);
-			tinker_debug(")\n");
+			tinker_debug("\n");
 			error = tinker_received_message(rx_pipe);
 			if (error != NO_ERROR)
 			{
@@ -289,32 +289,14 @@ static void my_initial_thread(void)
 	{
 		tinker_debug("tinker: failed to receive a message\n");
 	}
-	tinker_debug("tinker: initial thread: received (");
+	tinker_debug("tinker: initial thread: received\n");
 	tinker_debug(message);
-	tinker_debug(")\n");
+	tinker_debug("\n");
 	tinker_debug("tinker: initial thread: sending message\n");
 	error = tinker_send_message(tx_pipe, PIPE_TX_SEND_ALL, "olleh\0", 6, true);
 	if (error != NO_ERROR)
 	{
 		tinker_debug("tinker: failed to send a message\n");
-	}
-
-	error = tinker_shm_destroy(shm);
-	if (error != NO_ERROR)
-	{
-		tinker_debug("tinker: failed to destroy shm\n");
-	}
-
-	error = tinker_delete_pipe(tx_pipe);
-	if (error != NO_ERROR)
-	{
-		tinker_debug("tinker: failed delete tx pipe\n");
-	}
-
-	error = tinker_sem_close(sem);
-	if (error != NO_ERROR)
-	{
-		tinker_debug("tinker: failed to close the semaphore\n");
 	}
 
 	const tinker_timeout_time_t timeout = {
@@ -379,6 +361,23 @@ static void my_initial_thread(void)
 		{
 			tinker_debug("tinker: time ok\n");
 		}
+	}
+	error = tinker_shm_destroy(shm);
+	if (error != NO_ERROR)
+	{
+		tinker_debug("tinker: failed to destroy shm\n");
+	}
+
+	error = tinker_delete_pipe(tx_pipe);
+	if (error != NO_ERROR)
+	{
+		tinker_debug("tinker: failed delete tx pipe\n");
+	}
+
+	error = tinker_sem_close(sem);
+	if (error != NO_ERROR)
+	{
+		tinker_debug("tinker: failed to close the semaphore\n");
 	}
 	tinker_debug("tinker: initial thread: done\n");
 }
