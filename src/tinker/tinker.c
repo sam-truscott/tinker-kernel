@@ -52,13 +52,13 @@ int kmain(void)
 			0,
 			&p);
 
-	if (e != NO_ERROR)
+	if (e == NO_ERROR)
 	{
-	    tinker_debug("tinker: failed to create test process\n");
+		tinker_debug("tinker: test process created ok\n");
 	}
 	else
 	{
-		tinker_debug("tinker: test process created ok\n");
+		tinker_debug("tinker: failed to create test process\n");
 	}
 	return 0;
 }
@@ -360,6 +360,9 @@ static void my_initial_thread(void)
 		if (tdiff.seconds && tdiff.nanoseconds)
 		{
 			tinker_debug("tinker: time ok\n");
+		}
+		else {
+			tinker_debug("tinker: time FAIL\n");
 		}
 	}
 	error = tinker_shm_destroy(shm);
