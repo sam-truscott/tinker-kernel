@@ -73,6 +73,9 @@ static waiting_map_t * registry_waiting_map = NULL;
 
 void registry_initialise(mem_pool_info_t * const pool)
 {
+#if defined(REGISTRY_DEBUGGING)
+	debug_print("Registry: Initialising...\n");
+#endif
 	registry = registry_t_create(
 			hash_basic_string,
 			hash_equal_string,
@@ -91,6 +94,9 @@ error_t regsitery_add(
 		const process_t * const process,
 		const object_number_t number)
 {
+#if defined(REGISTRY_DEBUGGING)
+	debug_print("Registry: Adding entry %s with object %d from process %x\n", name, number, process);
+#endif
 	error_t ret = NO_ERROR;
 	registry_key_t key;
 	util_memset(key, 0, sizeof(key));
@@ -144,7 +150,9 @@ error_t registry_get(
 		process_t ** process,
 		object_number_t * objno)
 {
-
+#if defined(REGISTRY_DEBUGGING)
+	debug_print("Registry: Getting entry %s\n", name);
+#endif
 	error_t ret = NO_ERROR;
 	registry_key_t key;
 	util_memset(key, 0, sizeof(key));
@@ -177,6 +185,9 @@ void registry_wait_for(
 		object_thread_t * const thread,
 		const char * const name)
 {
+#if defined(REGISTRY_DEBUGGING)
+	debug_print("Registry: Thread %s is waiting for %s\n", thread_get_name(obj_get_thread(thread)), name);
+#endif
 	obj_set_thread_waiting(thread, NULL);
 
 	registry_key_t key;
@@ -205,6 +216,9 @@ void registry_wait_for(
 
 error_t registry_remove(const char * const name)
 {
+#if defined(REGISTRY_DEBUGGING)
+	debug_print("Registry: Removing entry %s\n", name);
+#endif
 	error_t ret = NO_ERROR;
 
 	registry_key_t key;
