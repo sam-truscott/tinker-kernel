@@ -50,7 +50,7 @@
 		 if ( it && list ) \
 		 { \
 			 it->list = list; \
-			 if ( list->size > 0 ) \
+			 if (list->size > 0) \
 			 { \
 				 it->current = list->head; \
 			 } else { \

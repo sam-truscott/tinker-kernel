@@ -109,7 +109,6 @@ static void pipe_receive_message(
 	receiver->rx_data.free_messages--;
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
-
 		obj_set_thread_ready(receiver->rx_data.blocked_owner);
 		receiver->rx_data.blocked_owner = NULL;
 	}

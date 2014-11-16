@@ -68,7 +68,7 @@ static void my_other_thread(void)
 	error_t error;
 
 	tinker_debug("tinker: other thread: opening pipe\n");
-	error = tinker_open_pipe(&rx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 10);
+	error = tinker_open_pipe(&rx_pipe, "pipe", PIPE_SEND_RECEIVE, 1024, 1);
 	if (error == NO_ERROR)
 	{
 		tinker_debug("tinker: other thread: sending message\n");
@@ -236,7 +236,7 @@ static void my_initial_thread(void)
 		}
 
 		tinker_debug("tinker: initial thread: create a pipe\n");
-		error = tinker_create_pipe(&tx_pipe, "transmit", PIPE_SEND_RECEIVE, 1024, 1);
+		error = tinker_create_pipe(&tx_pipe, "pipe", PIPE_SEND_RECEIVE, 1024, 1);
 		if (error != NO_ERROR)
 		{
 			tinker_debug("tinker: failed to create tx pipe\n");
