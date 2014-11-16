@@ -93,6 +93,10 @@ static void pipe_receive_message(
 		const void * message,
 		const uint32_t message_size)
 {
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Writing size to %x\n", receiver->rx_data.current_message_ptr);
+	debug_print("Pipe: Writing data to %x\n", receiver->rx_data.current_message_ptr+4);
+#endif
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.current_message_ptr;
 	*msg_size = message_size;
 	util_memcpy(receiver->rx_data.current_message_ptr+4, message, message_size);
@@ -576,7 +580,7 @@ error_t obj_pipe_receive_message(
 	error_t result = NO_ERROR;
 
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Recieving message\n");
+	debug_print("Pipe: Recieving message, buffer at %x\n", pipe->memory);
 #endif
 
 	if (pipe)
@@ -591,7 +595,10 @@ error_t obj_pipe_receive_message(
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
 #if defined(PIPE_DEBUGGING)
-				debug_print("Pipe: Receiver has free messages? %d\n", messages_in_buffer);
+				debug_print("Pipe: Receiver has free messages? %d. %d free, %d total\n",
+						messages_in_buffer,
+						pipe->rx_data.free_messages,
+						pipe->rx_data.total_messages);
 #endif
 				if (!messages_in_buffer)
 				{
