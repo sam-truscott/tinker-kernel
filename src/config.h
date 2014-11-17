@@ -13,7 +13,7 @@
 
 #define MAX_SYSCALL_ARGS 7
 
-#if !defined(VIRTUAL_ADDRESS_SPACE)
+#if defined(ARCH_HAS_MMU)
 #define VIRTUAL_ADDRESS_SPACE 0xC0000000u
 #endif
 
@@ -84,6 +84,6 @@
 /**
  * The maximum number of alarms the system can support
  */
-#define MAX_ALARMS 1024
+#define MAX_ALARMS 256
 
 #endif /* CONFIG_H_ */

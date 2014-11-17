@@ -105,7 +105,8 @@ void syscall_handle_system_call(tgt_context_t * const context)
 	/* This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
 	 * at some weird virtual address */
-#if defined(VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE > 0)
+#if defined(ARCH_HAS_MMU)
+	/* FIXME This is the bad code, fix it */
 	for (uint8_t i = 0 ; i < MAX_SYSCALL_ARGS ; i++)
 	{
 		if (param[i] >= VIRTUAL_ADDRESS_SPACE)
@@ -428,7 +429,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 					msg_size,
 					(const bool_t)param[3]);
 
-#if defined (VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE >0u)
+#if defined (ARCH_HAS_MMU)
 			const uint32_t pool_start = mem_get_start_addr(
 					process_get_mem_pool(
 							thread_get_parent(this_thread)));

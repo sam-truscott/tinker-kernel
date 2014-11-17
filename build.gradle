@@ -18,6 +18,7 @@ model {
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/ppc32"
                     args << "-mcpu=powerpc"
+                    args << "-DARCH_HAS_MMU"
                 }
             }
             target("tinkerArmSoft") {
@@ -31,6 +32,7 @@ model {
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-fpic"
                     args << "-DVIRTUAL_ADDRESS_SPACE=0"
+                    args << "-UARCH_HAS_MMU"
                 }
             }
             target("tinkerArmHardVfp") {
@@ -46,6 +48,7 @@ model {
                     args << "-mfloat-abi=hard"
                     args << "-fpic"
                     args << "-DVIRTUAL_ADDRESS_SPACE=0u"
+                    args << "-UARCH_HAS_MMU"
                 }
                 linker.withArguments { args ->
                 	args << "-mfpu=vfp"

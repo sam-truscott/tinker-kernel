@@ -145,7 +145,7 @@ error_t process_create(
 				mem_sec_create(
 					new_proc->memory_pool,
 					mem_get_start_addr(new_proc->memory_pool),
-#if defined (VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE > 0)
+#if defined (ARCH_HAS_MMU)
 					VIRTUAL_ADDRESS_SPACE,
 #else
 					mem_get_start_addr(new_proc->memory_pool),
@@ -441,7 +441,7 @@ uint32_t process_virt_to_real(
 		const process_t * const process,
 		const uint32_t virt)
 {
-#if defined (VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE > 0)
+#if defined (ARCH_HAS_MMU)
 	uint32_t real = virt;
 	if (process)
 	{
@@ -498,7 +498,7 @@ error_t process_allocate_vmem(
 					}
 					mem_sec_set_next(new_section, current);
 					result = tgt_map_memory(process, new_section);
-#if defined(VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE>0u)
+#if defined(ARCH_HAS_MMU)
 					*virt_address = vmem_start;
 #else
 					*virt_address = real_address;
@@ -521,7 +521,7 @@ error_t process_allocate_vmem(
 			mem_section_t * const new_section =
 					mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
 			mem_sec_set_next(prev, new_section);
-#if defined(VIRTUAL_ADDRESS_SPACE) && (VIRTUAL_ADDRESS_SPACE>0u)
+#if defined(ARCH_HAS_MMU)
 			*virt_address = vmem_start;
 #else
 			*virt_address = real_address;
