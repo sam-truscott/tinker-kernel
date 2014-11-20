@@ -304,7 +304,6 @@ sources {
     }
     binaries.all {
     	cCompiler.args "-Wno-maybe-uninitialized",
-            //"-nostdinc", -- shouldn't be used anymore as we're freestanding
             "-pedantic",
             "-pedantic-errors",
             "-Wall",
@@ -316,7 +315,8 @@ sources {
             "-fno-builtin",
             "-ffreestanding",
             "-MD",
-            "-MP"
+            "-MP",
+            "-DBUILDING_KERNEL"
         linker.args "-nostartfiles",
 	        "-nodefaultlibs",
 	        "-nostdlib",
@@ -325,7 +325,6 @@ sources {
             cCompiler.args "-O0", 
                 "-g3",
                 "-gdwarf-4",
-                "-DBUILDING_KERNEL",
                 "-DKERNEL_SHELL",
                 "-UTIMER_DEBUGGING",
                 "-UINTC_DEBUGGING",
@@ -342,8 +341,7 @@ sources {
         } else if (buildType == buildTypes.release) {
             cCompiler.args "-Ofast",
                 "-g0"
-            linker.args "-s",
-                "-lgcc"
+            linker.args "-s"
         }
     }
 }

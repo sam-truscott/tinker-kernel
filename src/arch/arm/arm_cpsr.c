@@ -8,7 +8,7 @@
  */
 #include "arm_cpsr.h"
 #include "kernel/utils/util_memcpy.h"
-
+#pragma GCC optimize ("-O0")
 uint32_t arm_get_cpsr(void)
 {
 	uint32_t r;

@@ -11,9 +11,9 @@
 #include "api/tinker_api_process.h"
 #include "kernel/console/print_out.h"
 
-#if defined(IDLE_DEBUGGING)
+//#if defined(IDLE_DEBUGGING)
 #pragma GCC optimize ("-O0") // easier to debug release build
-#endif
+//#endif
 static uint32_t kernel_idle_check(uint32_t count)
 {
 	if ( count % 200000 == 0)

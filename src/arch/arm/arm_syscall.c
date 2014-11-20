@@ -9,6 +9,7 @@
 
 #include "tinker_api_kernel_interface.h"
 
+#pragma GCC optimize ("-O0")
 uint32_t TINKER_API_CALL_7(
 		const syscall_function_t api,
 		uint32_t param_1,

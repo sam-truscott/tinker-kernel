@@ -9,7 +9,7 @@
 
 #include "arm_vec.h"
 #include "kernel/console/print_out.h"
-
+#pragma GCC optimize ("-O0")
 #define EXCEPTION_START_SYSCALL \
 	uint32_t context; \
 	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \

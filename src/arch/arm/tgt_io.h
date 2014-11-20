@@ -11,6 +11,7 @@
 
 #include "arch/tgt_types.h"
 
+#pragma GCC optimize ("-O0")
 #define out_(N,T) \
 	static inline void out_##N(T * const addr, T value) \
 	{ \
