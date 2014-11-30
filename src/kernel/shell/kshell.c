@@ -191,6 +191,7 @@ static void kshell_process_list(void)
 	}
 
 	process_list_it_t_delete(list);
+	print_out("Complete\n");
 }
 
 static void kshell_task_list(void)
@@ -238,6 +239,7 @@ static void kshell_task_list(void)
 	}
 
 	process_list_it_t_delete(list);
+	print_out("Complete\n");
 }
 
 static void kshell_object_table(void)
@@ -352,5 +354,6 @@ static void kshell_object_table(void)
 	}
 
 	process_list_it_t_delete(list);
+	print_out("Complete\n");
 }
 #endif /* KERNEL_SHELL */
