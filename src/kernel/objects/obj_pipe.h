@@ -54,7 +54,7 @@ error_t obj_pipe_receive_message(
 		object_pipe_t * const pipe,
 		object_thread_t * const thread,
 		void ** const message,
-		uint32_t * const message_size,
+		uint32_t ** const message_size,
 		const bool_t block);
 
 error_t obj_pipe_received_message(object_pipe_t * const pipe);

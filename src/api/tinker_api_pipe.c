@@ -86,7 +86,7 @@ error_t tinker_send_message(
 error_t tinker_receive_message(
 		tinker_pipe_t pipe,
 		const void ** message,
-		const uint32_t * const message_size,
+		const uint32_t ** const message_size,
 		const bool_t block)
 {
 	return TINKER_API_CALL_4(

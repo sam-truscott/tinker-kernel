@@ -85,7 +85,7 @@ void kernel_main(void)
 	debug_print("System: Called kmain()\n");
 #endif
 
-#if defined (KERNEL_SHELL1)
+#if defined (KERNEL_SHELL)
 #if defined (KERNEL_DEBUGGING)
 	debug_print("System: Creating kshell\n");
 #endif

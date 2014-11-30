@@ -577,7 +577,7 @@ error_t obj_pipe_receive_message(
 		object_pipe_t * const pipe,
 		object_thread_t * const thread,
 		void ** const message,
-		uint32_t * const message_size,
+		uint32_t ** const message_size,
 		const bool_t block)
 {
 	error_t result = NO_ERROR;
@@ -608,7 +608,7 @@ error_t obj_pipe_receive_message(
 					if (block)
 					{
 						*message = pipe->rx_data.current_message_ptr + 4;
-						*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
+						*message_size = (uint32_t*)pipe->rx_data.current_message_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
 						pipe->rx_data.blocked_owner = thread;
 					}
@@ -620,7 +620,7 @@ error_t obj_pipe_receive_message(
 				else
 				{
 					*message = pipe->rx_data.current_message_ptr + 4;
-					*message_size = *(uint32_t*)pipe->rx_data.current_message_ptr;
+					*message_size = (uint32_t*)pipe->rx_data.current_message_ptr;
 				}
 			}
 			else

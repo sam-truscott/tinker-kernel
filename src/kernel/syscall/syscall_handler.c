@@ -421,7 +421,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 							(object_number_t)param[0]));
 
 			uint8_t ** msg = (uint8_t**)param[1];
-			uint32_t * msg_size = (uint32_t*)param[2];
+			uint32_t ** msg_size = (uint32_t**)param[2];
 			ret = obj_pipe_receive_message(
 					pipe,
 					syscall_get_thread_object(this_thread),

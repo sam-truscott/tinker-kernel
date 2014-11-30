@@ -23,8 +23,8 @@ void kernel_in_initialise(void)
 			&kenrel_input,
 			"in",	// TODO CONFIG
 			PIPE_SEND,
-			1024, 	// TODO CONFIG
-			10);	// TODO CONFIG
+			1, 	// TODO CONFIG
+			256);	// TODO CONFIG
 	kernel_assert("Kernel couldn't create input pipe", result == NO_ERROR);
 	debug_print("System: Input pipe is called '%s' with object id %d\n", "in", kenrel_input);
 

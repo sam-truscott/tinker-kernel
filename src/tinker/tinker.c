@@ -78,7 +78,7 @@ static void my_other_thread(void)
 			tinker_debug("tinker: other thread: error sending on pipe\n");
 		}
 		const char * message = NULL;
-		uint32_t size = 0;
+		const uint32_t * size = NULL;
 		tinker_debug("tinker: other thread: receiving message\n");
 		error = tinker_receive_message(rx_pipe, (const void**)(&message), &size, true);
 		if (error != NO_ERROR)
@@ -282,7 +282,7 @@ static void my_initial_thread(void)
 	}
 
 	const char * message = NULL;
-	uint32_t size = 0;
+	const uint32_t * size = NULL;
 	tinker_debug("tinker: initial thread: receiving message from other thread\n");
 	error = tinker_receive_message(tx_pipe, (const void**)(&message), &size, true);
 	if (error != NO_ERROR)

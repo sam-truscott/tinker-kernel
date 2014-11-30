@@ -25,7 +25,7 @@
 
 static char ksh_input_buffer[MAX_LINE_INPUT];
 
-static uint8_t ksh_input_pointer;
+static uint16_t ksh_input_pointer;
 
 static bool_t kshell_strcmp(const char * a, const char * b);
 
@@ -84,7 +84,7 @@ void kshell_start(void)
 	while (running)
 	{
 		char * received = NULL;
-		uint32_t bytesReceived = 0;
+		const uint32_t * bytesReceived = NULL;
 		error_t read_status = tinker_receive_message(
 				input_pipe,
 				(const void**)&received,
@@ -92,7 +92,13 @@ void kshell_start(void)
 				true);
 		if (read_status == NO_ERROR)
 		{
-			ksh_input_buffer[ksh_input_pointer] = received[0];
+			tinker_received_message(input_pipe);
+			uint16_t p = 0;
+			while(p != (*bytesReceived))
+			{
+				ksh_input_buffer[ksh_input_pointer++] = received[p++];
+			}
+			//ksh_input_pointer--;
 			if (ksh_input_buffer[ksh_input_pointer] == '\r'
 					|| ksh_input_buffer[ksh_input_pointer] == '\n')
 			{

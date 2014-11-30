@@ -58,7 +58,7 @@ error_t tinker_send_message(
 error_t tinker_receive_message(
         tinker_pipe_t pipe,
 		const void ** message,
-		const uint32_t * const message_size,
+		const uint32_t ** const message_size,
 		const bool_t block) TINKER_API_SUFFIX;
 
 error_t tinker_received_message(tinker_pipe_t pipe) TINKER_API_SUFFIX;
