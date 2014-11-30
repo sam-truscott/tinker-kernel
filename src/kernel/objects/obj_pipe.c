@@ -99,7 +99,7 @@ static void pipe_receive_message(
 #endif
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.current_message_ptr;
 	*msg_size = message_size;
-	util_memcpy(receiver->rx_data.current_message_ptr+4, message, message_size);
+	util_memcpy(receiver->rx_data.current_message_ptr+sizeof(uint32_t), message, message_size);
 	if ((receiver->rx_data.current_message + 1) == receiver->rx_data.total_messages)
 	{
 		receiver->rx_data.current_message = 0;
@@ -108,7 +108,7 @@ static void pipe_receive_message(
 	else
 	{
 		receiver->rx_data.current_message++;
-		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+4);
+		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
 	}
 #if defined(PIPE_DEBUGGING)
 	const uint32_t old_free = receiver->rx_data.free_messages;
@@ -124,17 +124,17 @@ static void pipe_receive_message(
 	}
 }
 
-static bool_t pipe_is_receiver(const object_pipe_t * const pipe)
+static inline bool_t pipe_is_receiver(const object_pipe_t * const pipe)
 {
 	return ((pipe->direction == PIPE_RECEIVE) || (pipe->direction == PIPE_SEND_RECEIVE));
 }
 
-static bool_t pipe_is_sender(const object_pipe_t * const pipe)
+static inline bool_t pipe_is_sender(const object_pipe_t * const pipe)
 {
 	return ((pipe->direction == PIPE_SEND) || (pipe->direction == PIPE_SEND_RECEIVE));
 }
 
-static bool_t pipe_is_receiver_sender(const object_pipe_t * const pipe)
+static inline bool_t pipe_is_receiver_sender(const object_pipe_t * const pipe)
 {
 	return (pipe->direction == PIPE_SEND_RECEIVE);
 }
@@ -205,7 +205,7 @@ error_t obj_create_pipe(
 				/* no break */
 			case PIPE_RECEIVE:
 			{
-				uint32_t total_size = (message_size * messages) + (messages * 4);
+				uint32_t total_size = (message_size * messages) + (messages * sizeof(uint32_t));
 				while ((total_size % MMU_PAGE_SIZE) != 0)
 				{
 					total_size++;
@@ -619,6 +619,9 @@ error_t obj_pipe_receive_message(
 				}
 				else
 				{
+#if defined(PIPE_DEBUGGING)
+					debug_print("Pipe: Current buffer at at %x\n", pipe->rx_data.current_message_ptr);
+#endif
 					*message = pipe->rx_data.current_message_ptr + 4;
 					*message_size = (uint32_t*)pipe->rx_data.current_message_ptr;
 				}
