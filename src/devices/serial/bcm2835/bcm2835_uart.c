@@ -160,18 +160,9 @@ static error_t bcm2835_uart_isr(
 {
 	(void)usr_data;
 	(void)vector;
-	char buffer[1024]; // TODO config
-	uint16_t p = 0;
-	while(true) {
-		if ((in_u32((uint32_t*)UART0_FR) & (1 << 4))) {
-			break;
-		}
-		buffer[p++] = in_u32((uint32_t*)UART0_DR);
-	}
-	if (p)
-	{
-		kernel_in_write(buffer, p);
-	}
+	char buffer[2] = {0, 0};
+	buffer[0] = bcm2835_uart_getc();
+	kernel_in_write(buffer, 1);
 	return NO_ERROR;
 }
 

@@ -94,12 +94,10 @@ void kshell_start(void)
 		{
 			tinker_received_message(input_pipe);
 			uint16_t p = 0;
-			printp_out("KSHELL: BUFER GOT '%s'\n", received);
 			while(p != (*bytesReceived))
 			{
 				ksh_input_buffer[ksh_input_pointer++] = received[p++];
 			}
-			printp_out("KSHELL: BUFER IS %s\n", ksh_input_buffer);
 			ksh_input_pointer--;
 			if (ksh_input_buffer[ksh_input_pointer] == '\r'
 					|| ksh_input_buffer[ksh_input_pointer] == '\n')

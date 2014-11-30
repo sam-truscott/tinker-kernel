@@ -32,10 +32,12 @@ typedef struct rx_data
 {
 	uint32_t free_messages;
 	uint32_t total_messages;
-	uint32_t current_message;
+	uint32_t read_msg_position;
+	uint32_t write_msg_position;
 	uint32_t message_size;
 	object_thread_t * blocked_owner;
-	uint8_t* current_message_ptr;
+	uint8_t* read_msg_ptr;
+	uint8_t* write_msg_ptr;
 	pipe_list_t * senders;
 } rx_data_t;
 
@@ -94,21 +96,21 @@ static void pipe_receive_message(
 		const uint32_t message_size)
 {
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Writing size to %x\n", receiver->rx_data.current_message_ptr);
-	debug_print("Pipe: Writing data to %x\n", receiver->rx_data.current_message_ptr+4);
+	debug_print("Pipe: Writing size to %x\n", receiver->rx_data.write_msg_ptr);
+	debug_print("Pipe: Writing data to %x\n", receiver->rx_data.write_msg_ptr+4);
 #endif
-	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.current_message_ptr;
+	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
 	*msg_size = message_size;
-	util_memcpy(receiver->rx_data.current_message_ptr+sizeof(uint32_t), message, message_size);
-	if ((receiver->rx_data.current_message + 1) == receiver->rx_data.total_messages)
+	util_memcpy(receiver->rx_data.write_msg_ptr+sizeof(uint32_t), message, message_size);
+	if ((receiver->rx_data.write_msg_position + 1) == receiver->rx_data.total_messages)
 	{
-		receiver->rx_data.current_message = 0;
-		receiver->rx_data.current_message_ptr = receiver->memory;
+		receiver->rx_data.write_msg_position = 0;
+		receiver->rx_data.write_msg_ptr = receiver->memory;
 	}
 	else
 	{
-		receiver->rx_data.current_message++;
-		receiver->rx_data.current_message_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
+		receiver->rx_data.write_msg_position++;
+		receiver->rx_data.write_msg_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
 	}
 #if defined(PIPE_DEBUGGING)
 	const uint32_t old_free = receiver->rx_data.free_messages;
@@ -255,8 +257,10 @@ error_t obj_create_pipe(
 							.free_messages = messages,
 							.total_messages = messages,
 							.message_size = message_size,
-							.current_message = 0,
-							.current_message_ptr = no->memory};
+							.read_msg_position = 0,
+							.write_msg_position = 0,
+							.read_msg_ptr = no->memory,
+							.write_msg_ptr = no->memory};
 					const tx_data_t tx_data = {
 							.readers = tx_queue,
 							.sending_thread = NULL};
@@ -435,8 +439,10 @@ error_t obj_open_pipe(
 								.free_messages = messages,
 								.total_messages = messages,
 								.message_size = message_size,
-								.current_message = 0,
-								.current_message_ptr = no->memory};
+								.read_msg_position = 0,
+								.write_msg_position = 0,
+								.read_msg_ptr = no->memory,
+								.write_msg_ptr = no->memory};
 						const tx_data_t tx_data = {
 								.readers = tx_queue,
 								.sending_thread = NULL};
@@ -607,8 +613,8 @@ error_t obj_pipe_receive_message(
 				{
 					if (block)
 					{
-						*message = pipe->rx_data.current_message_ptr + 4;
-						*message_size = (uint32_t*)pipe->rx_data.current_message_ptr;
+						*message = pipe->rx_data.read_msg_ptr + 4;
+						*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
 						pipe->rx_data.blocked_owner = thread;
 					}
@@ -620,10 +626,10 @@ error_t obj_pipe_receive_message(
 				else
 				{
 #if defined(PIPE_DEBUGGING)
-					debug_print("Pipe: Current buffer at at %x\n", pipe->rx_data.current_message_ptr);
+					debug_print("Pipe: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
 #endif
-					*message = pipe->rx_data.current_message_ptr + 4;
-					*message_size = (uint32_t*)pipe->rx_data.current_message_ptr;
+					*message = pipe->rx_data.read_msg_ptr + 4;
+					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 				}
 			}
 			else
@@ -655,6 +661,17 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 	if (pipe)
 	{
 		pipe->rx_data.free_messages++;
+
+		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
+		{
+			pipe->rx_data.read_msg_position = 0;
+			pipe->rx_data.read_msg_ptr = pipe->memory;
+		}
+		else
+		{
+			pipe->rx_data.read_msg_position++;
+			pipe->rx_data.read_msg_ptr += (pipe->rx_data.message_size+sizeof(uint32_t));
+		}
 
 		// notify any senders
 		pipe_list_it_t it;
