@@ -29,13 +29,14 @@ static timer_t bcm2835_system_timer;
 static tinker_time_t scheduler_time;
 static tinker_time_t scheduler_period;
 static intc_t * bcm2835_intc;
+static kernel_device_t uart;
 
 void bsp_initialise(void)
 {
-	uart_init();
+	bcm2835_uart_init();
 
 #if defined(TARGET_DEBUGGING)
-	uart_puts("UART Up\n\0");
+	bcm2835_uart_puts("UART Up\n\0");
 #endif
 
 	/* Initialise the Target Processor */
@@ -60,18 +61,15 @@ void bsp_setup(void)
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
 	alarm_set_timer(&bcm2835_system_timer);
 
-	// route UART -> OPIC -> CPU
-	//intc_enable(opic_intc, 1);
-	//intc_add_device(opic_intc, 1, &rs232_port_1);
-
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
 
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
 
-	// enable UART interrupts
-	//rs232_port_1.write_register(UART_1_BASE_ADDRESS, 1, 1);
+	bcm2835_uart_get_device(&uart);
+	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
+	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
 
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: Enabling external interrupts\n");
@@ -181,7 +179,7 @@ uint32_t bsp_get_usable_memory_end()
 void bsp_write_debug_char(const char c)
 {
 	//rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
-	uart_putc(c);
+	bcm2835_uart_putc(c);
 }
 
 char bsp_read_debug_char(void)
@@ -189,7 +187,7 @@ char bsp_read_debug_char(void)
 	char c = 0;
 	while (c == 0)
 	{
-		c = uart_getc();
+		c = bcm2835_uart_getc();
 	}
 	return c;
 }

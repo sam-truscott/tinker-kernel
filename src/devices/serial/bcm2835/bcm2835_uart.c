@@ -16,6 +16,7 @@
 #include "arch/tgt_types.h"
 #include "tgt_io.h"
 #include "bcm2835_uart.h"
+#include "kernel/kernel_in.h"
 
     // The GPIO registers base address.
 #define GPIO_BASE 0x20200000
@@ -69,7 +70,7 @@ static void delay(const uint32_t count) {
 /*
  * Initialize UART0.
  */
-void uart_init() {
+void bcm2835_uart_init() {
     // Disable UART0.
     out_u32((uint32_t*)UART0_CR, 0x00000000);
     delay(150);
@@ -108,10 +109,10 @@ void uart_init() {
 	out_u32((uint32_t*)UART0_FBRD, 40);
 
     // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
-    out_u32((uint32_t*)UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
+    out_u32((uint32_t*)UART0_LCRH, /* (1 << 4) |*/ (1 << 5) | (1 << 6));
 
     // Mask all interrupts.
-    out_u32((uint32_t*)UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) |
+    out_u32((uint32_t*)UART0_IMSC, (1 << 1) | (1 << 4) | /*(1 << 5) |*/
 		    (1 << 6) | (1 << 7) | (1 << 8) |
 		    (1 << 9) | (1 << 10));
 
@@ -123,7 +124,7 @@ void uart_init() {
  * Transmit a byte via UART0.
  * uint8_t Byte: byte to send.
  */
-void uart_putc(uint8_t byte) {
+void bcm2835_uart_putc(uint8_t byte) {
     // wait for UART to become ready to transmit
     while (1) {
         if (!(in_u32((uint32_t*)UART0_FR) & (1 << 5))) {
@@ -137,18 +138,55 @@ void uart_putc(uint8_t byte) {
  * print a string to the UART one character at a time
  * const char *str: 0-terminated string
  */
-void uart_puts(const char * str) {
+void bcm2835_uart_puts(const char * str) {
     while (*str) {
-        uart_putc(*str++);
+    	bcm2835_uart_putc(*str++);
     }
 }
 
-uint8_t uart_getc() {
+uint8_t bcm2835_uart_getc() {
     // wait for UART to have recieved something
     while(true) {
-	if (!(in_u32((uint32_t*)UART0_FR) & (1 << 4))) {
-	    break;
-	}
+		if (!(in_u32((uint32_t*)UART0_FR) & (1 << 4))) {
+			break;
+		}
     }
     return in_u32((uint32_t*)UART0_DR);
+}
+
+static error_t bcm2835_uart_isr(
+		const void * const usr_data,
+		const uint32_t vector)
+{
+	(void)usr_data;
+	(void)vector;
+	char buffer[1024]; // TODO config
+	uint16_t p = 0;
+	while(true) {
+		if ((in_u32((uint32_t*)UART0_FR) & (1 << 4))) {
+			break;
+		}
+		buffer[p++] = in_u32((uint32_t*)UART0_DR);
+	}
+	if (p)
+	{
+		kernel_in_write(buffer, p);
+	}
+	return NO_ERROR;
+}
+
+void bcm2835_uart_get_device(
+		kernel_device_t * const device)
+{
+	if (device)
+	{
+		device->initialise = NULL;
+		device->control = NULL;
+		device->read_buffer = NULL;
+		device->write_buffer = NULL;
+		device->read_register = NULL;
+		device->write_register = NULL;
+		device->user_data = NULL;
+		device->isr = bcm2835_uart_isr;
+	}
 }

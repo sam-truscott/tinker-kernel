@@ -104,12 +104,6 @@ static error_t uart16550_isr(
 
 static const kernel_device_t UART16550_DEVICE_INFO =
 {
-		.info = {
-				.major_version = 1,
-				.minor_version = 0,
-				.revision = 0,
-				.build = 0
-		},
 		.initialise = uart16550_initialise,
 		.write_register = uart16550_write_register,
 		.read_register = uart16550_read_register,

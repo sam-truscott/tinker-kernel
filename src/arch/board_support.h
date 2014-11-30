@@ -38,6 +38,4 @@ uint32_t bsp_get_usable_memory_end();
 
 void bsp_write_debug_char(const char c);
 
-char bsp_read_debug_char(void);
-
 #endif /* BOARD_SUPPORT_H_ */

@@ -15,14 +15,6 @@
 
 struct kernel_device;
 
-typedef struct kernel_device_info
-{
-	uint8_t		major_version;
-	uint8_t		minor_version;
-	uint8_t		revision;
-	uint32_t	build;
-}kernel_device_info_t;
-
 typedef error_t (kernel_device_initialise)(
 		struct kernel_device * device_info,
 		void * param,
@@ -57,7 +49,6 @@ typedef error_t (kernel_device_isr)(
 
 typedef struct kernel_device
 {
-	kernel_device_info_t		 	info;
 	kernel_device_initialise * 	initialise;
 	kernel_device_control	*		control;
 	kernel_device_write_register *write_register;

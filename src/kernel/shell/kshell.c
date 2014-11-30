@@ -10,7 +10,6 @@
 #if defined(KERNEL_SHELL)
 #include "api/tinker_api_types.h"
 #include "kernel/console/print_out.h"
-#include "kernel/console/read_in.h"
 #include "kernel/process/process_manager.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/util_memset.h"
@@ -68,30 +67,54 @@ void kshell_start(void)
 {
 	ksh_input_pointer = 0;
 	bool_t running = true;
+
+	tinker_pipe_t input_pipe = INVALID_OBJECT_ID;
+	error_t input_result = tinker_open_pipe(
+			&input_pipe,
+			"in",
+			PIPE_RECEIVE,
+			1,
+			MAX_LINE_INPUT);
+	if (input_result != NO_ERROR)
+	{
+		printp_out("KSHELL failed to open input pipe, error was %d\n", input_result);
+		return;
+	}
+
 	while (running)
 	{
-		ksh_input_buffer[ksh_input_pointer] = debug_read();
-		if (ksh_input_buffer[ksh_input_pointer] == '\r'
-				|| ksh_input_buffer[ksh_input_pointer] == '\n')
+		char * received = NULL;
+		uint32_t bytesReceived = 0;
+		error_t read_status = tinker_receive_message(
+				input_pipe,
+				(const void**)&received,
+				&bytesReceived,
+				true);
+		if (read_status == NO_ERROR)
 		{
-			ksh_input_buffer[ksh_input_pointer] = '\0';
-			if (ksh_input_pointer)
+			ksh_input_buffer[ksh_input_pointer] = received[0];
+			if (ksh_input_buffer[ksh_input_pointer] == '\r'
+					|| ksh_input_buffer[ksh_input_pointer] == '\n')
 			{
-				if (kshell_strcmp(ksh_input_buffer, "exit"))
+				ksh_input_buffer[ksh_input_pointer] = '\0';
+				if (ksh_input_pointer)
 				{
-					running = false;
-				}
-				else
-				{
-					kshell_execute_command(ksh_input_buffer);
-					ksh_input_pointer = 0;
-					util_memset(ksh_input_buffer, 0, MAX_LINE_INPUT);
+					if (kshell_strcmp(ksh_input_buffer, "exit"))
+					{
+						running = false;
+					}
+					else
+					{
+						kshell_execute_command(ksh_input_buffer);
+						ksh_input_pointer = 0;
+						util_memset(ksh_input_buffer, 0, MAX_LINE_INPUT);
+					}
 				}
 			}
-		}
-		else
-		{
-			ksh_input_pointer++;
+			else
+			{
+				ksh_input_pointer++;
+			}
 		}
 	}
 }

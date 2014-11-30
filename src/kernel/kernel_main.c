@@ -8,14 +8,15 @@
  */
 #include "kernel_main.h"
 
-#include "../arch/board_support.h"
+#include "arch/tgt.h"
+#include "arch/board_support.h"
+#include "kernel_assert.h"
 #include "kernel_initialise.h"
 #include "kernel_version.h"
-#include "kernel_assert.h"
-#include "arch/tgt.h"
-#include "console/print_out.h"
+#include "kernel/console/print_out.h"
 #include "kernel/shell/kshell.h"
 #include "kernel/process/process_manager.h"
+#include "kernel_in.h"
 
 extern void kmain(void);
 
@@ -57,6 +58,8 @@ void kernel_main(void)
 	thread_t * const idle_thread = kernel_get_idle_thread();
 	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
 	sch_set_current_thread(idle_thread);
+
+	kernel_in_initialise();
 
 #if defined(SYSCALL_DEBUGGING)
 	debug_print("System: Testing Syscall...\n");

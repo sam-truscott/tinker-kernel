@@ -520,7 +520,7 @@ error_t obj_pipe_send_message(
 
 	if (pipe)
 	{
-		if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
+		if (pipe->direction == PIPE_SEND || pipe->direction == PIPE_SEND_RECEIVE)
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
 			{

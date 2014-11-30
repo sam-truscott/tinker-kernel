@@ -9,6 +9,7 @@
 #ifndef KERNEL_INITIALISE_H_
 #define KERNEL_INITIALISE_H_
 
+#include "kernel/kernel_initialise.h"
 #include "kernel/process/process.h"
 
 /**

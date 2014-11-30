@@ -13,23 +13,24 @@
 #define UART_H_
 
 #include "arch/tgt_types.h"
+#include "kernel/devices/kernel_device.h"
 
 /*
  * Initialize UART0.
  */
-void uart_init();
+void bcm2835_uart_init();
 
 /*
  * Transmit a byte via UART0.
  * uint8_t Byte: byte to send.
  */
-void uart_putc(uint8_t byte);
+void bcm2835_uart_putc(uint8_t byte);
 
 /*
  * print a string to the UART one character at a time
  * const char *str: 0-terminated string
  */
-void uart_puts(const char * str);
+void bcm2835_uart_puts(const char * str);
 
 /*
  * Receive a byte via UART0.
@@ -37,6 +38,9 @@ void uart_puts(const char * str);
  * Returns:
  * uint8_t: byte received.
  */
-uint8_t uart_getc();
+uint8_t bcm2835_uart_getc();
+
+void bcm2835_uart_get_device(
+		kernel_device_t * const device);
 
 #endif // #ifndef UART_H_
