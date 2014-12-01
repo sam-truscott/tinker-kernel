@@ -37,7 +37,7 @@ static void kshell_task_list(void);
 
 static void kshell_object_table(void);
 
-static char ksh_thread_states[9][255] =
+static const char ksh_thread_states[9][255] =
 {
 		"ERROR  \0",
 		"NCREATE\0",
@@ -50,7 +50,7 @@ static char ksh_thread_states[9][255] =
 		"TERMATE\0"
 };
 
-static char ksh_object_types[9][255] =
+static const char ksh_object_types[9][255] =
 {
 		"UNKNOWN\0",
 		"OBJECT \0",
@@ -61,6 +61,14 @@ static char ksh_object_types[9][255] =
 		"SHRMEM \0",
 		"CLOCK  \0",
 		"TIMER  \0"
+};
+
+static const char ksh_pipe_dir[4][255] =
+{
+		"UNKNOWN     \0",
+		"SEND/RECEIVE\0",
+		"SEND        \0",
+		"RECEIVE     \0"
 };
 
 void kshell_start(void)
@@ -309,7 +317,32 @@ static void kshell_object_table(void)
 					}
 						break;
 					case PIPE_OBJ:
-						/* TODO KSHELL dump for Pipe */
+					{
+						const object_pipe_t * const p = obj_cast_pipe(obj);
+						if (p)
+						{
+							printp_out("Name:\t%s\t", obj_pipe_get_name(p));
+							tinker_pipe_direction_t const dir = obj_pipe_get_direction(p);
+							switch (dir)
+							{
+								case PIPE_SEND_RECEIVE:
+								case PIPE_RECEIVE:
+									printp_out("Dir:\t%d\t", ksh_pipe_dir[obj_pipe_get_direction(p)]);
+									printp_out("Total Msgs:\t%d\t", obj_pipe_get_total_messages(p));
+									printp_out("Free Msgs:\t%d\t", obj_pipe_get_free_messages(p));
+									printp_out("Msg Sz:\t%d\t", obj_pipe_get_msg_size(p));
+									printp_out("Rd Msg Pos:\t%d\t", obj_pipe_get_read_msg_pos(p));
+									printp_out("Wr Msg Pos:\t%d\t", obj_pipe_get_write_msg_pos(p));
+									break;
+								default:
+									break;
+							}
+						}
+						else
+						{
+							print_out("Invalid Object");
+						}
+					}
 						break;
 					case SEMAPHORE_OBJ:
 					{

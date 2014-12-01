@@ -59,4 +59,18 @@ error_t obj_pipe_receive_message(
 
 error_t obj_pipe_received_message(object_pipe_t * const pipe);
 
+const char * obj_pipe_get_name(const object_pipe_t * const pipe);
+
+tinker_pipe_direction_t obj_pipe_get_direction(const object_pipe_t * const pipe);
+
+uint32_t obj_pipe_get_total_messages(const object_pipe_t * const pipe);
+
+uint32_t obj_pipe_get_free_messages(const object_pipe_t * const pipe);
+
+uint32_t obj_pipe_get_msg_size(const object_pipe_t * const pipe);
+
+uint32_t obj_pipe_get_read_msg_pos(const object_pipe_t * const pipe);
+
+uint32_t obj_pipe_get_write_msg_pos(const object_pipe_t * const pipe);
+
 #endif /* OBJ_PIPE_H_ */

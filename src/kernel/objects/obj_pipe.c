@@ -694,3 +694,73 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 
 	return result;
 }
+
+const char * obj_pipe_get_name(const object_pipe_t * const pipe)
+{
+	const char * name = 0;
+	if (pipe)
+	{
+		name = pipe->name;
+	}
+	return name;
+}
+
+tinker_pipe_direction_t obj_pipe_get_direction(const object_pipe_t * const pipe)
+{
+	tinker_pipe_direction_t dir = PIPE_DIRECTION_UNKNOWN;
+	if (pipe)
+	{
+		dir = pipe->direction;
+	}
+	return dir;
+}
+
+uint32_t obj_pipe_get_total_messages(const object_pipe_t * const pipe)
+{
+	uint32_t v = 0;
+	if (pipe)
+	{
+		v = pipe->rx_data.total_messages;
+	}
+	return v;
+}
+
+uint32_t obj_pipe_get_free_messages(const object_pipe_t * const pipe)
+{
+	uint32_t v = 0;
+	if (pipe)
+	{
+		v = pipe->rx_data.free_messages;
+	}
+	return v;
+}
+
+uint32_t obj_pipe_get_msg_size(const object_pipe_t * const pipe)
+{
+	uint32_t v = 0;
+	if (pipe)
+	{
+		v = pipe->rx_data.message_size;
+	}
+	return v;
+}
+
+uint32_t obj_pipe_get_read_msg_pos(const object_pipe_t * const pipe)
+{
+	uint32_t v = 0;
+	if (pipe)
+	{
+		v = pipe->rx_data.read_msg_position;
+	}
+	return v;
+}
+
+uint32_t obj_pipe_get_write_msg_pos(const object_pipe_t * const pipe)
+{
+	uint32_t v = 0;
+	if (pipe)
+	{
+		v = pipe->rx_data.write_msg_position;
+	}
+	return v;
+}
