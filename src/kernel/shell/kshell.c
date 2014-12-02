@@ -321,18 +321,18 @@ static void kshell_object_table(void)
 						const object_pipe_t * const p = obj_cast_pipe(obj);
 						if (p)
 						{
-							printp_out("Name:\t%s\t", obj_pipe_get_name(p));
+							printp_out("Name:\t%s, ", obj_pipe_get_name(p));
 							tinker_pipe_direction_t const dir = obj_pipe_get_direction(p);
 							switch (dir)
 							{
 								case PIPE_SEND_RECEIVE:
 								case PIPE_RECEIVE:
-									printp_out("Dir:\t%d\t", ksh_pipe_dir[obj_pipe_get_direction(p)]);
-									printp_out("Total Msgs:\t%d\t", obj_pipe_get_total_messages(p));
-									printp_out("Free Msgs:\t%d\t", obj_pipe_get_free_messages(p));
-									printp_out("Msg Sz:\t%d\t", obj_pipe_get_msg_size(p));
-									printp_out("Rd Msg Pos:\t%d\t", obj_pipe_get_read_msg_pos(p));
-									printp_out("Wr Msg Pos:\t%d\t", obj_pipe_get_write_msg_pos(p));
+									printp_out("%s, ", ksh_pipe_dir[obj_pipe_get_direction(p)]);
+									printp_out("Total: %d, ", obj_pipe_get_total_messages(p));
+									printp_out("Free: %d, ", obj_pipe_get_free_messages(p));
+									printp_out("Sz: %d, ", obj_pipe_get_msg_size(p));
+									printp_out("Rd Pos: %d, ", obj_pipe_get_read_msg_pos(p));
+									printp_out("Wr Pos: %d", obj_pipe_get_write_msg_pos(p));
 									break;
 								default:
 									break;

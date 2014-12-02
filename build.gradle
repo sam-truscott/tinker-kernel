@@ -314,8 +314,6 @@ sources {
             "-std=gnu11",
             "-fno-builtin",
             "-ffreestanding",
-            "-MD",
-            "-MP",
             "-DBUILDING_KERNEL"
         linker.args "-nostartfiles",
 	        "-nodefaultlibs",
