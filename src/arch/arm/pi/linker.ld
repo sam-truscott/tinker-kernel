@@ -32,6 +32,12 @@ SECTIONS{
     	*(.entry)
     } > RAM
     
+    .boots (NOLOAD) : {
+        __boots = .;
+        . += __VECTOR_STACK_SIZE;
+        __bootse = .;
+    } > RAM
+    
     .ivts (NOLOAD) : {
         __ivts = .;
         . += __VECTOR_STACK_SIZE;

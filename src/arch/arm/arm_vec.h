@@ -33,10 +33,10 @@ typedef enum arm_vec
 #pragma pack(push,1)
 typedef struct tgt_context_t
 {
-	uint32_t apsr;
 	uint32_t sp;
+	uint32_t lr;
+	uint32_t apsr;
     uint32_t gpr[ARM_CONTEXT_GPR];
-    uint32_t lr;
 } tgt_context_internal_t;
 #pragma pack(pop)
 

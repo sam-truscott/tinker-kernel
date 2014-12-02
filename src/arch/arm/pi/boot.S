@@ -11,13 +11,14 @@
 
 .global kernel_start
 kernel_start:
-	mrs r3, cpsr 			/* backup cpsr */
 	msr cpsr, #0x51			/* enter fiq mode*/
 	ldr sp, =__ivtse		/* setup fiq stack */
 	msr cpsr, #0x72			/* enter irq mode */
 	ldr sp, =__ivtse		/* setup irq stack */
-	msr cpsr, r3			/* restore old cpsr */
-	ldr	sp, =__ivtse
+	msr cpsr, #0x73			/* setup supervisor mode */
+	ldr sp, =__ivtse		/* setup supervisor stack */
+	msr cpsr, #0x7F			/* setup system mode */
+	ldr	sp, =__bootse
 	// Clear out bss.
 	ldr	r4, =_bss_start
 	ldr	r9, =_bss_end

@@ -10,26 +10,56 @@
 #include "arm_vec.h"
 #include "kernel/console/print_out.h"
 #pragma GCC optimize ("-O0")
+
+#define SWITCH_TO_SYSTEM_MODE \
+	asm("mrs r0, cpsr"); \
+	asm("mov r1, #0xFFFFFF80"); \
+	asm("and r0, r0, r1"); \
+	asm("mov r1, #0x7F"); \
+	asm("orr r0, r0, r1"); \
+	asm("msr cpsr, r0");
+
+#define SWITCH_TO_SUPERVISOR_MODE \
+	asm("mrs r0, cpsr"); \
+	asm("mov r1, #0xFFFFFF80"); \
+	asm("and r0, r0, r1"); \
+	asm("mov r1, #0x73"); \
+	asm("orr r0, r0, r1"); \
+	asm("msr cpsr, r0");
+
 #define EXCEPTION_START_SYSCALL \
 	uint32_t context; \
-	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
+	asm("stmfd sp!,{r0-r12}");		/* store all the registers */ \
 	asm("mrs r0, spsr"); 			/* get the spsr */ \
-	asm("mov r1, sp"); 				/* get the new sp */ \
-	asm("push {r0, r1}"); 			/* store the spsr and sp */ \
+	asm("push {r0}"); 				/* store the spsr */ \
+	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
+	asm("mov r3, r13"); \
+	asm("mov r4, r14"); \
+	SWITCH_TO_SUPERVISOR_MODE \
+	asm("push {r3,r4}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
 #define EXCEPTION_START \
 	uint32_t context; \
 	asm("sub lr, lr, #4"); 			/* update return addr */ \
-	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
+	asm("stmfd sp!,{r0-r12}");		/* store all the registers */ \
 	asm("mrs r0, spsr"); 			/* get the spsr */ \
-	asm("mov r1, sp"); 				/* get the new sp */ \
-	asm("push {r0, r1}"); 			/* store the spsr and sp */ \
+	asm("push {r0}"); 				/* store the spsr and sp */ \
+	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
+	asm("mov r3, r13"); \
+	asm("mov r4, r14"); \
+	SWITCH_TO_SUPERVISOR_MODE \
+	asm("push {r3,r4}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
 #define EXCEPTION_END \
 	asm("nop"); \
-	asm("pop {r0, r1}"); 			/* get the spsr back */ \
+	asm("pop {r3,r4}"); 			/* get the sp and pc back */ \
+	SWITCH_TO_SYSTEM_MODE \
+	asm("mov r13, r3"); \
+	asm("mov r14, r4"); \
+	SWITCH_TO_SUPERVISOR_MODE \
+	asm("pop {r0}");				/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \
 	asm("ldm sp!, {r0-r12,pc}^")	/* return! */
 

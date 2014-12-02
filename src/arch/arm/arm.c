@@ -65,19 +65,19 @@ void tgt_initialise_context(
         const bool_t kernel_mode,
         const uint32_t exit_function)
 {
-    uint16_t gpr = 3;
+    uint16_t gpr = 0;
     if (context)
     {
         *context = mem_alloc(process_get_mem_pool(thread_get_parent(thread)), sizeof(tgt_context_t));
         tgt_context_t * const arm_context = *context;
-        arm_context->sp = thread_get_virt_stack_base(thread);
-        arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
-        arm_context->gpr[1] = exit_function;
-        arm_context->gpr[2] = arm_context->sp;
         for (; gpr < ARM_CONTEXT_GPR ; gpr++)
         {
             arm_context->gpr[gpr] = 0;
         }
+        arm_context->sp = thread_get_virt_stack_base(thread);
+		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
+		arm_context->gpr[1] = exit_function;
+		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         // TODO initialise the other registers
         // use kernel_mode to set stuff up
