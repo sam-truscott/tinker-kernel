@@ -140,9 +140,10 @@
 			it->map_entry = NULL; \
 			it->entry = 0; \
 			it->bucket = 0; \
-			for ( uint32_t b = 0 ; b < (MAP_CAPACITY/BUCKET_SIZE) ; b++ ) \
+			for (uint32_t b = 0 ; b < (MAP_CAPACITY/BUCKET_SIZE) ; b++ ) \
 			{ \
-				if ( it->map->buckets[b] ) \
+				bool found = false; \
+				if (it->map->buckets[b]) \
 				{ \
 					for (uint32_t e = 0 ; e < BUCKET_SIZE ; e++) \
 					{ \
@@ -152,9 +153,14 @@
 							it->map_entry = it->map->buckets[b]->entries[e]; \
 							it->entry = e; \
 							it->bucket = b; \
+							found = true; \
 							break; \
 						} \
 					} \
+				} \
+				if (found) \
+				{ \
+					break; \
 				} \
 			} \
 		} \
