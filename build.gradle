@@ -329,7 +329,7 @@ sources {
                 "-DKERNEL_DEBUGGING",
                 "-UMEMORY_DEBUGGING",
                 "-UDEBUG_COLLECTIONS",
-                "-UPROCESS_DEBUGGING",
+                "-DPROCESS_DEBUGGING",
                 "-UTARGET_DEBUGGING",
                 "-USYSCALL_DEBUGGING",
                 "-UALARM_DEBUGGING",

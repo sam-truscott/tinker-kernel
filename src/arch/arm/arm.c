@@ -84,7 +84,7 @@ void tgt_initialise_context(
         arm_context->lr = (uint32_t)arm_bootstrap;
         if (kernel_mode)
         {
-        	arm_context->apsr = PSR_MODE_SUPERVISOR;
+        	arm_context->apsr = PSR_MODE_SYSTEM;
         }
         else
         {

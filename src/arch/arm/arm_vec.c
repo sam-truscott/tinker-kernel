@@ -27,86 +27,81 @@
 	asm("orr r0, r0, r1"); \
 	asm("msr cpsr, r0");
 
-#define EXCEPTION_START_SYSCALL \
+#define EXCEPTION_START_COMMON \
 	uint32_t context; \
-	asm("stmfd sp!,{r0-r12,lr}");		/* store all the registers */ \
-	asm("mrs r0, spsr"); 			/* get the spsr */ \
-	asm("push {r0}"); 				/* store the spsr */ \
-	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
-	asm("mov r3, r13"); \
+	asm("stmfd sp!,{r0-r12,lr}");				/* store all the registers */ \
+	asm("mrs r0, spsr"); 						/* get the spsr */ \
+	asm("push {r0}"); 							/* store the spsr */ \
+	SWITCH_TO_SYSTEM_MODE						/* switch to system mode so we can get r13(sp), r14(lr) */ \
+	asm("mov r3, r13");							/* get r13, stack pointer */ \
 	SWITCH_TO_SUPERVISOR_MODE \
-	asm("push {r3}"); \
-	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
+	asm("push {r3}");							/* store sp */ \
+	asm("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */
 
-#define EXCEPTION_START \
-	uint32_t context; \
-	asm("sub lr, lr, #4"); 			/* update return addr */ \
-	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
-	asm("mrs r0, spsr"); 			/* get the spsr */ \
-	asm("push {r0}"); 				/* store the spsr and sp */ \
-	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
-	asm("mov r3, r13"); \
-	SWITCH_TO_SUPERVISOR_MODE \
-	asm("push {r3}"); \
-	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
+#define EXCEPTION_START_SYSCALL \
+	EXCEPTION_START_COMMON
+
+#define EXCEPTION_START_VECTOR \
+	asm("sub lr, lr, #4"); 						/* update return addr */ \
+	EXCEPTION_START_COMMON
 
 #define EXCEPTION_END \
 	asm("nop"); \
-	asm("pop {r3}"); 			/* get the sp and pc back */ \
+	asm("pop {r3}"); 							/* get the sp and pc back */ \
 	SWITCH_TO_SYSTEM_MODE \
-	asm("mov r13, r3"); \
+	asm("mov r13, r3");							/* restore the sp */ \
 	SWITCH_TO_SUPERVISOR_MODE \
-	asm("pop {r0}");				/* get the spsr back */ \
-	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \
-	asm("ldm sp!, {r0-r12,pc}^")	/* return! */
+	asm("pop {r0}");							/* get the spsr back */ \
+	asm("msr SPSR_cxsf, r0"); 					/* restore spsr */ \
+	asm("ldm sp!, {r0-r12,pc}^");				/* return! */
 
 static arm_vec_handler_t * vector_table[8];
 
 static void __attribute__((naked)) arm_vector_reset()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_RESET](VECTOR_RESET, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_undefined()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_UNDEFINED](VECTOR_UNDEFINED, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_prefetch_abort()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_PRETECH_ABORT](VECTOR_PRETECH_ABORT, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_data_abort()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_DATA_ABORT](VECTOR_DATA_ABORT, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_reserved()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_RESERVED](VECTOR_RESERVED, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_irq()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_IRQ](VECTOR_IRQ, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked)) arm_vector_fiq()
 {
-	EXCEPTION_START;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_FIQ](VECTOR_FIQ, context);
 	EXCEPTION_END;
 }
