@@ -13,19 +13,15 @@
 
 #define SWITCH_TO_SYSTEM_MODE \
 	asm("mrs r0, cpsr"); \
+	asm("mov r2, r0"); \
 	asm("mov r1, #0xFFFFFF80"); \
 	asm("and r0, r0, r1"); \
 	asm("mov r1, #0x7F"); \
 	asm("orr r0, r0, r1"); \
 	asm("msr cpsr, r0");
 
-#define SWITCH_TO_SUPERVISOR_MODE \
-	asm("mrs r0, cpsr"); \
-	asm("mov r1, #0xFFFFFF80"); \
-	asm("and r0, r0, r1"); \
-	asm("mov r1, #0x73"); \
-	asm("orr r0, r0, r1"); \
-	asm("msr cpsr, r0");
+#define SWITCH_BACK \
+	asm("msr cpsr, r2");
 
 #define EXCEPTION_START_COMMON \
 	uint32_t context; \
@@ -33,8 +29,8 @@
 	asm("mrs r0, spsr"); 						/* get the spsr */ \
 	asm("push {r0}"); 							/* store the spsr */ \
 	SWITCH_TO_SYSTEM_MODE						/* switch to system mode so we can get r13(sp), r14(lr) */ \
-	asm("mov r3, r13");							/* get r13, stack pointer */ \
-	SWITCH_TO_SUPERVISOR_MODE \
+	asm("mov r3, sp");							/* get r13, stack pointer */ \
+	SWITCH_BACK \
 	asm("push {r3}");							/* store sp */ \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */
 
@@ -49,8 +45,8 @@
 	asm("nop"); \
 	asm("pop {r3}"); 							/* get the sp and pc back */ \
 	SWITCH_TO_SYSTEM_MODE \
-	asm("mov r13, r3");							/* restore the sp */ \
-	SWITCH_TO_SUPERVISOR_MODE \
+	asm("mov sp, r3");							/* restore the sp */ \
+	SWITCH_BACK \
 	asm("pop {r0}");							/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 					/* restore spsr */ \
 	asm("ldm sp!, {r0-r12,pc}^");				/* return! */
