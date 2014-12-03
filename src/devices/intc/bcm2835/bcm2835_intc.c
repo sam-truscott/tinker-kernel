@@ -132,9 +132,6 @@ static bool_t bcm2835_get(
 		uint32_t * const cause,
 		const void * const user_data)
 {
-#if defined(INTC_DEBUGGING)
-	debug_print("BCM2835: determining cause of interrupt\n");
-#endif
 	bool_t fired = false;
 	if (cause && user_data)
 	{
