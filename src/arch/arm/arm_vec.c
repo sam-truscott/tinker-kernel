@@ -34,9 +34,8 @@
 	asm("push {r0}"); 				/* store the spsr */ \
 	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
 	asm("mov r3, r13"); \
-	asm("mov r4, r14"); \
 	SWITCH_TO_SUPERVISOR_MODE \
-	asm("push {r3,r4}"); \
+	asm("push {r3}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
 #define EXCEPTION_START \
@@ -47,17 +46,15 @@
 	asm("push {r0}"); 				/* store the spsr and sp */ \
 	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
 	asm("mov r3, r13"); \
-	asm("mov r4, r14"); \
 	SWITCH_TO_SUPERVISOR_MODE \
-	asm("push {r3,r4}"); \
+	asm("push {r3}"); \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */
 
 #define EXCEPTION_END \
 	asm("nop"); \
-	asm("pop {r3,r4}"); 			/* get the sp and pc back */ \
+	asm("pop {r3}"); 			/* get the sp and pc back */ \
 	SWITCH_TO_SYSTEM_MODE \
 	asm("mov r13, r3"); \
-	asm("mov r14, r4"); \
 	SWITCH_TO_SUPERVISOR_MODE \
 	asm("pop {r0}");				/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 		/* restore spsr */ \

@@ -82,7 +82,6 @@ void tgt_initialise_context(
         // TODO initialise the other registers
         // use kernel_mode to set stuff up
         arm_context->lr = (uint32_t)arm_bootstrap;
-        arm_context->tmp_lr = arm_context->lr;
         if (kernel_mode)
         {
         	arm_context->apsr = PSR_MODE_SUPERVISOR;
