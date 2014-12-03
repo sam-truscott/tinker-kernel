@@ -101,6 +101,8 @@ These are the things I need to address in a rough order:
 
 * Target: ARM support (Raspberry Pi)
 	* Fix: sometimes locks up - threading or memory corruption
+		* Re-written the vector code, still no luck
+		* It was to do with the stack code, need to check it's switching properly
 	* Add ARM MMU support
 * Kernel: Shell should use pipes for reading I/O
 * Kernel: Timeouts on pipe (open/read/write)
