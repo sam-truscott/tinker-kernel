@@ -29,7 +29,7 @@
 
 #define EXCEPTION_START_SYSCALL \
 	uint32_t context; \
-	asm("stmfd sp!,{r0-r12}");		/* store all the registers */ \
+	asm("stmfd sp!,{r0-r12,lr}");		/* store all the registers */ \
 	asm("mrs r0, spsr"); 			/* get the spsr */ \
 	asm("push {r0}"); 				/* store the spsr */ \
 	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
@@ -42,7 +42,7 @@
 #define EXCEPTION_START \
 	uint32_t context; \
 	asm("sub lr, lr, #4"); 			/* update return addr */ \
-	asm("stmfd sp!,{r0-r12}");		/* store all the registers */ \
+	asm("stmfd sp!,{r0-r12,lr}");	/* store all the registers */ \
 	asm("mrs r0, spsr"); 			/* get the spsr */ \
 	asm("push {r0}"); 				/* store the spsr and sp */ \
 	SWITCH_TO_SYSTEM_MODE			/* switch to system mode so we can get r13(sp), r14(lr) */ \
