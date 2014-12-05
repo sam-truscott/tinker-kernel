@@ -173,7 +173,7 @@ uint32_t bsp_get_usable_memory_start()
 uint32_t bsp_get_usable_memory_end()
 {
 	/* 127 because the last 1MB is the page table */
-	return (127 * 1024 * 1024);
+	return (258 * 1024 * 1024);
 }
 
 void bsp_write_debug_char(const char c)

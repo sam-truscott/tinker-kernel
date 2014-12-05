@@ -11,12 +11,16 @@
 
 .global kernel_start
 kernel_start:
-	msr cpsr, #0x51			/* enter fiq mode*/
+	msr cpsr, #0x71			/* enter fiq mode*/
+	msr cpsr, #0x71			/* enter fiq mode*/
 	ldr sp, =__ivtse		/* setup fiq stack */
+	msr cpsr, #0x72			/* enter irq mode */
 	msr cpsr, #0x72			/* enter irq mode */
 	ldr sp, =__ivtse		/* setup irq stack */
 	msr cpsr, #0x73			/* setup supervisor mode */
+	msr cpsr, #0x73			/* setup supervisor mode */
 	ldr sp, =__ivtse		/* setup supervisor stack */
+	msr cpsr, #0x7F			/* setup system mode */
 	msr cpsr, #0x7F			/* setup system mode */
 	ldr	sp, =__bootse
 	// Clear out bss.
