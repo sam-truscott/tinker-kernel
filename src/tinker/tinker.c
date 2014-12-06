@@ -127,6 +127,7 @@ static void my_other_thread(void)
 			}
 			else
 			{
+				tinker_debug("tinker: other thread: closing semaphore\n");
 				error = tinker_sem_close(sem2);
 				if (error != NO_ERROR)
 				{
@@ -137,16 +138,21 @@ static void my_other_thread(void)
 	}
 
 	void * address = 0;
+	tinker_debug("tinker: other thread: opening shm\n");
 	error = tinker_shm_open(&shm2, "shm", 0x1000, &address);
 	if (error == NO_ERROR && address)
 	{
+		tinker_debug("tinker: other thread: shm opened OK\n");
 		if (*((uint32_t*)address) == 0x55aa55aa)
 		{
 			*((uint32_t*)address) = 0xaa55aa55;
 		}
+		tinker_debug("tinker: other thread: destroying shm\n");
 		error = tinker_shm_destroy(shm2);
-		if (error != NO_ERROR)
+		if (error == NO_ERROR)
 		{
+			tinker_debug("tinker: other thread: destroyed shm\n");
+		} else {
 			tinker_debug("tinker: other thread: error destroying shm\n");
 		}
 	}

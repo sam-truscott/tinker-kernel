@@ -330,6 +330,7 @@ sources {
                 "-UMEMORY_DEBUGGING",
                 "-UDEBUG_COLLECTIONS",
                 "-UPROCESS_DEBUGGING",
+                "-USHM_DEBUGGING",
                 "-UTARGET_DEBUGGING",
                 "-USYSCALL_DEBUGGING",
                 "-UALARM_DEBUGGING",

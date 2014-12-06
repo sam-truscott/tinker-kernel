@@ -87,9 +87,11 @@ error_t obj_create_shm(
 		no = (object_shm_t*)mem_alloc(pool, sizeof(object_shm_t));
 		if (no)
 		{
+			util_memset(no, 0, sizeof(object_shm_t));
 			const void * const memory = mem_alloc_aligned(pool, size, MMU_PAGE_SIZE);
 			if (memory)
 			{
+				util_memset((void*)memory, 0, size);
 				object_number_t objno;
 				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
@@ -160,6 +162,7 @@ error_t obj_open_shm(
 		no = (object_shm_t*)mem_alloc(pool, sizeof(object_shm_t));
 		if (no)
 		{
+			util_memset(no, 0, sizeof(object_shm_t));
 			process_t * other_process = NULL;
 			object_number_t other_obj_no;
 			if (registry_get(name, &other_process, &other_obj_no) == NO_ERROR)
@@ -195,6 +198,7 @@ error_t obj_open_shm(
 									no->real_addr = other_shm_obj->real_addr;
 									no->virt_addr = virt_addr;
 									no->parent_shm = other_shm_obj;
+									no->client_list = NULL;
 									shm_client_list_t_add(other_shm_obj->client_list, no);
 									util_memset(no->name, 0, sizeof(no->name));
 									util_memcpy(no->name, name, util_strlen(name, sizeof(name)));
@@ -253,25 +257,37 @@ error_t obj_delete_shm(
 	{
 		// this is an owner, it may have children that
 		// are still attached and we need to close them first
+#if defined(SHM_DEBUGGING)
+		debug_print("Deleting SHM\n");
+#endif
 		if (shm->client_list)
 		{
 			uint32_t size = shm_client_list_t_size(shm->client_list);
+#if defined(SHM_DEBUGGING)
+			debug_print("SHM has %d clients\n", size);
+#endif
 			while(size)
 			{
 				object_shm_t * attached_shm = NULL;
 				if (shm_client_list_t_get(shm->client_list, 0, &attached_shm))
 				{
-					if (attached_shm)
+					if (attached_shm && attached_shm != shm)
 					{
 						obj_delete_shm(attached_shm);
 					}
 				}
 				shm_client_list_t_remove(shm->client_list, 0);
 				size = shm_client_list_t_size(shm->client_list);
+#if defined(SHM_DEBUGGING)
+				debug_print("Detached client, %d clients remain\n", size);
+#endif
 			}
 			shm_client_list_t_delete(shm->client_list);
 			process_free_vmem(shm->process, shm->virt_addr);
 			mem_free(shm->pool, (void*)shm->real_addr);
+#if defined(SHM_DEBUGGING)
+			debug_print("Removing SHM from registry\n");
+#endif
 			registry_remove(shm->name);
 			mem_free(shm->pool, shm);
 		}
@@ -289,6 +305,8 @@ error_t obj_delete_shm(
 	{
 		result = INVALID_OBJECT;
 	}
-
+#if defined(SHM_DEBUGGING)
+	debug_print("Done\n");
+#endif
 	return result;
 }
