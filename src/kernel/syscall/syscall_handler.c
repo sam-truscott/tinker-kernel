@@ -541,6 +541,9 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			ret = obj_thread_sleep(thread_obj, duration);
 		}
 		break;
+		case SYSCALL_WFI:
+			tgt_wait_for_interrupt();
+			break;
 		case SYSCALL_LOAD_THREAD:
 			/* uses the current thread from the scheduler */
 			tgt_prepare_context(context, this_thread, NULL);

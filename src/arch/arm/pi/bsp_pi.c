@@ -191,3 +191,9 @@ char bsp_read_debug_char(void)
 	}
 	return c;
 }
+
+void tgt_wait_for_interrupt(void)
+{
+	asm("MOV r0, #0 ");
+	asm("MCR p15, 0, r0, c7, c0, 4");
+}

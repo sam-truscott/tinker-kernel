@@ -72,4 +72,6 @@ void tgt_set_syscall_return(
         tgt_context_t * const context,
 		const uint32_t value);
 
+void tgt_wait_for_interrupt(void);
+
 #endif /* TGT_H_ */

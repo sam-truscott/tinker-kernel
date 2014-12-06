@@ -52,6 +52,7 @@ typedef enum syscall_function
 	SYSCALL_DELETE_TIMER,
 	SYSCALL_DEBUG,
 	SYSCALL_LOAD_THREAD,
+	SYSCALL_WFI,
 
 	MAX_SYSCALL
 } syscall_function_t;

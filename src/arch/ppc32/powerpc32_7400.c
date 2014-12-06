@@ -30,3 +30,10 @@ void tgt_initialise(void)
 		ppc_invalid_tlbe(i);
 	}
 }
+
+void tgt_wait_for_interrupt(void)
+{
+	asm("li %r11, 0");
+	asm("lis %r11, 0x20");
+	asm("mtspr 1008, %r11");
+}

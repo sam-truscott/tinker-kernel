@@ -86,3 +86,8 @@ void tinker_debug(const char * const str)
 {
 	TINKER_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
 }
+
+void tinker_wait_for_interrupt(void)
+{
+	TINKER_API_CALL_0(SYSCALL_WFI);
+}
