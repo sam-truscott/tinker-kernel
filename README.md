@@ -19,19 +19,14 @@ Overview
 
 I've worked on & off on this hybrid kernel for the last few years to help my understanding in operating systems.
 
-* SOS1 was essentially a framebuffer - and a very broken scheduler
-* SOS2 was a proper multitasking scheduler with dynamic memory support
-* SOS3 was where I refactored it to be more OO and do some initial MMU work
-* Tinker was renamed from SOS3!
-
 Tinker is:
 * Limited - it's an RTOS Kernel so that's the idea
 * In development
 * Single-core at present
-* Written from a clean slate (excluding bits of boot-code from sel4 and osdev)
+* Written from a clean slate (excluding bits of boot-code from sel4 and osdev) from trail and error. Mostly error.
 
 He is my hobby. The aim is to keep it simple enough for anyone to understand and therefore also
-be simple enough to port and possibly even verify.
+be simple enough to port and possibly even verify. I used to try and read the Linux Kernel but got lost. The aim of Tinker is to be easy to read so it's easy to learn what's going on.
 
 Features
 ========
@@ -144,3 +139,22 @@ Starting QEMU for the Raspberry Pi build
 	b kernel_main
 	# Start the kernel
 	continue
+
+# Concepts
+Below is a description of the core concepts of the kernel and the rational of any design decisions.
+## Process & Threads
+Proceses are used as the container that stores everything related to the process - threads, objects and memory etc. As we're aiming for real-time, when a process creates a new process, any memory for the new process is allocated from the parent process. The exclusion for this is the processes initialised from the kmain() code where the process's memory is taken from the main pool. This avoids problems with possible starvation. Later on, with an ELF loader, it's possible that any new process could also be loaded from the main pool.
+## Pipes (messaging inc. interrupts)
+Pipes are used to send messages between processes and can register as interrupt handlers. They can be created as senders, receivers or both. Their width (message size) and depth (message count) are predefined. When multipled together, and aligned, it equals the amount of memory requred.
+
+Once a message has been read by the application, it must be acknowledged. This is because the read gets a pointer to the buffer and the acknowledment frees that memory so another can write into it.
+
+There's a built in Pipe in the kernel called 'in' which can be used to read characters from the character input device (like a UART or keyboard).
+## Semaphores
+Nothing special here. Support priority inheritance.
+## Shared Memory
+Nothing special here.
+## Timers
+Nothing special here.
+## Objects (the registry)
+The register stores objects by name so they can be looked up by different processes.
