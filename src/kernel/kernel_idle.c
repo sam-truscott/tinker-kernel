@@ -22,6 +22,9 @@ void kernel_idle(void)
 #endif
 	while(1 != 2)
 	{
+#if defined(IDLE_DEBUGGING)
+	tinker_debug("IDLE: Waiting for interrupt\n");
+#endif
 		tinker_wait_for_interrupt();
 	}
 }
