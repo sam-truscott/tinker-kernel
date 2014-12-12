@@ -26,7 +26,8 @@ typedef enum thread_state
 	THREAD_SYSTEM,
 	THREAD_PAUSED,
 	THREAD_WAITING,
-	THREAD_TERMINATED
+	THREAD_TERMINATED,
+	THREAD_DEAD
 } thread_state_t;
 
 #define THREAD_FLAG_NONE 0x0

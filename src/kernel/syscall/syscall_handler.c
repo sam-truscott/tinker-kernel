@@ -157,10 +157,8 @@ void syscall_handle_system_call(tgt_context_t * const context)
 
 		case SYSCALL_CREATE_THREAD:
 			{
-				process_t * process;
-				thread_t * thread;
-
-				process = thread_get_parent(this_thread);
+				process_t * const process = thread_get_parent(this_thread);
+				thread_t * thread = NULL;
 
 				ret = proc_create_thread(
 						process,
@@ -230,13 +228,13 @@ void syscall_handle_system_call(tgt_context_t * const context)
 
 		case SYSCALL_EXIT_THREAD:
 			{
-				object_thread_t * const thread_obj =syscall_get_thread_object(this_thread);
+				process_t * const parent = thread_get_parent(this_thread);
+									const object_table_t * const table =
+											process_get_object_table(parent);
+				object_thread_t * const thread_obj
+					= obj_cast_thread(obj_get_object(table, syscall_get_thread_oid(this_thread)));
 				if (thread_obj)
 				{
-					process_t * const parent = thread_get_parent(this_thread);
-					const object_table_t * const table =
-							process_get_object_table(parent);
-
 					object_process_t * const proc_obj =
 							obj_cast_process(
 								obj_get_object(table,
@@ -568,9 +566,9 @@ void syscall_handle_system_call(tgt_context_t * const context)
 
 	/* If the thread has been un-scheduled we need to switch process */
 	thread_state_t state;
-	if (api == SYSCALL_EXIT_THREAD && ret == NO_ERROR)
+	if (api == SYSCALL_EXIT_THREAD)
 	{
-		state = THREAD_TERMINATED;
+		state = THREAD_DEAD;
 	}
 	else
 	{

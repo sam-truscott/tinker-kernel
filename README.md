@@ -139,6 +139,9 @@ Starting QEMU for the Raspberry Pi build
 	b kernel_main
 	# Start the kernel
 	continue
+	
+	# Convert it over to a kernel.img file
+	arm-eabi-objcopy -O binary build\binaries\armRaspPiExecutable\debug\armRaspPi.exe kernel.img
 
 # Concepts
 Below is a description of the core concepts of the kernel and the rational of any design decisions.

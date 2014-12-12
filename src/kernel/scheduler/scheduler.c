@@ -358,7 +358,10 @@ void sch_set_context_for_next_thread(
 		{
 			thread_set_state(current_thread, THREADY_READY);
 		}
-		thread_save_context(current_thread, context);
+		if (thread_state != THREAD_DEAD)
+		{
+			thread_save_context(current_thread, context);
+		}
 		// load in the state of the new thread
         tgt_prepare_context(context, sch_current_thread, sch_current_process);
         // update the current process after the switch
