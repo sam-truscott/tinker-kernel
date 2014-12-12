@@ -37,7 +37,7 @@ static void kshell_task_list(void);
 
 static void kshell_object_table(void);
 
-static const char ksh_thread_states[9][255] =
+static const char ksh_thread_states[10][8] =
 {
 		"ERROR  \0",
 		"NCREATE\0",
@@ -47,10 +47,11 @@ static const char ksh_thread_states[9][255] =
 		"SYSTEM \0",
 		"PAUSED \0",
 		"WAITING\0",
-		"TERMATE\0"
+		"TERMATE\0",
+		"DEAD   \0"
 };
 
-static const char ksh_object_types[9][255] =
+static const char ksh_object_types[9][8] =
 {
 		"UNKNOWN\0",
 		"OBJECT \0",
@@ -63,7 +64,7 @@ static const char ksh_object_types[9][255] =
 		"TIMER  \0"
 };
 
-static const char ksh_pipe_dir[4][255] =
+static const char ksh_pipe_dir[4][13] =
 {
 		"UNKNOWN     \0",
 		"SEND/RECEIVE\0",
@@ -75,6 +76,8 @@ void kshell_start(void)
 {
 	ksh_input_pointer = 0;
 	bool_t running = true;
+
+	printp_out("KSHELL\n");
 
 	tinker_pipe_t input_pipe = INVALID_OBJECT_ID;
 	error_t input_result = tinker_open_pipe(
@@ -98,6 +101,7 @@ void kshell_start(void)
 				(const void**)&received,
 				&bytesReceived,
 				true);
+		printp_out("KSHELL %d got %d bytes\n", read_status, *bytesReceived);
 		if (read_status == NO_ERROR)
 		{
 			tinker_received_message(input_pipe);

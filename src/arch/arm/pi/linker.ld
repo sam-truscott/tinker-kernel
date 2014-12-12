@@ -15,7 +15,7 @@ __VECTOR_STACK_SIZE = 0x1000;
 
 MEMORY 
 {
-	RAM : ORIGIN = 0x00000000, LENGTH = 0x8000000 /* 128MB */
+	RAM : ORIGIN = 0x00000000, LENGTH = 0x10000000 /* 256MB */
 }
 
 SECTIONS{
@@ -44,11 +44,6 @@ SECTIONS{
         __ivtse = .;
     } > RAM
     
-    /* Small Block Started by Symbol */
-    .sbss ALIGN (0x1000): {
-        *(.sbss)
-    }>RAM
-    
         /* Block Started by Symbol */
     .bss ALIGN (0x1000) : {
         *(COMMON)
@@ -63,6 +58,11 @@ SECTIONS{
         *(.rodata*)
         *(.eh_frame)
         *(.eh_frame_hdr)
+    }>RAM
+    
+    /* Small Block Started by Symbol */
+    .sbss ALIGN (0x1000): {
+        *(.sbss)
     }>RAM
     
     /* static data */
