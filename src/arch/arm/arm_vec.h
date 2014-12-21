@@ -33,7 +33,9 @@ typedef enum arm_vec
 #pragma pack(push,1)
 typedef struct tgt_context_t
 {
+	uint32_t alignment;
 	uint32_t sp;
+	uint32_t usr_lr;
 	uint32_t apsr;
     uint32_t gpr[ARM_CONTEXT_GPR];
     uint32_t lr;

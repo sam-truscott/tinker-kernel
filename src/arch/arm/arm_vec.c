@@ -23,16 +23,27 @@
 #define SWITCH_BACK \
 	asm("msr cpsr, r2");
 
+#define FIX_STACK_ALIGNMENT \
+	asm ("and r1, sp, #4"); \
+	asm ("sub sp, sp, r1"); \
+	asm ("push {r1}");
+
+#define UNFIX_STACK_ALIGNMENT \
+	asm ("pop {r1}"); \
+	asm ("add sp, sp, r1");
+
 #define EXCEPTION_START_COMMON \
 	uint32_t context; \
 	asm("stmfd sp!,{r0-r12,lr}");				/* store all the registers */ \
 	asm("mrs r0, spsr"); 						/* get the spsr */ \
 	asm("push {r0}"); 							/* store the spsr */ \
 	SWITCH_TO_SYSTEM_MODE						/* switch to system mode so we can get r13(sp), r14(lr) */ \
-	asm("mov r3, sp");							/* get r13, stack pointer */ \
+	asm("mov r3, sp");							/* get user stack pointer */ \
+	asm("mov r4, lr");							/* get user link pointer */ \
 	SWITCH_BACK \
-	asm("push {r3}");							/* store sp */ \
-	asm("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */
+	asm("push {r3, lr}");						/* store sp, lr */ \
+	FIX_STACK_ALIGNMENT \
+	asm("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */ \
 
 #define EXCEPTION_START_SYSCALL \
 	EXCEPTION_START_COMMON
@@ -43,9 +54,11 @@
 
 #define EXCEPTION_END \
 	asm("nop"); \
-	asm("pop {r3}"); 							/* get the sp and pc back */ \
+	UNFIX_STACK_ALIGNMENT \
+	asm("pop {r3, r4}");						/* get the sp and pc back */ \
 	SWITCH_TO_SYSTEM_MODE \
 	asm("mov sp, r3");							/* restore the sp */ \
+	asm("mov lr, r4");							/* restore the sp */ \
 	SWITCH_BACK \
 	asm("pop {r0}");							/* get the spsr back */ \
 	asm("msr SPSR_cxsf, r0"); 					/* restore spsr */ \

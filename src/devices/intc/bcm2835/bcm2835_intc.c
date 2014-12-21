@@ -8,6 +8,7 @@
  */
 
 #include "bcm2835_intc.h"
+#include "kernel/kernel_assert.h"
 
 #define IRQ_PENDING_BASIC 0x200
 #define IRQ_PENDING_1 0x204
@@ -139,6 +140,9 @@ static bool_t bcm2835_get(
 		uint8_t irq;
 		if (pending_basic)
 		{
+#if defined(INTC_DEBUGGING)
+			debug_print("BCM2835 Basic %x\n", pending_basic);
+#endif
 			for (irq = 0 ; irq < MAX_IRQS_BASIC ; irq++)
 			{
 				if (pending_basic & CAUSE_TABLE[0][irq].bit)
@@ -149,29 +153,41 @@ static bool_t bcm2835_get(
 				}
 			}
 		}
-		if (fired && *cause == INTERRUPT_PENDING1)
+		if (fired && ((*cause) == INTERRUPT_PENDING1))
 		{
 			const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1));
-			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
+			if (pending_1)
 			{
-				if (pending_1 & CAUSE_TABLE[1][irq].bit)
+#if defined(INTC_DEBUGGING)
+				debug_print("BCM2835 Pending 1 %x\n", pending_1);
+#endif
+				for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 				{
-					*cause = CAUSE_TABLE[1][irq].cause;
-					fired = true;
-					break;
+					if (pending_1 & CAUSE_TABLE[1][irq].bit)
+					{
+						*cause = CAUSE_TABLE[1][irq].cause;
+						fired = true;
+						break;
+					}
 				}
 			}
 		}
-		if (fired && *cause == INTERRUPT_PENDING2)
+		if (fired && ((*cause) == INTERRUPT_PENDING2))
 		{
 			const uint32_t pending_2 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_2));
-			for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
+			if (pending_2)
 			{
-				if (pending_2 & CAUSE_TABLE[2][irq].bit)
+#if defined(INTC_DEBUGGING)
+				debug_print("BCM2835 Pending 2 %x\n", pending_2);
+#endif
+				for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 				{
-					*cause = CAUSE_TABLE[2][irq].cause;
-					fired = true;
-					break;
+					if (pending_2 & CAUSE_TABLE[2][irq].bit)
+					{
+						*cause = CAUSE_TABLE[2][irq].cause;
+						fired = true;
+						break;
+					}
 				}
 			}
 		}
@@ -224,6 +240,7 @@ static void bcm2835_mask(
 			out_u32((uint32_t*)((uint8_t*)user_data + DISABLE_IRQ_2), disable);
 			break;
 		default:
+			kernel_assert("BCM2835 intc mask interrupt for invalid bank", false);
 			break;
 		}
 	}
@@ -261,6 +278,7 @@ static void bcm2835_enable(
 			bit = CAUSE_TABLE[2][index].bit;
 			break;
 		default:
+			kernel_assert("BCM2835 intc enable interrupt for invalid bank", false);
 			break;
 		}
 		const uint32_t enabled = in_u32((uint32_t*)((uint8_t*)user_data + offset));

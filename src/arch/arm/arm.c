@@ -74,6 +74,7 @@ void tgt_initialise_context(
         {
             arm_context->gpr[gpr] = 0;
         }
+        arm_context->alignment = 0;
         arm_context->sp = thread_get_virt_stack_base(thread);
 		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
 		arm_context->gpr[1] = exit_function;
@@ -81,7 +82,7 @@ void tgt_initialise_context(
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         // TODO initialise the other registers
         // use kernel_mode to set stuff up
-        arm_context->lr = (uint32_t)arm_bootstrap;
+        arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
         if (kernel_mode)
         {
         	arm_context->apsr = PSR_MODE_SYSTEM;

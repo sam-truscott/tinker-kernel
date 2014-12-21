@@ -104,7 +104,11 @@ void kshell_start(void)
 		printp_out("KSHELL %d got %d bytes\n", read_status, *bytesReceived);
 		if (read_status == NO_ERROR)
 		{
-			tinker_received_message(input_pipe);
+			error_t ack = tinker_received_message(input_pipe);
+			if (ack != NO_ERROR)
+			{
+				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
+			}
 			uint16_t p = 0;
 			while(p != (*bytesReceived))
 			{

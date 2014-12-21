@@ -440,8 +440,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			break;
 		case SYSCALL_RECEIVED_MESSAGE:
 		{
-			object_table_t * table = NULL;
-			table = process_get_object_table(thread_get_parent(this_thread));
+			object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
 			object_pipe_t * const pipe = obj_cast_pipe(
 					obj_get_object(
 							table,

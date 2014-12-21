@@ -154,24 +154,41 @@ error_t alarm_unset_alarm(const uint32_t alarm_id)
 	const bool_t got = alarm_list_t_get(alarm_list, alarm_id, &alarm);
 	if (got && alarm)
 	{
+#if defined(ALARM_DEBUGGING)
+	debug_print("Alarms: Removing %d\n", alarm_id);
+#endif
 		alarm_list_t_remove_item(alarm_list, alarm);
 		if (alarm == alarm_next_alarm)
 		{
+#if defined(ALARM_DEBUGGING)
+	debug_print("Alarms: Disabling the alarm timer\n");
+#endif
 			alarm_disable_timer();
 			alarm_next_alarm = NULL;
+#if defined(ALARM_DEBUGGING)
+	debug_print("Alarms: Calculating next timer\n");
+#endif
 			alarm_calculate_next_alarm(NULL);
 			if (alarm_next_alarm)
 			{
+#if defined(ALARM_DEBUGGING)
+	debug_print("Alarms: Re-enabling the timer\n");
+#endif
 				alarm_enable_timer();
 			}
 		}
+#if defined(ALARM_DEBUGGING)
+	debug_print("Alarms: Deleting timer\n");
+#endif
 		alarm_delete(alarm);
 	}
 	else
 	{
 		ret = ALARM_ID_UNKNOWN;
 	}
-
+#if defined(ALARM_DEBUGGING)
+	debug_print("Alarms: Removing %d result %d\n", alarm_id, ret);
+#endif
 	return ret;
 }
 

@@ -10,6 +10,7 @@
 #include "bcm2835_timer.h"
 #include "tinker_api_time.h"
 
+#include "kernel/kernel_assert.h"
 #include "kernel/console/print_out.h"
 
 #define CONTROL_OFFSET 0
@@ -48,6 +49,7 @@ static void bcm2835_timer_setup(
 			case 3: offset = CLOCK_TIMER_COMPARE_3; break;
 			default: offset = 0; break;
 		}
+		kernel_assert("BCM2835 timer has an invalid offset", offset != 0);
 		if (offset != 0)
 		{
 			const uint32_t old_control = in_u32((uint32_t*)(((uint8_t*)data->base) + CONTROL_OFFSET));
@@ -91,10 +93,11 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 			case 3: offset = CLOCK_TIMER_COMPARE_3; break;
 			default: offset = 0; break;
 			}
+			kernel_assert("BCM2835 timer cancel offset is invalid", offset != 0);
 			if (offset != 0)
 			{
 				// read the control
-				const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
+				uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
 				if (control & (1 << data->instance))
 				{
 					// clear the bit in control
@@ -104,6 +107,10 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 							data->instance, data->base, CONTROL_OFFSET, control, (1 << data->instance));
 #endif
 				}
+			}
+			else
+			{
+				kernel_panic();
 			}
 		}
 	}
@@ -124,7 +131,11 @@ static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t pa
 #if defined(TIMER_DEBUGGING)
 			debug_print("BCM2835: Calling back to %x\n", data->callback);
 #endif
+			// FIXME this is corrupting the stack
 			data->callback(context);
+#if defined(TIMER_DEBUGGING)
+			debug_print("BCM2835: Called back\n");
+#endif
 			result = NO_ERROR;
 		}
 		else
@@ -196,7 +207,7 @@ void bcm2835_reset_timer(const timer_t * const timer)
 
 static uint64_t bcm2835_get_time(void * const user_data)
 {
-	volatile uint64_t * const timer = (uint64_t*)((uint8_t*)user_data + CLOCK_OFFSET);
+	volatile uint64_t * const timer = (volatile uint64_t*)((uint8_t*)user_data + CLOCK_OFFSET);
 	return ((*timer) * 1000);
 }
 

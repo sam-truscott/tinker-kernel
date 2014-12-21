@@ -17,11 +17,13 @@
 	{ \
 		*((volatile T *)(addr)) = value; \
 		asm volatile ("mcr	p15, 0, r0, c7, c10, 4"); \
+		asm volatile("" ::: "memory"); \
 	}
 
 #define in_(N,T) \
 	static inline T in_##N(const T * const addr) \
 	{ \
+		asm volatile("" ::: "memory"); \
 		asm volatile ("mcr	p15, 0, r0, c7, c10, 4"); \
 		return *((volatile T*)(addr)); \
 	}

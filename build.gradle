@@ -31,6 +31,7 @@ model {
                 cCompiler.withArguments { args ->
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-fpic"
+                    args << "-marm"
                     args << "-DVIRTUAL_ADDRESS_SPACE=0"
                     args << "-UARCH_HAS_MMU"
                 }
@@ -47,6 +48,7 @@ model {
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
                     args << "-fpic"
+                    args << "-marm"
                     args << "-DVIRTUAL_ADDRESS_SPACE=0u"
                     args << "-UARCH_HAS_MMU"
                 }
@@ -110,7 +112,8 @@ libraries {
 
 executables {
     armRaspPi {
-        targetPlatforms "tinkerArmHardVfp"
+        //targetPlatforms "tinkerArmHardVfp"
+        targetPlatforms "tinkerArmSoft"
         binaries.all {
             File srcDir = new File('src')
             linker.args "-lgcc",
