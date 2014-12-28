@@ -260,10 +260,8 @@ static void kshell_task_list(void)
 
 static void kshell_object_table(void)
 {
-	process_list_it_t * list = NULL;
+	process_list_it_t * const list = proc_list_procs();
 	process_t * proc = NULL;
-
-	list = proc_list_procs();
 	process_list_it_t_get(list, &proc);
 
 	while (proc)
@@ -277,12 +275,11 @@ static void kshell_object_table(void)
 		if (it)
 		{
 			object_t * obj = NULL;
-
 			object_table_it_t_get(it, &obj);
 
 			while (obj)
 			{
-				object_type_t type = obj_get_type(obj);
+				const object_type_t type = obj_get_type(obj);
 
 				printp_out("%d\t", obj_get_number(obj));
 				printp_out("%s\t", ksh_object_types[type]);
@@ -331,11 +328,13 @@ static void kshell_object_table(void)
 						{
 							printp_out("Name:\t%s, ", obj_pipe_get_name(p));
 							tinker_pipe_direction_t const dir = obj_pipe_get_direction(p);
+							printp_out("%s, ", ksh_pipe_dir[obj_pipe_get_direction(p)]);
 							switch (dir)
 							{
+								case PIPE_SEND:
+									break;
 								case PIPE_SEND_RECEIVE:
 								case PIPE_RECEIVE:
-									printp_out("%s, ", ksh_pipe_dir[obj_pipe_get_direction(p)]);
 									printp_out("Total: %d, ", obj_pipe_get_total_messages(p));
 									printp_out("Free: %d, ", obj_pipe_get_free_messages(p));
 									printp_out("Sz: %d, ", obj_pipe_get_msg_size(p));
@@ -377,7 +376,7 @@ static void kshell_object_table(void)
 
 				print_out("\n");
 
-				if ( !object_table_it_t_next(it, &obj))
+				if (!object_table_it_t_next(it, &obj))
 				{
 					obj = NULL;
 				}
