@@ -77,7 +77,7 @@
 	{ \
 		bool_t ok = false; \
 		\
-		if ( it && item ) \
+		if (it && item) \
 		{ \
 			if ( it->map_entry ) \
 			{ \
@@ -108,7 +108,7 @@
 			} \
 			if (!ok) \
 			{ \
-				for ( uint32_t b = it->bucket + 1 ; b < (MAP_CAPACITY/BUCKET_SIZE) ; b++ ) \
+				for ( uint32_t b = it->bucket + 1 ; b < (MAP_CAPACITY/BUCKET_SIZE) && !ok ; b++ ) \
 				{ \
 					if ( it->map->buckets[b] ) \
 					{ \
