@@ -145,7 +145,7 @@
 				bool found = false; \
 				if (it->map->buckets[b]) \
 				{ \
-					for (uint32_t e = 0 ; e < BUCKET_SIZE ; e++) \
+					for (uint32_t e = 0 ; e < BUCKET_SIZE && !found; e++) \
 					{ \
 						if (it->map->buckets[b]->entries[e]) \
 						{ \
