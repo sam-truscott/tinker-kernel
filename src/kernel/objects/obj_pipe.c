@@ -36,8 +36,8 @@ typedef struct rx_data
 	uint32_t write_msg_position;
 	uint32_t message_size;
 	object_thread_t * blocked_owner;
-	uint8_t* read_msg_ptr;
-	uint8_t* write_msg_ptr;
+	uint8_t * read_msg_ptr;
+	uint8_t * write_msg_ptr;
 	pipe_list_t * senders;
 } rx_data_t;
 
@@ -50,12 +50,12 @@ typedef struct tx_data
 typedef struct object_pipe_t
 {
 	object_internal_t object;
-	registry_key_t name;
 	tinker_pipe_direction_t direction;
-	rx_data_t rx_data;
-	tx_data_t tx_data;
+	registry_key_t name;
 	mem_pool_info_t * pool;
 	uint8_t * memory;
+	rx_data_t rx_data;
+	tx_data_t tx_data;
 } object_pipe_internal_t;
 
 object_pipe_t * obj_cast_pipe(object_t * const o)
@@ -87,7 +87,7 @@ static bool_t pipe_can_receive(const object_pipe_t * const pipe)
 {
 	return pipe
 			&& ((pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
-			&& (pipe->rx_data.free_messages > 0));
+			&& pipe->rx_data.free_messages > 0);
 }
 
 static void pipe_receive_message(
@@ -150,8 +150,7 @@ static bool_t pipe_can_send_to_all(
 	bool_t can_send_all = true;
 
 	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-	const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
-	if (has_any_receivers)
+	if (pipe_list_it_t_get(&it, &receiver))
 	{
 		while(receiver)
 		{
@@ -221,10 +220,14 @@ error_t obj_create_pipe(
 #if defined(PIPE_DEBUGGING)
 				debug_print("Pipe: Memory at %x\n", memory);
 #endif
-				rx_queue = pipe_list_t_create(pool);
-				if (!rx_queue)
+				if (result == NO_ERROR)
 				{
-					result = OUT_OF_MEMORY;
+					util_memset(memory, 0, total_size);
+					rx_queue = pipe_list_t_create(pool);
+					if (!rx_queue)
+					{
+						result = OUT_OF_MEMORY;
+					}
 				}
 			}
 				break;
