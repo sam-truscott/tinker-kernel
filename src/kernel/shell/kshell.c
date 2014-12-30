@@ -84,7 +84,7 @@ void kshell_start(void)
 			&input_pipe,
 			"in",
 			PIPE_RECEIVE,
-			1,
+			4,
 			MAX_LINE_INPUT);
 	if (input_result != NO_ERROR)
 	{

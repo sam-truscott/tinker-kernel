@@ -202,16 +202,24 @@ error_t obj_create_pipe(
 				/* no break */
 			case PIPE_RECEIVE:
 			{
-				uint32_t total_size = (message_size * messages) + (messages * sizeof(uint32_t));
-				while ((total_size % MMU_PAGE_SIZE) != 0)
+				if ((message_size % 4) != 0)
 				{
-					total_size++;
+					result = PIPE_MESSAGE_SIZE_NOT_ALIGNED;
 				}
-				memory = (uint8_t*)mem_alloc_aligned(
-						pool, total_size, MMU_PAGE_SIZE);
-				if (!memory)
+				uint32_t total_size;
+				if (result == NO_ERROR)
 				{
-					result = OUT_OF_MEMORY;
+					total_size = (message_size * messages) + (messages * sizeof(uint32_t));
+					while ((total_size % MMU_PAGE_SIZE) != 0)
+					{
+						total_size++;
+					}
+					memory = (uint8_t*)mem_alloc_aligned(
+							pool, total_size, MMU_PAGE_SIZE);
+					if (!memory)
+					{
+						result = OUT_OF_MEMORY;
+					}
 				}
 #if defined(PIPE_DEBUGGING)
 				debug_print("Pipe: Memory at %x\n", memory);
