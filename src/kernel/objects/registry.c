@@ -178,6 +178,9 @@ error_t registry_get(
 	{
 		ret = OBJECT_NOT_IN_REGISTRY;
 	}
+#if defined(REGISTRY_DEBUGGING)
+	debug_print("Registry: Get entry %s, ret %d, objno %d\n", name, ret, *objno);
+#endif
 	return ret;
 }
 

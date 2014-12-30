@@ -51,11 +51,11 @@ typedef struct object_pipe_t
 {
 	object_internal_t object;
 	tinker_pipe_direction_t direction;
-	registry_key_t name;
 	mem_pool_info_t * pool;
 	uint8_t * memory;
 	rx_data_t rx_data;
 	tx_data_t tx_data;
+	char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 } object_pipe_internal_t;
 
 object_pipe_t * obj_cast_pipe(object_t * const o)
@@ -136,11 +136,6 @@ static inline bool_t pipe_is_sender(const object_pipe_t * const pipe)
 	return ((pipe->direction == PIPE_SEND) || (pipe->direction == PIPE_SEND_RECEIVE));
 }
 
-static inline bool_t pipe_is_receiver_sender(const object_pipe_t * const pipe)
-{
-	return (pipe->direction == PIPE_SEND_RECEIVE);
-}
-
 static bool_t pipe_can_send_to_all(
 		const object_pipe_t * const pipe,
 		const bool_t blocking)
@@ -179,7 +174,7 @@ error_t obj_create_pipe(
 	error_t result = NO_ERROR;
 
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Creating pipe named %s\n", name);
+	debug_print("Pipe: Creating pipe named %s direction %d\n", name, direction);
 #endif
 
 	if (process && objectno)
@@ -194,6 +189,7 @@ error_t obj_create_pipe(
 			pipe_list_t * rx_queue = NULL;
 			switch (direction)
 			{
+			default:
 			case PIPE_DIRECTION_UNKNOWN:
 				result = PARAMETERS_INVALID;
 				break;
@@ -242,6 +238,9 @@ error_t obj_create_pipe(
 			if (result == NO_ERROR)
 			{
 				no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
+#if defined(PIPE_DEBUGGING)
+				debug_print("Creating pipe at %x\n", no);
+#endif
 				object_number_t objno;
 				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
@@ -253,8 +252,8 @@ error_t obj_create_pipe(
 					no->memory = memory;
 					no->tx_data.readers = rx_queue;
 					no->rx_data.senders = tx_queue;
-					util_memset(no->name, 0, sizeof(registry_key_t));
-					util_memcpy(no->name, name, util_strlen(name, sizeof(registry_key_t)));
+					util_memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
+					util_memcpy(no->name, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 					const rx_data_t rx_data = {
 							.senders = rx_queue,
 							.free_messages = messages,
@@ -308,7 +307,7 @@ error_t obj_open_pipe(
 	error_t result;
 
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Opening pipe %s\n", name);
+	debug_print("Pipe: Opening pipe %s direction %d\n", name, direction);
 #endif
 
 	process_t * other_proc = NULL;
@@ -327,9 +326,13 @@ error_t obj_open_pipe(
 			// check that the named object actually is a pipe
 			if (other_pipe)
 			{
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
+#endif
 				// we have a pipe! check that the direction is correct
 				switch(direction)
 				{
+				default:
 				case PIPE_DIRECTION_UNKNOWN:
 					result = PARAMETERS_INVALID;
 					break;
@@ -346,7 +349,7 @@ error_t obj_open_pipe(
 					}
 					break;
 				case PIPE_SEND_RECEIVE:
-					if (!pipe_is_receiver_sender(other_pipe))
+					if (!(pipe_is_receiver(other_pipe) || pipe_is_sender(other_pipe)))
 					{
 						result = PIPE_POLARITY_WRONG;
 					}
@@ -368,12 +371,14 @@ error_t obj_open_pipe(
 		registry_wait_for(thread, name);
 		result = BLOCKED_RETRY;
 	}
-
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Open direction check result %d\n", result);
+#endif
 	if (result == NO_ERROR)
 	{
 		if (process && objectno)
 		{
-			object_table_t * table = process_get_object_table(process);
+			object_table_t * const table = process_get_object_table(process);
 			if (table)
 			{
 				mem_pool_info_t * const pool = process_get_mem_pool(process);
@@ -382,6 +387,7 @@ error_t obj_open_pipe(
 				pipe_list_t * rx_queue = NULL;
 				switch (direction)
 				{
+				default:
 				case PIPE_DIRECTION_UNKNOWN:
 					result = PARAMETERS_INVALID;
 					break;
@@ -423,6 +429,9 @@ error_t obj_open_pipe(
 					}
 					break;
 				}
+#if defined(PIPE_DEBUGGING)
+				debug_print("Pipe: Open setup result %d\n", result);
+#endif
 				if (result == NO_ERROR)
 				{
 					no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
@@ -473,6 +482,9 @@ error_t obj_open_pipe(
 					}
 					else
 					{
+#if defined(PIPE_DEBUGGING)
+						debug_print("Pipe: Failed to add the pipe to the object table\n");
+#endif
 						mem_free(pool, no);
 					}
 				}
