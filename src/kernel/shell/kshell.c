@@ -381,9 +381,7 @@ static void kshell_object_table(void)
 					obj = NULL;
 				}
 			}
-
 			print_out("\n");
-
 			object_table_it_t_delete(it);
 		}
 
