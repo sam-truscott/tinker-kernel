@@ -53,7 +53,9 @@
 			 if (list->size > 0) \
 			 { \
 				 it->current = list->head; \
-			 } else { \
+			 } \
+			 else \
+			 { \
 				 it->current = NULL; \
 			 } \
 		 } \

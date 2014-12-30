@@ -101,12 +101,12 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 
 #define HASH_FUNCS_VALUE(HASH_MAP_T, KEY_T) \
 	\
-	static void HASH_MAP_T##_copy_key(HASH_MAP_T##_entry_t * const e, const KEY_T r) \
+	static inline void HASH_MAP_T##_copy_key(HASH_MAP_T##_entry_t * const e, const KEY_T r) \
 	{ \
 		util_memcpy(&e->key, &r, sizeof(KEY_T)); \
 	} \
 	\
-	static inline int32_t HASH_MAP_T##_hash(const HASH_MAP_T * const map, const KEY_T key) \
+	static int32_t HASH_MAP_T##_hash(const HASH_MAP_T * const map, const KEY_T key) \
 	{ \
 		/* use the assigned algorithm to generate the hash */ \
 		int32_t h = map->hashing_algorithm(&key, sizeof(KEY_T)); \
@@ -118,12 +118,12 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 
 #define HASH_FUNCS_POINTER(HASH_MAP_T, KEY_T) \
 	\
-	static void HASH_MAP_T##_copy_key(HASH_MAP_T##_entry_t * const e, const KEY_T r) \
+	static inline void HASH_MAP_T##_copy_key(HASH_MAP_T##_entry_t * const e, const KEY_T r) \
 	{ \
 		util_memcpy(e->key, r, sizeof(KEY_T)); \
 	} \
 	\
-	static inline int32_t HASH_MAP_T##_hash(const HASH_MAP_T * const map, const KEY_T key) \
+	static int32_t HASH_MAP_T##_hash(const HASH_MAP_T * const map, const KEY_T key) \
 	{ \
 		/* use the assigned algorithm to generate the hash */ \
 		int32_t h = map->hashing_algorithm(key, sizeof(KEY_T)); \
@@ -188,7 +188,7 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 		map->pool = pool; \
 		map->key_is_value = key_is_value; \
 		HASH_MAP_DEBUG("hashed_map: Creating %d buckets\n", MAP_CAPACITY/BUCKET_SIZE); \
-		for ( uint32_t tmp = 0 ; tmp < MAP_CAPACITY/BUCKET_SIZE ; tmp++ ) \
+		for (uint32_t tmp = 0 ; tmp < (MAP_CAPACITY/BUCKET_SIZE) ; tmp++ ) \
 		{ \
 			map->buckets[tmp] = NULL; \
 		} \
@@ -217,11 +217,11 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 	 */ \
 	PREFIX void HASH_MAP_T##_delete(HASH_MAP_T * const map) \
 	{ \
-		for (int i = 0 ; i < MAP_CAPACITY/BUCKET_SIZE ; i++) \
+		if (map) \
 		{ \
-			if (map->buckets[i]) \
+			for (uint32_t i = 0 ; i < MAP_CAPACITY/BUCKET_SIZE ; i++) \
 			{ \
-				kernel_panic(); \
+				kernel_assert("Map still has buckets", map->buckets[i]==NULL); \
 			} \
 		} \
 		\
@@ -236,17 +236,14 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 	 */ \
 	PREFIX bool_t HASH_MAP_T##_get(const HASH_MAP_T * const map, const KEY_T key, VALUE_T * const value) \
 	{ \
-		const HASH_MAP_T##_bucket_t * bucket; \
-		bool_t found = false; \
-		/* find the table entry */ \
+	    /* find the table entry */ \
 		const int32_t index = HASH_MAP_T##_index_of(map, key); \
-		bucket = (const HASH_MAP_T##_bucket_t *) \
-			map->buckets[index]; \
+		const HASH_MAP_T##_bucket_t * const bucket = (const HASH_MAP_T##_bucket_t *)map->buckets[index]; \
+		bool_t found = false; \
 		/* if found and used return the value */ \
 		if (bucket && value) \
 		{ \
-			uint32_t i; \
-			for (i=0 ; i < BUCKET_SIZE && !found ; i++) \
+			for (uint32_t i=0 ; i < BUCKET_SIZE && !found ; i++) \
 			{ \
 				if (bucket->entries[i]) \
 				{ \
@@ -271,18 +268,18 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 		if (map->size < MAP_CAPACITY) \
 		{ \
 			const int32_t index = HASH_MAP_T##_index_of(map, key); \
+			HASH_MAP_T##_bucket_t * bucket; \
 			if (!map->buckets[index]) \
 			{ \
-				map->buckets[index] = \
-					mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
-				HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
+				map->buckets[index] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
+				bucket = map->buckets[index]; \
 				util_memset(bucket, 0, sizeof(HASH_MAP_T##_bucket_t)); \
+			} else { \
+				bucket = map->buckets[index]; \
 			} \
-			HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
 			if (bucket) \
 			{ \
-				uint32_t i; \
-				for (i = 0 ; i < BUCKET_SIZE && !put_ok ; i++) \
+				for (uint32_t i = 0 ; i < BUCKET_SIZE && !put_ok ; i++) \
 				{ \
 					if (!bucket->entries[i]) \
 					{ \
@@ -318,15 +315,12 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 	PREFIX bool_t HASH_MAP_T##_remove(HASH_MAP_T * const map, const KEY_T key) \
 	{ \
 		 bool_t ok = false; \
-		 HASH_MAP_T##_bucket_t * bucket = NULL; \
-		 \
 		 const int32_t index = HASH_MAP_T##_index_of(map, key); \
-		 bucket = map->buckets[index]; \
+		 HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
 		 if (bucket) \
 		 { \
-			 uint32_t i; \
 			 uint8_t c = 0; \
-			 for (i = 0 ; i < BUCKET_SIZE; i++) \
+			 for (uint32_t i = 0 ; i < BUCKET_SIZE; i++) \
 			 { \
 				 if (bucket->entries[i]) \
 				 { \
@@ -385,9 +379,8 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 			HASH_MAP_DEBUG("hashed_map: checking for key in bucket %d\n", index); \
 			if (map->buckets[index]) \
 			{ \
-				uint32_t i; \
-				const HASH_MAP_T##_bucket_t * bucket = map->buckets[index]; \
-				for (i = 0 ; i < BUCKET_SIZE && !found ; i++) \
+				const HASH_MAP_T##_bucket_t * const bucket = map->buckets[index]; \
+				for (uint32_t i = 0 ; i < BUCKET_SIZE && !found ; i++) \
 				{ \
 					if (bucket->entries[i]) \
 					{ \

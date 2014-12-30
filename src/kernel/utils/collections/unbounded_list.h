@@ -122,7 +122,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 	 */ \
 	PREFIX void LIST_T##_delete(LIST_T * const list) \
 	{ \
-	UNBOUNDED_LIST_DEBUG("unbounded list: deleting %x\n, list"); \
+		UNBOUNDED_LIST_DEBUG("unbounded list: deleting %x\n, list"); \
 		if (list && list->pool) \
 		{ \
 			UNBOUNDED_LIST_DEBUG("unbounded list: deleting %x from pool %x\n", list, list->pool); \
@@ -148,20 +148,19 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		{ \
 			LIST_T##_element_t * const element = mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
-			\
 			/* initialise the new item */ \
 			if (element) \
 			{ \
 				element->item = item; \
 				element->next = NULL; \
-				if (!list->tail) \
-				{ \
-					list->head = list->tail = element; \
-				} \
-				else \
+				if (list->tail) \
 				{ \
 					list->tail->next = element; \
 					list->tail = element; \
+				} \
+				else \
+				{ \
+					list->head = list->tail = element; \
 				} \
 				list->size++; \
 				ret = true; \
@@ -181,13 +180,10 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		{ \
 			LIST_T##_element_t * const element = mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
-			\
 			if (element) \
 			{ \
 				/* get the head of the list */ \
 				LIST_T##_element_t * e = list->head; \
-				uint32_t p = 0; \
-				\
 				/* setup our new element */ \
 				element->item = item; \
 				element->next = NULL; \
@@ -195,7 +191,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 				if (index) \
 				{ \
 					/* get the index we need */ \
-					for ( ; p < index - 1; p++ ) \
+					for (uint32_t p = 0 ; p < index - 1; p++ ) \
 					{ \
 						if (e->next) \
 						{ \
@@ -222,7 +218,6 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 					} \
 					\
 					e->next = element; \
-					\
 					ok = true; \
 					list->size++; \
 				} \
@@ -245,12 +240,11 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 			{ \
 				LIST_T##_element_t * e = list->head; \
 				LIST_T##_element_t * p = e; \
-				uint32_t c = 0; \
 				/*
 				 * find the right element, keeping track
 				 * of the previous one
 				 */ \
-				for ( ; c < index ; c++ ) \
+				for (uint32_t c = 0 ; c < index ; c++ ) \
 				{ \
 					if (e && e->next) \
 					{ \
@@ -322,8 +316,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		if (list && list->size) \
 		{ \
 			LIST_T##_element_t * e = list->head; \
-			uint32_t p = 0; \
-			for ( ; p < list->size ; p++ ) \
+			for (uint32_t p = 0 ; p < list->size ; p++ ) \
 			{ \
 				if (e->item == item) \
 				{ \
@@ -371,8 +364,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		if (list->size > index) \
 		{ \
 			LIST_T##_element_t * e = list->head; \
-			uint32_t p = 0; \
-			for ( ; p < index ; p++ ) \
+			for (uint32_t p = 0 ; p < index ; p++ ) \
 			{ \
 				if (e->next) \
 				{ \
@@ -380,7 +372,8 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 				} \
 				else \
 				{ \
-					e = NULL; break; \
+					e = NULL; \
+					break; \
 				} \
 			} \
 			if (e && item_ptr) \
@@ -400,8 +393,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		bool_t ret = false; \
 		\
 		LIST_T##_element_t * e = list->head; \
-		uint32_t p = 0; \
-		for ( ; p < list->size ; p++ ) \
+		for (uint32_t p = 0 ; p < list->size ; p++ ) \
 		{ \
 			if (e->item == current) \
 			{ \
