@@ -7,7 +7,7 @@
 #include "malloc_config.h"
 #include "malloc_failure.h"
 
-extern void memcpy(void * dst, const void * src, const uint32_t size);
+#define memcpy util_memcpy
 
 #pragma GCC optimize ("-O3")
 
