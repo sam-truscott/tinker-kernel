@@ -452,8 +452,8 @@ error_t obj_open_pipe(
 						no->direction = direction;
 						no->pool = pool;
 						no->memory = memory;
-						util_memset(no->name, 0, sizeof(registry_key_t));
-						util_memcpy(no->name, name, util_strlen(name, sizeof(registry_key_t)));
+						util_memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
+						util_memcpy(no->name, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 						const rx_data_t rx_data = {
 								.senders = rx_queue,
 								.free_messages = messages,

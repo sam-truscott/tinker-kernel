@@ -15,8 +15,6 @@
 #include "kernel/process/process.h"
 #include "kernel/objects/obj_thread.h"
 
-typedef char registry_key_t[MAX_SHARED_OBJECT_NAME_LENGTH];
-
 void registry_initialise(mem_pool_info_t * const pool);
 
 error_t regsitery_add(

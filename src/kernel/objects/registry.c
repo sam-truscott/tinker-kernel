@@ -19,6 +19,8 @@ typedef struct registry_entry
 	object_number_t objno;
 } registry_entry_t;
 
+typedef char registry_key_t[MAX_SHARED_OBJECT_NAME_LENGTH];
+
 HASH_MAP_TYPE_T(registry_t)
 HASH_MAP_INTERNAL_TYPE_T(registry_t, registry_key_t, registry_entry_t, MAX_SHARED_OBJECTS, 16)
 HASH_MAP_SPEC_CREATE(static, registry_t)
