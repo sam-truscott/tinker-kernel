@@ -192,25 +192,23 @@ void sch_notify_exit_thread(thread_t * const t)
 #if defined(PROCESS_DEBUGGING)
 		debug_print("Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
-
 		if (removed && thread_queue_t_size(sch_active_queue) == 0)
 		{
 			/* pop the one we're using off */
 			queue_stack_t_pop(&sch_queue_stack, &sch_active_queue);
 			/* pop the next queue off the stack - if one can't be found
 			 * perform a slow search */
-			if (!queue_stack_t_front(&sch_queue_stack, &sch_active_queue))
-			{
-				sch_priority_find_next_queue(t);
-			}
-			else
+			if (queue_stack_t_front(&sch_queue_stack, &sch_active_queue))
 			{
 				thread_t * first_thread = NULL;
 				if (thread_queue_t_front(sch_active_queue, &first_thread))
 				{
-					const priority_t tp = thread_get_priority(first_thread);
-					sch_current_priority = tp;
+					sch_current_priority = thread_get_priority(first_thread);
 				}
+			}
+			else
+			{
+				sch_priority_find_next_queue(t);
 			}
 		}
 	}
@@ -322,7 +320,6 @@ void sch_set_context_for_next_thread(
 		const thread_state_t thread_state)
 {
 	thread_t * const current_thread = sch_current_thread;
-
 	if (sch_active_queue)
 	{
 		thread_queue_t_front(sch_active_queue, &sch_current_thread);
@@ -336,6 +333,7 @@ void sch_set_context_for_next_thread(
 		const bool_t reorder_ok = thread_queue_t_reorder_first(sch_active_queue);
 		kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const thread_state_t state = thread_get_state(sch_current_thread);
+
 		if (state == THREADY_READY)
 		{
 			thread_set_state(sch_current_thread, THREAD_RUNNING);
@@ -367,6 +365,5 @@ void sch_set_context_for_next_thread(
         // update the current process after the switch
         sch_current_process = thread_get_parent(sch_current_thread);
 	}
-
 	kernel_assert("Scheduler couldn't get next thread", sch_current_thread != NULL);
 }
