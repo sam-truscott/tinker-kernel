@@ -98,11 +98,10 @@ These are the things I need to address in a rough order:
 * Target: ARM support (Raspberry Pi)
 	* Hardware sleep support in idle
 	* Add ARM MMU support
-* Kernel: Shell should use pipes for reading I/O
 * Kernel: Timeouts on pipe (open/read/write)
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
-* Kernel: Add DMA support for pipes    
+* Kernel: Add DMA support for pipes
 * Kernel: Break up the syscalls into seperate static/inline functions
 * Kernel: Add mechanism to load elfs
 * Support: Create newlib port
