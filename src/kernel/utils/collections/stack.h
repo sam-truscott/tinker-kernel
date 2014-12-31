@@ -43,7 +43,8 @@
 		UNBOUNDED_LIST_SPEC_ADD(PREFIX, STACK_T##_list_t, ITEM_T)
 #define STACK_SPEC_POP(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_pop(STACK_T * const stack, ITEM_T * const item); \
-		UNBOUNDED_LIST_SPEC_REMOVE(PREFIX, STACK_T##_list_t, ITEM_T)
+		UNBOUNDED_LIST_SPEC_GET_TAIL(PREFIX, STACK_T##_list_t, ITEM_T) \
+		UNBOUNDED_LIST_SPEC_REMOVE_TAIL(PREFIX, STACK_T##_list_t)
 #define STACK_SPEC_FRONT(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_front(const STACK_T * const stack, ITEM_T * const item);
 #define STACK_SPEC_SIZE(PREFIX, STACK_T, ITEM_T) \
@@ -87,11 +88,16 @@
 	{ \
 		if (stack) \
 		{ \
+			mem_pool_info_t * pool = NULL; \
 			if (stack->list) \
 			{ \
+				pool = stack->list->pool; \
 				STACK_T##_list_t_delete(stack->list);\
 			} \
-			mem_free(stack->list->pool, stack); \
+			if (pool != NULL) \
+			{ \
+				mem_free(pool, stack); \
+			} \
 		} \
 	}
 #define STACK_BODY_PUSH(PREFIX, STACK_T, ITEM_T) \
@@ -112,7 +118,6 @@
 	PREFIX bool_t STACK_T##_insert(STACK_T * const stack, const uint32_t index, ITEM_T item) \
 	{ \
 		bool_t ok = false; \
-		\
 		if (stack) \
 		{ \
 			ok = STACK_T##_list_t_insert(stack->list, index, item); \
@@ -121,7 +126,8 @@
 	}
 #define STACK_BODY_POP(PREFIX, STACK_T, ITEM_T) \
 	\
-	UNBOUNDED_LIST_BODY_REMOVE(PREFIX, STACK_T##_list_t, ITEM_T) \
+	UNBOUNDED_LIST_BODY_REMOVE_TAIL(PREFIX, STACK_T##_list_t) \
+	UNBOUNDED_LIST_BODY_GET_TAIL(PREFIX, STACK_T##_list_t, ITEM_T) \
 	\
 	PREFIX bool_t STACK_T##_pop(STACK_T * const stack, ITEM_T * const item) \
 	{ \
@@ -129,10 +135,9 @@
 		\
 		if (stack && item) \
 		{ \
-			const uint32_t index = STACK_T##_list_t_size(stack->list) - 1; \
-			if ((ok = STACK_T##_list_t_get(stack->list, index, item))) \
+			if ((ok = STACK_T##_list_t_get_tail(stack->list, item))) \
 			{ \
-				STACK_T##_list_t_remove(stack->list, index); \
+				STACK_T##_list_t_remove_tail(stack->list); \
 			} \
 		} \
 		\
@@ -145,8 +150,7 @@
 		\
 		if (stack && item) \
 		{ \
-			const uint32_t index = STACK_T##_list_t_size(stack->list) - 1; \
-			ok = STACK_T##_list_t_get(stack->list, index, item); \
+			ok = STACK_T##_list_t_get_tail(stack->list, item); \
 		} \
 		\
 		return ok; \
