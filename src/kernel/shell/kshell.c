@@ -77,7 +77,9 @@ void kshell_start(void)
 	ksh_input_pointer = 0;
 	bool_t running = true;
 
+#if defined(KERNEL_SHELL_DEBUG)
 	printp_out("KSHELL\n");
+#endif
 
 	tinker_pipe_t input_pipe = INVALID_OBJECT_ID;
 	error_t input_result = tinker_open_pipe(
@@ -101,7 +103,9 @@ void kshell_start(void)
 				(const void**)&received,
 				&bytesReceived,
 				true);
+#if defined(KERNEL_SHELL_DEBUG)
 		printp_out("KSHELL %d got %d bytes\n", read_status, *bytesReceived);
+#endif
 		if (read_status == NO_ERROR)
 		{
 			error_t ack = tinker_received_message(input_pipe);
@@ -286,6 +290,7 @@ static void kshell_object_table(void)
 
 				switch (type)
 				{
+					default:
 					case UNKNOWN_OBJ:
 					case OBJECT:
 						break;

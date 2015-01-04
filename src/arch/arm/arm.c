@@ -19,6 +19,8 @@
 void tgt_initialise(void)
 {
     // TODO initialise the core system registers
+	// TODO disable MMU
+	// TODO clear tlbs
 }
 
 error_t tgt_initialise_process(process_t * const process)
@@ -28,6 +30,7 @@ error_t tgt_initialise_process(process_t * const process)
     if (!process_is_kernel(process))
     {
         tgt_mem_t segment_info;
+        segment_info.unused = 0;
         // TODO setup the mem info
         process_set_mem_info(process, &segment_info);
 
@@ -80,8 +83,6 @@ void tgt_initialise_context(
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
-        // TODO initialise the other registers
-        // use kernel_mode to set stuff up
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
         if (kernel_mode)
         {

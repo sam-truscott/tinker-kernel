@@ -4,10 +4,13 @@ Tinker Hybrid Kernel
 Hybrid Kernel written in C and assembly.
 
 Supported targets:
-- PowerPC (gdb simulator)
+# PowerPC
+- gdb simulator (aka PSIM)
+
+# ARM
+- Raspberry Pi
 
 In development:
-- arm6 (Raspberry Pi)
 
 Licence
 =======
@@ -94,22 +97,16 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Tickless idle
 * Target: ARM support (Raspberry Pi)
-	* Hardware sleep support in idle
 	* Add ARM MMU support
-* Kernel: Timeouts on pipe (open/read/write)
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
 * Kernel: Add DMA support for pipes
-* Kernel: Break up the syscalls into seperate static/inline functions
-* Kernel: Add mechanism to load elfs
+* Kernel: Break up the syscalls into separate static/inline functions
 * Support: Create newlib port
+* Kernel: Add mechanism to load elfs
 * Support: Create bootstrap for kernel + services
-* Kernel: Option to make pipes zero-copy via MMU (memory is already aligned)
-* Target: Review the powerpc page table code
-* Target: x86 support
-* All: Need to review it all head to toe since refactor
+* Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
 
 Toolchain

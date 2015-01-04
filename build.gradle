@@ -74,7 +74,8 @@ model {
 
 libraries {
     // the base (headers)
-    base {}
+    base {
+    }
     // architectures
     archArm {
         targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
@@ -83,7 +84,8 @@ libraries {
         targetPlatforms "tinkerPpc"
     }
     // the core
-    core {}
+    core {
+    }
     // drivers
     driverIntcOpic {
     	targetPlatforms "tinkerPpc"
@@ -100,20 +102,22 @@ libraries {
     driverTimerPpc32tbr {
     	targetPlatforms "tinkerPpc"
     }
-    driverSerialUart16550 {}
+    driverSerialUart16550 {
+    }
     driverSerialBcm2835 {
     	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
     }
     // low-level
-    boot {}
+    boot {
+    }
     // api
-    api {}
+    api {
+    }
 }
 
 executables {
     armRaspPi {
-        //targetPlatforms "tinkerArmHardVfp"
-        targetPlatforms "tinkerArmSoft"
+        targetPlatforms "tinkerArmHardVfp"
         binaries.all {
             File srcDir = new File('src')
             linker.args "-lgcc",
@@ -339,9 +343,10 @@ sources {
                 "-UALARM_DEBUGGING",
                 "-UREGISTRY_DEBUGGING",
                 "-UPIPE_DEBUGGING",
-                "-UIDLE_DEBUGGING"
+                "-UIDLE_DEBUGGING",
+                "-UKERNEL_SHELL_DEBUG"
         } else if (buildType == buildTypes.release) {
-            cCompiler.args "-Ofast",
+            cCompiler.args "-Os",
                 "-g0"
             linker.args "-s"
         }
