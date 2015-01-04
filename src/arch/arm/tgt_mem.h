@@ -18,8 +18,6 @@ typedef struct tgt_mem
     uint32_t unused;
 } tgt_mem_t;
 
-typedef uint32_t ppc32_pteg_t;
-
-typedef ppc32_pteg_t* tgt_pg_tbl_t;
+typedef void* tgt_pg_tbl_t;
 
 #endif /* TGT_MEM_H_ */
