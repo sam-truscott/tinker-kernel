@@ -12,15 +12,15 @@
 #include "config.h"
 #include "arm_cpsr.h"
 #include "arm_vec.h"
+#include "arm_mmu.h"
 
 #include "tinker_api_types.h"
 #include "kernel/interrupts/interrupt_manager.h"
 
 void tgt_initialise(void)
 {
-    // TODO initialise the core system registers
-	// TODO disable MMU
-	// TODO clear tlbs
+	arm_disable_mmu();
+	arm_invalidate_all_tlbs();
 }
 
 error_t tgt_initialise_process(process_t * const process)
