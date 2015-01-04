@@ -227,9 +227,6 @@ static error_t ppc_setup_paged_area(
 		const tgt_mem_t * const segment_info,
 		const mem_section_t * const mem_sec)
 {
-	uint32_t w0 = 0;
-	uint32_t w1 = 0;
-
 	const uint32_t real_addr = mem_sec_get_real_addr(mem_sec);
 	const uint32_t size = mem_sec_get_size(mem_sec);
 	const uint32_t virt_addr = mem_sec_get_virt_addr(mem_sec);
@@ -257,6 +254,8 @@ static error_t ppc_setup_paged_area(
 
 	for (uint32_t page = 0 ; page < pages ; page++)
 	{
+		uint32_t w0 = 0;
+		uint32_t w1 = 0;
 		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t vsid = segment_info->segment_ids[PPC_GET_SEGMENT_INDEX(page_virtual_address)];
@@ -317,9 +316,6 @@ static void ppc_remove_paged_area(
 	const mmu_memory_t mem_type = mem_sec_get_mem_type(mem_sec);
 	const mmu_access_t access = mem_sec_get_access(mem_sec);
 
-	uint32_t w0 = 0;
-	uint32_t w1 = 0;
-
 	uint32_t pages = size / MMU_PAGE_SIZE;
 	if ((size % MMU_PAGE_SIZE) !=0)
 	{
@@ -328,6 +324,8 @@ static void ppc_remove_paged_area(
 
 	for (uint32_t page = 0 ; page < pages ; page++)
 	{
+		uint32_t w0 = 0;
+		uint32_t w1 = 0;
 		const uint32_t page_virtual_address = (virt_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t page_real_address = (real_addr + (page * MMU_PAGE_SIZE));
 		const uint32_t vsid = segment_info->segment_ids[PPC_GET_SEGMENT_INDEX(page_virtual_address)];

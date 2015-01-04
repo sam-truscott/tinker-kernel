@@ -26,5 +26,5 @@ void* memset(void * address, uint32_t value, uint32_t size)
 #pragma GCC optimize ("-O2") // this code screws up on -O3
 void* util_memset(void * address, uint32_t value, uint32_t size)
 {
-	return __builtin_memset(address, value, size);
+	return memset(address, value, size);
 }

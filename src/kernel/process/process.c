@@ -210,12 +210,22 @@ error_t process_create(
 
 uint32_t process_get_pid(const process_t * const process)
 {
-	return process->process_id;
+	uint32_t pid = 0;
+	if (process)
+	{
+		pid = process->process_id;
+	}
+	return pid;
 }
 
 const char * process_get_image(const process_t * const process)
 {
-	return process->image;
+	const char * image = NULL;
+	if (process)
+	{
+		image = process->image;
+	}
+	return image;
 }
 
 object_number_t process_get_oid(const process_t * const process)
@@ -227,33 +237,55 @@ void process_set_oid(
 		process_t * const process,
 		const object_number_t oid)
 {
+	kernel_assert("process is null", process != NULL);
 	process->object_number = oid;
 }
 
 bool_t process_is_kernel(const process_t * const process)
 {
-	return process->kernel_process;
+	bool_t is_kernel = false;
+	if (process)
+	{
+		is_kernel = process->kernel_process;
+	}
+	return is_kernel;
 }
 
 mem_pool_info_t * process_get_mem_pool(const process_t * const process)
 {
-	return process->memory_pool;
+	mem_pool_info_t * pool = NULL;
+	if (process)
+	{
+		pool = process->memory_pool;
+	}
+	return pool;
 }
 
 object_table_t * process_get_object_table(const process_t * const process)
 {
-	return process->object_table;
+	object_table_t * table = NULL;
+	if (process)
+	{
+		table = process->object_table;
+	}
+	return table;
 }
 
 const tgt_mem_t * process_get_mem_info(const process_t * const process)
 {
-	return &process->mem_info;
+	const tgt_mem_t * mem_info = NULL;
+	if (process)
+	{
+		mem_info = &process->mem_info;
+	}
+	return mem_info;
 }
 
 void process_set_mem_info(
 		process_t * const process,
 		const tgt_mem_t * const seg)
 {
+	kernel_assert("process is null", process != NULL);
 	util_memcpy(
 			&process->mem_info,
 			seg,
@@ -265,6 +297,7 @@ bool_t process_add_thread(
 		thread_t * const thread,
 		object_number_t * const objno)
 {
+	kernel_assert("process is null", process != NULL);
 	bool_t ret = false;
 	const uint32_t thread_count = thread_map_t_size(process->threads);
 	if ( thread_count < MAX_THREADS )
@@ -310,17 +343,28 @@ bool_t process_add_thread(
 
 thread_t * process_get_main_thread(const process_t * process)
 {
-	return process->initial_thread;
+	thread_t * initial = NULL;
+	if (process)
+	{
+		initial = process->initial_thread;
+	}
+	return initial;
 }
 
 uint32_t process_get_thread_count(const process_t * process)
 {
+	kernel_assert("process is null", process != NULL);
 	return thread_map_t_size(process->threads);
 }
 
 const mem_section_t * process_get_first_section(const process_t * const process)
 {
-	return process->first_section;
+	mem_section_t * mem_section = NULL;
+	if (process)
+	{
+		mem_section = process->first_section;
+	}
+	return mem_section;
 }
 
 void process_thread_exit(process_t * const process, thread_t * const thread)
@@ -565,10 +609,20 @@ void process_free_vmem(
 
 thread_it_t * process_iterator(const process_t * const process)
 {
-	return thread_it_t_create(process->threads);
+	thread_it_t * it = NULL;
+	if (process)
+	{
+		it = thread_it_t_create(process->threads);
+	}
+	return it;
 }
 
 const tgt_pg_tbl_t * process_get_page_table(const process_t * const process)
 {
-	return process->page_table;
+	tgt_pg_tbl_t * table = NULL;
+	if (process)
+	{
+		table = process->page_table;
+	}
+	return table;
 }

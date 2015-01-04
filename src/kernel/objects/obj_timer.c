@@ -74,7 +74,7 @@ static void obj_timer_timeout(
 #if defined(TIMER_DEBUGGING)
 	debug_print("Timer: My alarm is id %d, fired alarm is %d\n", timer->alarm_id, alarm_id);
 #endif
-	if (timer && alarm_id == timer->alarm_id)
+	if (timer && (alarm_id == timer->alarm_id))
 	{
 		thread_set_state(timer->callback_thread, THREADY_READY);
 		thread_set_waiting_on(timer->callback_thread, NULL);

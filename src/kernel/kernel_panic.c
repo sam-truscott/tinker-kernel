@@ -26,12 +26,12 @@ void kernel_panic(void)
 
 	/*
 	 * Sit in a tight loop
-	 * TODO talk to the BSP/Target
 	 */
 	while(crash!=1)
 	{
 		/*
 		 * Sit here, quietly, waiting...
 		 */
+		tgt_wait_for_interrupt();
 	}
 }

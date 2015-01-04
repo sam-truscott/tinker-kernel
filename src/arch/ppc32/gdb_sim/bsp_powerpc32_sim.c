@@ -239,13 +239,3 @@ void bsp_write_debug_char(const char c)
 {
 	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
 }
-
-char bsp_read_debug_char(void)
-{
-	char c = 0;
-	while (c == 0)
-	{
-		rs232_port_1.read_buffer(UART_1_BASE_ADDRESS,0,(void*)&c,1);
-	}
-	return c;
-}

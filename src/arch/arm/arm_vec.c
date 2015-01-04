@@ -66,56 +66,56 @@
 
 static arm_vec_handler_t * vector_table[8];
 
-static void __attribute__((naked)) arm_vector_reset()
+static void __attribute__((naked,used)) arm_vector_reset()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_RESET](VECTOR_RESET, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_undefined()
+static void __attribute__((naked,used)) arm_vector_undefined()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_UNDEFINED](VECTOR_UNDEFINED, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_prefetch_abort()
+static void __attribute__((naked,used)) arm_vector_prefetch_abort()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_PRETECH_ABORT](VECTOR_PRETECH_ABORT, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_data_abort()
+static void __attribute__((naked,used)) arm_vector_data_abort()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_DATA_ABORT](VECTOR_DATA_ABORT, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_reserved()
+static void __attribute__((naked,used)) arm_vector_reserved()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_RESERVED](VECTOR_RESERVED, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_irq()
+static void __attribute__((naked,used)) arm_vector_irq()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_IRQ](VECTOR_IRQ, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_fiq()
+static void __attribute__((naked,used)) arm_vector_fiq()
 {
 	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_FIQ](VECTOR_FIQ, context);
 	EXCEPTION_END;
 }
 
-static void __attribute__((naked)) arm_vector_system_call()
+static void __attribute__((naked,used)) arm_vector_system_call()
 {
 	EXCEPTION_START_SYSCALL;
 	vector_table[VECTOR_SYSTEM_CALL](VECTOR_SYSTEM_CALL, context);

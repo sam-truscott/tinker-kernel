@@ -21,7 +21,6 @@ void print_stack_trace(const uint32_t frame_pointer)
 {
 	const process_t * const proc = thread_get_parent(sch_get_current_thread());
 	const uint32_t * fp = (const uint32_t*)frame_pointer;
-	uint32_t pc = 0;
 	uint8_t limit = ISR_PRINT_STACKTRACE_LIMIT;
 
 	while (*fp != 0 && --limit)
@@ -38,7 +37,7 @@ void print_stack_trace(const uint32_t frame_pointer)
 #else
 		(void)proc;
 #endif
-		pc = *(fp + 1);
+		uint32_t pc = *(fp + 1);
 
 		/* TODO can we interrogate the symbol table?
 		 * not without having a separate file or embedded ourself in */

@@ -35,9 +35,7 @@ static inline object_number_t syscall_get_thread_oid(const thread_t * const thre
 
 static inline object_thread_t * syscall_get_thread_object(const thread_t * const thread)
 {
-	const process_t * const proc =  thread_get_parent(thread);
-	const object_table_t * const table = process_get_object_table(proc);
-	return (object_thread_t*)obj_get_object(table, syscall_get_thread_oid(thread));
+	return (object_thread_t*)obj_get_object(process_get_object_table(thread_get_parent(thread)), syscall_get_thread_oid(thread));
 }
 
 static error_t syscall_delete_object(
@@ -137,7 +135,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			{
 				kernel_panic();
 			}
-			ret = 0;
+			ret = NO_ERROR;
 			break;
 
 		case SYSCALL_CREATE_PROCESS:
@@ -159,7 +157,6 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			{
 				process_t * const process = thread_get_parent(this_thread);
 				thread_t * thread = NULL;
-
 				ret = proc_create_thread(
 						process,
 						(const char*)param[0],
@@ -189,15 +186,11 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			{
 				object_number_t thread_no = (object_number_t)param[0];
 				priority_t * priority = (priority_t*)param[1];
-				if ( thread_no && priority)
+				if (thread_no && priority)
 				{
-					object_table_t * table = NULL;
-					object_t * obj = NULL;
-					object_thread_t * thread_obj = NULL;
-
-					table = process_get_object_table(thread_get_parent(this_thread));
-
-					obj = obj_get_object(table, thread_no);
+					object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
+					object_t * const obj = obj_get_object(table, thread_no);
+					object_thread_t * thread_obj;
 					if (obj)
 					{
 						thread_obj = obj_cast_thread(obj);
@@ -229,8 +222,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		case SYSCALL_EXIT_THREAD:
 			{
 				process_t * const parent = thread_get_parent(this_thread);
-									const object_table_t * const table =
-											process_get_object_table(parent);
+				const object_table_t * const table = process_get_object_table(parent);
 				object_thread_t * const thread_obj
 					= obj_cast_thread(obj_get_object(table, syscall_get_thread_oid(this_thread)));
 				if (thread_obj)
@@ -298,10 +290,9 @@ void syscall_handle_system_call(tgt_context_t * const context)
 		case SYSCALL_GET_SEMAPHORE:
 		{
 			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
-			object_sema_t * sema_obj;
+			object_sema_t * sema_obj = NULL;
 
 			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
-
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
 				ret = obj_get_semaphore( thread_obj, sema_obj);
@@ -319,7 +310,6 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			object_sema_t * sema_obj = NULL;
 
 			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
-
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
 				ret = obj_release_semaphore( thread_obj, sema_obj);

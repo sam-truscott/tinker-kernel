@@ -178,18 +178,7 @@ uint32_t bsp_get_usable_memory_end()
 
 void bsp_write_debug_char(const char c)
 {
-	//rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, (void*)&c, 1);
 	bcm2835_uart_putc(c);
-}
-
-char bsp_read_debug_char(void)
-{
-	char c = 0;
-	while (c == 0)
-	{
-		c = bcm2835_uart_getc();
-	}
-	return c;
 }
 
 void tgt_wait_for_interrupt(void)

@@ -13,6 +13,7 @@
 #include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/utils/util_strlen.h"
+#include "kernel/kernel_assert.h"
 #include "tinker_api_kernel_interface.h"
 
 typedef struct thread_t
@@ -111,18 +112,29 @@ thread_t * thread_create(
 
 uint32_t thread_get_tid(const thread_t * const thread)
 {
-	return thread->thread_id;
+	uint32_t tid = 0;
+	if (thread)
+	{
+		tid = thread->thread_id;
+	}
+	return tid;
 }
 
 const char * thread_get_name(const thread_t * const thread)
 {
-	return thread->name;
+	const char * name = NULL;
+	if (thread)
+	{
+		name = thread->name;
+	}
+	return name;
 }
 
 void thread_set_tid(
 		thread_t * const thread,
 		const uint32_t tid)
 {
+	kernel_assert("thread is null", thread != NULL);
 	thread->thread_id = tid;
 }
 
@@ -130,38 +142,56 @@ void thread_set_oid(
 		thread_t * const thread,
 		const object_number_t oid)
 {
+	kernel_assert("thread is null", thread != NULL);
 	thread->object_number = oid;
 }
 
 priority_t thread_get_priority(
 		const thread_t * const thread)
 {
-	return thread->priority;
+	priority_t p = 0;
+	if (thread)
+	{
+		p = thread->priority;
+	}
+	return p;
 }
 
 void thread_set_priority(
 		thread_t * const thread,
 		const priority_t priority)
 {
+	kernel_assert("thread is null", thread != NULL);
 	thread->priority = priority;
 }
 
 process_t * thread_get_parent(
 		const thread_t * const thread)
 {
-	return thread->parent;
+	process_t * parent = NULL;
+	if (thread)
+	{
+		parent = thread->parent;
+	}
+	return parent;
 }
 
 thread_state_t thread_get_state(
 		const thread_t * const thread)
 {
-	return thread->state;
+	thread_state_t state = THREAD_NOT_CREATED;
+	if (thread)
+	{
+		state = thread->state;
+	}
+	return state;
 }
 
 void thread_set_state(
 		thread_t * const thread,
 		const thread_state_t new_state)
 {
+	kernel_assert("thread is null", thread != NULL);
 	thread->state = new_state;
 }
 
@@ -169,6 +199,7 @@ void thread_load_context(
 		const thread_t * const thread,
 		tgt_context_t * const context)
 {
+	kernel_assert("thread is null", thread != NULL);
 	tgt_load_context(thread->context, context);
 }
 
@@ -187,64 +218,99 @@ void thread_set_context_param(
 		const uint8_t index,
 		const uint32_t parameter)
 {
+	kernel_assert("thread is null", thread != NULL);
 	tgt_set_context_param(thread->context, index, parameter);
 }
 
 object_number_t thread_get_object_no(
 		const thread_t * const thread)
 {
-	return thread->object_number;
+	object_number_t object_number = INVALID_OBJECT_ID;
+	if (thread)
+	{
+		object_number = thread->object_number;
+	}
+	return object_number;
 }
 
 uint32_t thread_get_virt_stack_base(
 		const thread_t * const thread)
 {
-	return thread->v_stack_base;
+	uint32_t vsb = 0;
+	if (thread)
+	{
+		vsb = thread->v_stack_base;
+	}
+	return vsb;
 }
 
 thread_entry_point * thread_get_entry_point(
 		const thread_t * const thread)
 {
-	return thread->entry_point;
+	thread_entry_point * p = NULL;
+	if (thread)
+	{
+		p = thread->entry_point;
+	}
+	return p;
 }
 
 uint32_t thread_get_flags(
 		const thread_t * const thread)
 {
-	return thread->flags;
+	uint32_t flags = 0;
+	if (thread)
+	{
+		flags = thread->flags;
+	}
+	return flags;
 }
 
 
 const object_t * thread_get_waiting_on(
 		const thread_t * const thread)
 {
-	return thread->waiting_on;
+	const object_t * waiting_on = NULL;
+	if (thread)
+	{
+		waiting_on = thread->waiting_on;
+	}
+	return waiting_on;
 }
 
 void thread_set_waiting_on(
 		thread_t * const thread,
 		const object_t * const object)
 {
+	kernel_assert("thread is null", thread != NULL);
 	thread->waiting_on = object;
 }
 
 uint32_t thread_get_stack_size(const thread_t * const thread)
 {
-	return thread->stack_size;
+	uint32_t stack_size = 0;
+	if (thread)
+	{
+		stack_size = thread->stack_size;
+	}
+	return stack_size;
 }
 
 void thread_exit(thread_t * const thread)
 {
-	mem_pool_info_t * const pool = process_get_mem_pool(thread->parent);
+	if (thread)
+	{
+		mem_pool_info_t * const pool = process_get_mem_pool(thread->parent);
 
-	// stack
-	mem_free(pool, thread->stack);
-	thread->stack = NULL;
-	// contact
-	tgt_destroy_context(pool, thread->context);
-	thread->context = NULL;
-	// thread itself
-	mem_free(pool, thread);
+		// stack
+		mem_free(pool, thread->stack);
+		thread->stack = NULL;
+		// contact
+		tgt_destroy_context(pool, thread->context);
+		thread->context = NULL;
+		// thread itself
+		mem_free(pool, thread);
+	}
 }
 
 static void thread_end(void)

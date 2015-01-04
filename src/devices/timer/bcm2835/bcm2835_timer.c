@@ -131,7 +131,6 @@ static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t pa
 #if defined(TIMER_DEBUGGING)
 			debug_print("BCM2835: Calling back to %x\n", data->callback);
 #endif
-			// FIXME this is corrupting the stack
 			data->callback(context);
 #if defined(TIMER_DEBUGGING)
 			debug_print("BCM2835: Called back\n");

@@ -291,7 +291,6 @@ error_t uart16650_write_buffer(
 {
 	error_t retval = NO_ERROR;
 	uart_16550_device_map_t *raw_com_port = NULL;
-	uint32_t counter;
 
 	/* check that we're intending to read
 	 * from the FIFO */
@@ -310,7 +309,7 @@ error_t uart16650_write_buffer(
 
 	if ( retval == NO_ERROR )
 	{
-		for( counter=0 ; counter < src_size ; counter++ )
+		for(uint32_t counter=0 ; counter < src_size ; counter++ )
 		{
 			while ( (in_u8(&raw_com_port->reg6_msr) & 0x10) != 0x00 )
 			{
@@ -336,7 +335,6 @@ error_t uart16550_read_buffer(
 {
 	error_t retval = NO_ERROR;
 	uart_16550_device_map_t *raw_com_port = NULL;
-	uint32_t counter;
 
 	/* check that we're intending to read
 	 * from the FIFO */
@@ -355,7 +353,7 @@ error_t uart16550_read_buffer(
 
 	if ( retval == NO_ERROR )
 	{
-		for( counter=0 ; counter < dst_size ; counter++ )
+		for(uint32_t counter=0 ; counter < dst_size ; counter++ )
 		{
 			uint8_t raw_input = 0;
 

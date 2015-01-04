@@ -8,6 +8,7 @@
  */
 
 #include "tinker_api_kernel_interface.h"
+#include "kernel/kernel_assert.h"
 
 #pragma GCC optimize ("-O0")
 uint32_t TINKER_API_CALL_7(
@@ -20,10 +21,7 @@ uint32_t TINKER_API_CALL_7(
 		uint32_t param_6,
 		uint32_t param_7)
 {
-	if (api>MAX_SYSCALL)
-	{
-		tinker_debug("tinker: syscall error\n");
-	}
+	kernel_assert("tinker: syscall error\n", api<MAX_SYSCALL);
 #if !defined(__thumb__)
 	register long _r0 __asm__("r0")=(long)(api);
 	register long _r7 __asm__("r7")=(long)(param_7);
