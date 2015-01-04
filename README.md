@@ -47,15 +47,13 @@ Building
 Gradle is used as the build system. It can build debug and release versions of either the parts
 (which are static libraries) or executables
 
-For example, to build an individual target use:
+For example, to build an individual target use (in this case a Raspberry Pi kernel.img file):
 
     # Windows
-    gradlew releasePpc32GdbExecutable
-    gradlew clean debugArmRaspPiExecutable
+    gradlew debugPiBinary releasePiBinary
     
     # Linux
-    ./gradlew releasePpc32GdbExecutable
-    ./gradlew clean debugArmRaspPiExecutable
+    ./gradlew debugPiBinary releasePiBinary
     
 To build everything (all targets, debug and release) use:
 
@@ -135,12 +133,11 @@ Starting QEMU for the Raspberry Pi build
 	b kernel_main
 	# Start the kernel
 	continue
-	
-	# Convert it over to a kernel.img file
-	arm-eabi-objcopy -O binary build\binaries\armRaspPiExecutable\debug\armRaspPi.exe kernel.img
 
 # Concepts
 Below is a description of the core concepts of the kernel and the rational of any design decisions.
+## Locking
+Locking is absent as it's a single-core kernel and pre-emption in syscalls/interrupts is disabled. In the future this will change but for now it keeps it simple and small.
 ## Process & Threads
 Proceses are used as the container that stores everything related to the process - threads, objects and memory etc. As we're aiming for real-time, when a process creates a new process, any memory for the new process is allocated from the parent process. The exclusion for this is the processes initialised from the kmain() code where the process's memory is taken from the main pool. This avoids problems with possible starvation. Later on, with an ELF loader, it's possible that any new process could also be loaded from the main pool.
 ## Pipes (messaging inc. interrupts)

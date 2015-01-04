@@ -355,4 +355,26 @@ sources {
 
 binaries.withType(SharedLibraryBinary) {
      buildable false
- }
+}
+
+task debugPiBinary(type:Exec) {
+  dependsOn binaries.withType(NativeExecutableBinary).matching {
+    it.buildable && it.component.equals(executables.armRaspPi) && it.buildType.equals(buildTypes.debug)
+  }
+  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+task releasePiBinary(type:Exec) {
+  dependsOn binaries.withType(NativeExecutableBinary).matching {
+    it.buildable && it.component.equals(executables.armRaspPi) && it.buildType.equals(buildTypes.release)
+  }
+  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
