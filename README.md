@@ -99,11 +99,11 @@ These are the things I need to address in a rough order:
 	* Add ARM MMU support
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
-* Kernel: Add DMA support for pipes
 * Kernel: Break up the syscalls into separate static/inline functions
 * Support: Create newlib port
 * Kernel: Add mechanism to load elfs
 * Support: Create bootstrap for kernel + services
+* Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
 
@@ -121,7 +121,7 @@ Starting QEMU for the Raspberry Pi build
 	arm-eabi-objdump -dS build\binaries\armRaspPiExecutable\debug\armRaspPi.exe > dis.txt
 	
 	# Start a listening netcat port to listen to the UART
-	nc64 -L -p 5555 -vv
+	nc -L -p 5555 -vv
 	# Start the emulator
 	qemu-system-arm -m 512M -kernel build\binaries\armRaspPiExecutable\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:5555 -S
 
