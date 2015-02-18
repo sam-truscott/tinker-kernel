@@ -111,8 +111,7 @@ model {
 	        }
 	    }
 	    archPowerPc(NativeLibrarySpec) {
-	        targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerPpc"
 	        sources {
 		        c {
 		            lib base.static
