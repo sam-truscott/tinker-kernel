@@ -21,7 +21,7 @@ model {
                     args << "-DARCH_HAS_MMU"
                 }
             }
-            target("tinkerArm") {
+            target("tinkerArmSoft") {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
@@ -36,10 +36,34 @@ model {
                     args << "-UARCH_HAS_MMU"
                 }
             }
+            target("tinkerArmHardVfp") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "arm-eabi-gcc"
+                cCompiler.executable = "arm-eabi-gcc"
+                assembler.executable = "arm-eabi-as"
+                linker.executable = "arm-eabi-gcc"
+                staticLibArchiver.executable = "arm-eabi-ar"
+                cCompiler.withArguments { args ->
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-fpic"
+                    args << "-marm"
+                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
+                    args << "-UARCH_HAS_MMU"
+                    args << "-mfpu=vfp"
+                    args << "-mfloat-abi=hard"
+                }
+                linker.withArguments { args ->
+                	args << "-mfpu=vfp"
+                    args << "-mfloat-abi=hard"
+                }
+            }
         }
     }
     platforms {
-        tinkerArm {
+        tinkerArmSoft {
+            architecture "arm"
+        }
+        tinkerArmHardVfp {
             architecture "arm"
         }
         tinkerPpc {
@@ -51,7 +75,8 @@ model {
     components {
     	// the base (headers)
     	base(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
     		sources {
@@ -64,7 +89,8 @@ model {
     	}
     	// architectures
 	    archArm(NativeLibrarySpec) {
-	        targetPlatform "tinkerArm"
+	        targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	        sources {
 		        c {
 		            lib base.static
@@ -85,7 +111,8 @@ model {
 	        }
 	    }
 	    archPowerPc(NativeLibrarySpec) {
-	        targetPlatform "tinkerPpc"
+	        targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	        sources {
 		        c {
 		            lib base.static
@@ -107,7 +134,8 @@ model {
 	    }
 	    // the core
 	    core(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
 	    	sources {
@@ -134,7 +162,8 @@ model {
 	    	}
 	    }
 	    driverIntcBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	sources {
 		    	c {
 		    		lib base.static
@@ -146,7 +175,8 @@ model {
 	    	}
 	    }
 	    driverTimerBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	sources {
 		    	c {
 		    		lib base.static
@@ -194,7 +224,8 @@ model {
 			}
 	    }
 	    driverSerialBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	sources {
 		    	c {
 		    		lib base.static
@@ -207,7 +238,8 @@ model {
 	    }
 	    // low-level
 	    boot(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
 	    	sources {
@@ -222,7 +254,8 @@ model {
 	    }
 	    // api
 	    api(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
 	    	sources {
@@ -237,7 +270,8 @@ model {
 	    }
 	    
 	    armRaspPi(NativeExecutableSpec) {
-	        targetPlatform "tinkerArm"
+	        //targetPlatform "tinkerArmSoft"
+	    	targetPlatform "tinkerArmHardVfp"
 	        binaries.all {
 	            File srcDir = new File('src')
 	            linker.args "-lgcc",
@@ -346,7 +380,7 @@ binaries.withType(SharedLibraryBinary) {
 
 task debugPiBinary(type:Exec) {
   dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.equals(executable.armRaspPi) && it.buildType.equals(buildTypes.debug)
+    it.buildable && it.component.name.contains("armRaspPi") && it.buildType.equals(buildTypes.debug)
   }
   commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
   standardOutput = new ByteArrayOutputStream()
@@ -357,7 +391,7 @@ task debugPiBinary(type:Exec) {
 
 task releasePiBinary(type:Exec) {
   dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.equals(exebcutables.armRaspPi) && it.buildType.equals(buildTypes.release)
+    it.buildable && it.component.name.contains("armRaspPi") && it.buildType.equals(buildTypes.release)
   }
   commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
   standardOutput = new ByteArrayOutputStream()
