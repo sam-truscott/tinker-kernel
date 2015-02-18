@@ -69,8 +69,6 @@ model {
         tinkerPpc {
             architecture "ppc"
         }
-        windows_x86 {
-        }
     }
     components {
     	// the base (headers)
@@ -78,7 +76,6 @@ model {
 	    	targetPlatform "tinkerArmSoft"
 	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
-	    	targetPlatform "windows_x86"
     		sources {
 		    	c {
 		            exportedHeaders {
@@ -136,7 +133,6 @@ model {
 	    	targetPlatform "tinkerArmSoft"
 	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
-	    	targetPlatform "windows_x86"
 	    	sources {
 			    c {
 		             lib base.static
@@ -240,7 +236,6 @@ model {
 	    	targetPlatform "tinkerArmSoft"
 	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
-	    	targetPlatform "windows_x86"
 	    	sources {
 			    c {
 		             lib base.static
@@ -256,7 +251,6 @@ model {
 	    	targetPlatform "tinkerArmSoft"
 	    	targetPlatform "tinkerArmHardVfp"
 	    	targetPlatform "tinkerPpc"
-	    	targetPlatform "windows_x86"
 	    	sources {
 			    c {
 		             lib base.static
