@@ -97,6 +97,9 @@ These are the things I need to address in a rough order:
 
 * Target: ARM support (Raspberry Pi)
 	* Add ARM MMU support
+* Kernel: Don't map the whole process memory pool to the user-space in the MMU
+	* Just map the entries you need (code, data, shm etc)
+	* Stops the process having access to it's own internal data structures
 * Kernel: Allow user-mode to map to real addresses (user-mode drivers)
     * (interrupts can be handled by pipes in the bsp)
 * Kernel: Break up the syscalls into separate static/inline functions
