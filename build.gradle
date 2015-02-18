@@ -45,13 +45,15 @@ model {
         tinkerPpc {
             architecture "ppc"
         }
+        windows_x86 {
+        }
     }
     components {
-    	// NativeLibrarySpec
-    	// NativeExecutableSpec
-    	
     	// the base (headers)
     	base(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerPpc"
+	    	targetPlatform "windows_x86"
     		sources {
 		    	c {
 		            exportedHeaders {
@@ -105,6 +107,9 @@ model {
 	    }
 	    // the core
 	    core(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerPpc"
+	    	targetPlatform "windows_x86"
 	    	sources {
 			    c {
 		             lib base.static
@@ -177,6 +182,7 @@ model {
 	    	}
 	    }
 	    driverSerialUart16550(NativeLibrarySpec) {
+	    	targetPlatform "tinkerPpc"
 	    	sources {
 			    c {
 					lib base.static
@@ -201,6 +207,9 @@ model {
 	    }
 	    // low-level
 	    boot(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerPpc"
+	    	targetPlatform "windows_x86"
 	    	sources {
 			    c {
 		             lib base.static
@@ -213,6 +222,9 @@ model {
 	    }
 	    // api
 	    api(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	targetPlatform "tinkerPpc"
+	    	targetPlatform "windows_x86"
 	    	sources {
 			    c {
 		             lib base.static
