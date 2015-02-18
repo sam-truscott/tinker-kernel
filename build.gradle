@@ -21,7 +21,7 @@ model {
                     args << "-DARCH_HAS_MMU"
                 }
             }
-            target("tinkerArmSoft") {
+            target("tinkerArm") {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
@@ -36,322 +36,297 @@ model {
                     args << "-UARCH_HAS_MMU"
                 }
             }
-            target("tinkerArmHardVfp") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "arm-eabi-gcc"
-                cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-as"
-                linker.executable = "arm-eabi-gcc"
-                staticLibArchiver.executable = "arm-eabi-ar"
-                cCompiler.withArguments { args ->
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
-                    args << "-mfpu=vfp"
-                    args << "-mfloat-abi=hard"
-                    args << "-fpic"
-                    args << "-marm"
-                    args << "-DVIRTUAL_ADDRESS_SPACE=0u"
-                    args << "-UARCH_HAS_MMU"
-                }
-                linker.withArguments { args ->
-                	args << "-mfpu=vfp"
-                    args << "-mfloat-abi=hard"
-                }
-            }
         }
     }
     platforms {
-        tinkerArmSoft {
-            architecture "arm"
-        }
-        tinkerArmHardVfp {
+        tinkerArm {
             architecture "arm"
         }
         tinkerPpc {
             architecture "ppc"
         }
     }
+    components {
+    	// NativeLibrarySpec
+    	// NativeExecutableSpec
+    	
+    	// the base (headers)
+    	base(NativeLibrarySpec) {
+    		sources {
+		    	c {
+		            exportedHeaders {
+		                srcDirs "src", "src/api"
+		            }
+		        }
+	        }
+    	}
+    	// architectures
+	    archArm(NativeLibrarySpec) {
+	        targetPlatform "tinkerArm"
+	        sources {
+		        c {
+		            lib base.static
+		            source {
+		                srcDirs "src/arch/arm"
+		                include "*.c"
+		            }
+		            exportedHeaders {
+		                srcDir "src/arch/arm"
+		            }
+		        }
+		        asm {
+		            source {
+		                srcDirs "src/arch/arm"
+		                include "*.S"
+		            }
+		        }
+	        }
+	    }
+	    archPowerPc(NativeLibrarySpec) {
+	        targetPlatform "tinkerPpc"
+	        sources {
+		        c {
+		            lib base.static
+		            source {
+		                srcDirs "src/arch/ppc32"
+		                include "*.c"
+		            }
+		            exportedHeaders {
+		                srcDir "src/arch/ppc32"
+		            }
+		        }
+		        asm {
+		            source {
+		                srcDirs "src/arch/ppc32"
+		                include "*.S"
+		            }
+		        }
+	        }
+	    }
+	    // the core
+	    core(NativeLibrarySpec) {
+	    	sources {
+			    c {
+		             lib base.static
+		             source {
+		                 srcDirs "src/kernel"
+		                 include "**/*.c"
+		             }
+		        }
+	        }
+	    }
+	    // drivers
+	    driverIntcOpic(NativeLibrarySpec) {
+	    	targetPlatform "tinkerPpc"
+	    	sources {
+		    	c {
+		    		lib base.static
+		    		source {
+		                 srcDirs "src/devices/intc/opic"
+		                 include "**/*.c"
+		             }
+		    	}
+	    	}
+	    }
+	    driverIntcBcm2835(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	sources {
+		    	c {
+		    		lib base.static
+		    		source {
+		                 srcDirs "src/devices/intc/bcm2835"
+		                 include "**/*.c"
+		             }
+		    	}
+	    	}
+	    }
+	    driverTimerBcm2835(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	sources {
+		    	c {
+		    		lib base.static
+		    		source {
+		                 srcDirs "src/devices/timer/bcm2835"
+		                 include "**/*.c"
+		             }
+		    	}
+	    	}
+	    }
+	    driverTimerOpic(NativeLibrarySpec) {
+	    	targetPlatform "tinkerPpc"
+	    	sources {
+		    	c {
+		    		lib base.static
+		    		source {
+		                 srcDirs "src/devices/timer/opic"
+		                 include "**/*.c"
+		             }
+		    	}
+	    	}
+	    }
+	    driverTimerPpc32tbr(NativeLibrarySpec) {
+	    	targetPlatform "tinkerPpc"
+	    	sources {
+		    	c {
+		    		lib base.static
+		    		source {
+		                 srcDirs "src/devices/timer/ppc32tbr"
+		                 include "**/*.c"
+		             }
+		    	}
+	    	}
+	    }
+	    driverSerialUart16550(NativeLibrarySpec) {
+	    	sources {
+			    c {
+					lib base.static
+					source {
+			             srcDirs "src/devices/serial/uart16550"
+			             include "**/*.c"
+			         }
+				}
+			}
+	    }
+	    driverSerialBcm2835(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm"
+	    	sources {
+		    	c {
+		    		lib base.static
+		    		source {
+		                 srcDirs "src/devices/serial/bcm2835"
+		                 include "**/*.c"
+		             }
+		    	}
+	    	}
+	    }
+	    // low-level
+	    boot(NativeLibrarySpec) {
+	    	sources {
+			    c {
+		             lib base.static
+		             source {
+		                 srcDir "src/boot"
+		                 include "**/*.c"
+		             }
+		         }
+	         }
+	    }
+	    // api
+	    api(NativeLibrarySpec) {
+	    	sources {
+			    c {
+		             lib base.static
+		             source {
+		                 srcDir "src/api"
+		                 include "**/*.c"
+		             }
+		         }
+	         }
+	    }
+	    
+	    armRaspPi(NativeExecutableSpec) {
+	        targetPlatform "tinkerArm"
+	        binaries.all {
+	            File srcDir = new File('src')
+	            linker.args "-lgcc",
+	                 "-T",
+	                 (srcDir.getAbsolutePath() + "/arch/arm/pi/linker.ld")
+	        }
+	        sources {
+		        c {
+		            lib base.static        // base headers
+		            lib api.static         // api layer
+		            lib archArm.static     // generic arm code
+		            lib boot.static        // boot c code into kernel
+		            lib core.static        // the core kernel
+		            lib driverTimerBcm2835.static
+		            lib driverSerialBcm2835.static
+		            lib driverIntcBcm2835.static
+		            source {
+		                srcDirs "src/arch/arm/pi", "src/tinker"
+		                include "**/*.c"
+		            }
+		        }
+		        asm {
+		        	source {
+		        		srcDirs "src/arch/arm/pi"
+		        		include "**/*.S"
+		        	}
+		        }
+	        }
+	    }
+	    ppc32Gdb(NativeExecutableSpec) {
+	        targetPlatform "tinkerPpc"
+	        binaries.all {
+	            File srcDir = new File('src')
+	            linker.args "-lgcc",
+	                 "-T",
+	                 (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
+	        }
+	        sources {
+		        c {
+		            lib base.static        // base headers
+		            lib api.static         // api layer
+		            lib archPowerPc.static // powerpc code
+		            lib boot.static        // boot c code into kernel
+		            lib core.static        // the core kernel
+		            lib driverSerialUart16550.static
+		            lib driverTimerPpc32tbr.static
+		            lib driverTimerOpic.static
+		            lib driverIntcOpic.static
+		            source {
+		                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
+		                include "**/*.c"
+		            }
+		        }
+	        }
+	    }
+	    
+	    binaries.all {
+	    	cCompiler.args "-Wno-maybe-uninitialized",
+	            "-pedantic",
+	            "-pedantic-errors",
+	            "-Wall",
+	            "-Wextra",
+	            "-Werror",
+	            "-c",
+	            "-fmessage-length=0",
+	            "-std=gnu11",
+	            "-fno-builtin",
+	            "-ffreestanding",
+	            "-DBUILDING_KERNEL"
+	        linker.args "-nostartfiles",
+		        "-nodefaultlibs",
+		        "-nostdlib",
+		        "-static"
+	        if (buildType == buildTypes.debug) {
+	            cCompiler.args "-O0", 
+	                "-g3",
+	                "-gdwarf-4",
+	                "-DKERNEL_SHELL",
+	                "-UTIMER_DEBUGGING",
+	                "-UINTC_DEBUGGING",
+	                "-DKERNEL_DEBUGGING",
+	                "-UMEMORY_DEBUGGING",
+	                "-UDEBUG_COLLECTIONS",
+	                "-UPROCESS_DEBUGGING",
+	                "-USHM_DEBUGGING",
+	                "-UTARGET_DEBUGGING",
+	                "-USYSCALL_DEBUGGING",
+	                "-UALARM_DEBUGGING",
+	                "-UREGISTRY_DEBUGGING",
+	                "-UPIPE_DEBUGGING",
+	                "-UIDLE_DEBUGGING",
+	                "-UKERNEL_SHELL_DEBUG"
+	        } else if (buildType == buildTypes.release) {
+	            cCompiler.args "-Os",
+	                "-g0"
+	            linker.args "-s"
+	        }
+	    }
+    }
 }
 
-libraries {
-    // the base (headers)
-    base {
-    }
-    // architectures
-    archArm {
-        targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
-    }
-    archPowerPc {
-        targetPlatforms "tinkerPpc"
-    }
-    // the core
-    core {
-    }
-    // drivers
-    driverIntcOpic {
-    	targetPlatforms "tinkerPpc"
-    }
-    driverIntcBcm2835 {
-    	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
-    }
-    driverTimerBcm2835 {
-    	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
-    }
-    driverTimerOpic {
-    	targetPlatforms "tinkerPpc"
-    }
-    driverTimerPpc32tbr {
-    	targetPlatforms "tinkerPpc"
-    }
-    driverSerialUart16550 {
-    }
-    driverSerialBcm2835 {
-    	targetPlatforms "tinkerArmSoft", "tinkerArmHardVfp"
-    }
-    // low-level
-    boot {
-    }
-    // api
-    api {
-    }
-}
-
-executables {
-    armRaspPi {
-        targetPlatforms "tinkerArmHardVfp"
-        binaries.all {
-            File srcDir = new File('src')
-            linker.args "-lgcc",
-                 "-T",
-                 (srcDir.getAbsolutePath() + "/arch/arm/pi/linker.ld")
-        }
-    }
-    ppc32Gdb {
-        targetPlatforms "tinkerPpc"
-        binaries.all {
-            File srcDir = new File('src')
-            linker.args "-lgcc",
-                 "-T",
-                 (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
-        }
-    }
-}
-
-sources {
-    base {
-        c {
-            exportedHeaders {
-                srcDirs "src", "src/api"
-            }
-        }
-    }
-    archPowerPc {
-        c {
-            lib libraries.base.static
-            source {
-                srcDirs "src/arch/ppc32"
-                include "*.c"
-            }
-            exportedHeaders {
-                srcDir "src/arch/ppc32"
-            }
-        }
-        asm {
-            source {
-                srcDirs "src/arch/ppc32"
-                include "*.S"
-            }
-        }
-    }
-    archArm {
-        c {
-            lib libraries.base.static
-            source {
-                srcDirs "src/arch/arm"
-                include "*.c"
-            }
-            exportedHeaders {
-                srcDir "src/arch/arm"
-            }
-        }
-        asm {
-            source {
-                srcDirs "src/arch/arm"
-                include "*.S"
-            }
-        }
-    }
-    api {
-         c {
-             lib libraries.base.static
-             source {
-                 srcDir "src/api"
-                 include "**/*.c"
-             }
-         }
-    }
-    boot {
-         c {
-             lib libraries.base.static
-             source {
-                 srcDir "src/boot"
-                 include "**/*.c"
-             }
-         }
-    }
-    driverIntcOpic {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/intc/opic"
-                 include "**/*.c"
-             }
-    	}
-    }
-    driverIntcBcm2835 {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/intc/bcm2835"
-                 include "**/*.c"
-             }
-    	}
-    }
-    driverTimerBcm2835 {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/timer/bcm2835"
-                 include "**/*.c"
-             }
-    	}
-    }
-    driverTimerOpic {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/timer/opic"
-                 include "**/*.c"
-             }
-    	}
-    }
-    driverTimerPpc32tbr {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/timer/ppc32tbr"
-                 include "**/*.c"
-             }
-    	}
-    }
-    driverSerialUart16550 {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/serial/uart16550"
-                 include "**/*.c"
-             }
-    	}
-    }
-    driverSerialBcm2835 {
-    	c {
-    		lib libraries.base.static
-    		source {
-                 srcDirs "src/devices/serial/bcm2835"
-                 include "**/*.c"
-             }
-    	}
-    }
-    core {
-         c {
-             lib libraries.base.static
-             source {
-                 srcDirs "src/kernel"
-                 include "**/*.c"
-             }
-         }
-    }
-    ppc32Gdb {
-        c {
-            lib libraries.base.static        // base headers
-            lib libraries.api.static         // api layer
-            lib libraries.archPowerPc.static // powerpc code
-            lib libraries.boot.static        // boot c code into kernel
-            lib libraries.core.static        // the core kernel
-            lib libraries.driverSerialUart16550.static
-            lib libraries.driverTimerPpc32tbr.static
-            lib libraries.driverTimerOpic.static
-            lib libraries.driverIntcOpic.static
-            source {
-                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
-                include "**/*.c"
-            }
-        }
-    }
-    armRaspPi {
-        c {
-            lib libraries.base.static        // base headers
-            lib libraries.api.static         // api layer
-            lib libraries.archArm.static     // generic arm code
-            lib libraries.boot.static        // boot c code into kernel
-            lib libraries.core.static        // the core kernel
-            lib libraries.driverTimerBcm2835.static
-            lib libraries.driverSerialBcm2835.static
-            lib libraries.driverIntcBcm2835.static
-            source {
-                srcDirs "src/arch/arm/pi", "src/tinker"
-                include "**/*.c"
-            }
-        }
-        asm {
-        	source {
-        		srcDirs "src/arch/arm/pi"
-        		include "**/*.S"
-        	}
-        }  
-    }
-    binaries.all {
-    	cCompiler.args "-Wno-maybe-uninitialized",
-            "-pedantic",
-            "-pedantic-errors",
-            "-Wall",
-            "-Wextra",
-            "-Werror",
-            "-c",
-            "-fmessage-length=0",
-            "-std=gnu11",
-            "-fno-builtin",
-            "-ffreestanding",
-            "-DBUILDING_KERNEL"
-        linker.args "-nostartfiles",
-	        "-nodefaultlibs",
-	        "-nostdlib",
-	        "-static"
-        if (buildType == buildTypes.debug) {
-            cCompiler.args "-O0", 
-                "-g3",
-                "-gdwarf-4",
-                "-DKERNEL_SHELL",
-                "-UTIMER_DEBUGGING",
-                "-UINTC_DEBUGGING",
-                "-DKERNEL_DEBUGGING",
-                "-UMEMORY_DEBUGGING",
-                "-UDEBUG_COLLECTIONS",
-                "-UPROCESS_DEBUGGING",
-                "-USHM_DEBUGGING",
-                "-UTARGET_DEBUGGING",
-                "-USYSCALL_DEBUGGING",
-                "-UALARM_DEBUGGING",
-                "-UREGISTRY_DEBUGGING",
-                "-UPIPE_DEBUGGING",
-                "-UIDLE_DEBUGGING",
-                "-UKERNEL_SHELL_DEBUG"
-        } else if (buildType == buildTypes.release) {
-            cCompiler.args "-Os",
-                "-g0"
-            linker.args "-s"
-        }
-    }
-}
 
 binaries.withType(SharedLibraryBinary) {
      buildable false
@@ -359,7 +334,7 @@ binaries.withType(SharedLibraryBinary) {
 
 task debugPiBinary(type:Exec) {
   dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.equals(executables.armRaspPi) && it.buildType.equals(buildTypes.debug)
+    it.buildable && it.component.equals(executable.armRaspPi) && it.buildType.equals(buildTypes.debug)
   }
   commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
   standardOutput = new ByteArrayOutputStream()
@@ -370,7 +345,7 @@ task debugPiBinary(type:Exec) {
 
 task releasePiBinary(type:Exec) {
   dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.equals(executables.armRaspPi) && it.buildType.equals(buildTypes.release)
+    it.buildable && it.component.equals(exebcutables.armRaspPi) && it.buildType.equals(buildTypes.release)
   }
   commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
   standardOutput = new ByteArrayOutputStream()
