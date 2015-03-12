@@ -5,3 +5,12 @@
 /release_*
 /.nb-gradle/private/
 /Raspberry Pi/
+/*.vcxproj
+/*.filters
+/*.sln
+/*.sdf
+/*.opensdf
+/*.suo
+/.nb-gradle-properties
+/.vs
+/.nb-gradle
