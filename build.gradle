@@ -1,5 +1,6 @@
 apply plugin: 'assembler'
 apply plugin: 'c'
+apply plugin: 'visual-studio'
 
 model {
     buildTypes {

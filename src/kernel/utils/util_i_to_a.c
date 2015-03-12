@@ -22,9 +22,9 @@ static int get_n(int * const number)
 
 void util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 {
-	if ( buffer )
+	if (buffer)
 	{
-		if ( i == 0 )
+		if (i == 0)
 		{
 			/* short cut */
 			buffer[0] = '0';
@@ -64,20 +64,20 @@ void util_i_to_a(const int32_t i, char buffer[], const uint32_t buffer_length)
 
 void util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
 {
-	if ( buffer )
+	if (buffer)
 	{
-		if ( i == 0 )
+		if (i == 0)
 		{
 			buffer[0] = '0';
 			buffer[1] = '\0';
 		}
 		else
 		{
-			uint32_t rem[buffer_length],length=0;
-			int32_t t=0;
+			uint32_t rem[buffer_length], length = 0;
+			int32_t t = 0;
 			uint32_t in = i;
 
-			while(in>0)
+			while (in>0)
 			{
 				rem[t]=in%16;
 				in=in/16;
@@ -86,7 +86,7 @@ void util_i_to_h(const uint32_t i, char buffer[], const uint32_t buffer_length)
 			}
 
 			int p = 0;
-			for(t=length-1;t>=0;t--)
+			for (t=length-1 ; t>=0 ; t--)
 			{
 				if (rem[t]<10)
 				{
