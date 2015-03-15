@@ -11,6 +11,10 @@
 
 #pragma GCC optimize ("-O0")
 
+// http://www.embedded-bits.co.uk/2011/mmucode/
+// http://www.slideshare.net/prabindh/enabling-two-level-translation-tables-in-armv7-mmu
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0198e/ch03s06s01.html
+
 static const uint32_t ENABLE_CACHE_MMU = 0x1003;
 static const uint32_t DISABLE_CACHE_MMU = 0xFFFFEFFA;
 
@@ -34,4 +38,27 @@ void arm_enable_mmu(void)
 	asm("ldr r1, =ENABLE_CACHE_MMU");
 	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
 	asm("mcr p15, 0, r0, c1, c0, 0");
+}
+
+void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
+{
+	// asm(); // TODO: setup R0 for TRR0/TRR1)
+	asm("MCR p15, 0, r0, c2, c0, 2");
+	arm_invalidate_all_tlbs();
+}
+
+error_t arm_map_memory(
+		const tgt_pg_tbl_t * const table,
+		const tgt_mem_t * const segment,
+		const mem_section_t * const section)
+{
+	return NO_ERROR;
+}
+
+void arm_unmap_memory(
+		const tgt_pg_tbl_t * const table,
+		const tgt_mem_t * const segment,
+		const mem_section_t * const section)
+{
+
 }

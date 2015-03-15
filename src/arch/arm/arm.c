@@ -172,7 +172,10 @@ error_t tgt_map_memory(
         const tgt_mem_t * const segment_info = process_get_mem_info(process);
         if (segment_info)
         {
-            //TODO: Map the area
+        	arm_map_memory(
+        			process_get_page_table(process),
+					segment_info,
+					section);
             result = NO_ERROR;
         }
     }
@@ -188,7 +191,10 @@ void tgt_unmap_memory(
         const tgt_mem_t * const segment_info = process_get_mem_info(process);
         if (segment_info)
         {
-            // TODO unmap the area
+        	arm_unmap_memory(
+        			process_get_page_table(process),
+					segment_info,
+					section);
         }
     }
 }
