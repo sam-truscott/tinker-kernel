@@ -22,7 +22,7 @@ model {
                     args << "-DARCH_HAS_MMU"
                 }
             }
-            target("tinkerArmSoft") {
+            target("tinkerArm4Soft") {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
@@ -30,14 +30,16 @@ model {
                 linker.executable = "arm-eabi-gcc"
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
                     args << "-fpic"
                     args << "-marm"
                     args << "-DVIRTUAL_ADDRESS_SPACE=0"
                     args << "-UARCH_HAS_MMU"
+					args << "-march=armv5"
                 }
             }
-            target("tinkerArmHardVfp") {
+            target("tinkerArm4HardVfp") {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
@@ -45,26 +47,74 @@ model {
                 linker.executable = "arm-eabi-gcc"
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
                     args << "-fpic"
                     args << "-marm"
                     args << "-DVIRTUAL_ADDRESS_SPACE=0"
                     args << "-UARCH_HAS_MMU"
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
+					args << "-march=armv5"
                 }
                 linker.withArguments { args ->
                 	args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
+					args << "-march=armv5"
+                }
+            }
+			target("tinkerArm7Soft") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "arm-eabi-gcc"
+                cCompiler.executable = "arm-eabi-gcc"
+                assembler.executable = "arm-eabi-as"
+                linker.executable = "arm-eabi-gcc"
+                staticLibArchiver.executable = "arm-eabi-ar"
+                cCompiler.withArguments { args ->
+                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
+                    args << "-fpic"
+                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
+                    args << "-UARCH_HAS_MMU"
+					args << "-march=armv7-a"
+                }
+            }
+            target("tinkerArm7HardVfp") {
+                File srcDir = new File("src")
+                cppCompiler.executable = "arm-eabi-gcc"
+                cCompiler.executable = "arm-eabi-gcc"
+                assembler.executable = "arm-eabi-as"
+                linker.executable = "arm-eabi-gcc"
+                staticLibArchiver.executable = "arm-eabi-ar"
+                cCompiler.withArguments { args ->
+                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
+                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
+                    args << "-fpic"
+                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
+                    args << "-UARCH_HAS_MMU"
+                    args << "-mfpu=vfp"
+                    args << "-mfloat-abi=hard"
+					args << "-march=armv7-a"
+                }
+                linker.withArguments { args ->
+                	args << "-mfpu=vfp"
+                    args << "-mfloat-abi=hard"
+					args << "-march=armv5"
                 }
             }
         }
     }
     platforms {
-        tinkerArmSoft {
+        tinkerArm4Soft {
             architecture "arm"
         }
-        tinkerArmHardVfp {
+        tinkerArm4HardVfp {
+            architecture "arm"
+        }
+		tinkerArm7Soft {
+            architecture "arm"
+        }
+        tinkerArm7HardVfp {
             architecture "arm"
         }
         tinkerPpc {
@@ -74,8 +124,10 @@ model {
     components {
     	// the base (headers)
     	base(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
     		sources {
 		    	c {
@@ -87,8 +139,10 @@ model {
     	}
     	// architectures
 	    archArm(NativeLibrarySpec) {
-	        targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	        targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	        sources {
 		        c {
 		            lib base.static
@@ -131,8 +185,10 @@ model {
 	    }
 	    // the core
 	    core(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	sources {
 			    c {
@@ -158,8 +214,10 @@ model {
 	    	}
 	    }
 	    driverIntcBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	sources {
 		    	c {
 		    		lib base.static
@@ -171,8 +229,10 @@ model {
 	    	}
 	    }
 	    driverTimerBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	sources {
 		    	c {
 		    		lib base.static
@@ -220,8 +280,10 @@ model {
 			}
 	    }
 	    driverSerialBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	sources {
 		    	c {
 		    		lib base.static
@@ -234,8 +296,10 @@ model {
 	    }
 	    // low-level
 	    boot(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	sources {
 			    c {
@@ -249,8 +313,10 @@ model {
 	    }
 	    // api
 	    api(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	sources {
 			    c {
@@ -262,10 +328,39 @@ model {
 		         }
 	         }
 	    }
-	    
 	    armRaspPi(NativeExecutableSpec) {
-	        //targetPlatform "tinkerArmSoft"
-	    	targetPlatform "tinkerArmHardVfp"
+	    	targetPlatform "tinkerArm4HardVfp"
+	        binaries.all {
+	            File srcDir = new File('src')
+	            linker.args "-lgcc",
+	                 "-T",
+	                 (srcDir.getAbsolutePath() + "/arch/arm/pi/linker.ld")
+	        }
+	        sources {
+		        c {
+		            lib base.static        // base headers
+		            lib api.static         // api layer
+		            lib archArm.static     // generic arm code
+		            lib boot.static        // boot c code into kernel
+		            lib core.static        // the core kernel
+		            lib driverTimerBcm2835.static
+		            lib driverSerialBcm2835.static
+		            lib driverIntcBcm2835.static
+		            source {
+		                srcDirs "src/arch/arm/pi", "src/tinker"
+		                include "**/*.c"
+		            }
+		        }
+		        asm {
+		        	source {
+		        		srcDirs "src/arch/arm/pi"
+		        		include "**/*.S"
+		        	}
+		        }
+	        }
+	    }
+		armRaspPi2(NativeExecutableSpec) {
+	    	targetPlatform "tinkerArm7HardVfp"
 	        binaries.all {
 	            File srcDir = new File('src')
 	            linker.args "-lgcc",
@@ -374,7 +469,7 @@ binaries.withType(SharedLibraryBinary) {
 
 task debugPiBinary(type:Exec) {
   dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.name.contains("armRaspPi") && it.buildType.equals(buildTypes.debug)
+    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
   }
   commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
   standardOutput = new ByteArrayOutputStream()
@@ -385,9 +480,31 @@ task debugPiBinary(type:Exec) {
 
 task releasePiBinary(type:Exec) {
   dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.name.contains("armRaspPi") && it.buildType.equals(buildTypes.release)
+    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
   }
   commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+task debugPi2Binary(type:Exec) {
+  dependsOn binaries.withType(NativeExecutableBinary).matching {
+    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
+  }
+  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/debug/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/debug/kernel.img'
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+task releasePi2Binary(type:Exec) {
+  dependsOn binaries.withType(NativeExecutableBinary).matching {
+    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
+  }
+  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/release/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/release/kernel.img'
   standardOutput = new ByteArrayOutputStream()
   ext.output = {
     return standardOutput.toString()
