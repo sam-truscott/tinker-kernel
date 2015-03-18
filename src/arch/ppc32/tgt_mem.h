@@ -11,6 +11,8 @@
 
 #include "arch/tgt_types.h"
 
+#define PAGE_TABLE_SIZE (1 * 1024 * 1024)
+#define PAGE_TABLE_ALIGNMENT (64 * 1024)
 #define MMU_PAGE_SIZE 	4096
 #define MMU_SEG_SIZE 	((256 * 1024) * 1024)
 #define MMU_SEG_COUNT	16

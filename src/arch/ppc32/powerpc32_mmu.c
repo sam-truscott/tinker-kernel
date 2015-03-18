@@ -40,6 +40,16 @@ static tgt_pg_tbl_t ppc32_get_pte(
 	return pPteg;
 }
 
+tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
+{
+	tgt_pg_tbl_t * const table = (tgt_pg_tbl_t*)mem_alloc_aligned(pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
+	if (table)
+	{
+		util_memset(table, 0, PAGE_TABLE_SIZE);
+	}
+	return table;
+}
+
 void ppc32_add_pte(
 		const tgt_pg_tbl_t * const page_tbl,
 		const uint32_t ea,
