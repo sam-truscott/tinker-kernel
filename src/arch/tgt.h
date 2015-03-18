@@ -24,6 +24,8 @@ void tgt_disable_external_interrupts(void);
 
 error_t tgt_initialise_process(process_t * const process);
 
+tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool);
+
 error_t tgt_map_memory(
 		const process_t * const process,
 		const mem_section_t * const section);

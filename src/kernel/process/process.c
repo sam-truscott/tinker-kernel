@@ -123,11 +123,7 @@ error_t process_create(
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Allocating memory for page table: %s\n", name);
 #endif
-		new_proc->page_table = (tgt_pg_tbl_t*)mem_alloc_aligned(new_proc->memory_pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
-		if (new_proc->page_table)
-		{
-		    util_memset(new_proc->page_table, 0, PAGE_TABLE_SIZE);
-		}
+		new_proc->page_table = tgt_initialise_page_table(new_proc->memory_pool);
 		new_proc->threads = thread_map_t_create(
 		        hash_basic_integer,
 		        hash_equal_integer,

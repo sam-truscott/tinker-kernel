@@ -19,10 +19,10 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+typedef bool bool_t;
+
 #include "tgt_mem.h"
 #include "tgt_io.h"
-
-typedef bool bool_t;
 
 typedef volatile uint8_t spinlock_t;
 #define LOCK_ON 0xDE
