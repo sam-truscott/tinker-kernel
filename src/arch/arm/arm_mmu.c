@@ -8,6 +8,7 @@
  */
 #include "arm_mmu.h"
 #include "arch/tgt_types.h"
+#include "kernel/utils/util_memset.h"
 
 #pragma GCC optimize ("-O0")
 
@@ -40,11 +41,31 @@ void arm_enable_mmu(void)
 	asm("mcr p15, 0, r0, c1, c0, 0");
 }
 
-void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
+void arm_set_translation_table_base(const bool_t is_kernel, tgt_pg_tbl_t * const base)
 {
-	// asm(); // TODO: setup R0 for TRR0/TRR1)
+	(void)base;
+	if (is_kernel)
+	{
+		asm("MRC p15, 0, r1, c2, c0, 0");
+	}
+	else
+	{
+		asm("MRC p15, 0, r1, c2, c0, 1");
+	}
+	// write to TTBCR
+	// TODO setup R0
 	asm("MCR p15, 0, r0, c2, c0, 2");
 	arm_invalidate_all_tlbs();
+}
+
+tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
+{
+	tgt_pg_tbl_t * const table = (tgt_pg_tbl_t*)mem_alloc_aligned(pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
+	if (table)
+	{
+		util_memset(table, 0, PAGE_TABLE_SIZE);
+	}
+	return table;
 }
 
 error_t arm_map_memory(

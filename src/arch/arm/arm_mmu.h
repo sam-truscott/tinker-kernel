@@ -20,7 +20,7 @@ void arm_disable_mmu(void);
 
 void arm_enable_mmu(void);
 
-void arm_set_translation_table_base(tgt_pg_tbl_t * const base);
+void arm_set_translation_table_base(const bool_t is_kernel, tgt_pg_tbl_t * const base);
 
 error_t arm_map_memory(
 		const tgt_pg_tbl_t * const table,

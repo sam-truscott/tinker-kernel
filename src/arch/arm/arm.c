@@ -108,19 +108,9 @@ void tgt_prepare_context(
     if (context && thread)
     {
         const process_t * const proc = thread_get_parent(thread);
-        if (process_is_kernel(proc))
-        {
-            // only the kernel has access to kernel segments
-        }
-
-        //const tgt_mem_t * const segment_info = process_get_segment_info(proc);
-
         thread_load_context(thread, context);
-
-        // TODO: MMU Setup (i.e. segment registers)
-
         if (current_process != proc) {
-            //ppc32_switch_page_table(current_process, proc);
+        	arm_set_translation_table_base(process_is_kernel(proc), (tgt_pg_tbl_t*)process_get_page_table(proc));
         }
     }
 }
