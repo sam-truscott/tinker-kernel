@@ -24,6 +24,15 @@
 static const uint32_t ENABLE_CACHE_MMU = 0x1003;
 static const uint32_t DISABLE_CACHE_MMU = 0xFFFFEFFA;
 
+// mmu_privilege_t -> AP
+static const uint8_t ap_bits[4] =
+{
+		0,	// MMU_NO_PRIVILEGE -> 0 (No Access)
+		3,	// MMU_USER_ACCESS -> 3 (User & Kernel access)
+		1, 	// MMU_KERNEL_ACCESS -> 1 (Kernel access)
+		3	// MMU_ALL_ACCESS -> 3 (User & Kernel access)
+};
+
 void arm_invalidate_all_tlbs(void)
 {
 	asm("mov r0, #0x0");
@@ -93,6 +102,11 @@ static inline uint32_t arm_generate_lvl1(
 	return lvl1;
 }
 
+#define PAGE_TABLE_LVL1_ADDR_MASK 0xFFFFFC00u
+#define PAGE_TABLE_LVL1_INDEX_MASK (0xFFF << 20) >> 20
+#define PAGE_TABLE_LVL2_ADDR_MASK 0xFFFFF000u
+#define PAGE_TABLE_LVL2_INDEX_MASK (0xFF << 12)>>12
+
 static inline uint32_t arm_generate_lvl2(
 		const uint32_t virt,
 		const arm_pg_tbl_lvl1_ns_t ns,
@@ -111,18 +125,9 @@ static inline uint32_t arm_generate_lvl2(
 	lvl2 += (ng << 17);
 	lvl2 += (type << 18);
 	lvl2 += (ns << 19);
-	lvl2 += virt & (0xFFFFF000);
+	lvl2 += virt & PAGE_TABLE_LVL2_ADDR_MASK;
 	return lvl2;
 }
-
-// mmu_privilege_t -> AP
-static const uint8_t ap_bits[4] =
-{
-		0,	// MMU_NO_PRIVILEGE -> 0 (No Access)
-		3,	// MMU_USER_ACCESS -> 3 (User & Kernel access)
-		1, 	// MMU_KERNEL_ACCESS -> 1 (Kernel access)
-		3	// MMU_ALL_ACCESS -> 3 (User & Kernel access)
-};
 
 static l2_tbl_t * arm_get_lvl2_table(
 		const uint32_t virtual,
@@ -134,7 +139,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 	l2_tbl_t * entry = NULL;
 	if (table)
 	{
-		const uint32_t virt_section = virtual & ((0xFFF << 20) >> 20);
+		const uint32_t virt_section = virtual & PAGE_TABLE_LVL1_INDEX_MASK;
 		if (table->lvl1_entry[virt_section] == 0 && create_if_missing)
 		{
 			entry = mem_alloc_aligned(pool, sizeof(l2_tbl_t), PAGE_TABLE_ALIGNMENT);
@@ -152,7 +157,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 						arm_pg_tbl_second_level);
 			}
 		}
-		entry = (l2_tbl_t*)(table->lvl1_entry[virt_section] & (0x3FFFFF << 10));
+		entry = (l2_tbl_t*)(table->lvl1_entry[virt_section] & PAGE_TABLE_LVL1_ADDR_MASK);
 	}
 	return entry;
 }
@@ -161,7 +166,7 @@ static inline uint32_t * arm_get_lvl2_entry(
 		const uint32_t virtual,
 		l2_tbl_t * const table)
 {
-	const uint32_t virt_page = virtual & ((0xFF << 12)>>12);
+	const uint32_t virt_page = virtual & PAGE_TABLE_LVL2_INDEX_MASK;
 	return &table->l2_tbl[virt_page];
 }
 
