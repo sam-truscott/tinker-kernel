@@ -14,16 +14,16 @@ typedef struct mem_section_t mem_section_t;
 
 typedef enum
 {
-	MMU_DEVICE_MEMORY,
-	MMU_RANDOM_ACCESS_MEMORY
+	MMU_DEVICE_MEMORY		 	= 0,
+	MMU_RANDOM_ACCESS_MEMORY	= 1
 } mmu_memory_t;
 
 typedef enum
 {
-	MMU_NO_PRIVILEGE,
-	MMU_USER_ACCESS,
-	MMU_KERNEL_ACCESS,
-	MMU_ALL_ACCESS
+	MMU_NO_PRIVILEGE 	= 0,
+	MMU_USER_ACCESS		= 1,
+	MMU_KERNEL_ACCESS	= 2,
+	MMU_ALL_ACCESS		= 3
 } mmu_privilege_t;
 
 typedef enum

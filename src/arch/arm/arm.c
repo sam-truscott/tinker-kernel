@@ -159,15 +159,11 @@ error_t tgt_map_memory(
     error_t result = PARAMETERS_INVALID;
     if (process && section)
     {
-        const tgt_mem_t * const segment_info = process_get_mem_info(process);
-        if (segment_info)
-        {
-        	arm_map_memory(
-        			process_get_page_table(process),
-					segment_info,
-					section);
-            result = NO_ERROR;
-        }
+		arm_map_memory(
+				process_get_mem_pool(process),
+				(tgt_pg_tbl_t*)process_get_page_table(process),
+				section);
+		result = NO_ERROR;
     }
     return result;
 }
@@ -178,14 +174,10 @@ void tgt_unmap_memory(
 {
     if (process && section)
     {
-        const tgt_mem_t * const segment_info = process_get_mem_info(process);
-        if (segment_info)
-        {
-        	arm_unmap_memory(
-        			process_get_page_table(process),
-					segment_info,
-					section);
-        }
+		arm_unmap_memory(
+				process_get_mem_pool(process),
+				(tgt_pg_tbl_t*)process_get_page_table(process),
+				section);
     }
 }
 

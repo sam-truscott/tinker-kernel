@@ -23,13 +23,13 @@ void arm_enable_mmu(void);
 void arm_set_translation_table_base(const bool_t is_kernel, tgt_pg_tbl_t * const base);
 
 error_t arm_map_memory(
-		const tgt_pg_tbl_t * const table,
-		const tgt_mem_t * const segment,
+		mem_pool_info_t * const pool,
+		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section);
 
 void arm_unmap_memory(
-		const tgt_pg_tbl_t * const table,
-		const tgt_mem_t * const segment,
+		mem_pool_info_t * const pool,
+		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section);
 
 #endif /* ARCH_ARM_ARM_MMU_H_ */

@@ -103,20 +103,21 @@ typedef struct tgt_mem_layer_2
 } tgt_mem_layer_2_t;
 */
 
-typedef struct l2 {
-	uint32_t l2[NUM_L2_ENTRIES];
-} l2_t;
+typedef struct l2_tbl
+{
+	uint32_t l2_tbl[NUM_L2_ENTRIES];
+} l2_tbl_t;
 
 typedef struct tgt_mem
 {
 	uint32_t unused;
 } tgt_mem_t;
-#pragma pack(pop)
 
 typedef struct tgt_pg_tbl
 {
-	uint32_t l1[NUM_L1_ENTRIES];
+	uint32_t * lvl1_entry[NUM_L2_ENTRIES];
 } tgt_pg_tbl_t;
+#pragma pack(pop)
 
 #define PAGE_TABLE_SIZE sizeof(tgt_pg_tbl_t)
 #define PAGE_TABLE_ALIGNMENT 64 * 1024
