@@ -92,9 +92,9 @@ static inline uint32_t arm_generate_lvl1(
 	lvl1 += ((uint32_t)base & (0x3FFFFF << 10));
 	return lvl1;
 }
-/*
+
 static inline uint32_t arm_generate_lvl2(
-		const uint32_t base,
+		const uint32_t virt,
 		const arm_pg_tbl_lvl1_ns_t ns,
 		const arm_pg_tbl_lvl1_type_t type,
 		const arm_pg_tbl_lvl1_ng_t ng,
@@ -111,12 +111,11 @@ static inline uint32_t arm_generate_lvl2(
 	lvl2 += (ng << 17);
 	lvl2 += (type << 18);
 	lvl2 += (ns << 19);
+	lvl2 += virt & (0xFFFFF000);
 	return lvl2;
 }
-*/
 
 // mmu_privilege_t -> AP
-/*
 static uint8_t ap_bits[4] =
 {
 		0,	// MMU_NO_PRIVILEGE -> 0 (No Access)
@@ -124,7 +123,6 @@ static uint8_t ap_bits[4] =
 		1, 	// MMU_KERNEL_ACCESS -> 1 (Kernel access)
 		3	// MMU_ALL_ACCESS -> 3 (User & Kernel access)
 };
-*/
 
 static l2_tbl_t * arm_get_lvl2_table(
 		const uint32_t virtual,
@@ -143,18 +141,9 @@ static l2_tbl_t * arm_get_lvl2_table(
 			if (entry)
 			{
 				util_memset(entry, 0, sizeof(l2_tbl_t));
-				//const mmu_privilege_t priv = mem_sec_get_priv(section);
-				//const mmu_access_t acc = mem_sec_get_access(section);
 				const mmu_memory_t mem_type = mem_sec_get_mem_type(section);
 				table->lvl1_entry[virt_section] = arm_generate_lvl1(
 						entry,
-						//arm_pg_tbl_not_trust_zone,
-						//arm_pg_tbl_section_1mb,
-						//arm_pg_tbl_process_specific,
-						//arm_pg_tbl_not_shared,
-						//(acc == MMU_READ_ONLY),
-						//DEFAULT_TEX,
-						//ap_bits[priv],
 						ECC_OFF,
 						DEFAULT_DOMAIN,
 						arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
@@ -168,7 +157,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 	return entry;
 }
 
-static uint32_t * arm_get_lvl2_entry(
+static inline uint32_t * arm_get_lvl2_entry(
 		const uint32_t virtual,
 		l2_tbl_t * const table)
 {
@@ -185,8 +174,24 @@ error_t arm_map_memory(
 	{
 		const uint32_t virt = mem_sec_get_virt_addr(section);
 		l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
-		uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
-		(void)lvl2_entry; //TODO
+		if (lvl2_tbl)
+		{
+			uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
+			if (lvl2_entry)
+			{
+				const mmu_privilege_t priv = mem_sec_get_priv(section);
+				const mmu_access_t acc = mem_sec_get_access(section);
+				*lvl2_entry = arm_generate_lvl2(
+						virt,
+						arm_pg_tbl_not_trust_zone,
+						arm_pg_tbl_section_1mb,
+						arm_pg_tbl_process_specific,
+						arm_pg_tbl_not_shared,
+						(acc == MMU_READ_ONLY),
+						DEFAULT_TEX,
+						ap_bits[priv]);
+			}
+		}
 	}
 	return NO_ERROR;
 }
