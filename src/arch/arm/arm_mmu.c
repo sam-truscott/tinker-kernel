@@ -75,13 +75,6 @@ tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
 
 static inline uint32_t arm_generate_lvl1(
 		const l2_tbl_t * const base,
-		const arm_pg_tbl_lvl1_ns_t ns,
-		const arm_pg_tbl_lvl1_type_t type,
-		const arm_pg_tbl_lvl1_ng_t ng,
-		const arm_pg_tbl_lvl1_shared_t s,
-		const arm_pg_tbl_lvl1_apx_t apx,
-		const uint8_t tex,
-		const uint8_t ap,
 		const uint8_t p,
 		const uint8_t domain,
 		const arm_pg_tbl_lvl1_nx_t nx,
@@ -96,18 +89,34 @@ static inline uint32_t arm_generate_lvl1(
 	lvl1 += (nx << 4);
 	lvl1 += (domain << 5);
 	lvl1 += (p << 9);
-	lvl1 += (ap << 10);
-	lvl1 += (tex << 12);
-	lvl1 += (apx << 15);
-	lvl1 += (s << 16);
-	lvl1 += (ng << 17);
-	lvl1 += (type << 18);
-	lvl1 += (ns << 19);
-	lvl1 += (((uint32_t)base & (0xFFF << 12)) << 20);
+	lvl1 += ((uint32_t)base & (0x3FFFFF << 10));
 	return lvl1;
 }
+/*
+static inline uint32_t arm_generate_lvl2(
+		const uint32_t base,
+		const arm_pg_tbl_lvl1_ns_t ns,
+		const arm_pg_tbl_lvl1_type_t type,
+		const arm_pg_tbl_lvl1_ng_t ng,
+		const arm_pg_tbl_lvl1_shared_t s,
+		const arm_pg_tbl_lvl1_apx_t apx,
+		const uint8_t tex,
+		const uint8_t ap)
+{
+	uint32_t lvl2 = 0;
+	lvl2 += (ap << 10);
+	lvl2 += (tex << 12);
+	lvl2 += (apx << 15);
+	lvl2 += (s << 16);
+	lvl2 += (ng << 17);
+	lvl2 += (type << 18);
+	lvl2 += (ns << 19);
+	return lvl2;
+}
+*/
 
 // mmu_privilege_t -> AP
+/*
 static uint8_t ap_bits[4] =
 {
 		0,	// MMU_NO_PRIVILEGE -> 0 (No Access)
@@ -115,6 +124,7 @@ static uint8_t ap_bits[4] =
 		1, 	// MMU_KERNEL_ACCESS -> 1 (Kernel access)
 		3	// MMU_ALL_ACCESS -> 3 (User & Kernel access)
 };
+*/
 
 static l2_tbl_t * arm_get_lvl2_table(
 		const uint32_t virtual,
@@ -127,34 +137,33 @@ static l2_tbl_t * arm_get_lvl2_table(
 	if (table)
 	{
 		const uint32_t virt_section = virtual & ((0xFFF << 20) >> 20);
-		entry = table->lvl1_entry[virt_section];
-		if (!entry && create_if_missing)
+		if (table->lvl1_entry[virt_section] == 0 && create_if_missing)
 		{
 			entry = mem_alloc_aligned(pool, sizeof(l2_tbl_t), PAGE_TABLE_ALIGNMENT);
 			if (entry)
 			{
 				util_memset(entry, 0, sizeof(l2_tbl_t));
-				const mmu_privilege_t priv = mem_sec_get_priv(section);
-				const mmu_access_t acc = mem_sec_get_access(section);
+				//const mmu_privilege_t priv = mem_sec_get_priv(section);
+				//const mmu_access_t acc = mem_sec_get_access(section);
 				const mmu_memory_t mem_type = mem_sec_get_mem_type(section);
 				table->lvl1_entry[virt_section] = arm_generate_lvl1(
 						entry,
-						arm_pg_tbl_not_trust_zone,
-						arm_pg_tbl_section_1mb,
-						arm_pg_tbl_process_specific,
-						arm_pg_tbl_not_shared,
-						(acc == MMU_READ_ONLY),
-						DEFAULT_TEX,
-						ap_bits[priv],
+						//arm_pg_tbl_not_trust_zone,
+						//arm_pg_tbl_section_1mb,
+						//arm_pg_tbl_process_specific,
+						//arm_pg_tbl_not_shared,
+						//(acc == MMU_READ_ONLY),
+						//DEFAULT_TEX,
+						//ap_bits[priv],
 						ECC_OFF,
 						DEFAULT_DOMAIN,
 						arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
 						(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 						(mem_type == MMU_RANDOM_ACCESS_MEMORY),
-						arm_pg_tbl_section);
+						arm_pg_tbl_second_level);
 			}
 		}
-		entry = table->lvl1_entry[virt_section];
+		entry = (l2_tbl_t*)(table->lvl1_entry[virt_section] & (0x3FFFFF << 10));
 	}
 	return entry;
 }
@@ -164,7 +173,7 @@ static uint32_t * arm_get_lvl2_entry(
 		l2_tbl_t * const table)
 {
 	const uint32_t virt_page = virtual & ((0xFF << 12)>>12);
-	return table->l2_tbl[virt_page];
+	return &table->l2_tbl[virt_page];
 }
 
 error_t arm_map_memory(

@@ -115,7 +115,7 @@ typedef struct tgt_mem
 
 typedef struct tgt_pg_tbl
 {
-	uint32_t * lvl1_entry[NUM_L2_ENTRIES];
+	uint32_t lvl1_entry[NUM_L2_ENTRIES];
 } tgt_pg_tbl_t;
 #pragma pack(pop)
 
