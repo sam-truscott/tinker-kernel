@@ -116,7 +116,7 @@ static inline uint32_t arm_generate_lvl2(
 }
 
 // mmu_privilege_t -> AP
-static uint8_t ap_bits[4] =
+static const uint8_t ap_bits[4] =
 {
 		0,	// MMU_NO_PRIVILEGE -> 0 (No Access)
 		3,	// MMU_USER_ACCESS -> 3 (User & Kernel access)
@@ -191,7 +191,19 @@ error_t arm_map_memory(
 						DEFAULT_TEX,
 						ap_bits[priv]);
 			}
+			else
+			{
+				// TODO error
+			}
 		}
+		else
+		{
+			// TODO error
+		}
+	}
+	else
+	{
+		// TODO error
 	}
 	return NO_ERROR;
 }
@@ -201,7 +213,29 @@ void arm_unmap_memory(
 		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section)
 {
-	(void)pool;
-	(void)table;
-	(void)section;
+	if (table)
+	{
+		const uint32_t virt = mem_sec_get_virt_addr(section);
+		l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
+		if (lvl2_tbl)
+		{
+			uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
+			if (lvl2_entry)
+			{
+				*lvl2_entry = 0;
+			}
+			else
+			{
+				// TODO error
+			}
+		}
+		else
+		{
+			// TODO error
+		}
+	}
+	else
+	{
+		// TODO error
+	}
 }
