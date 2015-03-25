@@ -55,20 +55,25 @@ void arm_enable_mmu(void)
 	asm("mcr p15, 0, r0, c1, c0, 0");
 }
 
+static inline void arm_set_translation_control(const uint32_t ctl)
+{
+	(void)ctl;
+	asm("MCR p15, 0, r0, c2, c0, 2"); // TTBCR
+}
+
 void arm_set_translation_table_base(const bool_t is_kernel, tgt_pg_tbl_t * const base)
 {
 	(void)base;
 	if (is_kernel)
 	{
-		asm("MRC p15, 0, r1, c2, c0, 0"); // TTBR0 - Kernel
+		asm("MRC p15, 0, r1, c2, c0, 1"); 	// TTBR1 - Kernel
+		arm_set_translation_control(2);		// TODO confirm this is correct for kernel
 	}
 	else
 	{
-		asm("MRC p15, 0, r1, c2, c0, 1"); // TTBR1 - User
+		asm("MRC p15, 0, r1, c2, c0, 0"); 	// TTBR0 - User
+		arm_set_translation_control(0);		// default to TTBR0 always
 	}
-	// write to TTBCR
-	// TODO setup R0 to point to the correct tbl - use r2, read from is_kernel
-	asm("MCR p15, 0, r2, c2, c0, 2");
 	arm_invalidate_all_tlbs();
 }
 
