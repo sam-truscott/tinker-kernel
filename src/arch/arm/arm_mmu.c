@@ -107,10 +107,14 @@ static inline uint32_t arm_generate_lvl1(
 	return lvl1;
 }
 
-#define PAGE_TABLE_LVL1_ADDR_MASK 0xFFFFFC00u
-#define PAGE_TABLE_LVL1_INDEX_MASK (0xFFF << 20) >> 20
-#define PAGE_TABLE_LVL2_ADDR_MASK 0xFFFFF000u
-#define PAGE_TABLE_LVL2_INDEX_MASK (0xFF << 12)>>12
+#define ARM_GET_LVL1_SECTION_INDEX(v) \
+	((v & 0xFFF00000u) >> 20)
+
+#define ARM_GET_LVL2_PAGE_INDEX(v) \
+	((v & 0x000FF000u) >> 12)
+
+#define ARM_GET_LVL2_VIRT_ADDR(v) \
+	(v & 0xFFFFF000u)
 
 static inline uint32_t arm_generate_lvl2(
 		const uint32_t virt,
@@ -130,7 +134,7 @@ static inline uint32_t arm_generate_lvl2(
 	lvl2 += (ng << 17);
 	lvl2 += (type << 18);
 	lvl2 += (ns << 19);
-	lvl2 += virt & PAGE_TABLE_LVL2_ADDR_MASK;
+	lvl2 += ARM_GET_LVL2_VIRT_ADDR(virt);
 	return lvl2;
 }
 
@@ -144,7 +148,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 	l2_tbl_t * entry = NULL;
 	if (table)
 	{
-		const uint32_t virt_section = virtual & PAGE_TABLE_LVL1_INDEX_MASK;
+		const uint32_t virt_section = ARM_GET_LVL1_SECTION_INDEX(virtual);
 		if (table->lvl1_entry[virt_section] == 0 && create_if_missing)
 		{
 			entry = mem_alloc_aligned(pool, sizeof(l2_tbl_t), PAGE_TABLE_ALIGNMENT);
@@ -162,7 +166,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 						arm_pg_tbl_second_level);
 			}
 		}
-		entry = (l2_tbl_t*)(table->lvl1_entry[virt_section] & PAGE_TABLE_LVL1_ADDR_MASK);
+		entry = (l2_tbl_t*)(ARM_GET_LVL2_VIRT_ADDR(table->lvl1_entry[virt_section]));
 	}
 	return entry;
 }
@@ -171,7 +175,7 @@ static inline uint32_t * arm_get_lvl2_entry(
 		const uint32_t virtual,
 		l2_tbl_t * const table)
 {
-	const uint32_t virt_page = virtual & PAGE_TABLE_LVL2_INDEX_MASK;
+	const uint32_t virt_page = ARM_GET_LVL2_PAGE_INDEX(virtual);
 	return &table->l2_tbl[virt_page];
 }
 
