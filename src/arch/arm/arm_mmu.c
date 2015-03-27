@@ -9,6 +9,7 @@
 #include "arm_mmu.h"
 #include "arch/tgt_types.h"
 #include "kernel/utils/util_memset.h"
+#include "kernel/kernel_panic.h"
 
 #pragma GCC optimize ("-O0")
 
@@ -17,12 +18,9 @@
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0198e/ch03s06s01.html
 // http://cfile9.uf.tistory.com/image/14626F354C57C985ABA951 <-- picture
 
-#define DEFAULT_DOMAIN 1
+#define DEFAULT_DOMAIN 0
 #define ECC_OFF 0
 #define DEFAULT_TEX 0
-
-static const uint32_t ENABLE_CACHE_MMU = 0x1003;
-static const uint32_t DISABLE_CACHE_MMU = 0xFFFFEFFA;
 
 // mmu_privilege_t -> AP
 static const uint8_t ap_bits[4] =
@@ -42,17 +40,24 @@ void arm_invalidate_all_tlbs(void)
 void arm_disable_mmu(void)
 {
 	asm("mrc p15, 0, r0, c1, c0, 0");
-	asm("ldr r1, =DISABLE_CACHE_MMU");
-	asm("and r0, r0, r1");		// disable Instruction & Data cache, disable MMU
+	asm("ldr r1, =0x1005");
+	asm("bic r0, r0, r1");		// disable Instruction & Data cache, disable MMU
 	asm("mcr p15, 0, r0, c1, c0, 0");
 }
 
 void arm_enable_mmu(void)
 {
 	asm("mrc p15, 0, r0, c1, c0, 0");
-	asm("ldr r1, =ENABLE_CACHE_MMU");
+	asm("ldr r1, =0x1003");
 	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
 	asm("mcr p15, 0, r0, c1, c0, 0");
+
+	// check
+	asm("mrc p15, 0, r0, c1, c0, 0");
+
+	// domain
+	asm("mov r0, #0x3");
+	asm("mcr p15, 0, r0, c3, c0, 0");
 }
 
 static inline void arm_set_translation_control(const uint32_t ctl)
@@ -118,23 +123,24 @@ static inline uint32_t arm_generate_lvl1(
 
 static inline uint32_t arm_generate_lvl2(
 		const uint32_t virt,
-		const arm_pg_tbl_lvl1_ns_t ns,
-		const arm_pg_tbl_lvl1_type_t type,
 		const arm_pg_tbl_lvl1_ng_t ng,
 		const arm_pg_tbl_lvl1_shared_t s,
 		const arm_pg_tbl_lvl1_apx_t apx,
 		const uint8_t tex,
-		const uint8_t ap)
+		const uint8_t ap,
+		const bool_t cached,
+		const bool_t buffered)
 {
 	uint32_t lvl2 = 0;
-	lvl2 += (ap << 10);
-	lvl2 += (tex << 12);
-	lvl2 += (apx << 15);
-	lvl2 += (s << 16);
-	lvl2 += (ng << 17);
-	lvl2 += (type << 18);
-	lvl2 += (ns << 19);
+	lvl2 += (buffered << 2);
+	lvl2 += (cached << 3);
+	lvl2 += (ap << 4);
+	lvl2 += (tex << 6);
+	lvl2 += (apx << 9);
+	lvl2 += (s << 10);
+	lvl2 += (ng << 11);
 	lvl2 += ARM_GET_LVL2_VIRT_ADDR(virt);
+	lvl2 += arm_pg_tbl_4k_execute_entry;
 	return lvl2;
 }
 
@@ -165,6 +171,10 @@ static l2_tbl_t * arm_get_lvl2_table(
 						(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 						arm_pg_tbl_second_level);
 			}
+			else
+			{
+				kernel_panic();
+			}
 		}
 		entry = (l2_tbl_t*)(ARM_GET_LVL2_VIRT_ADDR(table->lvl1_entry[virt_section]));
 	}
@@ -186,38 +196,50 @@ error_t arm_map_memory(
 {
 	if (table)
 	{
-		const uint32_t virt = mem_sec_get_virt_addr(section);
-		l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
-		if (lvl2_tbl)
+		const uint32_t size = mem_sec_get_size(section);
+		uint32_t pages = size / MMU_PAGE_SIZE;
+		if ((size % MMU_PAGE_SIZE) !=0)
 		{
-			uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
-			if (lvl2_entry)
+			pages++;
+		}
+		for (uint32_t page = 0 ; page < pages ; page++)
+		{
+			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
+			l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
+			if (lvl2_tbl)
 			{
-				const mmu_privilege_t priv = mem_sec_get_priv(section);
-				const mmu_access_t acc = mem_sec_get_access(section);
-				*lvl2_entry = arm_generate_lvl2(
-						virt,
-						arm_pg_tbl_not_trust_zone,
-						arm_pg_tbl_section_1mb,
-						arm_pg_tbl_process_specific,
-						arm_pg_tbl_not_shared,
-						(acc == MMU_READ_ONLY),
-						DEFAULT_TEX,
-						ap_bits[priv]);
+				uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
+				if (lvl2_entry)
+				{
+					const mmu_privilege_t priv = mem_sec_get_priv(section);
+					const mmu_access_t acc = mem_sec_get_access(section);
+					*lvl2_entry = arm_generate_lvl2(
+							virt,
+							arm_pg_tbl_not_trust_zone,
+							arm_pg_tbl_section_1mb,
+							arm_pg_tbl_process_specific,
+							arm_pg_tbl_not_shared,
+							(acc == MMU_READ_ONLY),
+							DEFAULT_TEX,
+							ap_bits[priv]);
+				}
+				else
+				{
+					// TODO error
+					kernel_panic();
+				}
 			}
 			else
 			{
 				// TODO error
+				kernel_panic();
 			}
-		}
-		else
-		{
-			// TODO error
 		}
 	}
 	else
 	{
 		// TODO error
+		kernel_panic();
 	}
 	return NO_ERROR;
 }

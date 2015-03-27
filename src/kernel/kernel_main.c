@@ -20,6 +20,8 @@
 
 extern void kmain(void);
 
+#include "arch/arm/arm_mmu.h"
+
 void kernel_main(void)
 {
 	/*
@@ -76,6 +78,40 @@ void kernel_main(void)
 #if defined(SYSCALL_DEBUGGING)
 	debug_print("System: Syscall OK\n");
 #endif
+
+	char * const buffer = mem_alloc_aligned(mem_get_default_pool(), 4096, 4096);
+	debug_print("buffer allocated at 0x%X\n", buffer);
+	mem_section_t * const kernel = mem_sec_create(
+				mem_get_default_pool(),
+				0,
+				0x00000000,
+				128 * 1024 * 1024,
+				MMU_RANDOM_ACCESS_MEMORY,
+				MMU_KERNEL_ACCESS,
+				MMU_READ_WRITE);
+		debug_print("kernel section allocated at 0x%X\n", kernel);
+
+	mem_section_t * const section = mem_sec_create(
+			mem_get_default_pool(),
+			(uint32_t)buffer,
+			0xc0000000,
+			4096,
+			MMU_RANDOM_ACCESS_MEMORY,
+			MMU_KERNEL_ACCESS,
+			MMU_READ_WRITE);
+	debug_print("buffer section allocated at 0x%X\n", section);
+	tgt_map_memory(kernel_get_process(), kernel);
+	tgt_map_memory(kernel_get_process(), section);
+	arm_set_translation_table_base(true, (tgt_pg_tbl_t*)process_get_page_table(kernel_get_process()));
+	arm_enable_mmu();
+	util_memset(buffer, 0, 4096);
+	char * const buffer2 = (char*)0xc0000000;
+	(void)buffer2;
+	const uint32_t x = *(uint32_t*)(buffer2);
+	(void)x;
+	tgt_unmap_memory(kernel_get_process(), section);
+	mem_sec_delete(section);
+	mem_free(mem_get_default_pool(), buffer);
 
 #if defined(KERNEL_DEBUGGING)
 	debug_print("System: Calling kmain()\n");
