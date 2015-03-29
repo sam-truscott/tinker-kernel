@@ -47,6 +47,10 @@ void arm_disable_mmu(void)
 
 void arm_enable_mmu(void)
 {
+	// domain
+	asm("mov r0, #0x3");
+	asm("mcr p15, 0, r0, c3, c0, 0");
+
 	asm("mrc p15, 0, r0, c1, c0, 0");
 	asm("ldr r1, =0x1003");
 	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
@@ -54,10 +58,6 @@ void arm_enable_mmu(void)
 
 	// check
 	asm("mrc p15, 0, r0, c1, c0, 0");
-
-	// domain
-	asm("mov r0, #0x3");
-	asm("mcr p15, 0, r0, c3, c0, 0");
 }
 
 static inline void arm_set_translation_control(const uint32_t ctl)
@@ -122,7 +122,7 @@ static inline uint32_t arm_generate_lvl1(
 	(v & 0xFFFFF000u)
 
 static inline uint32_t arm_generate_lvl2(
-		const uint32_t virt,
+		const uint32_t real,
 		const arm_pg_tbl_lvl1_ng_t ng,
 		const arm_pg_tbl_lvl1_shared_t s,
 		const arm_pg_tbl_lvl1_apx_t apx,
@@ -139,7 +139,7 @@ static inline uint32_t arm_generate_lvl2(
 	lvl2 += (apx << 9);
 	lvl2 += (s << 10);
 	lvl2 += (ng << 11);
-	lvl2 += ARM_GET_LVL2_VIRT_ADDR(virt);
+	lvl2 += ARM_GET_LVL2_VIRT_ADDR(real);
 	lvl2 += arm_pg_tbl_4k_execute_entry;
 	return lvl2;
 }
@@ -213,8 +213,9 @@ error_t arm_map_memory(
 				{
 					const mmu_privilege_t priv = mem_sec_get_priv(section);
 					const mmu_access_t acc = mem_sec_get_access(section);
+					const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
 					*lvl2_entry = arm_generate_lvl2(
-							virt,
+							real,
 							arm_pg_tbl_not_trust_zone,
 							arm_pg_tbl_section_1mb,
 							arm_pg_tbl_process_specific,
