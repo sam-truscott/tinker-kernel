@@ -84,7 +84,7 @@ void kernel_main(void)
 	mem_section_t * const kernel = mem_sec_create(
 				mem_get_default_pool(),
 				0,
-				0x00000000,
+				0,
 				128 * 1024 * 1024,
 				MMU_RANDOM_ACCESS_MEMORY,
 				MMU_KERNEL_ACCESS,
@@ -103,6 +103,7 @@ void kernel_main(void)
 	tgt_map_memory(kernel_get_process(), kernel);
 	tgt_map_memory(kernel_get_process(), section);
 	arm_set_translation_table_base(true, (tgt_pg_tbl_t*)process_get_page_table(kernel_get_process()));
+
 	arm_enable_mmu();
 	util_memset(buffer, 0, 4096);
 	char * const buffer2 = (char*)0xc0000000;

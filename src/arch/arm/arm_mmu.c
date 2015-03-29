@@ -71,12 +71,12 @@ void arm_set_translation_table_base(const bool_t is_kernel, tgt_pg_tbl_t * const
 	(void)base;
 	if (is_kernel)
 	{
-		asm("MRC p15, 0, r1, c2, c0, 1"); 	// TTBR1 - Kernel
+		asm("mcr p15, 0, r1, c2, c0, 1"); 	// TTBR1 - Kernel
 		arm_set_translation_control(2);		// TODO confirm this is correct for kernel
 	}
 	else
 	{
-		asm("MRC p15, 0, r1, c2, c0, 0"); 	// TTBR0 - User
+		asm("mcr p15, 0, r1, c2, c0, 0"); 	// TTBR0 - User
 		arm_set_translation_control(0);		// default to TTBR0 always
 	}
 	arm_invalidate_all_tlbs();
