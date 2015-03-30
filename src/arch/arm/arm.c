@@ -110,7 +110,7 @@ void tgt_prepare_context(
         const process_t * const proc = thread_get_parent(thread);
         thread_load_context(thread, context);
         if (current_process != proc) {
-        	arm_set_translation_table_base(process_is_kernel(proc), (tgt_pg_tbl_t*)process_get_page_table(proc));
+        	arm_set_translation_table_base((tgt_pg_tbl_t*)process_get_page_table(proc));
         }
     }
 }

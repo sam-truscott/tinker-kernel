@@ -102,7 +102,7 @@ void kernel_main(void)
 	debug_print("buffer section allocated at 0x%X\n", section);
 	tgt_map_memory(kernel_get_process(), kernel);
 	tgt_map_memory(kernel_get_process(), section);
-	arm_set_translation_table_base(true, (tgt_pg_tbl_t*)process_get_page_table(kernel_get_process()));
+	arm_set_translation_table_base((tgt_pg_tbl_t*)process_get_page_table(kernel_get_process()));
 
 	arm_enable_mmu();
 	util_memset(buffer, 0, 4096);

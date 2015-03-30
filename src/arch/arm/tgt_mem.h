@@ -120,6 +120,7 @@ typedef struct tgt_pg_tbl
 #pragma pack(pop)
 
 #define PAGE_TABLE_SIZE sizeof(tgt_pg_tbl_t)
-#define PAGE_TABLE_ALIGNMENT 4 * 1024
+#define PAGE_TABLE_ALIGNMENT 64 * 1024
+#define PAGE_ENTRY_ALIGNMENT 4 * 1024
 
 #endif /* TGT_MEM_H_ */
