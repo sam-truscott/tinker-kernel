@@ -94,7 +94,7 @@ void kernel_main(void)
 	mem_section_t * const section = mem_sec_create(
 			mem_get_default_pool(),
 			(uint32_t)buffer,
-			0xc0000000,
+			0xc0000000, // FIXME this accidently maps to 0x4000_0000
 			4096,
 			MMU_RANDOM_ACCESS_MEMORY,
 			MMU_KERNEL_ACCESS,

@@ -10,6 +10,7 @@
 #include "arch/tgt_types.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/kernel_panic.h"
+#include "kernel/console/print_out.h"
 
 #pragma GCC optimize ("-O0")
 
@@ -21,6 +22,7 @@
 #define DEFAULT_DOMAIN 0
 #define ECC_OFF 0
 #define DEFAULT_TEX 0
+//#define ARM_MMU_DEBUG 1
 
 // mmu_privilege_t -> AP
 static const uint8_t ap_bits[4] =
@@ -54,10 +56,13 @@ void arm_enable_mmu(void)
 	asm("mrc p15, 0, r0, c1, c0, 0");
 	asm("ldr r1, =0x1003");
 	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
+#if defined (ARM_MMU_DEBUG)
+	debug_print("Turning on MMU\n");
+#endif
 	asm("mcr p15, 0, r0, c1, c0, 0");
-
-	// check
-	asm("mrc p15, 0, r0, c1, c0, 0");
+#if defined (ARM_MMU_DEBUG)
+	debug_print("MMU on\n");
+#endif
 }
 
 static inline void arm_set_translation_control(const uint32_t ctl)
@@ -215,6 +220,14 @@ error_t arm_map_memory(
 							(acc == MMU_READ_ONLY),
 							DEFAULT_TEX,
 							ap_bits[priv]);
+#if defined (ARM_MMU_DEBUG)
+					debug_print("ARM virt %x (%d.%d) -> real %x entry = %x\n",
+							virt,
+							ARM_GET_LVL1_SECTION_INDEX(virt),
+							ARM_GET_LVL2_PAGE_INDEX(virt),
+							real,
+							*lvl2_entry);
+#endif
 				}
 				else
 				{

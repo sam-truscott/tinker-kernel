@@ -115,12 +115,12 @@ typedef struct tgt_mem
 
 typedef struct tgt_pg_tbl
 {
-	uint32_t lvl1_entry[NUM_L2_ENTRIES];
+	uint32_t lvl1_entry[NUM_L1_ENTRIES];
 } tgt_pg_tbl_t;
 #pragma pack(pop)
 
 #define PAGE_TABLE_SIZE sizeof(tgt_pg_tbl_t)
-#define PAGE_TABLE_ALIGNMENT 64 * 1024
+#define PAGE_TABLE_ALIGNMENT 128 * 1024
 #define PAGE_ENTRY_ALIGNMENT 4 * 1024
 
 #endif /* TGT_MEM_H_ */
