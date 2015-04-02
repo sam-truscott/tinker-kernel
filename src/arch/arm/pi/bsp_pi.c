@@ -12,6 +12,7 @@
 #include "arch/arm/arm.h"
 #include "arch/arm/arm_vec.h"
 #include "arch/arm/arm_cpsr.h"
+#include "arch/arm/arm_mmu.h"
 
 #include "kernel/kernel_initialise.h"
 #include "kernel/interrupts/interrupt_manager.h"
@@ -44,9 +45,6 @@ void bsp_initialise(void)
 
 	/* Initialise the Interrupt Vector Table */
 	ivt_initialise();
-
-	// TODO Initialise the MMU
-	// TODO Enable the MMU
 }
 
 void bsp_setup(void)
@@ -74,6 +72,9 @@ void bsp_setup(void)
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: Enabling external interrupts\n");
 #endif
+
+	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
+	arm_enable_mmu();
 }
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
@@ -172,8 +173,7 @@ uint32_t bsp_get_usable_memory_start()
 
 uint32_t bsp_get_usable_memory_end()
 {
-	/* 127 because the last 1MB is the page table */
-	return (258 * 1024 * 1024);
+	return (128 * 1024 * 1024);
 }
 
 void bsp_write_debug_char(const char c)
