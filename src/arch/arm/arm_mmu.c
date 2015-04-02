@@ -10,9 +10,6 @@
 #include "arch/tgt_types.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/kernel_panic.h"
-#include "kernel/console/print_out.h"
-
-#pragma GCC optimize ("-O0")
 
 // http://www.embedded-bits.co.uk/2011/mmucode/
 // http://www.slideshare.net/prabindh/enabling-two-level-translation-tables-in-armv7-mmu
@@ -32,52 +29,6 @@ static const uint8_t ap_bits[4] =
 		1, 	// MMU_KERNEL_ACCESS -> 1 (Kernel access)
 		3	// MMU_ALL_ACCESS -> 3 (User & Kernel access)
 };
-
-void arm_invalidate_all_tlbs(void)
-{
-	asm("mov r0, #0x0");
-	asm("mcr p15, 0, r0, c8, c7, 0");	// invalidate all tlbs
-}
-
-void arm_disable_mmu(void)
-{
-	asm("mrc p15, 0, r0, c1, c0, 0");
-	asm("ldr r1, =0x1005");
-	asm("bic r0, r0, r1");		// disable Instruction & Data cache, disable MMU
-	asm("mcr p15, 0, r0, c1, c0, 0");
-}
-
-void arm_enable_mmu(void)
-{
-	// domain
-	asm("mov r0, #0x3");
-	asm("mcr p15, 0, r0, c3, c0, 0");
-
-	asm("mrc p15, 0, r0, c1, c0, 0");
-	asm("ldr r1, =0x1003");
-	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
-#if defined (ARM_MMU_DEBUG)
-	debug_print("Turning on MMU\n");
-#endif
-	asm("mcr p15, 0, r0, c1, c0, 0");
-#if defined (ARM_MMU_DEBUG)
-	debug_print("MMU on\n");
-#endif
-}
-
-static inline void arm_set_translation_control(const uint32_t ctl)
-{
-	(void)ctl;
-	asm("MCR p15, 0, r0, c2, c0, 2"); 	// TTBCR
-}
-
-void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
-{
-	(void)base;
-	asm("mcr p15, 0, r0, c2, c0, 0");	// TTBR0
-	arm_set_translation_control(0);
-	arm_invalidate_all_tlbs();
-}
 
 tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
 {
@@ -117,6 +68,9 @@ static inline uint32_t arm_generate_lvl1(
 
 #define ARM_GET_LVL2_VIRT_ADDR(v) \
 	(v & 0xFFFFF000u)
+
+#define ARM_GET_LVL2_ENTRY(v, t) \
+		&t->l2_tbl[ARM_GET_LVL2_PAGE_INDEX(v)];
 
 static inline uint32_t arm_generate_lvl2(
 		const uint32_t real,
@@ -178,14 +132,6 @@ static l2_tbl_t * arm_get_lvl2_table(
 	return entry;
 }
 
-static inline uint32_t * arm_get_lvl2_entry(
-		const uint32_t virtual,
-		l2_tbl_t * const table)
-{
-	const uint32_t virt_page = ARM_GET_LVL2_PAGE_INDEX(virtual);
-	return &table->l2_tbl[virt_page];
-}
-
 error_t arm_map_memory(
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
@@ -205,7 +151,7 @@ error_t arm_map_memory(
 			l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
 			if (lvl2_tbl)
 			{
-				uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
+				uint32_t * const lvl2_entry = ARM_GET_LVL2_ENTRY(virt, lvl2_tbl);
 				if (lvl2_entry)
 				{
 					const mmu_privilege_t priv = mem_sec_get_priv(section);
@@ -220,14 +166,6 @@ error_t arm_map_memory(
 							(acc == MMU_READ_ONLY),
 							DEFAULT_TEX,
 							ap_bits[priv]);
-#if defined (ARM_MMU_DEBUG)
-					debug_print("ARM virt %x (%d.%d) -> real %x entry = %x\n",
-							virt,
-							ARM_GET_LVL1_SECTION_INDEX(virt),
-							ARM_GET_LVL2_PAGE_INDEX(virt),
-							real,
-							*lvl2_entry);
-#endif
 				}
 				else
 				{
@@ -261,7 +199,7 @@ void arm_unmap_memory(
 		l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
 		if (lvl2_tbl)
 		{
-			uint32_t * const lvl2_entry = arm_get_lvl2_entry(virt, lvl2_tbl);
+			uint32_t * const lvl2_entry = ARM_GET_LVL2_ENTRY(virt, lvl2_tbl);
 			if (lvl2_entry)
 			{
 				*lvl2_entry = 0;
@@ -280,4 +218,46 @@ void arm_unmap_memory(
 	{
 		// TODO error
 	}
+}
+
+#pragma GCC optimize ("-O0")
+
+void arm_invalidate_all_tlbs(void)
+{
+	asm("mov r0, #0x0");
+	asm("mcr p15, 0, r0, c8, c7, 0");	// invalidate all tlbs
+}
+
+void arm_disable_mmu(void)
+{
+	asm("mrc p15, 0, r0, c1, c0, 0");
+	asm("ldr r1, =0x1005");
+	asm("bic r0, r0, r1");		// disable Instruction & Data cache, disable MMU
+	asm("mcr p15, 0, r0, c1, c0, 0");
+}
+
+void arm_enable_mmu(void)
+{
+	// domain
+	asm("mov r0, #0x3");
+	asm("mcr p15, 0, r0, c3, c0, 0");
+
+	asm("mrc p15, 0, r0, c1, c0, 0");
+	asm("ldr r1, =0x1003");
+	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
+	asm("mcr p15, 0, r0, c1, c0, 0");
+}
+
+static inline void arm_set_translation_control(const uint32_t ctl)
+{
+	(void)ctl;
+	asm("MCR p15, 0, r0, c2, c0, 2"); 	// TTBCR
+}
+
+void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
+{
+	(void)base;
+	asm("mcr p15, 0, r0, c2, c0, 0");	// TTBR0
+	arm_set_translation_control(0);
+	arm_invalidate_all_tlbs();
 }
