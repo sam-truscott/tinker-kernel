@@ -107,10 +107,10 @@ void tgt_prepare_context(
 {
     if (context && thread)
     {
-        const process_t * const proc = thread_get_parent(thread);
+        process_t * const proc = thread_get_parent(thread);
         thread_load_context(thread, context);
         if (current_process != proc) {
-        	arm_set_translation_table_base((tgt_pg_tbl_t*)process_get_page_table(proc));
+        	arm_set_translation_table_base(process_get_page_table(proc));
         }
     }
 }
@@ -161,7 +161,7 @@ error_t tgt_map_memory(
     {
 		arm_map_memory(
 				process_get_mem_pool(process),
-				(tgt_pg_tbl_t*)process_get_page_table(process),
+				process_get_page_table(process),
 				section);
 		result = NO_ERROR;
     }
@@ -176,7 +176,7 @@ void tgt_unmap_memory(
     {
 		arm_unmap_memory(
 				process_get_mem_pool(process),
-				(tgt_pg_tbl_t*)process_get_page_table(process),
+				process_get_page_table(process),
 				section);
     }
 }

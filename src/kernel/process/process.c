@@ -613,9 +613,9 @@ thread_it_t * process_iterator(const process_t * const process)
 	return it;
 }
 
-const tgt_pg_tbl_t * process_get_page_table(const process_t * const process)
+tgt_pg_tbl_t * process_get_page_table(const process_t * const process)
 {
-	const tgt_pg_tbl_t * table = NULL;
+	tgt_pg_tbl_t * table = NULL;
 	if (process)
 	{
 		table = process->page_table;

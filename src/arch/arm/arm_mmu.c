@@ -19,7 +19,6 @@
 #define DEFAULT_DOMAIN 0
 #define ECC_OFF 0
 #define DEFAULT_TEX 0
-//#define ARM_MMU_DEBUG 1
 
 // mmu_privilege_t -> AP
 static const uint8_t ap_bits[4] =
