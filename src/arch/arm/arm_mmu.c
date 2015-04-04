@@ -145,8 +145,12 @@ static l2_tbl_t * arm_get_lvl2_table(
 				kernel_panic();
 			}
 		}
-		// TODO check if entry is a 1mb section rather than a course ptr
 		entry = (l2_tbl_t*)(ARM_GET_LVL2_VIRT_ADDR(table->lvl1_entry[virt_section]));
+		// if it's a section entry rather than a course entry return null
+		if ((entry & arm_pg_tbl_section) == arm_pg_tbl_section)
+		{
+			entry = NULL;
+		}
 	}
 	return entry;
 }
