@@ -20,6 +20,71 @@
 #define ECC_OFF 0
 #define DEFAULT_TEX 0
 
+#define ARM_MMU_SECTION_SIZE (1 * 1024 * 1024)
+#define ARM_MMU_SECTION_PAGES ((ARM_MMU_SECTION_SIZE / MMU_PAGE_SIZE) - 1)
+
+
+#define NUM_L2_ENTRIES 256
+
+#pragma pack(push,1)
+typedef enum arm_pg_tbl_lvl1_entry
+{
+	arm_pg_tbl_invalid_lvl1_entry = 0,
+	arm_pg_tbl_second_level = 1,
+	arm_pg_tbl_section = 2,
+	arm_pg_tbl_reserved = 3
+} arm_pg_tbl_lvl1_entry_t;
+
+typedef enum arm_pg_tbl_lvl2_entry
+{
+	arm_pg_tbl_invalid_lvl2_entry = 0,
+	arm_pg_tbl_64k_entry = 1,
+	arm_pg_tbl_4k_execute_entry = 2,
+	arm_pg_tbl_4k_no_execute_entry = 3
+} arm_pg_tbl_lvl2_entry_t;
+
+typedef enum arm_pg_tbl_lvl1_ng
+{
+	arm_pg_tbl_global = 0,
+	arm_pg_tbl_process_specific = 1
+} arm_pg_tbl_lvl1_ng_t;
+
+typedef enum arm_pg_tbl_lvl1_type
+{
+	arm_pg_tbl_section_1mb = 0,
+	arm_pg_tbl_super_section_16mb = 1
+} arm_pg_tbl_lvl1_type_t ;
+
+typedef enum arm_pg_tbl_lvl1_ns
+{
+	arm_pg_tbl_not_trust_zone = 0,
+	arm_pg_tbl_trust_zone = 1
+} arm_pg_tbl_lvl1_ns_t;
+
+typedef enum arm_pg_tbl_lvl1_shared {
+	arm_pg_tbl_not_shared = 0,
+	arm_pg_tbl_shared = 1
+} arm_pg_tbl_lvl1_shared_t;
+
+typedef enum arm_pg_tbl_lvl1_apx {
+	arm_pg_tbl_apx_off = 0,
+	arm_pg_tbl_apx_set = 1
+} arm_pg_tbl_lvl1_apx_t;
+
+typedef enum arm_pg_tbl_lvl1_nx {
+	arm_pg_tbl_execute = 0,
+	arm_pg_tbl_never_execute = 1
+} arm_pg_tbl_lvl1_nx_t;
+
+typedef struct l2_tbl
+{
+	uint32_t l2_tbl[NUM_L2_ENTRIES];
+} l2_tbl_t;
+#pragma pack(pop)
+
+#define PAGE_TABLE_ALIGNMENT 128 * 1024
+#define PAGE_ENTRY_ALIGNMENT 4 * 1024
+
 // mmu_privilege_t -> AP
 static const uint8_t ap_bits[4] =
 {
@@ -147,16 +212,13 @@ static l2_tbl_t * arm_get_lvl2_table(
 		}
 		entry = (l2_tbl_t*)(ARM_GET_LVL2_VIRT_ADDR(table->lvl1_entry[virt_section]));
 		// if it's a section entry rather than a course entry return null
-		if ((entry & arm_pg_tbl_section) == arm_pg_tbl_section)
+		if (((uint32_t)entry & arm_pg_tbl_section) == arm_pg_tbl_section)
 		{
 			entry = NULL;
 		}
 	}
 	return entry;
 }
-
-#define ARM_MMU_SECTION_SIZE (1 * 1024 * 1024)
-#define ARM_MMU_SECTION_PAGES ((ARM_MMU_SECTION_SIZE / MMU_PAGE_SIZE) - 1)
 
 static bool_t arm_is_1mb_section(
 		const uint32_t start,
