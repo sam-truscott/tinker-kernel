@@ -151,7 +151,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 }
 
 #define ARM_MMU_SECTION_SIZE (1 * 1024 * 1024)
-#define ARM_MMU_SECTION_PAGES ((ARM_MMU_SECTION_SIZE / MMU_PAGE_SIZE) - MMU_PAGE_SIZE)
+#define ARM_MMU_SECTION_PAGES ((ARM_MMU_SECTION_SIZE / MMU_PAGE_SIZE) - 1)
 
 static bool_t arm_is_1mb_section(
 		const uint32_t start,
