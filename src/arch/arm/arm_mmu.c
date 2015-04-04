@@ -29,17 +29,19 @@ static const uint8_t ap_bits[4] =
 		3	// MMU_ALL_ACCESS -> 3 (User & Kernel access)
 };
 
-tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
-{
-	tgt_pg_tbl_t * const table = (tgt_pg_tbl_t*)mem_alloc_aligned(pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
-	if (table)
-	{
-		util_memset(table, 0, PAGE_TABLE_SIZE);
-	}
-	return table;
-}
+#define ARM_GET_LVL1_SECTION_INDEX(v) \
+	((v & 0xFFF00000u) >> 20)
 
-static inline uint32_t arm_generate_lvl1(
+#define ARM_GET_LVL2_PAGE_INDEX(v) \
+	((v & 0x000FF000u) >> 12)
+
+#define ARM_GET_LVL2_VIRT_ADDR(v) \
+	(v & 0xFFFFF000u)
+
+#define ARM_GET_LVL2_ENTRY(v, t) \
+		&t->l2_tbl[ARM_GET_LVL2_PAGE_INDEX(v)];
+
+static inline uint32_t arm_generate_lvl1_course(
 		const l2_tbl_t * const base,
 		const uint8_t p,
 		const uint8_t domain,
@@ -59,17 +61,33 @@ static inline uint32_t arm_generate_lvl1(
 	return lvl1;
 }
 
-#define ARM_GET_LVL1_SECTION_INDEX(v) \
-	((v & 0xFFF00000u) >> 20)
-
-#define ARM_GET_LVL2_PAGE_INDEX(v) \
-	((v & 0x000FF000u) >> 12)
-
-#define ARM_GET_LVL2_VIRT_ADDR(v) \
-	(v & 0xFFFFF000u)
-
-#define ARM_GET_LVL2_ENTRY(v, t) \
-		&t->l2_tbl[ARM_GET_LVL2_PAGE_INDEX(v)];
+static inline uint32_t arm_generate_lvl1_section(
+		const uint32_t real,
+		const arm_pg_tbl_lvl1_ng_t ng,
+		const arm_pg_tbl_lvl1_shared_t s,
+		const arm_pg_tbl_lvl1_apx_t apx,
+		const uint8_t tex,
+		const uint8_t ap,
+		const uint8_t p,
+		const uint8_t domain,
+		const arm_pg_tbl_lvl1_nx_t nx,
+		const bool_t cached,
+		const bool_t buffered)
+{
+	uint32_t lvl1 = 0;
+	lvl1 += buffered << 2;
+	lvl1 += cached << 3;
+	lvl1 += nx << 4;
+	lvl1 += domain << 5;
+	lvl1 += p << 9;
+	lvl1 += ap << 10;
+	lvl1 += tex << 12;
+	lvl1 += apx << 15;
+	lvl1 += s << 16;
+	lvl1 += ng << 17;
+	lvl1 += ((uint32_t)real & 0xFFF00000);
+	return lvl1;
+}
 
 static inline uint32_t arm_generate_lvl2(
 		const uint32_t real,
@@ -104,7 +122,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 	l2_tbl_t * entry = NULL;
 	if (table)
 	{
-		const uint32_t virt_section = ARM_GET_LVL1_SECTION_INDEX(virtual);
+		const uint16_t virt_section = ARM_GET_LVL1_SECTION_INDEX(virtual);
 		if (table->lvl1_entry[virt_section] == 0 && create_if_missing)
 		{
 			entry = mem_alloc_aligned(pool, sizeof(l2_tbl_t), PAGE_ENTRY_ALIGNMENT);
@@ -112,7 +130,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 			{
 				util_memset(entry, 0, sizeof(l2_tbl_t));
 				const mmu_memory_t mem_type = mem_sec_get_mem_type(section);
-				table->lvl1_entry[virt_section] = arm_generate_lvl1(
+				table->lvl1_entry[virt_section] = arm_generate_lvl1_course(
 						entry,
 						ECC_OFF,
 						DEFAULT_DOMAIN,
@@ -126,9 +144,50 @@ static l2_tbl_t * arm_get_lvl2_table(
 				kernel_panic();
 			}
 		}
+		// TODO check if entry is a 1mb section rather than a course ptr
 		entry = (l2_tbl_t*)(ARM_GET_LVL2_VIRT_ADDR(table->lvl1_entry[virt_section]));
 	}
 	return entry;
+}
+
+#define ARM_MMU_SECTION_SIZE (1 * 1024 * 1024)
+
+static bool_t arm_lvl1_only(
+		tgt_pg_tbl_t * const table,
+		const uint32_t start,
+		const uint32_t size)
+{
+	// do we start on a 1mb boundary
+	if ((start % ARM_MMU_SECTION_SIZE) != 0)
+	{
+		return false;
+	}
+	// are we aligned to 1mb
+	if ((size % ARM_MMU_SECTION_SIZE) != 0)
+	{
+		return false;
+	}
+	// are all the pages free?
+	const uint32_t start_mb = ARM_GET_LVL1_SECTION_INDEX(start);
+	const uint32_t end_mb = ARM_GET_LVL1_SECTION_INDEX((start + size));
+	for (uint16_t mb = start_mb ; mb < end_mb ; mb++)
+	{
+		if (table->lvl1_entry[mb])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
+{
+	tgt_pg_tbl_t * const table = (tgt_pg_tbl_t*)mem_alloc_aligned(pool, PAGE_TABLE_SIZE, PAGE_TABLE_ALIGNMENT);
+	if (table)
+	{
+		util_memset(table, 0, PAGE_TABLE_SIZE);
+	}
+	return table;
 }
 
 error_t arm_map_memory(
@@ -136,53 +195,80 @@ error_t arm_map_memory(
 		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section)
 {
-	if (table)
+	if (table && section)
 	{
+		const uint32_t virt = mem_sec_get_virt_addr(section);
 		const uint32_t size = mem_sec_get_size(section);
-		uint32_t pages = size / MMU_PAGE_SIZE;
-		if ((size % MMU_PAGE_SIZE) !=0)
+		if (arm_lvl1_only(table, virt, size))
 		{
-			pages++;
-		}
-		for (uint32_t page = 0 ; page < pages ; page++)
-		{
-			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
-			l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
-			if (lvl2_tbl)
+			const uint32_t sections = size / ARM_MMU_SECTION_SIZE;
+			const mmu_memory_t mem_type = mem_sec_get_mem_type(section);
+			for (uint32_t sec = 0 ; sec < sections ; sec++)
 			{
-				uint32_t * const lvl2_entry = ARM_GET_LVL2_ENTRY(virt, lvl2_tbl);
-				if (lvl2_entry)
+				const uint32_t virtual = virt + (sec * ARM_MMU_SECTION_SIZE);
+				const uint16_t virt_section = ARM_GET_LVL1_SECTION_INDEX(virtual);
+				const uint32_t real = mem_sec_get_real_addr(section) + (sec * ARM_MMU_SECTION_SIZE);
+				const mmu_privilege_t priv = mem_sec_get_priv(section);
+				const mmu_access_t acc = mem_sec_get_access(section);
+				table->lvl1_entry[virt_section] = arm_generate_lvl1_section(
+						real,
+						arm_pg_tbl_process_specific,
+						arm_pg_tbl_not_shared,
+						(acc == MMU_READ_ONLY),
+						DEFAULT_TEX,
+						ap_bits[priv],
+						ECC_OFF,
+						DEFAULT_DOMAIN,
+						arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
+						(mem_type == MMU_RANDOM_ACCESS_MEMORY),
+						(mem_type == MMU_RANDOM_ACCESS_MEMORY));
+			}
+		}
+		else
+		{
+			const uint32_t size = mem_sec_get_size(section);
+			uint32_t pages = size / MMU_PAGE_SIZE;
+			if ((size % MMU_PAGE_SIZE) !=0)
+			{
+				pages++;
+			}
+			for (uint32_t page = 0 ; page < pages ; page++)
+			{
+				const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
+				l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
+				if (lvl2_tbl)
 				{
-					const mmu_privilege_t priv = mem_sec_get_priv(section);
-					const mmu_access_t acc = mem_sec_get_access(section);
-					const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
-					*lvl2_entry = arm_generate_lvl2(
-							real,
-							arm_pg_tbl_not_trust_zone,
-							arm_pg_tbl_section_1mb,
-							arm_pg_tbl_process_specific,
-							arm_pg_tbl_not_shared,
-							(acc == MMU_READ_ONLY),
-							DEFAULT_TEX,
-							ap_bits[priv]);
+					uint32_t * const lvl2_entry = ARM_GET_LVL2_ENTRY(virt, lvl2_tbl);
+					if (lvl2_entry)
+					{
+						const mmu_privilege_t priv = mem_sec_get_priv(section);
+						const mmu_access_t acc = mem_sec_get_access(section);
+						const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
+						*lvl2_entry = arm_generate_lvl2(
+								real,
+								arm_pg_tbl_not_trust_zone,
+								arm_pg_tbl_section_1mb,
+								arm_pg_tbl_process_specific,
+								arm_pg_tbl_not_shared,
+								(acc == MMU_READ_ONLY),
+								DEFAULT_TEX,
+								ap_bits[priv]);
+					}
+					else
+					{
+						return OUT_OF_MEMORY;
+					}
 				}
 				else
 				{
-					// TODO error
-					kernel_panic();
+					return OUT_OF_MEMORY;
 				}
-			}
-			else
-			{
-				// TODO error
-				kernel_panic();
 			}
 		}
 	}
 	else
 	{
-		// TODO error
-		kernel_panic();
+		return PARAMETERS_NULL;
 	}
 	return NO_ERROR;
 }
@@ -192,7 +278,7 @@ void arm_unmap_memory(
 		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section)
 {
-	if (table)
+	if (table && section)
 	{
 		const uint32_t virt = mem_sec_get_virt_addr(section);
 		l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
