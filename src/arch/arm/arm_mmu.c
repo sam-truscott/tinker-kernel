@@ -75,6 +75,7 @@ static inline uint32_t arm_generate_lvl1_section(
 		const bool_t buffered)
 {
 	uint32_t lvl1 = 0;
+	lvl1 += arm_pg_tbl_section;
 	lvl1 += buffered << 2;
 	lvl1 += cached << 3;
 	lvl1 += nx << 4;
@@ -85,7 +86,7 @@ static inline uint32_t arm_generate_lvl1_section(
 	lvl1 += apx << 15;
 	lvl1 += s << 16;
 	lvl1 += ng << 17;
-	lvl1 += ((uint32_t)real & 0xFFF00000);
+	lvl1 += ((uint32_t)real & 0xFFF00000u);
 	return lvl1;
 }
 
@@ -189,10 +190,13 @@ static void arm_map_section(
 	const mmu_memory_t mem_type = mem_sec_get_mem_type(section);
 	const mmu_privilege_t priv = mem_sec_get_priv(section);
 	const mmu_access_t acc = mem_sec_get_access(section);
-	table->lvl1_entry[ARM_GET_LVL1_SECTION_INDEX(virt)] = arm_generate_lvl1_section(real,
-			arm_pg_tbl_process_specific, arm_pg_tbl_not_shared,
+	table->lvl1_entry[ARM_GET_LVL1_SECTION_INDEX(virt)] = arm_generate_lvl1_section(
+			real,
+			arm_pg_tbl_process_specific,
+			arm_pg_tbl_not_shared,
 			(acc == MMU_READ_ONLY),
-			DEFAULT_TEX, ap_bits[priv],
+			DEFAULT_TEX,
+			ap_bits[priv],
 			ECC_OFF,
 			DEFAULT_DOMAIN,
 			arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
@@ -205,7 +209,7 @@ static error_t arm_map_page(
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
 		const uint32_t virt,
-		const uint32_t page)
+		const uint32_t real)
 {
 	l2_tbl_t * const lvl2_tbl = arm_get_lvl2_table(virt, true, pool, table, section);
 	if (lvl2_tbl)
@@ -215,7 +219,6 @@ static error_t arm_map_page(
 		{
 			const mmu_privilege_t priv = mem_sec_get_priv(section);
 			const mmu_access_t acc = mem_sec_get_access(section);
-			const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
 			*lvl2_entry = arm_generate_lvl2(
 					real,
 					arm_pg_tbl_not_trust_zone,
@@ -255,13 +258,13 @@ error_t arm_map_memory(
 		const uint32_t end = virt + (pages * MMU_PAGE_SIZE);
 		for (uint32_t page = 0 ; page < pages ; page++)
 		{
-			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
+			const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
 			if (arm_is_1mb_section(virt, end))
 			{
 				arm_map_section(
 						section,
-						virt,
-						mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE),
+						virt + (page * MMU_PAGE_SIZE),
+						real,
 						table);
 				page += ARM_MMU_SECTION_PAGES;
 			}
@@ -271,8 +274,8 @@ error_t arm_map_memory(
 						section,
 						pool,
 						table,
-						virt,
-						page);
+						virt + (page * MMU_PAGE_SIZE),
+						real);
 				if (ret != NO_ERROR)
 				{
 					return ret;
