@@ -14,6 +14,8 @@
 #include "kernel/memory/mem_section.h"
 #include "tinker_api_errors.h"
 
+void arm_print_page_table(tgt_pg_tbl_t * const base);
+
 void arm_invalidate_all_tlbs(void);
 
 void arm_disable_mmu(void);

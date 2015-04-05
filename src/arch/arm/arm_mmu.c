@@ -10,6 +10,7 @@
 #include "arch/tgt_types.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/kernel_panic.h"
+#include "kernel/console/print_out.h"
 
 // http://www.embedded-bits.co.uk/2011/mmucode/
 // http://www.slideshare.net/prabindh/enabling-two-level-translation-tables-in-armv7-mmu
@@ -110,11 +111,9 @@ static inline uint32_t arm_generate_lvl1_course(
 		const l2_tbl_t * const base,
 		const uint8_t p,
 		const uint8_t domain,
-		const arm_pg_tbl_lvl1_ns_t ns,
-		const arm_pg_tbl_lvl1_entry_t lvl1_type)
+		const arm_pg_tbl_lvl1_ns_t ns)
 {
-	uint32_t lvl1 = 0;
-	lvl1 += lvl1_type;
+	uint32_t lvl1 = arm_pg_tbl_second_level;
 	lvl1 += (ns << 3);
 	lvl1 += (domain << 5);
 	lvl1 += (p << 9);
@@ -135,8 +134,7 @@ static inline uint32_t arm_generate_lvl1_section(
 		const bool_t cached,
 		const bool_t buffered)
 {
-	uint32_t lvl1 = 0;
-	lvl1 += arm_pg_tbl_section;
+	uint32_t lvl1 = arm_pg_tbl_section;
 	lvl1 += buffered << 2;
 	lvl1 += cached << 3;
 	lvl1 += nx << 4;
@@ -162,6 +160,7 @@ static inline uint32_t arm_generate_lvl2(
 		const bool_t buffered)
 {
 	uint32_t lvl2 = 0;
+	lvl2 += arm_pg_tbl_4k_execute_entry;
 	lvl2 += (buffered << 2);
 	lvl2 += (cached << 3);
 	lvl2 += (ap << 4);
@@ -170,7 +169,6 @@ static inline uint32_t arm_generate_lvl2(
 	lvl2 += (s << 10);
 	lvl2 += (ng << 11);
 	lvl2 += ARM_GET_LVL2_VIRT_ADDR(real);
-	lvl2 += arm_pg_tbl_4k_execute_entry;
 	return lvl2;
 }
 
@@ -194,8 +192,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 						entry,
 						ECC_OFF,
 						DEFAULT_DOMAIN,
-						arm_pg_tbl_not_trust_zone,
-						arm_pg_tbl_second_level);
+						arm_pg_tbl_not_trust_zone);
 			}
 			else
 			{
@@ -313,16 +310,16 @@ error_t arm_map_memory(
 		{
 			pages++;
 		}
-		const uint32_t virt = mem_sec_get_virt_addr(section);
-		const uint32_t end = virt + (pages * MMU_PAGE_SIZE);
 		for (uint32_t page = 0 ; page < pages ; page++)
 		{
+			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
+			const uint32_t end = virt + (pages * MMU_PAGE_SIZE);
 			const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
 			if (arm_is_1mb_section(virt, end))
 			{
 				arm_map_section(
 						section,
-						virt + (page * MMU_PAGE_SIZE),
+						virt,
 						real,
 						table);
 				page += ARM_MMU_SECTION_PAGES;
@@ -333,7 +330,7 @@ error_t arm_map_memory(
 						section,
 						pool,
 						table,
-						virt + (page * MMU_PAGE_SIZE),
+						virt,
 						real);
 				if (ret != NO_ERROR)
 				{
@@ -378,6 +375,44 @@ void arm_unmap_memory(
 	else
 	{
 		// TODO error
+	}
+}
+
+void arm_print_page_table(tgt_pg_tbl_t * const table)
+{
+	debug_print("Print page table\n");
+	for (uint16_t section = 0 ; section < NUM_L1_ENTRIES ; section++)
+	{
+		if ((table->lvl1_entry[section] & 1) == 1)
+		{
+			debug_print("%d: Course table\n", section);
+			l2_tbl_t * const lvl2 = arm_get_lvl2_table(
+					section * ARM_MMU_SECTION_SIZE,
+					false,
+					NULL,
+					table);
+			for (uint16_t page = 0 ; page < NUM_L2_ENTRIES ; page++)
+			{
+				if ((lvl2->l2_tbl[page] & 1) == 1)
+				{
+					debug_print("64K entry\n");
+				}
+				else if ((lvl2->l2_tbl[page] & 2) == 2)
+				{
+					debug_print("%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
+							(section * ARM_MMU_SECTION_SIZE) + (page * MMU_PAGE_SIZE),
+							lvl2->l2_tbl[page] & 0xFFFFF000,
+							(lvl2->l2_tbl[page] & 0x4) >> 2,
+							(lvl2->l2_tbl[page] & 0x8) >> 3,
+							(lvl2->l2_tbl[page] & 0x30) >> 4,
+							(lvl2->l2_tbl[page] >> 6) & 0x7);
+				}
+			}
+		}
+		else if ((table->lvl1_entry[section] & 2) == 2)
+		{
+			debug_print("%d: Section entry\n", section);
+		}
 	}
 }
 

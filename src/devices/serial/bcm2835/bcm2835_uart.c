@@ -125,8 +125,10 @@ void early_uart_init() {
  */
 static void bcm2835_uart_putc(const void * const base, uint8_t byte) {
     // wait for UART to become ready to transmit
-    while (1) {
-        if (!(in_u32((uint32_t*)base + UART0_FR) & (1 << 5))) {
+    while (1)
+    {
+        if (!(in_u32((uint32_t*)base + UART0_FR) & (1 << 5)))
+        {
         	break;
         }
     }
@@ -147,8 +149,10 @@ static void bcm2835_uart_puts(const void * const base, const char * str) {
 
 static uint8_t bcm2835_uart_getc(const void * const base) {
     // wait for UART to have recieved something
-    while(true) {
-		if (!(in_u32((uint32_t*)base + UART0_FR) & (1 << 4))) {
+    while(true)
+    {
+		if (!(in_u32((uint32_t*)base + UART0_FR) & (1 << 4)))
+		{
 			break;
 		}
     }

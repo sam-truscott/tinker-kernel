@@ -45,8 +45,6 @@ void bsp_initialise(void)
 
 void bsp_setup(void)
 {
-	bcm2835_uart_get_device(&uart);
-
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(bcm2835_intc);
 
@@ -65,6 +63,9 @@ void bsp_setup(void)
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: Enabling external interrupts\n");
 #endif
+
+	arm_print_page_table(process_get_page_table(kernel_get_process()));
+	bcm2835_uart_get_device(&uart);
 
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
 	arm_enable_mmu();
@@ -178,6 +179,7 @@ void bsp_write_debug_char(const char c)
 	if (uart.user_data)
 	{
 		uart.write_register(uart.user_data, 0, c);
+		//early_uart_putc(c);
 	}
 	else
 	{

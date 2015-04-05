@@ -551,13 +551,15 @@ error_t process_allocate_vmem(
 				vmem_start = mem_sec_get_virt_addr(current) + mem_sec_get_size(current);
 
 				// pad each region out by mmu page size
-				vmem_start += MMU_PAGE_SIZE;
+				// FIXME test for 4k alignment
+				vmem_start += (vmem_start % MMU_PAGE_SIZE);
 			}
 			prev = current;
 			current = mem_sec_get_next(current);
 		}
 		if (!current && prev && !(*virt_address))
 		{
+			vmem_start += (vmem_start % MMU_PAGE_SIZE);
 			mem_section_t * const new_section =
 					mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
 			mem_sec_set_next(prev, new_section);
