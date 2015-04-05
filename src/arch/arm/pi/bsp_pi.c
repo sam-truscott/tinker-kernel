@@ -51,20 +51,19 @@ void bsp_setup(void)
 	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
-
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
+
 	alarm_set_timer(&bcm2835_system_timer);
 
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
-
 	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
 
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: Enabling external interrupts\n");
+	arm_print_page_table(process_get_page_table(kernel_get_process()));
 #endif
 
-	arm_print_page_table(process_get_page_table(kernel_get_process()));
 	bcm2835_uart_get_device(&uart);
 
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
