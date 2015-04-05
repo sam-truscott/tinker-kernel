@@ -12,6 +12,7 @@
 
 #include "kernel/kernel_assert.h"
 #include "kernel/console/print_out.h"
+#include "kernel/devices/kernel_device.h"
 
 #define CONTROL_OFFSET 0
 #define CLOCK_OFFSET 4
@@ -161,11 +162,13 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 		{
 			timer->usr_data_size = sizeof(bcm2835_timer_usr_data_t);
 			((bcm2835_timer_usr_data_t*)timer->usr_data)->instance = instance;
-			((bcm2835_timer_usr_data_t*)timer->usr_data)->base = base;
-			const uint32_t control = in_u32((uint32_t*)(((uint8_t*)base + CONTROL_OFFSET)));
+			uint32_t vbase = 0;
+			kernel_device_map_memory((uint32_t)base, 0x1000, MMU_DEVICE_MEMORY, &vbase);
+			((bcm2835_timer_usr_data_t*)timer->usr_data)->base = (void*)vbase;
+			const uint32_t control = in_u32((uint32_t*)(((uint8_t*)vbase + CONTROL_OFFSET)));
 			if (control & (1 << instance))
 			{
-				out_u32((uint32_t*)(((uint8_t*)base + CONTROL_OFFSET)), (1 << instance));
+				out_u32((uint32_t*)(((uint8_t*)vbase + CONTROL_OFFSET)), (1 << instance));
 			}
 		}
 		else
@@ -215,7 +218,9 @@ clock_device_t * bcm2835_get_clock(void * const base_address, mem_pool_info_t * 
 	clock_device_t * const clock = mem_alloc(pool, sizeof(clock_device_t));
 	if (clock)
 	{
-		clock->user_data = base_address;
+		uint32_t vbase = 0;
+		kernel_device_map_memory((uint32_t)base_address, 0x1000, MMU_DEVICE_MEMORY, &vbase);
+		clock->user_data = (void*)vbase;
 		clock->get_time = bcm2835_get_time;
 	}
 	return clock;

@@ -304,7 +304,6 @@ static void bcm2835_setup(
 	// unused - simple controller
 }
 
-
 intc_t* bcm2835_intc_create(
 		mem_pool_info_t * const pool,
 		const uint8_t * const base_address)
@@ -318,7 +317,9 @@ intc_t* bcm2835_intc_create(
 		intc_device->enable_cause = bcm2835_enable;
 		intc_device->mask_cause = bcm2835_mask;
 		intc_device->setup_cause = bcm2835_setup;
-		intc_device->user_data = base_address;
+		uint32_t base = 0;
+		kernel_device_map_memory((uint32_t) base_address, 0x1000, MMU_DEVICE_MEMORY, &base);
+		intc_device->user_data = (void*)base;
 		intc = intc_create(pool, intc_device);
 	}
 	else

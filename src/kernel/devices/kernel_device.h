@@ -12,6 +12,7 @@
 
 #include "arch/tgt_types.h"
 #include "tinker_api_errors.h"
+#include "kernel/memory/mem_section.h"
 
 struct kernel_device;
 
@@ -58,5 +59,11 @@ typedef struct kernel_device
 	kernel_device_isr * 			isr;
 	const void * user_data;
 } kernel_device_t;
+
+error_t kernel_device_map_memory
+	(const uint32_t addr,
+	 const uint32_t size,
+	 const mmu_memory_t type,
+	 uint32_t * const virt);
 
 #endif /* KERNEL_DEVICE_H_ */

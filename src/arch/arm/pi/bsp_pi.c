@@ -34,11 +34,7 @@ static kernel_device_t uart;
 
 void bsp_initialise(void)
 {
-	bcm2835_uart_init();
-
-#if defined(TARGET_DEBUGGING)
-	bcm2835_uart_puts("UART Up\n\0");
-#endif
+	early_uart_init();
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
@@ -49,6 +45,8 @@ void bsp_initialise(void)
 
 void bsp_setup(void)
 {
+	bcm2835_uart_get_device(&uart);
+
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(bcm2835_intc);
 
@@ -62,12 +60,7 @@ void bsp_setup(void)
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
 
-	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
-	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
-
-	bcm2835_uart_get_device(&uart);
 	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
-	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
 
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: Enabling external interrupts\n");
@@ -75,6 +68,10 @@ void bsp_setup(void)
 
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
 	arm_enable_mmu();
+
+	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
+	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
+	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
 }
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
@@ -178,7 +175,14 @@ uint32_t bsp_get_usable_memory_end()
 
 void bsp_write_debug_char(const char c)
 {
-	bcm2835_uart_putc(c);
+	if (uart.user_data)
+	{
+		uart.write_register(uart.user_data, 0, c);
+	}
+	else
+	{
+		early_uart_putc(c);
+	}
 }
 
 void tgt_wait_for_interrupt(void)

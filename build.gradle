@@ -33,8 +33,7 @@ model {
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
                     args << "-fpic"
                     args << "-marm"
-                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
-                    args << "-UARCH_HAS_MMU"
+                    args << "-DARCH_HAS_MMU"
 					args << "-march=armv5"
                 }
             }
@@ -50,8 +49,7 @@ model {
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
                     args << "-fpic"
                     args << "-marm"
-                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
-                    args << "-UARCH_HAS_MMU"
+                    args << "-DARCH_HAS_MMU"
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
 					args << "-march=armv5"
@@ -73,8 +71,7 @@ model {
                 	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
                     args << "-fpic"
-                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
-                    args << "-UARCH_HAS_MMU"
+                    args << "-DARCH_HAS_MMU"
 					args << "-march=armv7-a"
                 }
             }
@@ -89,8 +86,7 @@ model {
                 	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
                     args << "-fpic"
-                    args << "-DVIRTUAL_ADDRESS_SPACE=0"
-                    args << "-UARCH_HAS_MMU"
+                    args << "-DARCH_HAS_MMU"
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
 					args << "-march=armv7-a"
@@ -341,10 +337,10 @@ model {
 		            lib api.static         // api layer
 		            lib archArm.static     // generic arm code
 		            lib boot.static        // boot c code into kernel
-		            lib core.static        // the core kernel
 		            lib driverTimerBcm2835.static
 		            lib driverSerialBcm2835.static
 		            lib driverIntcBcm2835.static
+		            lib core.static        // the core kernel
 		            source {
 		                srcDirs "src/arch/arm/pi", "src/tinker"
 		                include "**/*.c"
