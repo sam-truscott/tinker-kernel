@@ -109,7 +109,8 @@ void tgt_prepare_context(
     {
         process_t * const proc = thread_get_parent(thread);
         thread_load_context(thread, context);
-        if (current_process != proc) {
+        if (current_process != proc)
+        {
         	arm_set_translation_table_base(process_get_page_table(proc));
         }
     }
@@ -142,7 +143,8 @@ void tgt_set_context_param(
         const uint8_t index,
         const uint32_t parameter)
 {
-    switch (index) {
+    switch (index)
+    {
     case 0:
         context->gpr[5] = parameter;
         break;

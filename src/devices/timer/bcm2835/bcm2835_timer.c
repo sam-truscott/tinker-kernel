@@ -170,16 +170,6 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 			{
 				out_u32((uint32_t*)(((uint8_t*)vbase + CONTROL_OFFSET)), (1 << instance));
 			}
-			uint8_t offset;
-			switch (instance)
-			{
-				case 0: offset = CLOCK_TIMER_COMPARE_0; break;
-				case 1: offset = CLOCK_TIMER_COMPARE_1; break;
-				case 2: offset = CLOCK_TIMER_COMPARE_2; break;
-				case 3: offset = CLOCK_TIMER_COMPARE_3; break;
-				default: offset = 0; break;
-			}
-			out_u32((uint32_t*)(((uint8_t*)vbase) + offset), 0);
 		}
 		else
 		{
