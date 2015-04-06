@@ -31,7 +31,6 @@ error_t tgt_initialise_process(process_t * const process)
     {
         tgt_mem_t segment_info;
         segment_info.unused = 0;
-        // TODO setup the mem info
         process_set_mem_info(process, &segment_info);
 
         /* setup pages for all the memory sections, i.e. code, data, rdata, sdata, bss */
@@ -39,10 +38,7 @@ error_t tgt_initialise_process(process_t * const process)
         while (section && (ok == NO_ERROR))
         {
             /* setup virt -> real mapping for size */
-            // TODO setup the paging for virtual sections
-            // by adding page table entries
-
-            /* next section */
+        	tgt_map_memory(process, section);
             section = mem_sec_get_next(section);
         }
     }
@@ -111,7 +107,9 @@ void tgt_prepare_context(
         thread_load_context(thread, context);
         if (current_process != proc)
         {
-        	arm_set_translation_table_base(process_get_page_table(proc));
+        	tgt_pg_tbl_t * const pg_table = process_get_page_table(proc);
+        	arm_print_page_table(pg_table);
+        	arm_set_translation_table_base(pg_table);
         }
     }
 }
