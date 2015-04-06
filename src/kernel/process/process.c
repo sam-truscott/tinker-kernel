@@ -123,7 +123,7 @@ error_t process_create(
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Allocating memory for page table: %s\n", name);
 #endif
-		new_proc->page_table = tgt_initialise_page_table(new_proc->memory_pool);
+		new_proc->page_table = tgt_initialise_page_table(mempool);
 		new_proc->threads = thread_map_t_create(
 		        hash_basic_integer,
 		        hash_equal_integer,
