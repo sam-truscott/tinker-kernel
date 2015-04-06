@@ -108,7 +108,9 @@ void tgt_prepare_context(
         if (current_process != proc)
         {
         	tgt_pg_tbl_t * const pg_table = process_get_page_table(proc);
+#if defined (TARGET_DEBUGGING)
         	arm_print_page_table(pg_table);
+#endif
         	arm_set_translation_table_base(pg_table);
         }
     }
