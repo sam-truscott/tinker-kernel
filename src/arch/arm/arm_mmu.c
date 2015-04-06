@@ -454,6 +454,7 @@ void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
 {
 	(void)base;
 	asm("mcr p15, 0, r0, c2, c0, 0");	// TTBR0
-	arm_set_translation_control(0);
-	arm_invalidate_all_tlbs();
+	//asm("mcr p15, 0, r0, c2, c0, 1");	// TTBR1
+	arm_set_translation_control(0);		// TTBR0
+	//arm_set_translation_control(2);	// TTBR1
 }

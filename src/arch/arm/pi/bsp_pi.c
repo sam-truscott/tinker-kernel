@@ -45,6 +45,7 @@ void bsp_initialise(void)
 
 void bsp_setup(void)
 {
+	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
 	arm_enable_mmu();
 
