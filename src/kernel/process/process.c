@@ -472,7 +472,7 @@ void process_exit(process_t * const process)
 		mem_sec_delete(tmp);
 	}
 
-	mem_free(process->memory_pool, process->page_table);
+	mem_free(process->parent, process->page_table);
 	mem_free(process->parent, process->memory_pool);
 	mem_free(process->parent, process);
 }
