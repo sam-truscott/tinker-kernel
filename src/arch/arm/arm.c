@@ -126,10 +126,6 @@ void tgt_prepare_context(
 #if defined (TARGET_DEBUGGING)
         	arm_print_page_table(pg_table);
 #endif
-        	// FIXME: these two need to move
-        	// or we need a different mechanism of switching which page table
-        	// we're using as the floor we're on is kernel and becomes in-accessible.
-        	// Also, what happens during an interrupt in a context switch?
         	arm_set_translation_table_base(pg_table);
         	arm_invalidate_all_tlbs();
         }

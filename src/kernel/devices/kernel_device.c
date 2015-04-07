@@ -26,4 +26,6 @@ error_t kernel_device_map_memory
 			MMU_KERNEL_ACCESS,
 			MMU_READ_WRITE,
 			virt);
+	// TODO if successful iterate around the processes
+	// and add it to all non-kernel spaces too
 }
