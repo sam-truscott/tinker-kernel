@@ -15,6 +15,7 @@
 #include "arm_mmu.h"
 
 #include "tinker_api_types.h"
+#include "kernel/kernel_initialise.h"
 #include "kernel/interrupts/interrupt_manager.h"
 
 void tgt_initialise(void)
@@ -66,7 +67,8 @@ void tgt_initialise_context(
 {
     if (context)
     {
-        *context = mem_alloc(process_get_mem_pool(thread_get_parent(thread)), sizeof(tgt_context_t));
+    	process_t * const proc = thread_get_parent(thread);
+        *context = mem_alloc(process_get_mem_pool(proc), sizeof(tgt_context_t));
         tgt_context_t * const arm_context = *context;
         for (uint16_t gpr = 0; gpr < ARM_CONTEXT_GPR ; gpr++)
         {
@@ -79,6 +81,19 @@ void tgt_initialise_context(
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
+        process_t * kproc = kernel_get_process();
+        if (!process_is_kernel(proc))
+        {
+			tgt_pg_tbl_t * const kernel_pg_tbl = process_get_page_table(kproc);
+			tgt_pg_tbl_t * const process_pg_tbl = process_get_page_table(proc);
+			for (uint16_t s = 0 ; s < NUM_L1_ENTRIES ; s++)
+			{
+				if (kernel_pg_tbl->lvl1_entry[s] != 0)
+				{
+					process_pg_tbl->lvl1_entry[s] = kernel_pg_tbl->lvl1_entry[s];
+				}
+			}
+        }
         if (kernel_mode)
         {
         	arm_context->apsr = PSR_MODE_SYSTEM;
