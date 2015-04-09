@@ -100,8 +100,8 @@ void early_uart_init() {
     // Fractional part register = 0.
 
     // 9600
-    //out_u32((uint32_t*)UART0_IBRD, 19);
-    //out_u32((uint32_t*)UART0_FBRD, 0);
+    //out_u32((uint32_t*)UART0_BASE + UART0_IBRD, 19);
+    //out_u32((uint32_t*)UART0_BASE + UART0_FBRD, 0);
 
     // 115200
     out_u32((uint32_t*)UART0_BASE + UART0_IBRD, 1);
