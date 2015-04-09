@@ -260,7 +260,6 @@ static void bcm2835_enable(
 #if defined(INTC_DEBUGGING)
 		debug_print("BCM2835: enabling %d bank %d index %d\n", cause, bank, index);
 #endif
-		//uint32_t enabled;
 		uint16_t offset;
 		uint32_t bit;
 		switch (bank)
