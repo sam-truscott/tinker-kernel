@@ -71,7 +71,7 @@ static void delay(const uint32_t count) {
  */
 void early_uart_init() {
     // Disable UART0.
-    out_u32((uint32_t*)UART0_BASE + UART0_CR, 0x00000000);
+    out_u32((uint32_t*)(UART0_BASE + UART0_CR), 0x00000000);
     delay(150);
     // Setup the GPIO pin 14 && 15.
 
@@ -87,7 +87,7 @@ void early_uart_init() {
     out_u32((uint32_t*)GPPUDCLK0, 0x00000000);
 
     // Clear pending interrupts.
-    out_u32((uint32_t*)UART0_BASE + UART0_ICR, 0x7FF);
+    out_u32((uint32_t*)(UART0_BASE + UART0_ICR), 0x7FF);
 
     // Set integer & fractional part of baud rate.
     // Divider = UART_CLOCK/(16 * Baud)
@@ -104,19 +104,19 @@ void early_uart_init() {
     //out_u32((uint32_t*)UART0_BASE + UART0_FBRD, 0);
 
     // 115200
-    out_u32((uint32_t*)UART0_BASE + UART0_IBRD, 1);
-	out_u32((uint32_t*)UART0_BASE + UART0_FBRD, 40);
+    out_u32((uint32_t*)(UART0_BASE + UART0_IBRD), 1);
+	out_u32((uint32_t*)(UART0_BASE + UART0_FBRD), 40);
 
     // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
-    out_u32((uint32_t*)UART0_BASE + UART0_LCRH, /* (1 << 4) |*/ (1 << 5) | (1 << 6));
+    out_u32((uint32_t*)(UART0_BASE + UART0_LCRH), /* (1 << 4) |*/ (1 << 5) | (1 << 6));
 
     // Mask all interrupts.
-    out_u32((uint32_t*)UART0_BASE + UART0_IMSC, (1 << 1) | (1 << 4) | /*(1 << 5) |*/
+    out_u32((uint32_t*)(UART0_BASE + UART0_IMSC), (1 << 1) | (1 << 4) | /*(1 << 5) |*/
 		    (1 << 6) | (1 << 7) | (1 << 8) |
 		    (1 << 9) | (1 << 10));
 
     // Enable UART0, receive & transfer part of UART.
-    out_u32((uint32_t*)UART0_BASE + UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
+    out_u32((uint32_t*)(UART0_BASE + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
 }
 
 /*
@@ -127,12 +127,12 @@ static void bcm2835_uart_putc(const void * const base, uint8_t byte) {
     // wait for UART to become ready to transmit
     while (1)
     {
-        if (!(in_u32((uint32_t*)base + UART0_FR) & (1 << 5)))
+        if (!(in_u32((uint32_t*)((uint32_t)base + UART0_FR)) & (1 << 5)))
         {
         	break;
         }
     }
-    out_u32((uint32_t*)base + UART0_DR, byte);
+    out_u32((uint32_t*)((uint32_t)base + UART0_DR), byte);
 }
 
 /*
@@ -151,12 +151,12 @@ static uint8_t bcm2835_uart_getc(const void * const base) {
     // wait for UART to have recieved something
     while(true)
     {
-		if (!(in_u32((uint32_t*)base + UART0_FR) & (1 << 4)))
+		if (!(in_u32((uint32_t*)((uint32_t)base + UART0_FR)) & (1 << 4)))
 		{
 			break;
 		}
     }
-    return in_u32((uint32_t*)base + UART0_DR);
+    return in_u32((uint32_t*)((uint32_t)base + UART0_DR));
 }
 
 static error_t bcm2835_uart_isr(
