@@ -199,7 +199,16 @@ bool_t obj_thread_is_waiting_on(
 		const object_thread_t * const o,
 		const object_t * const waiting_on)
 {
-	return thread_get_waiting_on(o->thread) == waiting_on;
+	bool_t is_waiting;
+	if (o)
+	{
+		is_waiting = (thread_get_waiting_on(o->thread) == waiting_on);
+	}
+	else
+	{
+		is_waiting = false;
+	}
+	return is_waiting;
 }
 
 error_t obj_set_thread_ready(object_thread_t * const o)

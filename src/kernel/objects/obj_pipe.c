@@ -121,6 +121,9 @@ static void pipe_receive_message(
 #endif
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
+#if defined(PIPE_DEBUGGING)
+		debug_print("Pipe: Blocked owner - resuming them\n");
+#endif
 		obj_set_thread_ready(receiver->rx_data.blocked_owner);
 		receiver->rx_data.blocked_owner = NULL;
 	}
@@ -588,10 +591,16 @@ error_t obj_pipe_send_message(
 		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 		if (has_any_receivers)
 		{
+#if defined(PIPE_DEBUGGING)
+			debug_print("Pipe: There are receivers waiting\n");
+#endif
 			while(receiver)
 			{
 				if (pipe_can_receive(receiver))
 				{
+#if defined(PIPE_DEBUGGING)
+					debug_print("Pipe: Receiver is ready to receive the message\n");
+#endif
 					pipe_receive_message(receiver, message, message_size);
 				}
 				pipe_list_it_t_next(&it, &receiver);
