@@ -696,6 +696,9 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 
 		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
 		{
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Resettng to start\n");
+#endif
 			pipe->rx_data.read_msg_position = 0;
 			pipe->rx_data.read_msg_ptr = pipe->memory;
 		}
@@ -703,6 +706,9 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		{
 			pipe->rx_data.read_msg_position++;
 			pipe->rx_data.read_msg_ptr += (pipe->rx_data.message_size+sizeof(uint32_t));
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Pipe read position moved to %d\n", pipe->rx_data.read_msg_position);
+#endif
 		}
 
 		// notify any senders
@@ -712,8 +718,14 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		const bool_t has_any_senders = pipe_list_it_t_get(&it, &sender);
 		if (has_any_senders)
 		{
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Has senders to notify\n");
+#endif
 			while(sender)
 			{
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Notifying sender\n");
+#endif
 				obj_set_thread_ready(sender->tx_data.sending_thread);
 				pipe_list_it_t_next(&it, &sender);
 			}
@@ -723,7 +735,9 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 	{
 		result = INVALID_OBJECT;
 	}
-
+#if defined(PIPE_DEBUGGING)
+	debug_print("Pipe: Results %d\n", result);
+#endif
 	return result;
 }
 
