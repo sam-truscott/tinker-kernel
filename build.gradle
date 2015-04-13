@@ -445,7 +445,7 @@ model {
 	                "-USYSCALL_DEBUGGING",
 	                "-UALARM_DEBUGGING",
 	                "-UREGISTRY_DEBUGGING",
-	                "-UPIPE_DEBUGGING",
+	                "-DPIPE_DEBUGGING",
 	                "-UIDLE_DEBUGGING",
 	                "-UKERNEL_SHELL_DEBUG"
 	        } else if (buildType == buildTypes.release) {

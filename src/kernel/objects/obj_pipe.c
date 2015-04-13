@@ -620,12 +620,11 @@ error_t obj_pipe_receive_message(
 {
 	error_t result = NO_ERROR;
 
-#if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Recieving message, buffer at %x\n", pipe->memory);
-#endif
-
 	if (pipe)
 	{
+#if defined(PIPE_DEBUGGING)
+		debug_print("Pipe: Recieving message, buffer at %x\n", pipe->memory);
+#endif
 		if (message && message_size)
 		{
 			if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
@@ -719,12 +718,12 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		if (has_any_senders)
 		{
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Has senders to notify\n");
+			debug_print("Pipe: Has senders to notify\n");
 #endif
 			while(sender)
 			{
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Notifying sender\n");
+				debug_print("Pipe: Notifying sender\n");
 #endif
 				obj_set_thread_ready(sender->tx_data.sending_thread);
 				pipe_list_it_t_next(&it, &sender);
