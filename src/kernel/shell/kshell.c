@@ -104,7 +104,7 @@ void kshell_start(void)
 				&bytesReceived,
 				true);
 #if defined(KERNEL_SHELL_DEBUG)
-		printp_out("KSHELL %d got %d bytes\n", read_status, *bytesReceived);
+		printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
 #endif
 		if (read_status == NO_ERROR)
 		{
