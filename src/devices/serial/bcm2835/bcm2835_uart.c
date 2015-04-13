@@ -72,16 +72,16 @@ static void delay(const uint32_t count) {
 void early_uart_init() {
     // Disable UART0.
     out_u32((uint32_t*)(UART0_BASE + UART0_CR), 0x00000000);
-    delay(150);
+    delay(200);
     // Setup the GPIO pin 14 && 15.
 
     // Disable pull up/down for all GPIO pins & delay for 150 cycles.
     out_u32((uint32_t*)GPPUD, 0x00000000);
-    delay(150);
+    delay(200);
 
     // Disable pull up/down for pin 14,15 & delay for 150 cycles.
     out_u32((uint32_t*)GPPUDCLK0, (1 << 14) | (1 << 15));
-    delay(150);
+    delay(200);
 
     // Write 0 to GPPUDCLK0 to make it take effect.
     out_u32((uint32_t*)GPPUDCLK0, 0x00000000);
@@ -119,44 +119,26 @@ void early_uart_init() {
     out_u32((uint32_t*)(UART0_BASE + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
 }
 
-/*
- * Transmit a byte via UART0.
- * uint8_t Byte: byte to send.
- */
-static void bcm2835_uart_putc(const void * const base, uint8_t byte) {
-    // wait for UART to become ready to transmit
+static void bcm2835_uart_putc(const uint32_t const base, uint8_t byte) {
     while (1)
     {
-        if (!(in_u32((uint32_t*)((uint32_t)base + UART0_FR)) & (1 << 5)))
+        if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 5)))
         {
         	break;
         }
     }
-    out_u32((uint32_t*)((uint32_t)base + UART0_DR), byte);
+    out_u32((uint32_t*)(base + UART0_DR), byte);
 }
 
-/*
- * print a string to the UART one character at a time
- * const char *str: 0-terminated string
- */
-/*
-static void bcm2835_uart_puts(const void * const base, const char * str) {
-    while (*str) {
-    	bcm2835_uart_putc(base, *str++);
-    }
-}
-*/
-
-static uint8_t bcm2835_uart_getc(const void * const base) {
-    // wait for UART to have recieved something
+static uint8_t bcm2835_uart_getc(const uint32_t base) {
     while(true)
     {
-		if (!(in_u32((uint32_t*)((uint32_t)base + UART0_FR)) & (1 << 4)))
+		if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 4)))
 		{
 			break;
 		}
     }
-    return in_u32((uint32_t*)((uint32_t)base + UART0_DR));
+    return in_u32((uint32_t*)(base + UART0_DR));
 }
 
 static error_t bcm2835_uart_isr(
@@ -166,14 +148,14 @@ static error_t bcm2835_uart_isr(
 	(void)usr_data;
 	(void)vector;
 	char buffer[2] = {0, 0};
-	buffer[0] = bcm2835_uart_getc(usr_data);
+	buffer[0] = bcm2835_uart_getc((uint32_t)usr_data);
 	kernel_in_write(buffer, 1);
 	return NO_ERROR;
 }
 
 void early_uart_putc(const char c)
 {
-	bcm2835_uart_putc((void*)UART0_BASE, c);
+	bcm2835_uart_putc(UART0_BASE, c);
 }
 
 static error_t bcm2835_uart_write(
@@ -182,7 +164,7 @@ static error_t bcm2835_uart_write(
 		const uint32_t val)
 {
 	(void)id;
-	bcm2835_uart_putc(((usr_data == NULL) ? (void*)UART0_BASE : usr_data), val);
+	bcm2835_uart_putc(((usr_data == NULL) ? UART0_BASE : (uint32_t)usr_data), val);
 	return NO_ERROR;
 }
 
