@@ -38,7 +38,7 @@ void kernel_main(void)
 	// Map the RAM into Kernel space
 	mem_section_t * const kernel_ram_sec = mem_sec_create(
 			mem_get_default_pool(),
-			0,
+			4096,
 			0,
 			bsp_get_usable_memory_end(),
 			MMU_RANDOM_ACCESS_MEMORY,
