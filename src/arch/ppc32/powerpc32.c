@@ -584,7 +584,8 @@ void tgt_prepare_context(
 						ks_flag, kp_flag, SR_NE_OFF,
 						segment_info->segment_ids[15]));
 
-		if (current_process != proc) {
+		if (current_process != proc)
+		{
 		    ppc32_switch_page_table(current_process, proc);
 		}
 	}
