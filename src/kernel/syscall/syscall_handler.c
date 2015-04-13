@@ -416,13 +416,17 @@ void syscall_handle_system_call(tgt_context_t * const context)
 					(const bool_t)param[3]);
 
 #if defined (ARCH_HAS_MMU)
+			// FIXME this shouldn't be here - it should be in the pipe object code
+			process_t * const proc = thread_get_parent(this_thread);
 			const uint32_t pool_start = mem_get_start_addr(
-					process_get_mem_pool(
-							thread_get_parent(this_thread)));
-			*msg += VIRTUAL_ADDRESS_SPACE;
-			*msg -= pool_start;
-			msg_size += VIRTUAL_ADDRESS_SPACE;
-			msg_size -= pool_start;
+					process_get_mem_pool(proc));
+			if (!process_is_kernel(proc))
+			{
+				*msg += VIRTUAL_ADDRESS_SPACE;
+				*msg -= pool_start;
+				msg_size += VIRTUAL_ADDRESS_SPACE;
+				msg_size -= pool_start;
+			}
 #endif
 		}
 			break;
