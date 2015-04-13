@@ -74,16 +74,16 @@ void tgt_initialise_context(
         {
             arm_context->gpr[gpr] = 0;
         }
-        arm_context->alignment = 0;
         arm_context->sp = thread_get_virt_stack_base(thread);
+        arm_context->alignment = 0;
 		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
-        process_t * kproc = kernel_get_process();
-        if (!process_is_kernel(proc))
+        if (!kernel_mode)
         {
+        	process_t * const kproc = kernel_get_process();
 			tgt_pg_tbl_t * const kernel_pg_tbl = process_get_page_table(kproc);
 			tgt_pg_tbl_t * const process_pg_tbl = process_get_page_table(proc);
 			for (uint16_t s = 0 ; s < NUM_L1_ENTRIES ; s++)
