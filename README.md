@@ -12,6 +12,9 @@ Supported targets:
 
 In development:
 
+# ARM
+- Raspberry Pi 2
+
 License
 =======
 
