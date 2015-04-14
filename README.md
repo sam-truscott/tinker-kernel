@@ -12,10 +12,10 @@ Supported targets:
 
 In development:
 
-Licence
+License
 =======
 
-GPL v3
+MIT - see LICENSE
 
 Overview
 ========
@@ -62,6 +62,11 @@ To build everything (all targets, debug and release) use:
 	
 	# Linux
 	./gradlew clean assemble
+	
+Toolchains
+==========
+
+For ARM I'm using 4.9.2 for PowerPC I'm using 4.9.0.
 
 Loading
 =======
@@ -83,7 +88,7 @@ The intention is that the kernel is started by firmware or bootloader like u-boo
 Drivers
 =======
 
-Drivers and written as userland services with MMIO through the MMU.
+Drivers are written as userland services with MMIO through the MMU.
 
 The kernel Board Support Package (BSP) should only have drivers for timers and a debugging port such as a UART.
 
@@ -95,12 +100,14 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Remove all the uses of ARCH_HAS_MMU
+* Kernel: Allow user-mode to map to real addresses (user-mode drivers)
+    * (interrupts can be handled by pipes in the bsp)
+    * Already available for kernel space via kernel_device_map_memory
+* Kernel: Review all the uses of ARCH_HAS_MMU
+	* Might be useful for an Arduino port
 * Kernel: Don't map the whole process memory pool to the user-space in the MMU
 	* Just map the entries you need (code, data, shm etc)
 	* Stops the process having access to it's own internal data structures
-* Kernel: Allow user-mode to map to real addresses (user-mode drivers)
-    * (interrupts can be handled by pipes in the bsp)
 * Kernel: Break up the syscalls into separate static/inline functions
 * Support: Create newlib port
 * Kernel: Add mechanism to load elfs
