@@ -546,7 +546,7 @@ error_t obj_pipe_send_message(
 {
 	error_t result = NO_ERROR;
 
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Sending %d bytes\n", message_size);
 #endif
 
@@ -591,14 +591,14 @@ error_t obj_pipe_send_message(
 		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
 		if (has_any_receivers)
 		{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 			debug_print("Pipe: There are receivers waiting\n");
 #endif
 			while(receiver)
 			{
 				if (pipe_can_receive(receiver))
 				{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 					debug_print("Pipe: Receiver is ready to receive the message\n");
 #endif
 					pipe_receive_message(receiver, message, message_size);
@@ -695,7 +695,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 
 		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
 		{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Resettng to start\n");
 #endif
 			pipe->rx_data.read_msg_position = 0;
@@ -717,12 +717,12 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		const bool_t has_any_senders = pipe_list_it_t_get(&it, &sender);
 		if (has_any_senders)
 		{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 			debug_print("Pipe: Has senders to notify\n");
 #endif
 			while(sender)
 			{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 				debug_print("Pipe: Notifying sender\n");
 #endif
 				obj_set_thread_ready(sender->tx_data.sending_thread);
@@ -734,7 +734,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 	{
 		result = INVALID_OBJECT;
 	}
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Results %d\n", result);
 #endif
 	return result;

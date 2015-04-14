@@ -445,12 +445,14 @@ model {
 	                "-USYSCALL_DEBUGGING",
 	                "-UALARM_DEBUGGING",
 	                "-UREGISTRY_DEBUGGING",
-	                "-DPIPE_DEBUGGING",
+	                "-UPIPE_DEBUGGING",
+	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
 	                "-UKERNEL_SHELL_DEBUG"
 	        } else if (buildType == buildTypes.release) {
 	            cCompiler.args "-Os",
-	                "-g0"
+	                "-g0",
+	                "-DKERNEL_SHELL"
 	            linker.args "-s"
 	        }
 	    }
