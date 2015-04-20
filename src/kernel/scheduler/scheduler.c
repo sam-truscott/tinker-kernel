@@ -334,7 +334,7 @@ void sch_set_context_for_next_thread(
 		kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const thread_state_t state = thread_get_state(sch_current_thread);
 
-		if (state == THREADY_READY)
+		if (state == THREADY_READY || state == THREAD_SYSTEM)
 		{
 			thread_set_state(sch_current_thread, THREAD_RUNNING);
 		}
