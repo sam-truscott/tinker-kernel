@@ -18,6 +18,8 @@
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_pipe.h"
+#include "kernel/scheduler/scheduler.h"
+#include "kernel/process/thread.h"
 #include "kernel/utils/collections/hashed_map.h"
 #include "kernel/utils/collections/hashed_map_iterator.h"
 
@@ -74,6 +76,10 @@ static const char ksh_pipe_dir[4][13] =
 
 void kshell_start(void)
 {
+	thread_t * const shell_thread = sch_get_current_thread();
+	process_t * const shell_proc = thread_get_parent(shell_thread);
+	object_thread_t * const shell_thread_obj =
+		(object_thread_t*)obj_get_object(process_get_object_table(shell_proc), thread_get_object_no(shell_thread));
 	ksh_input_pointer = 0;
 	bool_t running = true;
 
@@ -81,9 +87,11 @@ void kshell_start(void)
 	printp_out("KSHELL\n");
 #endif
 
-	tinker_pipe_t input_pipe = INVALID_OBJECT_ID;
-	error_t input_result = tinker_open_pipe(
-			&input_pipe,
+	object_number_t input_pipe_no = INVALID_OBJECT_ID;
+	error_t input_result = obj_open_pipe(
+			shell_proc,
+			shell_thread_obj,
+			&input_pipe_no,
 			"in",
 			PIPE_RECEIVE,
 			4,
@@ -94,13 +102,16 @@ void kshell_start(void)
 		return;
 	}
 
+	object_pipe_t * const input_pipe =
+			obj_cast_pipe(obj_get_object(process_get_object_table(shell_proc), input_pipe_no));
 	while (running)
 	{
 		char * received = NULL;
-		const uint32_t * bytesReceived = NULL;
-		error_t read_status = tinker_receive_message(
+		uint32_t * bytesReceived = NULL;
+		error_t read_status = obj_pipe_receive_message(
 				input_pipe,
-				(const void**)&received,
+				shell_thread_obj,
+				(void**)&received,
 				&bytesReceived,
 				true);
 #if defined(KERNEL_SHELL_DEBUG)
@@ -108,7 +119,7 @@ void kshell_start(void)
 #endif
 		if (read_status == NO_ERROR)
 		{
-			error_t ack = tinker_received_message(input_pipe);
+			error_t ack = obj_pipe_received_message(input_pipe);
 			if (ack != NO_ERROR)
 			{
 				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
