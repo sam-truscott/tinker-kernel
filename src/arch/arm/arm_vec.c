@@ -9,7 +9,7 @@
 
 #include "arm_vec.h"
 #include "kernel/console/print_out.h"
-#pragma GCC optimize ("-O0")
+#pragma GCC optimize ("-O0") // TODO evaluate this
 
 #define SWITCH_TO_SYSTEM_MODE \
 	asm("mrs r0, cpsr"); \
@@ -41,7 +41,7 @@
 	asm("mov r3, sp");							/* get user stack pointer */ \
 	asm("mov r4, lr");							/* get user link pointer */ \
 	SWITCH_BACK \
-	asm("push {r3, lr}");						/* store sp, lr */ \
+	asm("push {r3, r4}");						/* store sp, lr */ \
 	FIX_STACK_ALIGNMENT \
 	asm("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */ \
 
