@@ -178,7 +178,6 @@ void bsp_write_debug_char(const char c)
 	if (uart.user_data)
 	{
 		uart.write_register(uart.user_data, 0, c);
-		//early_uart_putc(c);
 	}
 	else
 	{
@@ -188,6 +187,6 @@ void bsp_write_debug_char(const char c)
 
 void tgt_wait_for_interrupt(void)
 {
-	asm("MOV r0, #0 ");
-	asm("MCR p15, 0, r0, c7, c0, 4");
+	asm volatile("MOV r0, #0");
+	asm volatile("MCR p15, 0, r0, c7, c0, 4");
 }
