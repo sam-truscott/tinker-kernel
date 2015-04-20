@@ -3,16 +3,16 @@ Tinker Hybrid Kernel
 
 Hybrid Kernel written in C and assembly.
 
-Supported targets:
-# PowerPC
+# Supported targets
+## PowerPC
 - gdb simulator (aka PSIM)
 
-# ARM
+## ARM
 - Raspberry Pi
 
-In development:
+# In development:
 
-# ARM
+## ARM
 - Raspberry Pi 2
 
 License
