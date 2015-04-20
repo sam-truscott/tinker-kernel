@@ -19,6 +19,7 @@ model {
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/ppc32"
                     args << "-mcpu=powerpc"
                     args << "-DARCH_HAS_MMU"
+                    args << "-Wno-maybe-uninitialized"
                 }
             }
             target("tinkerArm4Soft") {
@@ -31,7 +32,6 @@ model {
                 cCompiler.withArguments { args ->
                 	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
-                    args << "-fpic"
                     args << "-marm"
                     args << "-DARCH_HAS_MMU"
 					args << "-march=armv5"
@@ -47,7 +47,6 @@ model {
                 cCompiler.withArguments { args ->
                 	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
-                    args << "-fpic"
                     args << "-marm"
                     args << "-DARCH_HAS_MMU"
                     args << "-mfpu=vfp"
@@ -70,7 +69,6 @@ model {
                 cCompiler.withArguments { args ->
                 	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
-                    args << "-fpic"
                     args << "-DARCH_HAS_MMU"
 					args << "-march=armv7-a"
                 }
@@ -85,7 +83,6 @@ model {
                 cCompiler.withArguments { args ->
                 	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
-                    args << "-fpic"
                     args << "-DARCH_HAS_MMU"
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
@@ -333,14 +330,14 @@ model {
 	        }
 	        sources {
 		        c {
-		            lib base.static        // base headers
-		            lib api.static         // api layer
-		            lib archArm.static     // generic arm code
-		            lib boot.static        // boot c code into kernel
 		            lib driverTimerBcm2835.static
 		            lib driverSerialBcm2835.static
 		            lib driverIntcBcm2835.static
+		            lib boot.static        // boot c code into kernel
 		            lib core.static        // the core kernel
+		            lib archArm.static     // generic arm code
+		            lib api.static         // api layer
+		            lib base.static        // base headers
 		            source {
 		                srcDirs "src/arch/arm/pi", "src/tinker"
 		                include "**/*.c"
@@ -364,14 +361,14 @@ model {
 	        }
 	        sources {
 		        c {
-		            lib base.static        // base headers
-		            lib api.static         // api layer
-		            lib archArm.static     // generic arm code
-		            lib boot.static        // boot c code into kernel
-		            lib core.static        // the core kernel
 		            lib driverTimerBcm2835.static
 		            lib driverSerialBcm2835.static
 		            lib driverIntcBcm2835.static
+		            lib boot.static        // boot c code into kernel
+		            lib core.static        // the core kernel
+		            lib archArm.static     // generic arm code
+		            lib api.static         // api layer
+		            lib base.static        // base headers
 		            source {
 		                srcDirs "src/arch/arm/pi", "src/tinker"
 		                include "**/*.c"
@@ -413,8 +410,7 @@ model {
 	    }
 	    
 	    binaries.all {
-	    	cCompiler.args "-Wno-maybe-uninitialized",
-	            "-pedantic",
+	    	cCompiler.args "-pedantic",
 	            "-pedantic-errors",
 	            "-Wall",
 	            "-Wextra",
@@ -423,6 +419,7 @@ model {
 	            "-fmessage-length=0",
 	            "-std=gnu11",
 	            "-fno-builtin",
+	            "-fpic",
 	            "-ffreestanding",
 	            "-DBUILDING_KERNEL"
 	        linker.args "-nostartfiles",
@@ -448,9 +445,10 @@ model {
 	                "-UPIPE_DEBUGGING",
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
-	                "-UKERNEL_SHELL_DEBUG"
+	                "-UKERNEL_SHELL_DEBUG",
+	                "-DRUN_TEST_APP"
 	        } else if (buildType == buildTypes.release) {
-	            cCompiler.args "-Os",
+	            cCompiler.args "-O3",
 	                "-g0",
 	                "-DKERNEL_SHELL"
 	            linker.args "-s"
