@@ -93,14 +93,14 @@
 	PREFIX bool_t ITERATOR_T##_get(ITERATOR_T * it, ITEM_T * item) \
 	{ \
 		bool_t ok = false; \
-		if ( it && item ) \
+		if (it && item) \
 		{ \
-			if ( !it->current ) \
+			if (!it->current) \
 			{ \
 				it->current = it->list->head; \
 			} \
 			\
-			if ( it->current ) \
+			if (it->current) \
 			{ \
 				util_memcpy(item, &(it->current->item), sizeof(ITEM_T)); \
 				ok = true; \
