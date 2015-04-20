@@ -9,6 +9,7 @@
 #include "obj_pipe.h"
 
 #include "arch/tgt_types.h"
+#include "arch/tgt.h"
 #include "object_private.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/unbounded_list.h"
@@ -648,6 +649,10 @@ error_t obj_pipe_receive_message(
 						*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
 						pipe->rx_data.blocked_owner = thread;
+						if (process_is_kernel(thread_get_parent(obj_get_thread(thread))))
+						{
+							tgt_wait_for_interrupt();
+						}
 					}
 					else
 					{
