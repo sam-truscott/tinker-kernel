@@ -9,6 +9,7 @@
 #include "api/tinker_api.h"
 #include "tinker.h"
 
+#if defined(RUN_TEST_APP)
 static tinker_sem_t sem __attribute__((section(".udata")));
 static tinker_sem_t sem2 __attribute__((section(".udata")));
 static tinker_pipe_t tx_pipe __attribute__((section(".udata")));
@@ -21,9 +22,11 @@ static volatile uint8_t timer_expired __attribute__((section(".udata")));
 static void my_initial_thread(void) __attribute__((section(".utext")));
 static void my_other_thread(void) __attribute__((section(".utext")));
 static void timer_timeout(const void * const usr_data) __attribute__((section(".utext")));
+#endif
 
 int kmain(void)
 {       
+#if defined(RUN_TEST_APP)
     tinker_process_t p = 0;
 
     tinker_debug("tinker: initialising test process\n");
@@ -60,9 +63,11 @@ int kmain(void)
 	{
 		tinker_debug("tinker: failed to create test process\n");
 	}
+#endif
 	return 0;
 }
 
+#if defined(RUN_TEST_APP)
 static void my_other_thread(void)
 {
 	error_t error;
@@ -403,3 +408,4 @@ static void timer_timeout(const void * const usr_data)
 	}
 	timer_expired = 1;
 }
+#endif
