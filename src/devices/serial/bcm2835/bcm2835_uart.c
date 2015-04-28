@@ -158,6 +158,17 @@ void early_uart_putc(const char c)
 	bcm2835_uart_putc(UART0_BASE, c);
 }
 
+void early_uart_put(const char * c)
+{
+	if (c)
+	{
+		while((*c))
+		{
+			early_uart_putc(*(c++));
+		}
+	}
+}
+
 static error_t bcm2835_uart_write(
 		const void * const usr_data,
 		const uint32_t id,

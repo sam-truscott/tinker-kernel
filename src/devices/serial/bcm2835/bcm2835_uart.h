@@ -19,6 +19,8 @@ void early_uart_init(void);
 
 void early_uart_putc(const char c);
 
+void early_uart_put(const char * c);
+
 void bcm2835_uart_get_device(
 		kernel_device_t * const device);
 

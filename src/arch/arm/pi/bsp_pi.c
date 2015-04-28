@@ -35,6 +35,7 @@ static kernel_device_t uart;
 void bsp_initialise(void)
 {
 	early_uart_init();
+	early_uart_put("BSP\n");
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
