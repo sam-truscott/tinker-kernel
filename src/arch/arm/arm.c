@@ -22,6 +22,11 @@ void tgt_initialise(void)
 {
 	arm_disable_mmu();
 	arm_invalidate_all_tlbs();
+	const psr_mode_t current_mode = arm_get_psr_mode();
+	arm_set_psr_mode(PSR_MODE_IRQ);
+	arm_disable_fiq();
+	arm_disable_irq();
+	arm_set_psr_mode(current_mode);
 }
 
 error_t tgt_initialise_process(process_t * const process)
