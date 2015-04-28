@@ -97,7 +97,7 @@ static void pipe_receive_message(
 		const uint32_t message_size)
 {
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Writing size to %x\n", receiver->rx_data.write_msg_ptr);
+	debug_print("Pipe: Writing size (%d) to %x\n", message_size, receiver->rx_data.write_msg_ptr);
 	debug_print("Pipe: Writing data to %x\n", receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
 #endif
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
