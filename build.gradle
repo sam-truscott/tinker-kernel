@@ -442,15 +442,17 @@ model {
 	                "-USYSCALL_DEBUGGING",
 	                "-UALARM_DEBUGGING",
 	                "-UREGISTRY_DEBUGGING",
-	                "-UPIPE_DEBUGGING",
+	                "-DPIPE_DEBUGGING",
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
-	                "-UKERNEL_SHELL_DEBUG",
-	                "-DRUN_TEST_APP"
+	                "-DKERNEL_SHELL_DEBUG",
+	                "-URUN_TEST_APP"
 	        } else if (buildType == buildTypes.release) {
-	            cCompiler.args "-O3",
+	            cCompiler.args "-Os",
 	                "-g0",
-	                "-DKERNEL_SHELL"
+	                "-DKERNEL_DEBUGGING",
+	                "-DKERNEL_SHELL",
+	                "-DKERNEL_SHELL_DEBUG"
 	            linker.args "-s"
 	        }
 	    }

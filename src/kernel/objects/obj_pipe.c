@@ -100,6 +100,7 @@ static void pipe_receive_message(
 	debug_print("Pipe: Writing size (%d) to %x\n", message_size, receiver->rx_data.write_msg_ptr);
 	debug_print("Pipe: Writing data to %x\n", receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
 #endif
+	obj_lock(&receiver->object);
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
 	*msg_size = message_size;
 	util_memcpy(receiver->rx_data.write_msg_ptr+sizeof(uint32_t), message, message_size);
@@ -128,6 +129,7 @@ static void pipe_receive_message(
 		obj_set_thread_ready(receiver->rx_data.blocked_owner);
 		receiver->rx_data.blocked_owner = NULL;
 	}
+	obj_unlock(&receiver->object);
 }
 
 static inline bool_t pipe_is_receiver(const object_pipe_t * const pipe)
@@ -553,6 +555,7 @@ error_t obj_pipe_send_message(
 
 	if (pipe)
 	{
+		obj_lock(&pipe->object);
 		if (pipe->direction == PIPE_SEND || pipe->direction == PIPE_SEND_RECEIVE)
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
@@ -577,6 +580,7 @@ error_t obj_pipe_send_message(
 		{
 			result = PIPE_POLARITY_WRONG;
 		}
+		obj_unlock(&pipe->object);
 	}
 	else
 	{
@@ -633,6 +637,8 @@ error_t obj_pipe_receive_message(
 				*message = NULL;
 				*message_size = 0;
 
+				bool_t locked = true;
+				obj_lock(&pipe->object);
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
 #if defined(PIPE_DEBUGGING)
@@ -651,6 +657,8 @@ error_t obj_pipe_receive_message(
 						pipe->rx_data.blocked_owner = thread;
 						if (process_is_kernel(thread_get_parent(obj_get_thread(thread))))
 						{
+							obj_unlock(&pipe->object);
+							locked = false;
 							tgt_wait_for_interrupt();
 						}
 					}
@@ -666,6 +674,10 @@ error_t obj_pipe_receive_message(
 #endif
 					*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
 					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
+				}
+				if (locked)
+				{
+					obj_unlock(&pipe->object);
 				}
 			}
 			else
@@ -696,6 +708,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 
 	if (pipe)
 	{
+		obj_lock(&pipe->object);
 		pipe->rx_data.free_messages++;
 
 		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
@@ -734,6 +747,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 				pipe_list_it_t_next(&it, &sender);
 			}
 		}
+		obj_unlock(&pipe->object);
 	}
 	else
 	{

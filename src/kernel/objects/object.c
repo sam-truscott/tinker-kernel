@@ -18,6 +18,7 @@ void obj_initialise_object(
 {
 	o->object_number = id;
 	o->type = type;
+	lock_init(&o->lock);
 }
 
 object_type_t obj_get_type(const object_t * const o)
@@ -38,5 +39,21 @@ uint32_t obj_get_number(const object_t * const o)
 		no = o->object_number;
 	}
 	return no;
+}
+
+void obj_lock(object_t * const o)
+{
+	if (o)
+	{
+		lock(&o->lock);
+	}
+}
+
+void obj_unlock(object_t * const o)
+{
+	if (o)
+	{
+		unlock(&o->lock);
+	}
 }
 
