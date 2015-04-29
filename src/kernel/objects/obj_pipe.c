@@ -550,12 +550,15 @@ error_t obj_pipe_send_message(
 	error_t result = NO_ERROR;
 
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Sending %d bytes\n", message_size);
+	debug_print("Pipe: Sending %d bytes to pipe %x\n", message_size, pipe);
 #endif
 
 	if (pipe)
 	{
 		obj_lock(&pipe->object);
+#if defined(PIPE_TRACING)
+		debug_print("Pipe: Direction %d\n", pipe->direction);
+#endif
 		if (pipe->direction == PIPE_SEND || pipe->direction == PIPE_SEND_RECEIVE)
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))

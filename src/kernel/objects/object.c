@@ -45,7 +45,13 @@ void obj_lock(object_t * const o)
 {
 	if (o)
 	{
+#if defined (LOCK_DEBUGGING)
+		debug_print("locking object %d\n", o->object_number);
+#endif
 		lock(&o->lock);
+#if defined (LOCK_DEBUGGING)
+		debug_print("locked object %d\n", o->object_number);
+#endif
 	}
 }
 
@@ -53,7 +59,13 @@ void obj_unlock(object_t * const o)
 {
 	if (o)
 	{
+#if defined (LOCK_DEBUGGING)
+		debug_print("unlocking object %d\n", o->object_number);
+#endif
 		unlock(&o->lock);
+#if defined (LOCK_DEBUGGING)
+		debug_print("unlocked object %d\n", o->object_number);
+#endif
 	}
 }
 

@@ -433,7 +433,7 @@ model {
 	                "-DKERNEL_SHELL",
 	                "-UTIMER_DEBUGGING",
 	                "-UINTC_DEBUGGING",
-	                "-DKERNEL_DEBUGGING",
+	                "-UKERNEL_DEBUGGING",
 	                "-UMEMORY_DEBUGGING",
 	                "-UDEBUG_COLLECTIONS",
 	                "-UPROCESS_DEBUGGING",
@@ -442,10 +442,11 @@ model {
 	                "-USYSCALL_DEBUGGING",
 	                "-UALARM_DEBUGGING",
 	                "-UREGISTRY_DEBUGGING",
-	                "-DPIPE_DEBUGGING",
+	                "-UPIPE_DEBUGGING",
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
-	                "-DKERNEL_SHELL_DEBUG",
+	                "-UKERNEL_SHELL_DEBUG",
+	                "-ULOCK_DEBUGGING",
 	                "-URUN_TEST_APP"
 	        } else if (buildType == buildTypes.release) {
 	            cCompiler.args "-Os",
