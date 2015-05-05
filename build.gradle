@@ -12,7 +12,7 @@ model {
                 File srcDir = new File("src")
                 cppCompiler.executable = "powerpc-eabi-gcc"
                 cCompiler.executable = "powerpc-eabi-gcc"
-                assembler.executable = "powerpc-eabi-as"
+                assembler.executable = "powerpc-eabi-gcc"
                 linker.executable = "powerpc-eabi-gcc"
                 staticLibArchiver.executable = "powerpc-eabi-ar"
                 cCompiler.withArguments { args ->
@@ -26,7 +26,7 @@ model {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-as"
+                assembler.executable = "arm-eabi-gcc"
                 linker.executable = "arm-eabi-gcc"
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
@@ -41,7 +41,7 @@ model {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-as"
+                assembler.executable = "arm-eabi-gcc"
                 linker.executable = "arm-eabi-gcc"
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
@@ -63,7 +63,7 @@ model {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-as"
+                assembler.executable = "arm-eabi-gcc"
                 linker.executable = "arm-eabi-gcc"
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
@@ -77,7 +77,7 @@ model {
                 File srcDir = new File("src")
                 cppCompiler.executable = "arm-eabi-gcc"
                 cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-as"
+                assembler.executable = "arm-eabi-gcc"
                 linker.executable = "arm-eabi-gcc"
                 staticLibArchiver.executable = "arm-eabi-ar"
                 cCompiler.withArguments { args ->
@@ -433,7 +433,7 @@ model {
 	                "-DKERNEL_SHELL",
 	                "-UTIMER_DEBUGGING",
 	                "-UINTC_DEBUGGING",
-	                "-UKERNEL_DEBUGGING",
+	                "-DKERNEL_DEBUGGING",
 	                "-UMEMORY_DEBUGGING",
 	                "-UDEBUG_COLLECTIONS",
 	                "-UPROCESS_DEBUGGING",
@@ -445,7 +445,7 @@ model {
 	                "-UPIPE_DEBUGGING",
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
-	                "-UKERNEL_SHELL_DEBUG",
+	                "-DKERNEL_SHELL_DEBUG",
 	                "-ULOCK_DEBUGGING",
 	                "-URUN_TEST_APP"
 	        } else if (buildType == buildTypes.release) {
