@@ -59,6 +59,8 @@ error_t	tinker_get_thread_priority(
 		tinker_thread_t thread,
 		uint8_t * priority) TINKER_API_SUFFIX;
 
+void tinker_thread_wait(void);
+
 error_t tinker_exit_thread(void) TINKER_API_SUFFIX;
 
 void tinker_debug(const char * const str) TINKER_API_SUFFIX;

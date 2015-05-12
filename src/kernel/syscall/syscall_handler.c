@@ -240,6 +240,12 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			}
 			break;
 
+		case SYSCALL_WAIT_THREAD:
+			{
+				thread_set_state(this_thread, THREAD_WAITING);
+			}
+			break;
+
 		case SYSCALL_CREATE_SEMAPHORE:
 			if (param[0])
 			{

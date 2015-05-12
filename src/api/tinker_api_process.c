@@ -77,6 +77,11 @@ error_t	tinker_get_thread_priority(
 			(uint32_t)priority);
 }
 
+void tinker_thread_wait(void)
+{
+	TINKER_API_CALL_0(SYSCALL_WAIT_THREAD);
+}
+
 error_t tinker_exit_thread(void)
 {
 	return TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
