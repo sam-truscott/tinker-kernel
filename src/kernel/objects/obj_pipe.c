@@ -97,7 +97,7 @@ static void pipe_receive_message(
 		const uint32_t message_size)
 {
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Writing size (%d) to %x and data to %x\n",
+	debug_print("PipeW: Writing size (%d) to %x and data to %x\n",
 			message_size,
 			receiver->rx_data.write_msg_ptr,
 			receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
@@ -120,12 +120,12 @@ static void pipe_receive_message(
 #endif
 	receiver->rx_data.free_messages--;
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
+	debug_print("PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
 #endif
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
 #if defined(PIPE_TRACING)
-		debug_print("Pipe: Blocked owner - resuming them\n");
+		debug_print("PipeW: Blocked owner - resuming them\n");
 #endif
 		obj_set_thread_ready(receiver->rx_data.blocked_owner);
 		receiver->rx_data.blocked_owner = NULL;
@@ -180,7 +180,7 @@ error_t obj_create_pipe(
 	error_t result = NO_ERROR;
 
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Creating pipe named %s direction %d\n", name, direction);
+	debug_print("PipeC: Creating pipe named %s direction %d\n", name, direction);
 #endif
 
 	if (process && objectno)
@@ -228,7 +228,7 @@ error_t obj_create_pipe(
 					}
 				}
 #if defined(PIPE_TRACING)
-				debug_print("Pipe: Memory at %x\n", memory);
+				debug_print("PipeC: Memory at %x\n", memory);
 #endif
 				if (result == NO_ERROR)
 				{
@@ -253,7 +253,7 @@ error_t obj_create_pipe(
 			{
 				no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
 #if defined(PIPE_TRACING)
-				debug_print("Creating pipe at %x\n", no);
+				debug_print("PipeC: Creating pipe at %x\n", no);
 #endif
 				object_number_t objno;
 				result = obj_add_object(table, (object_t*)no, &objno);
@@ -321,7 +321,7 @@ error_t obj_open_pipe(
 	error_t result;
 
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Opening pipe %s direction %d\n", name, direction);
+	debug_print("PipeO: Opening pipe %s direction %d\n", name, direction);
 #endif
 
 	process_t * other_proc = NULL;
@@ -341,7 +341,7 @@ error_t obj_open_pipe(
 			if (other_pipe)
 			{
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
+	debug_print("PipeO: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
 #endif
 				// we have a pipe! check that the direction is correct
 				switch(direction)
@@ -386,7 +386,7 @@ error_t obj_open_pipe(
 		result = BLOCKED_RETRY;
 	}
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Open direction check result %d\n", result);
+	debug_print("PipeO: Open direction check result %d\n", result);
 #endif
 	if (result == NO_ERROR)
 	{
@@ -430,7 +430,7 @@ error_t obj_open_pipe(
 						result = OUT_OF_MEMORY;
 					}
 #if defined(PIPE_TRACING)
-					debug_print("Pipe: Memory at %x\n", memory);
+					debug_print("PipeO: Memory at %x\n", memory);
 #endif
 					rx_queue = pipe_list_t_create(pool);
 					if (!rx_queue)
@@ -448,7 +448,7 @@ error_t obj_open_pipe(
 					break;
 				}
 #if defined(PIPE_TRACING)
-				debug_print("Pipe: Open setup result %d\n", result);
+				debug_print("PipeO: Open setup result %d\n", result);
 #endif
 				if (result == NO_ERROR)
 				{
@@ -501,7 +501,7 @@ error_t obj_open_pipe(
 					else
 					{
 #if defined(PIPE_TRACING)
-						debug_print("Pipe: Failed to add the pipe to the object table\n");
+						debug_print("PipeO: Failed to add the pipe to the object table\n");
 #endif
 						mem_free(pool, no);
 					}
@@ -554,21 +554,21 @@ error_t obj_pipe_send_message(
 	error_t result = NO_ERROR;
 
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Sending %d bytes to pipe %x\n", message_size, pipe);
+	debug_print("PipeW: Sending %d bytes to pipe %x\n", message_size, pipe);
 #endif
 
 	if (pipe)
 	{
 		obj_lock(&pipe->object);
 #if defined(PIPE_TRACING)
-		debug_print("Pipe: Direction %d\n", pipe->direction);
+		debug_print("PipeW: Direction %d\n", pipe->direction);
 #endif
 		if (pipe->direction == PIPE_SEND || pipe->direction == PIPE_SEND_RECEIVE)
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
 			{
 #if defined(PIPE_TRACING)
-				debug_print("Pipe: Can't send to all receivers\n");
+				debug_print("PipeW: Can't send to all receivers\n");
 #endif
 				// we can't send to everyone
 				if (block)
@@ -605,7 +605,7 @@ error_t obj_pipe_send_message(
 		if (has_any_receivers)
 		{
 #if defined(PIPE_TRACING)
-			debug_print("Pipe: There are receivers waiting\n");
+			debug_print("PipeW: There are receivers waiting\n");
 #endif
 			while(receiver)
 			{
@@ -613,7 +613,7 @@ error_t obj_pipe_send_message(
 				if (pipe_can_receive(receiver))
 				{
 #if defined(PIPE_TRACING)
-					debug_print("Pipe: Receiver is ready to receive the message\n");
+					debug_print("PipeW: Receiver is ready to receive the message\n");
 #endif
 					pipe_receive_message(receiver, message, message_size);
 				}
@@ -638,7 +638,7 @@ error_t obj_pipe_receive_message(
 	if (pipe)
 	{
 #if defined(PIPE_DEBUGGING)
-		debug_print("Pipe: Recieving message, buffer at %x\n", pipe->memory);
+		debug_print("PipeR: Recieving message, buffer at %x\n", pipe->memory);
 #endif
 		if (message && message_size)
 		{
@@ -652,7 +652,7 @@ error_t obj_pipe_receive_message(
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
 #if defined(PIPE_TRACING)
-				debug_print("Pipe: Receiver has free messages? %d. %d free, %d total\n",
+				debug_print("PipeR: Receiver has free messages? %d. %d free, %d total\n",
 						messages_in_buffer,
 						pipe->rx_data.free_messages,
 						pipe->rx_data.total_messages);
@@ -669,7 +669,7 @@ error_t obj_pipe_receive_message(
 						{
 							obj_unlock(&pipe->object);
 							locked = false;
-							tgt_wait_for_interrupt(); // should be yield
+							tinker_thread_wait();
 						}
 					}
 					else
@@ -680,7 +680,7 @@ error_t obj_pipe_receive_message(
 				else
 				{
 #if defined(PIPE_DEBUGGING)
-					debug_print("Pipe: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
+					debug_print("PipeR: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
 #endif
 					*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
 					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
@@ -713,7 +713,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 	error_t result = NO_ERROR;
 
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Acknowledging message received\n");
+	debug_print("PipeA: Acknowledging message received\n");
 #endif
 
 	if (pipe)
@@ -724,7 +724,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
 		{
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Resettng to start\n");
+	debug_print("PipeA: Resettng to start\n");
 #endif
 			pipe->rx_data.read_msg_position = 0;
 			pipe->rx_data.read_msg_ptr = pipe->memory;
@@ -734,7 +734,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 			pipe->rx_data.read_msg_position++;
 			pipe->rx_data.read_msg_ptr += (pipe->rx_data.message_size+sizeof(uint32_t));
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Pipe read position moved to %d\n", pipe->rx_data.read_msg_position);
+	debug_print("PipeA: Pipe read position moved to %d\n", pipe->rx_data.read_msg_position);
 #endif
 		}
 
@@ -746,12 +746,12 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		if (has_any_senders)
 		{
 #if defined(PIPE_TRACING)
-			debug_print("Pipe: Has senders to notify\n");
+			debug_print("PipeA: Has senders to notify\n");
 #endif
 			while(sender)
 			{
 #if defined(PIPE_TRACING)
-				debug_print("Pipe: Notifying sender\n");
+				debug_print("PipeA: Notifying sender\n");
 #endif
 				obj_lock(&sender->object);
 				obj_set_thread_ready(sender->tx_data.sending_thread);
@@ -766,7 +766,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 		result = INVALID_OBJECT;
 	}
 #if defined(PIPE_TRACING)
-	debug_print("Pipe: Results %d\n", result);
+	debug_print("PipeA: Results %d\n", result);
 #endif
 	return result;
 }

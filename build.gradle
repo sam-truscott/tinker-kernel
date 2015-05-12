@@ -445,7 +445,7 @@ model {
 	                "-UPIPE_DEBUGGING",
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
-	                "-DKERNEL_SHELL_DEBUG",
+	                "-UKERNEL_SHELL_DEBUG",
 	                "-ULOCK_DEBUGGING",
 	                "-ULOCK_TRACING",
 	                "-URUN_TEST_APP"
@@ -453,7 +453,7 @@ model {
 	            cCompiler.args "-Os",
 	                "-g0",
 	                "-UKERNEL_DEBUGGING",
-	                "-UKERNEL_SHELL",
+	                "-DKERNEL_SHELL",
 	                "-UKERNEL_SHELL_DEBUG"
 	            linker.args "-s"
 	        }
