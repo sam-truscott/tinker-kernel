@@ -16,7 +16,7 @@
 	asm("mov r2, r0"); \
 	asm("mov r1, #0xFFFFFF80"); \
 	asm("and r0, r0, r1"); \
-	asm("mov r1, #0x7F"); \
+	asm("mov r1, #0xCF"); \
 	asm("orr r0, r0, r1"); \
 	asm("msr cpsr, r0");
 

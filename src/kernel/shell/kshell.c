@@ -172,7 +172,7 @@ static void kshell_execute_command(const char* command)
 	}
 	else
 	{
-		print_out("?\n");
+		printp_out("%s?\n", command);
 	}
 }
 

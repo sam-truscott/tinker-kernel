@@ -97,10 +97,11 @@ static void pipe_receive_message(
 		const uint32_t message_size)
 {
 #if defined(PIPE_DEBUGGING)
-	debug_print("Pipe: Writing size (%d) to %x\n", message_size, receiver->rx_data.write_msg_ptr);
-	debug_print("Pipe: Writing data to %x\n", receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
+	debug_print("Pipe: Writing size (%d) to %x and data to %x\n",
+			message_size,
+			receiver->rx_data.write_msg_ptr,
+			receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
 #endif
-	obj_lock(&receiver->object);
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
 	*msg_size = message_size;
 	util_memcpy(receiver->rx_data.write_msg_ptr+sizeof(uint32_t), message, message_size);
@@ -114,22 +115,21 @@ static void pipe_receive_message(
 		receiver->rx_data.write_msg_position++;
 		receiver->rx_data.write_msg_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
 	}
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	const uint32_t old_free = receiver->rx_data.free_messages;
 #endif
 	receiver->rx_data.free_messages--;
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
 #endif
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 		debug_print("Pipe: Blocked owner - resuming them\n");
 #endif
 		obj_set_thread_ready(receiver->rx_data.blocked_owner);
 		receiver->rx_data.blocked_owner = NULL;
 	}
-	obj_unlock(&receiver->object);
 }
 
 static inline bool_t pipe_is_receiver(const object_pipe_t * const pipe)
@@ -179,7 +179,7 @@ error_t obj_create_pipe(
 	object_pipe_t * no = NULL;
 	error_t result = NO_ERROR;
 
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Creating pipe named %s direction %d\n", name, direction);
 #endif
 
@@ -227,7 +227,7 @@ error_t obj_create_pipe(
 						result = OUT_OF_MEMORY;
 					}
 				}
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 				debug_print("Pipe: Memory at %x\n", memory);
 #endif
 				if (result == NO_ERROR)
@@ -252,7 +252,7 @@ error_t obj_create_pipe(
 			if (result == NO_ERROR)
 			{
 				no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 				debug_print("Creating pipe at %x\n", no);
 #endif
 				object_number_t objno;
@@ -320,7 +320,7 @@ error_t obj_open_pipe(
 	object_pipe_t * no = NULL;
 	error_t result;
 
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Opening pipe %s direction %d\n", name, direction);
 #endif
 
@@ -340,7 +340,7 @@ error_t obj_open_pipe(
 			// check that the named object actually is a pipe
 			if (other_pipe)
 			{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
 #endif
 				// we have a pipe! check that the direction is correct
@@ -385,7 +385,7 @@ error_t obj_open_pipe(
 		registry_wait_for(thread, name);
 		result = BLOCKED_RETRY;
 	}
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 	debug_print("Pipe: Open direction check result %d\n", result);
 #endif
 	if (result == NO_ERROR)
@@ -421,11 +421,15 @@ error_t obj_open_pipe(
 					}
 					memory = (uint8_t*)mem_alloc_aligned(
 							pool, total_size, MMU_PAGE_SIZE);
-					if (!memory)
+					if (memory)
+					{
+						util_memset(memory, 0, total_size);
+					}
+					else
 					{
 						result = OUT_OF_MEMORY;
 					}
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 					debug_print("Pipe: Memory at %x\n", memory);
 #endif
 					rx_queue = pipe_list_t_create(pool);
@@ -443,7 +447,7 @@ error_t obj_open_pipe(
 					}
 					break;
 				}
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 				debug_print("Pipe: Open setup result %d\n", result);
 #endif
 				if (result == NO_ERROR)
@@ -496,7 +500,7 @@ error_t obj_open_pipe(
 					}
 					else
 					{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 						debug_print("Pipe: Failed to add the pipe to the object table\n");
 #endif
 						mem_free(pool, no);
@@ -563,7 +567,7 @@ error_t obj_pipe_send_message(
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
 			{
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 				debug_print("Pipe: Can't send to all receivers\n");
 #endif
 				// we can't send to everyone
@@ -572,6 +576,7 @@ error_t obj_pipe_send_message(
 					pipe->tx_data.sending_thread = thread;
 					obj_set_thread_waiting(thread, (object_t*)pipe);
 					result = BLOCKED_RETRY;
+					// TODO need to block in kernel mode
 				}
 				else
 				{
@@ -604,6 +609,7 @@ error_t obj_pipe_send_message(
 #endif
 			while(receiver)
 			{
+				obj_lock(&receiver->object);
 				if (pipe_can_receive(receiver))
 				{
 #if defined(PIPE_TRACING)
@@ -611,6 +617,7 @@ error_t obj_pipe_send_message(
 #endif
 					pipe_receive_message(receiver, message, message_size);
 				}
+				obj_unlock(&receiver->object);
 				pipe_list_it_t_next(&it, &receiver);
 			}
 		}
@@ -644,7 +651,7 @@ error_t obj_pipe_receive_message(
 				obj_lock(&pipe->object);
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
-#if defined(PIPE_DEBUGGING)
+#if defined(PIPE_TRACING)
 				debug_print("Pipe: Receiver has free messages? %d. %d free, %d total\n",
 						messages_in_buffer,
 						pipe->rx_data.free_messages,
@@ -662,7 +669,7 @@ error_t obj_pipe_receive_message(
 						{
 							obj_unlock(&pipe->object);
 							locked = false;
-							tgt_wait_for_interrupt();
+							tgt_wait_for_interrupt(); // should be yield
 						}
 					}
 					else
@@ -746,7 +753,9 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 #if defined(PIPE_TRACING)
 				debug_print("Pipe: Notifying sender\n");
 #endif
+				obj_lock(&sender->object);
 				obj_set_thread_ready(sender->tx_data.sending_thread);
+				obj_unlock(&sender->object);
 				pipe_list_it_t_next(&it, &sender);
 			}
 		}

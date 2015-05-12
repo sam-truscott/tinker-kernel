@@ -7,6 +7,7 @@
  *  All Rights Reserved.
  */
 #include "kernel/locks/lock.h"
+#include "kernel/console/print_out.h"
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dht0008a/CJHBGBBJ.html
 
@@ -18,7 +19,7 @@ void lock_init(lock_t * const lock)
 	}
 }
 
-void __attribute__((naked)) lock(lock_t * const lock)
+void __attribute__((naked)) lock1(lock_t * const lock)
 {
 	if (lock)
 	{
@@ -34,7 +35,7 @@ void __attribute__((naked)) lock(lock_t * const lock)
 	}
 }
 
-void __attribute__((naked)) unlock(lock_t * const lock)
+void __attribute__((naked)) unlock1(lock_t * const lock)
 {
 	if (lock)
 	{
@@ -47,4 +48,26 @@ void __attribute__((naked)) unlock(lock_t * const lock)
 	{
 		asm volatile ("BX  lr");
 	}
+}
+
+void lock(lock_t * const lock)
+{
+#if defined (LOCK_TRACING)
+	debug_print("L %x\n", lock);
+#endif
+	lock1(lock);
+#if defined (LOCK_TRACING)
+	debug_print("Ld %x\n", lock);
+#endif
+}
+
+void unlock(lock_t * const lock)
+{
+#if defined (LOCK_TRACING)
+	debug_print("U %x\n", lock);
+#endif
+	unlock1(lock);
+#if defined (LOCK_TRACING)
+	debug_print("Ud %x\n", lock);
+#endif
 }

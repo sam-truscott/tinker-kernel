@@ -447,13 +447,14 @@ model {
 	                "-UIDLE_DEBUGGING",
 	                "-DKERNEL_SHELL_DEBUG",
 	                "-ULOCK_DEBUGGING",
+	                "-ULOCK_TRACING",
 	                "-URUN_TEST_APP"
 	        } else if (buildType == buildTypes.release) {
 	            cCompiler.args "-Os",
 	                "-g0",
-	                "-DKERNEL_DEBUGGING",
-	                "-DKERNEL_SHELL",
-	                "-DKERNEL_SHELL_DEBUG"
+	                "-UKERNEL_DEBUGGING",
+	                "-UKERNEL_SHELL",
+	                "-UKERNEL_SHELL_DEBUG"
 	            linker.args "-s"
 	        }
 	    }
