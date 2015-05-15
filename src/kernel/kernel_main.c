@@ -56,7 +56,7 @@ void kernel_main(void)
 	/*
 	 * Start up message(s)
 	 */
-	debug_print("System: Up - Kernel Version: %s, Build: %d\n", KERNEL_VERSION, KERNEL_BUILD);
+	debug_print("System: Up - Kernel Version: %s\n", KERNEL_VERSION);
 
 	/*
 	 * Show time; we're ready
