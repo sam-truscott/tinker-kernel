@@ -382,32 +382,32 @@ model {
 		        }
 	        }
 	    }
-	    ppc32Gdb(NativeExecutableSpec) {
-	        targetPlatform "tinkerPpc"
-	        binaries.all {
-	            File srcDir = new File('src')
-	            linker.args "-lgcc",
-	                 "-T",
-	                 (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
-	        }
-	        sources {
-		        c {
-		            lib base.static        // base headers
-		            lib api.static         // api layer
-		            lib archPowerPc.static // powerpc code
-		            lib boot.static        // boot c code into kernel
-		            lib core.static        // the core kernel
-		            lib driverSerialUart16550.static
-		            lib driverTimerPpc32tbr.static
-		            lib driverTimerOpic.static
-		            lib driverIntcOpic.static
-		            source {
-		                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
-		                include "**/*.c"
-		            }
-		        }
-	        }
-	    }
+//	    ppc32Gdb(NativeExecutableSpec) {
+//	        targetPlatform "tinkerPpc"
+//	        binaries.all {
+//	            File srcDir = new File('src')
+//	            linker.args "-lgcc",
+//	                 "-T",
+//	                 (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
+//	        }
+//	        sources {
+//		        c {
+//		            lib base.static        // base headers
+//		            lib api.static         // api layer
+//		            lib archPowerPc.static // powerpc code
+//		            lib boot.static        // boot c code into kernel
+//		            lib core.static        // the core kernel
+//		            lib driverSerialUart16550.static
+//		            lib driverTimerPpc32tbr.static
+//		            lib driverTimerOpic.static
+//		            lib driverIntcOpic.static
+//		            source {
+//		                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
+//		                include "**/*.c"
+//		            }
+//		        }
+//	        }
+//	    }
 	    
 	    binaries.all {
 	    	cCompiler.args "-pedantic",
