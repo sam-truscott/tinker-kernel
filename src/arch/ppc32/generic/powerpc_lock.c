@@ -9,7 +9,7 @@
 #include "kernel/locks/lock.h"
 #include "kernel/console/print_out.h"
 
-// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dht0008a/CJHBGBBJ.html
+// https://www-01.ibm.com/support/knowledgecenter/ssw_aix_61/com.ibm.aix.alangref/idalangref_lwarx_lwri_instrs.htm
 
 void lock_init(lock_t * const lock)
 {
@@ -19,33 +19,29 @@ void lock_init(lock_t * const lock)
 	}
 }
 
-void __attribute__((naked)) lock1(lock_t * const lock)
+void lock1(lock_t * const lock)
 {
 	if (lock)
 	{
-		asm volatile ("LDR r2, =1");
-		asm volatile ("SWP r1, r2, [r0]");
-		asm volatile ("CMP r1, r2");
-		asm volatile ("BEQ lock1");
-		asm volatile ("BX  lr");
-	}
-	else
-	{
-		asm volatile ("BX  lr");
+		asm volatile ("lock2:");
+		asm volatile ("lwarx  %r6, 0, %r3");
+		asm volatile ("addi %r4, %r0, 0");
+		asm volatile ("addis %r4, %r4, 0");
+		asm volatile ("bne lock2");
+		asm volatile ("addi %r5, %r0, 1");
+		asm volatile ("addis %r5, %r5, 0");
+		asm volatile ("stwcx.  %r5, 0, %r3 ");
+		asm volatile ("bne lock2");
 	}
 }
 
-void __attribute__((naked)) unlock1(lock_t * const lock)
+static void unlock1(lock_t * const lock)
 {
 	if (lock)
 	{
-		asm volatile ("LDR r1, =0");
-		asm volatile ("STR r1, [r0]");
-		asm volatile ("BX  lr");
-	}
-	else
-	{
-		asm volatile ("BX  lr");
+		asm volatile ("addi %r5, %r0, 0");
+		asm volatile ("addis %r5, %r5, 0");
+		asm volatile ("stwcx.  %r5, 0, %r3 ");
 	}
 }
 
