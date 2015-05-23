@@ -23,7 +23,7 @@ UNBOUNDED_LIST_SPEC_ADD(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_SPEC_GET(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_SPEC_REMOVE(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_SIZE(static,shm_client_list_t, object_shm_t*)
+UNBOUNDED_LIST_SPEC_SIZE(static,shm_client_list_t)
 UNBOUNDED_LIST_BODY_CREATE(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_BODY_INITIALISE(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_BODY_DELETE(static,shm_client_list_t, object_shm_t*)
@@ -31,7 +31,7 @@ UNBOUNDED_LIST_BODY_ADD(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_BODY_GET(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_BODY_REMOVE(static,shm_client_list_t, object_shm_t*)
 UNBOUNDED_LIST_BODY_REMOVE_ITEM(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_SIZE(static,shm_client_list_t, object_shm_t*)
+UNBOUNDED_LIST_BODY_SIZE(static,shm_client_list_t)
 
 typedef struct object_shm_t
 {

@@ -186,7 +186,7 @@ model {
 			    c {
 		             lib base.static
 		             source {
-		                 srcDirs "src/kernel"
+		                 srcDirs "src/kernel", "src/tests"
 		                 include "**/*.c"
 		             }
 		        }
@@ -431,6 +431,7 @@ model {
 	                "-g3",
 	                "-gdwarf-4",
 	                "-DKERNEL_SHELL",
+	                "-DUNIT_TESTS",
 	                "-UTIMER_DEBUGGING",
 	                "-UINTC_DEBUGGING",
 	                "-DKERNEL_DEBUGGING",
@@ -447,8 +448,7 @@ model {
 	                "-UIDLE_DEBUGGING",
 	                "-UKERNEL_SHELL_DEBUG",
 	                "-ULOCK_DEBUGGING",
-	                "-ULOCK_TRACING",
-	                "-URUN_TEST_APP"
+	                "-ULOCK_TRACING"
 	        } else if (buildType == buildTypes.release) {
 	            cCompiler.args "-Os",
 	                "-g0",

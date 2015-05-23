@@ -89,7 +89,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 	PREFIX bool_t LIST_T##_get_tail(const LIST_T * const list, ITEM_T * const item_ptr);
 #define UNBOUNDED_LIST_SPEC_NEXT(PREFIX, LIST_T, ITEM_T) \
 	PREFIX bool_t LIST_T##_next(const LIST_T * const list, const ITEM_T current, ITEM_T * const next_ptr);
-#define UNBOUNDED_LIST_SPEC_SIZE(PREFIX, LIST_T, ITEM_T) \
+#define UNBOUNDED_LIST_SPEC_SIZE(PREFIX, LIST_T) \
 	PREFIX inline uint32_t LIST_T##_size(const LIST_T * const list);
 
 #define UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, LIST_T, ITEM_T) \
@@ -184,7 +184,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		bool_t ok = false; \
 		\
 		UNBOUNDED_LIST_DEBUG("unbounded list: insert in list %x at index %d\n", list, index); \
-		if (list) \
+		if (list && index <= list->size) \
 		{ \
 			LIST_T##_element_t * const new_element = mem_alloc( \
 					list->pool, sizeof(LIST_T##_element_t)); \
@@ -236,6 +236,16 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 					element_before->next = new_element; \
 					ok = true; \
 					list->size++; \
+				} \
+				else if (!list->size) \
+				{ \
+					list->head = list->tail = new_element; \
+					ok = true; \
+					list->size++; \
+				} \
+				else \
+				{ \
+					mem_free(list->pool, new_element); \
 				} \
 			} \
 		} \
@@ -357,14 +367,14 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 				LIST_T##_element_t * e = list->tail; \
 				if (list->head == list->tail) \
 				{ \
-					list->head = NULL; \
+					list->head = list->tail = NULL; \
 				} \
 				else \
 				{ \
 					LIST_T##_element_t * pe = list->tail->prev; \
 					pe->next = NULL; \
+					list->tail = pe; \
 				} \
-				list->tail = NULL; \
 				mem_free(list->pool, e); \
 				list->size--; \
 				ret = true; \
@@ -386,14 +396,18 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 			} \
 			else if (list->size > 1) \
 			{ \
-				LIST_T##_element_t * const oldHead = list->head; \
+				LIST_T##_element_t * const oldHeadNext = list->head->next; \
+				LIST_T##_element_t * const oldTailPrev = list->tail->prev; \
 				LIST_T##_element_t * const oldTail = list->tail; \
-				list->head = oldHead->next; \
+				LIST_T##_element_t * const oldHead = list->head; \
+				list->head = oldTail; \
 				list->head->prev = NULL; \
-				oldHead->next = NULL; \
-				oldTail->next = oldHead; \
+				list->head->next = oldHeadNext; \
 				list->tail = oldHead; \
-				list->tail->prev = oldTail; \
+				list->tail->prev = oldTailPrev; \
+				list->tail->next = NULL; \
+				oldTailPrev->next = list->tail; \
+				oldHeadNext->prev = list->head; \
 				ret = true; \
 			} \
 		} \
@@ -439,6 +453,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		if (list && list->tail) \
 		{ \
 			util_memcpy(item_ptr, &list->tail->item, sizeof(ITEM_T)); \
+			ret = true; \
 		} \
 		\
 	 	return ret; \
@@ -474,7 +489,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		} \
 		return ret; \
 	}
-#define UNBOUNDED_LIST_BODY_SIZE(PREFIX, LIST_T, ITEM_T) \
+#define UNBOUNDED_LIST_BODY_SIZE(PREFIX, LIST_T) \
 	/**
 	 * Get the size of the list
 	 */ \

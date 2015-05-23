@@ -47,9 +47,9 @@
 		UNBOUNDED_LIST_SPEC_REMOVE_TAIL(PREFIX, STACK_T##_list_t)
 #define STACK_SPEC_FRONT(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_front(const STACK_T * const stack, ITEM_T * const item);
-#define STACK_SPEC_SIZE(PREFIX, STACK_T, ITEM_T) \
+#define STACK_SPEC_SIZE(PREFIX, STACK_T) \
 	PREFIX uint32_t STACK_T##_size(const STACK_T * const stack); \
-		UNBOUNDED_LIST_SPEC_SIZE(PREFIX, STACK_T##_list_t, ITEM_T)
+		UNBOUNDED_LIST_SPEC_SIZE(PREFIX, STACK_T##_list_t)
 #define STACK_SPEC_GET(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_get(const STACK_T * const stack, const uint32_t index, ITEM_T * const item);
 #define STACK_SPEC_INSERT(PREFIX, STACK_T, ITEM_T) \
@@ -170,9 +170,9 @@
 		\
 		return ok; \
 	}
-#define STACK_BODY_SIZE(PREFIX, STACK_T, ITEM_T) \
+#define STACK_BODY_SIZE(PREFIX, STACK_T) \
 	\
-	UNBOUNDED_LIST_BODY_SIZE(PREFIX, STACK_T##_list_t, ITEM_T) \
+	UNBOUNDED_LIST_BODY_SIZE(PREFIX, STACK_T##_list_t) \
 	\
 	PREFIX uint32_t STACK_T##_size(const STACK_T * const stack) \
 	{ \

@@ -78,9 +78,9 @@
 	PREFIX bool_t QUEUE_T##_reorder_first(QUEUE_T * const queue); \
 	\
 
-#define UNBOUNDED_QUEUE_SPEC_SIZE(PREFIX, QUEUE_T, ITEM_T) \
+#define UNBOUNDED_QUEUE_SPEC_SIZE(PREFIX, QUEUE_T) \
 	\
-	UNBOUNDED_LIST_SPEC_SIZE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	UNBOUNDED_LIST_SPEC_SIZE(PREFIX, QUEUE_T##_list_t) \
 	\
 	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * const queue); \
 	\
@@ -203,9 +203,9 @@
 	} \
 	\
 
-#define UNBOUNDED_QUEUE_BODY_SIZE(PREFIX, QUEUE_T, ITEM_T) \
+#define UNBOUNDED_QUEUE_BODY_SIZE(PREFIX, QUEUE_T) \
 	\
-	UNBOUNDED_LIST_BODY_SIZE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	UNBOUNDED_LIST_BODY_SIZE(PREFIX, QUEUE_T##_list_t) \
 	\
 	PREFIX uint32_t QUEUE_T##_size(const QUEUE_T * const queue) \
 	{ \

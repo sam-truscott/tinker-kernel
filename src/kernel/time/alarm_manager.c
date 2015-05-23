@@ -23,14 +23,14 @@ UNBOUNDED_LIST_SPEC_ADD(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_SPEC_REMOVE(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_SPEC_GET(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_SIZE(static, alarm_list_t, alarm_t*)
+UNBOUNDED_LIST_SPEC_SIZE(static, alarm_list_t)
 UNBOUNDED_LIST_BODY_CREATE(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_BODY_INITIALISE(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_BODY_ADD(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_BODY_REMOVE(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, alarm_list_t, alarm_t*)
 UNBOUNDED_LIST_BODY_GET(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_SIZE(static, alarm_list_t, alarm_t*)
+UNBOUNDED_LIST_BODY_SIZE(static, alarm_list_t)
 
 static void alarm_calculate_next_alarm(alarm_t * const new_alarm);
 

@@ -17,6 +17,7 @@
 #include "kernel/shell/kshell.h"
 #include "kernel/process/process_manager.h"
 #include "kernel_in.h"
+#include "tests/unit_tests.h"
 
 extern void kmain(void);
 
@@ -89,12 +90,8 @@ void kernel_main(void)
 	debug_print("System: Syscall OK\n");
 #endif
 
-#if defined(KERNEL_DEBUGGING)
-	debug_print("System: Calling kmain()\n");
-#endif
-	kmain();
-#if defined(KERNEL_DEBUGGING)
-	debug_print("System: Called kmain()\n");
+#if defined(UNIT_TESTS)
+	run_unit_tests();
 #endif
 
 #if defined (KERNEL_SHELL)

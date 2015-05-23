@@ -27,7 +27,7 @@ UNBOUNDED_QUEUE_SPEC_FRONT(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_SPEC_PUSH(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_SPEC_POP(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_SPEC_REMOVE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_SIZE(static,thread_obj_queue_t, object_thread_t*)
+UNBOUNDED_QUEUE_SPEC_SIZE(static,thread_obj_queue_t)
 UNBOUNDED_QUEUE_BODY_CREATE(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_BODY_INITIALISE(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_BODY_DELETE(static,thread_obj_queue_t, object_thread_t*)
@@ -35,7 +35,7 @@ UNBOUNDED_QUEUE_BODY_FRONT(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_BODY_PUSH(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_BODY_POP(static,thread_obj_queue_t, object_thread_t*)
 UNBOUNDED_QUEUE_BODY_REMOVE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_SIZE(static,thread_obj_queue_t, object_thread_t*)
+UNBOUNDED_QUEUE_BODY_SIZE(static,thread_obj_queue_t)
 
 typedef enum
 {
