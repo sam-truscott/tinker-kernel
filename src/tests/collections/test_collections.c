@@ -40,6 +40,27 @@ UNBOUNDED_LIST_BODY_NEXT(static, test_list_t, uint32_t)
 UNBOUNDED_LIST_SPEC_SIZE(static, test_list_t)
 UNBOUNDED_LIST_BODY_SIZE(static, test_list_t)
 
+#define MAP_SIZE 1024
+#define MAP_BUCKET_SIZE 16
+HASH_MAP_TYPE_T(test_map_t)
+HASH_MAP_INTERNAL_TYPE_T(test_map_t, uint32_t, uint32_t, MAP_SIZE, MAP_BUCKET_SIZE)
+HASH_FUNCS_VALUE(test_map_t, uint32_t)
+HASH_MAP_SPEC_INITALISE(static, test_map_t)
+HASH_MAP_BODY_INITALISE(static, test_map_t, MAP_SIZE, MAP_BUCKET_SIZE)
+HASH_MAP_SPEC_SIZE(static, test_map_t)
+HASH_MAP_BODY_SIZE(static, test_map_t)
+HASH_MAP_SPEC_PUT(static, test_map_t, uint32_t, uint32_t)
+HASH_MAP_BODY_PUT(static, test_map_t, uint32_t, uint32_t, MAP_SIZE, MAP_BUCKET_SIZE)
+HASH_MAP_SPEC_GET(static, test_map_t, uint32_t, uint32_t)
+HASH_MAP_BODY_GET(static, test_map_t, uint32_t, uint32_t, MAP_BUCKET_SIZE)
+
+HASH_MAP_SPEC_REMOVE(static, test_map_t, uint32_t, uint32_t)
+HASH_MAP_BODY_REMOVE(static, test_map_t, uint32_t, MAP_BUCKET_SIZE)
+HASH_MAP_SPEC_CAPACITY(static, test_map_t)
+HASH_MAP_BODY_CAPACITY(static, test_map_t, MAP_SIZE)
+HASH_MAP_SPEC_CONTAINS_KEY(static, test_map_t, uint32_t)
+HASH_MAP_BODY_CONTAINS_KEY(static, test_map_t, uint32_t, MAP_BUCKET_SIZE)
+
 static void test_list(mem_pool_info_t * const pool)
 {
 	test_list_t list;
@@ -111,7 +132,35 @@ static void test_list(mem_pool_info_t * const pool)
 
 static void test_hashmap(mem_pool_info_t * const pool)
 {
-	(void)pool;
+	test_map_t map;
+	test_map_t_initialise(&map, hash_basic_integer, hash_equal_integer, true, pool);
+	kernel_assert("size match", test_map_t_capacity(&map) == MAP_SIZE);
+	kernel_assert("size should be 0", test_map_t_size(&map) == 0);
+	kernel_assert("should return true", test_map_t_put(&map, 0, 0));
+	kernel_assert("size should be 1", test_map_t_size(&map) == 1);
+	for (uint8_t i = 1 ; i < 10 ; i++)
+	{
+		kernel_assert("should return false", !test_map_t_contains_key(&map, i));
+		kernel_assert("should return true", test_map_t_put(&map, i, i));
+	}
+	kernel_assert("size should be 10", test_map_t_size(&map) == 10);
+	for (uint8_t i = 0 ; i < 10 ; i++)
+	{
+		uint32_t value = -1;
+		kernel_assert("should return true", test_map_t_get(&map, i, &value));
+		kernel_assert("should match value", i == value);
+	}
+
+	kernel_assert("should return true", test_map_t_remove(&map, 0));
+	kernel_assert("should return false", !test_map_t_contains_key(&map, 0));
+	kernel_assert("size should be 9", test_map_t_size(&map) == 9);
+	for (uint8_t i = 1 ; i < 10 ; i++)
+	{
+		kernel_assert("should return true", test_map_t_contains_key(&map, i));
+		kernel_assert("should return true", test_map_t_remove(&map, i));
+		kernel_assert("should return false", !test_map_t_contains_key(&map, i));
+	}
+	kernel_assert("size should be 0", test_map_t_size(&map) == 0);
 }
 
 static void test_stack(mem_pool_info_t * const pool)

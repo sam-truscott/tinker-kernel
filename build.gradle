@@ -436,7 +436,7 @@ model {
 	                "-UINTC_DEBUGGING",
 	                "-DKERNEL_DEBUGGING",
 	                "-UMEMORY_DEBUGGING",
-	                "-UDEBUG_COLLECTIONS",
+	                "-DDEBUG_COLLECTIONS",
 	                "-UPROCESS_DEBUGGING",
 	                "-USHM_DEBUGGING",
 	                "-UTARGET_DEBUGGING",

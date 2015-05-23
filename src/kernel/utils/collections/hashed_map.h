@@ -161,7 +161,7 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 #define HASH_MAP_SPEC_REMOVE(PREFIX, HASH_MAP_T, KEY_T, VALUE_T) \
 	\
 	PREFIX bool_t HASH_MAP_T##_remove(HASH_MAP_T * const map, const KEY_T key);
-#define HASH_MAP_SPEC_SIZE(PREFIX, HASH_MAP_T, KEY_T, VALUE_T, MAP_CAPACITY) \
+#define HASH_MAP_SPEC_SIZE(PREFIX, HASH_MAP_T) \
 	\
 	PREFIX inline uint32_t HASH_MAP_T##_size(const HASH_MAP_T * const map);
 #define HASH_MAP_SPEC_CAPACITY(PREFIX, HASH_MAP_T) \
