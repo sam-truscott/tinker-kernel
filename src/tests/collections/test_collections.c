@@ -15,6 +15,8 @@
 #include "kernel/utils/collections/stack.h"
 #include "kernel/utils/collections/unbounded_queue.h"
 
+#if defined(UNIT_TESTS)
+
 UNBOUNDED_LIST_TYPE(test_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(test_list_t, uint32_t)
 UNBOUNDED_LIST_SPEC_INITIALISE(static, test_list_t, uint32_t)
@@ -224,3 +226,4 @@ void test_collections(void)
 	test_stack(pool);
 	test_queue(pool);
 }
+#endif
