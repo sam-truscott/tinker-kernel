@@ -61,6 +61,23 @@ HASH_MAP_BODY_CAPACITY(static, test_map_t, MAP_SIZE)
 HASH_MAP_SPEC_CONTAINS_KEY(static, test_map_t, uint32_t)
 HASH_MAP_BODY_CONTAINS_KEY(static, test_map_t, uint32_t, MAP_BUCKET_SIZE)
 
+STACK_TYPE(test_stack_t)
+STACK_INTERNAL_TYPE(test_stack_t, uint32_t)
+STACK_SPEC_INITIALISE(static, test_stack_t, uint32_t)
+STACK_BODY_INITIALISE(static, test_stack_t, uint32_t)
+STACK_SPEC_PUSH(static, test_stack_t, uint32_t)
+STACK_BODY_PUSH(static, test_stack_t, uint32_t)
+STACK_SPEC_POP(static, test_stack_t, uint32_t)
+STACK_BODY_POP(static, test_stack_t, uint32_t)
+STACK_SPEC_FRONT(static, test_stack_t, uint32_t)
+STACK_BODY_FRONT(static, test_stack_t, uint32_t)
+STACK_SPEC_SIZE(static, test_stack_t)
+STACK_BODY_SIZE(static, test_stack_t)
+STACK_SPEC_GET(static, test_stack_t, uint32_t)
+STACK_BODY_GET(static, test_stack_t, uint32_t)
+STACK_SPEC_INSERT(static, test_stack_t, uint32_t)
+STACK_BODY_INSERT(static, test_stack_t, uint32_t)
+
 static void test_list(mem_pool_info_t * const pool)
 {
 	test_list_t list;
@@ -165,7 +182,33 @@ static void test_hashmap(mem_pool_info_t * const pool)
 
 static void test_stack(mem_pool_info_t * const pool)
 {
-	(void)pool;
+	test_stack_t stack;
+	test_stack_t_initialise(&stack, pool);
+	kernel_assert("size should be 0", test_stack_t_size(&stack) == 0);
+
+	kernel_assert("should return true", test_stack_t_push(&stack, 1));
+	kernel_assert("should return true", test_stack_t_push(&stack, 2));
+	kernel_assert("should return true", test_stack_t_push(&stack, 3));
+	kernel_assert("size should be 3", test_stack_t_size(&stack) == 3);
+
+	uint32_t value = 0;
+	kernel_assert("should return true", test_stack_t_front(&stack, &value));
+	kernel_assert("size should be 3", value == 3);
+
+	kernel_assert("should return true", test_stack_t_get(&stack, 1, &value));
+	kernel_assert("size should be 2", value == 2);
+
+	kernel_assert("should return true", test_stack_t_pop(&stack, &value));
+	kernel_assert("size should be 3", value == 3);
+	kernel_assert("size should be 3", test_stack_t_size(&stack) == 2);
+
+	// insert
+	kernel_assert("should return true", test_stack_t_insert(&stack, 2, 3));
+	kernel_assert("size should be 3", value == 3);
+	kernel_assert("size should be 3", test_stack_t_size(&stack) == 3);
+	kernel_assert("should return false", !test_stack_t_insert(&stack, 5, 6));
+	kernel_assert("size should be 3", value == 3);
+	kernel_assert("size should be 3", test_stack_t_size(&stack) == 3);
 }
 
 static void test_queue(mem_pool_info_t * const pool)

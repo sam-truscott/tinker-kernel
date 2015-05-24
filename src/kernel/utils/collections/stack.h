@@ -39,7 +39,7 @@
 	PREFIX void STACK_T##_delete(STACK_T * const stack); \
 		UNBOUNDED_LIST_SPEC_DELETE(PREFIX, STACK_T##_list_t, ITEM_T)
 #define STACK_SPEC_PUSH(PREFIX, STACK_T, ITEM_T) \
-	PREFIX void STACK_T##_push(STACK_T * const stack, ITEM_T item); \
+	PREFIX bool_t STACK_T##_push(STACK_T * const stack, ITEM_T item); \
 		UNBOUNDED_LIST_SPEC_ADD(PREFIX, STACK_T##_list_t, ITEM_T)
 #define STACK_SPEC_POP(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_pop(STACK_T * const stack, ITEM_T * const item); \
@@ -104,12 +104,14 @@
 	\
 	UNBOUNDED_LIST_BODY_ADD(PREFIX, STACK_T##_list_t, ITEM_T) \
 	\
-	PREFIX void STACK_T##_push(STACK_T * const stack, ITEM_T item) \
+	PREFIX bool STACK_T##_push(STACK_T * const stack, ITEM_T item) \
 	{ \
+		bool_t ok = false; \
 		if (stack) \
 		{ \
-			STACK_T##_list_t_add(stack->list, item); \
+			ok = STACK_T##_list_t_add(stack->list, item); \
 		} \
+		return ok; \
 	}
 #define STACK_BODY_INSERT(PREFIX, STACK_T, ITEM_T) \
 	\
