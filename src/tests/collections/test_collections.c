@@ -80,6 +80,23 @@ STACK_BODY_GET(static, test_stack_t, uint32_t)
 STACK_SPEC_INSERT(static, test_stack_t, uint32_t)
 STACK_BODY_INSERT(static, test_stack_t, uint32_t)
 
+UNBOUNDED_QUEUE_TYPE(test_queue_t)
+UNBOUNDED_QUEUE_INTERNAL_TYPE(test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_INITIALISE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_INITIALISE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_PUSH(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_PUSH(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_POP(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_POP(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_FRONT(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_FRONT(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_REORDER_FIRST(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_REORDER_FIRST(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_SIZE(static, test_queue_t)
+UNBOUNDED_QUEUE_BODY_SIZE(static, test_queue_t)
+UNBOUNDED_QUEUE_SPEC_REMOVE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_REMOVE(static, test_queue_t, uint32_t)
+
 static void test_list(mem_pool_info_t * const pool)
 {
 	test_list_t list;
@@ -215,7 +232,40 @@ static void test_stack(mem_pool_info_t * const pool)
 
 static void test_queue(mem_pool_info_t * const pool)
 {
-	(void)pool;
+	// remove
+	test_queue_t queue;
+	uint32_t value = 0;
+	test_queue_t_initialise(&queue, pool);
+	kernel_assert("should be 0", test_queue_t_size(&queue) == 0);
+
+	kernel_assert("should return true", test_queue_t_reorder_first(&queue));
+	kernel_assert("should return false", !test_queue_t_front(&queue, &value));
+	kernel_assert("should return false", !test_queue_t_remove(&queue, 0));
+
+	kernel_assert("should return true", test_queue_t_push(&queue, 1));
+	kernel_assert("should be 1", test_queue_t_size(&queue) == 1);
+
+	kernel_assert("should return true", test_queue_t_push(&queue, 2));
+	kernel_assert("should return true", test_queue_t_push(&queue, 3));
+	kernel_assert("should be 3", test_queue_t_size(&queue) == 3);
+
+	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should be 1", value == 1);
+
+	kernel_assert("should return true", test_queue_t_reorder_first(&queue));
+
+	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should be 3", value == 3);
+
+	kernel_assert("should return true", test_queue_t_pop(&queue));
+	kernel_assert("should be 2", test_queue_t_size(&queue) == 2);
+	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should be 2", value == 2);
+
+	kernel_assert("should return true", test_queue_t_remove(&queue, 1));
+	kernel_assert("should be 1", test_queue_t_size(&queue) == 1);
+	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should be 2", value == 2);
 }
 
 void test_collections(void)
