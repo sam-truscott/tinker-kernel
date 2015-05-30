@@ -8,28 +8,36 @@
  */
 #include "util_case.h"
 
-void util_to_upper(char * string)
+void util_to_upper(char * const string)
 {
-	char * copy = string;
-	while(*copy)
+	if (string)
 	{
-		if ( *copy >= 'a' && *copy <= 'z')
+		char * copy = string;
+		char v = *copy;
+		while(v)
 		{
-			*copy = (char)(*copy - 32);
+			if ( v >= 'a' && v <= 'z')
+			{
+				*copy = (char)(v - 32);
+			}
+			v = *(++copy);
 		}
-		copy++;
 	}
 }
 
-void util_to_lower(char * string)
+void util_to_lower(char * const string)
 {
-	char * copy = string;
-	while(*copy)
+	if (string)
 	{
-		if ( *copy >= 'A' && *copy <= 'Z')
+		char * copy = string;
+		char v = *copy;
+		while(v)
 		{
-			*copy = (char)(*copy + 32);
+			if ( v >= 'A' && v <= 'Z')
+			{
+				*copy = (char)(v + 32);
+			}
+			v = *(++copy);
 		}
-		copy++;
 	}
 }
