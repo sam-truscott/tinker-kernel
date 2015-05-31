@@ -74,9 +74,9 @@ For ARM I'm using 4.9.2 for PowerPC I'm using 4.9.0.
 Loading
 =======
 
-You can place user-code in tinker.c for now but eventually there'll be a bootstrap that contains
-the hybridkernel and the required user-services to startup. The bootstrap will place the kernel
-and services into memory, load the kernel and then start the user-services (much like init).
+Eventually there'll be a bootstrap that contains the hybrid kernel and the required user-services to startup. 
+The bootstrap will place the kerneland services into memory, load the kernel and then start the user-services
+(much like init).
 
  bootstrap
   - kernel >\

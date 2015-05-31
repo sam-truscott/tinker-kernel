@@ -339,7 +339,7 @@ model {
 		            lib api.static         // api layer
 		            lib base.static        // base headers
 		            source {
-		                srcDirs "src/arch/arm/pi", "src/tinker"
+		                srcDirs "src/arch/arm/pi"
 		                include "**/*.c"
 		            }
 		        }
@@ -370,7 +370,7 @@ model {
 		            lib api.static         // api layer
 		            lib base.static        // base headers
 		            source {
-		                srcDirs "src/arch/arm/pi", "src/tinker"
+		                srcDirs "src/arch/arm/pi"
 		                include "**/*.c"
 		            }
 		        }
@@ -402,7 +402,7 @@ model {
 //		            lib driverTimerOpic.static
 //		            lib driverIntcOpic.static
 //		            source {
-//		                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic", "src/tinker"
+//		                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic"
 //		                include "**/*.c"
 //		            }
 //		        }

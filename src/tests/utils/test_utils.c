@@ -35,6 +35,8 @@ static void test_case(void)
 	util_to_lower(NULL);
 	util_to_lower(buffer);
 	kernel_assert("should be true", util_streq(buffer, "", 0));
+	kernel_assert("should be false", !util_streq("abc-", NULL, 4));
+	kernel_assert("should be false", !util_streq("ABC-", NULL, 4));
 
 	buffer[0] = 'A';
 	buffer[1] = 'B';
@@ -42,9 +44,9 @@ static void test_case(void)
 	buffer[3] = '-';
 	buffer[5] = 'A';
 	util_to_lower(buffer);
-	kernel_assert("should be true", util_streq("abc-", NULL, 4));
+	kernel_assert("should be true", util_streq("abc-", buffer, 4));
 	util_to_upper(buffer);
-	kernel_assert("should be true", util_streq("ABC-", NULL, 4));
+	kernel_assert("should be true", util_streq("ABC-", buffer, 4));
 }
 
 void test_utils(void)
