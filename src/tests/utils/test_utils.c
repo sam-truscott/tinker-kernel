@@ -49,10 +49,33 @@ static void test_case(void)
 	kernel_assert("should be true", util_streq("ABC-", buffer, 4));
 }
 
+static void test_memcpy_memset(void)
+{
+	char source[11];
+	char dest[11];
+	source[11] = dest[11] = 0;
+	for (uint8_t i = 0 ; i < 10 ; i++)
+	{
+		source[i] = '0' + i;
+	}
+	kernel_assert("should be true", util_streq("0123456789", source, 10));
+	util_memset(dest, '0', 10);
+	kernel_assert("should be true", util_streq("0000000000", dest, 10));
+	util_memcpy(dest, source, 10);
+	kernel_assert("should be true", util_streq("0123456789", dest, 10));
+	util_memset(dest, '0', 10);
+	util_memcpy(dest, source, 5);
+	kernel_assert("should be true", util_streq("0123400000", dest, 10));
+	util_memset(dest, '0', 10);
+	util_memcpy(dest+5, source+5, 5);
+	kernel_assert("should be true", util_streq("0000056789", dest, 10));
+}
+
 void test_utils(void)
 {
 	test_streq();
 	test_case();
+	test_memcpy_memset();
 }
 
 
