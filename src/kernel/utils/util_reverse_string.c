@@ -10,8 +10,11 @@
 
 void util_reverse_string(const char * src, const uint32_t src_length, char * dst)
 {
-	for ( uint32_t p = 0 ; p < src_length ; p++ )
+	if (src && dst)
 	{
-		dst[p] = src[src_length-p-1];
+		for ( uint32_t p = 0 ; p < src_length ; p++ )
+		{
+			dst[p] = src[src_length-p-1];
+		}
 	}
 }

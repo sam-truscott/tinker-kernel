@@ -120,6 +120,40 @@ static void test_trim(void)
 	kernel_assert("should be true", util_streq("A0A", buffer, length));
 }
 
+static void test_reverse(void)
+{
+	char buffer[11];
+	char buffer2[11];
+	util_memset(buffer, 0, 11);
+	util_memset(buffer2, 0, 11);
+
+	util_reverse_string(NULL, 10, buffer);
+	kernel_assert("should be true", util_streq("", buffer, 10));
+
+	util_memcpy(buffer2, "0123456789", 10);
+	util_reverse_string(buffer2, 10, buffer);
+	kernel_assert("should be true", util_streq("9876543210", buffer, 10));
+}
+
+static void test_i_to_a(void)
+{
+	char buffer[11];
+	util_memset(buffer, 0, 11);
+
+	util_i_to_a(0, buffer, 10);
+	kernel_assert("should be true", util_streq("0", buffer, 10));
+
+	util_i_to_a(123456789, buffer, 10);
+	kernel_assert("should be true", util_streq("123456789", buffer, 10));
+
+	util_i_to_a(-123456789, buffer, 10);
+	kernel_assert("should be true", util_streq("-123456789", buffer, 10));
+
+	util_memset(buffer, 0, 11);
+	util_i_to_h(123456789, buffer, 10);
+	kernel_assert("should be true", util_streq("75BCD15", buffer, 10));
+}
+
 void test_utils(void)
 {
 	test_streq();
@@ -127,6 +161,8 @@ void test_utils(void)
 	test_memcpy_memset();
 	test_strlen();
 	test_trim();
+	test_reverse();
+	test_i_to_a();
 }
 
 
