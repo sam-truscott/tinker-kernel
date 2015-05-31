@@ -71,11 +71,62 @@ static void test_memcpy_memset(void)
 	kernel_assert("should be true", util_streq("0000056789", dest, 10));
 }
 
+static void test_strlen(void)
+{
+	kernel_assert("should be 0", 0 == util_strlen(NULL, 1));
+	kernel_assert("should be 0", 0 == util_strlen("", 1));
+	kernel_assert("should be 1", 1 == util_strlen("A", 1));
+	kernel_assert("should be 1", 1 == util_strlen("A\0B", 3));
+	kernel_assert("should be 2", 2 == util_strlen("AB", 2));
+}
+
+static void test_trim(void)
+{
+	uint32_t length = util_trim(NULL, 0);
+	kernel_assert("should be true", length == 0);
+
+	char buffer[4];
+	util_memset(buffer, 0, 4);
+
+	length = util_trim(buffer, 4);
+	kernel_assert("should be true", util_streq("", buffer, length));
+
+	buffer[0] = '0';
+	length = util_trim(buffer, 1);
+	kernel_assert("should be true", util_streq("", buffer, length));
+
+	buffer[0] = 'A';
+	length = util_trim(buffer, 1);
+	kernel_assert("should be true", util_streq("A", buffer, length));
+
+	buffer[0] = 'A';
+	buffer[1] = '0';
+	buffer[2] = '\0';
+	length = util_trim(buffer, 2);
+	kernel_assert("should be true", util_streq("A", buffer, length));
+
+	buffer[0] = 'A';
+	buffer[1] = '0';
+	buffer[2] = '0';
+	buffer[3] = '\0';
+	length = util_trim(buffer, 3);
+	kernel_assert("should be true", util_streq("A", buffer, length));
+
+	buffer[0] = 'A';
+	buffer[1] = '0';
+	buffer[2] = 'A';
+	buffer[3] = '\0';
+	length = util_trim(buffer, 3);
+	kernel_assert("should be true", util_streq("A0A", buffer, length));
+}
+
 void test_utils(void)
 {
 	test_streq();
 	test_case();
 	test_memcpy_memset();
+	test_strlen();
+	test_trim();
 }
 
 

@@ -8,9 +8,12 @@
  */
 #include "util_strlen.h"
 
-uint32_t util_strlen(const char * string, const uint32_t max)
+uint32_t util_strlen(const char * const string, const uint32_t max)
 {
 	uint32_t c = 0;
-	while ( string[c] != '\0' && c++ <= max) {}
+	if (string)
+	{
+		while ( string[c] != '\0' && c++ <= max);
+	}
 	return c;
 }

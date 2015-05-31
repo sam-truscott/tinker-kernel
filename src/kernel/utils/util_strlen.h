@@ -11,6 +11,6 @@
 
 #include "tinker_api.h"
 
-uint32_t util_strlen(const char * string, const uint32_t max);
+uint32_t util_strlen(const char * const string, const uint32_t max);
 
 #endif /* I_STRLEN_H_ */

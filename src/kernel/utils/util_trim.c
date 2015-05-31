@@ -10,12 +10,20 @@
 
 uint32_t util_trim(char * const string, const uint32_t length)
 {
-	char * ptr = string + length - 1;
-	int new_length = length;
-	while(*ptr == '0')
+	int new_length;
+	if (string)
 	{
-		*ptr-- = '\0';
-		new_length--;
+		char * ptr = string + length - 1;
+		new_length = length;
+		while(*ptr == '0')
+		{
+			*ptr-- = '\0';
+			new_length--;
+		}
+	}
+	else
+	{
+		new_length = 0;
 	}
 	return new_length;
 }
