@@ -21,6 +21,12 @@
 static const intc_t * interrupt_manager_root = NULL;
 static volatile bool_t is_external = false;
 static volatile bool_t is_scheduler = false;
+static syscall_handler_t * handler = NULL;
+
+void int_setup_handler(syscall_handler_t * const syscall_handler)
+{
+	handler = syscall_handler;
+}
 
 void int_install_isr(const intc_t * const intc)
 {
@@ -78,5 +84,5 @@ void int_syscall_request_interrupt(
 		tgt_context_t * const context)
 {
 	kernel_assert("System Call Interrupt Context missing", context != NULL);
-	syscall_handle_system_call(context);
+	syscall_handle_system_call(handler, context);
 }

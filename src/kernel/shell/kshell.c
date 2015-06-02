@@ -9,8 +9,9 @@
 #include "kshell.h"
 #if defined(KERNEL_SHELL)
 #include "api/tinker_api_types.h"
+#include "kernel/kernel_initialise.h"
 #include "kernel/console/print_out.h"
-#include "kernel/process/process_manager.h"
+#include "kernel/process/process_list.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/objects/object_table.h"
@@ -201,10 +202,11 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 
 static void kshell_process_list(void)
 {
+	proc_list_t * const proc_list = kernel_get_proc_list();
 	process_list_it_t * list = NULL;
 	process_t * proc = NULL;
 
-	list = proc_list_procs();
+	list = proc_list_procs(proc_list);
 	process_list_it_t_get(list, &proc);
 
 	print_out("ProcessId\tThreads\tName\n");
@@ -227,10 +229,11 @@ static void kshell_process_list(void)
 
 static void kshell_task_list(void)
 {
+	proc_list_t * const proc_list = kernel_get_proc_list();
 	process_list_it_t * list = NULL;
 	process_t * proc = NULL;
 
-	list = proc_list_procs();
+	list = proc_list_procs(proc_list);
 	process_list_it_t_get(list, &proc);
 
 	while (proc)
@@ -275,7 +278,8 @@ static void kshell_task_list(void)
 
 static void kshell_object_table(void)
 {
-	process_list_it_t * const list = proc_list_procs();
+	proc_list_t * const proc_list = kernel_get_proc_list();
+	process_list_it_t * const list = proc_list_procs(proc_list);
 	process_t * proc = NULL;
 	process_list_it_t_get(list, &proc);
 

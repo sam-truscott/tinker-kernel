@@ -15,11 +15,9 @@
 #include "kernel_version.h"
 #include "kernel/console/print_out.h"
 #include "kernel/shell/kshell.h"
-#include "kernel/process/process_manager.h"
+#include "kernel/process/process_list.h"
 #include "kernel_in.h"
 #include "tests/unit_tests.h"
-
-extern void kmain(void);
 
 void kernel_main(void)
 {
@@ -74,6 +72,7 @@ void kernel_main(void)
 
 	kernel_in_initialise();
 
+	// TODO move to unit tests
 #if defined(SYSCALL_DEBUGGING)
 	debug_print("System: Testing Syscall...\n");
 #endif

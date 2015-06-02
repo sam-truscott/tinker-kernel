@@ -13,7 +13,7 @@
 #include "object_private.h"
 #include "kernel/console/print_out.h"
 #include "kernel/memory/memory_manager.h"
-#include "kernel/process/process_manager.h"
+#include "kernel/process/process_list.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"

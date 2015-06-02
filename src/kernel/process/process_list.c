@@ -6,7 +6,7 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "process_manager.h"
+#include "process_list.h"
 
 #include "config.h"
 #include "arch/tgt.h"
@@ -37,17 +37,23 @@ UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, process_list_t, process_t*)
 UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, process_t*)
 UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, process_t*)
 
-/**
- * The static list of processes in the system
- */
-static process_list_t * process_list = NULL;
-
-void proc_initialise(void)
+typedef struct proc_list_t
 {
-	process_list = process_list_t_create(mem_get_default_pool());
+	process_list_t * process_list;
+} proc_list_t;
+
+proc_list_t * proc_create(mem_pool_info_t * const pool)
+{
+	proc_list_t * const list = mem_alloc(pool, sizeof(process_list_t));
+	if (list)
+	{
+		list->process_list = process_list_t_create(pool);
+	}
+	return list;
 }
 
 error_t proc_create_process(
+		proc_list_t * const list,
 		const char * image,
 		const char * initial_task_name,
 		thread_entry_point * entry_point,
@@ -74,7 +80,7 @@ error_t proc_create_process(
 	uint32_t proc_id = 0;
 	for ( uint32_t i = 0 ; i < MAX_PROCESSES ; i++ )
 	{
-		if ( !process_list_t_get(process_list, i, &tmp) )
+		if ( !process_list_t_get(list->process_list, i, &tmp) )
 		{
 			proc_id = i;
 			break;
@@ -180,7 +186,7 @@ error_t proc_create_process(
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Adding process to process list: %s\n", image);
 #endif
-					if (process_list_t_add(process_list, proc) == false)
+					if (process_list_t_add(list->process_list, proc) == false)
 					{
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Failed to add process to process list: %s\n", image);
@@ -275,12 +281,22 @@ error_t proc_create_thread(
 	return ret;
 }
 
-void proc_delete_proc(const process_t * const process)
+void proc_delete_proc(
+		proc_list_t * const list,
+		const process_t * const process)
 {
-	process_list_t_remove_item(process_list, (process_t*const)process);
+	if (list)
+	{
+		process_list_t_remove_item(list->process_list, (process_t*const)process);
+	}
 }
 
-process_list_it_t * proc_list_procs(void)
+process_list_it_t * proc_list_procs(proc_list_t * const list)
 {
-	return process_list_it_t_create(process_list);
+	process_list_it_t * ret = NULL;
+	if (list)
+	{
+		ret = process_list_it_t_create(list->process_list);
+	}
+	return ret;
 }

@@ -10,6 +10,7 @@
 #define KERNEL_INITIALISE_H_
 
 #include "kernel/kernel_initialise.h"
+#include "kernel/process/process_list.h"
 #include "kernel/process/process.h"
 
 /**
@@ -17,6 +18,8 @@
  * This should only be done once the BSP has been initialised
  */
 void kernel_initialise(void);
+
+proc_list_t * kernel_get_proc_list(void);
 
 process_t * kernel_get_process(void);
 

@@ -13,7 +13,7 @@
 #include "tinker_api_kernel_interface.h"
 #include "kernel/kernel_initialise.h"
 #include "kernel/kernel_main.h"
-#include "kernel/process/process_manager.h"
+#include "kernel/process/process_list.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/obj_semaphore.h"
@@ -27,6 +27,11 @@
 #include "kernel/time/time_manager.h"
 
 #define MAX_SYSCALL_ARGS 7
+
+typedef struct syscall_handler_t
+{
+	proc_list_t * process_list;
+} syscall_handler_t;
 
 static inline object_number_t syscall_get_thread_oid(const thread_t * const thread)
 {
@@ -86,7 +91,19 @@ static error_t syscall_get_sema(
 	return ret;
 }
 
-void syscall_handle_system_call(tgt_context_t * const context)
+syscall_handler_t * create_handler(mem_pool_info_t * const pool, proc_list_t * const proc_list)
+{
+	syscall_handler_t * const sys = mem_alloc(pool, sizeof(syscall_handler_t));
+	if (sys)
+	{
+		sys->process_list = proc_list;
+	}
+	return sys;
+}
+
+void syscall_handle_system_call(
+		syscall_handler_t * const handler,
+		tgt_context_t * const context)
 {
 	syscall_function_t api = (syscall_function_t)tgt_get_syscall_param(context, 0);
 	error_t ret = UNKNOWN_ERROR;
@@ -142,6 +159,7 @@ void syscall_handle_system_call(tgt_context_t * const context)
 			{
 				process_t * process;
 				ret = proc_create_process(
+						handler->process_list,
 						(const char *)param[0],
 						"main",
 						(thread_entry_point*)(param[1]),

@@ -10,10 +10,11 @@
 #include "object.h"
 #include "object_private.h"
 #include "object_table.h"
+#include "kernel/kernel_initialise.h"
 #include "kernel/kernel_assert.h"
 #include "kernel/console/print_out.h"
 #include "kernel/process/thread.h"
-#include "kernel/process/process_manager.h"
+#include "kernel/process/process_list.h"
 #include "kernel/memory/memory_manager.h"
 
 typedef struct object_process_t
@@ -133,7 +134,7 @@ void obj_process_exit(object_process_t * const o)
 #endif
 	process_t * const proc = o->process;
 	obj_delete_process(o);
-	proc_delete_proc(proc);
+	proc_delete_proc(kernel_get_proc_list(), proc);
 	process_exit(proc);
 }
 

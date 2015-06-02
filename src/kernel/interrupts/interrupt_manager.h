@@ -9,8 +9,11 @@
 #ifndef INTERRUPT_MANAGER_H_
 #define INTERRUPT_MANAGER_H_
 
+#include "kernel/syscall/syscall_handler.h"
 #include "kernel/devices/kernel_intc_device.h"
 #include "intc.h"
+
+void int_setup_handler(syscall_handler_t * const syscall_handler);
 
  void int_install_isr(const intc_t * const intc);
 

@@ -14,7 +14,7 @@
 #include "kernel/kernel_assert.h"
 #include "kernel/kernel_panic.h"
 #include "kernel/kernel_initialise.h"
-#include "kernel/process/process_manager.h"
+#include "kernel/process/process_list.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_semaphore.h"
 #include "kernel/utils/util_memcpy.h"

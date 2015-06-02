@@ -10,7 +10,15 @@
 #define SYSCALL_HANDLER_H_
 
 #include "arch/tgt_types.h"
+#include "kernel/memory/memory_manager.h"
+#include "kernel/process/process_list.h"
 
-void syscall_handle_system_call(tgt_context_t * const context);
+typedef struct syscall_handler_t syscall_handler_t;
+
+syscall_handler_t * create_handler(mem_pool_info_t * const pool, proc_list_t * const proc_list);
+
+void syscall_handle_system_call(
+		syscall_handler_t * const handler,
+		tgt_context_t * const context);
 
 #endif /* SYSCALL_HANDLER_H_ */

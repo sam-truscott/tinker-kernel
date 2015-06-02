@@ -14,22 +14,21 @@
 #include "console/print_out.h"
 #include "interrupts/interrupt_manager.h"
 #include "memory/memory_manager.h"
-#include "process/process_manager.h"
+#include "process/process_list.h"
 #include "time/time_manager.h"
 #include "time/alarm_manager.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/objects/registry.h"
+#include "kernel/syscall/syscall_handler.h"
 #include "arch/tgt.h"
 
-/**
- * The kernel process
- */
 static process_t * kernel_process = NULL;
 
-/**
- * The kernel idle thread
- */
 static thread_t * kernel_idle_thread = NULL;
+
+static proc_list_t * proc_list = NULL;
+
+static syscall_handler_t * syscall_handler = NULL;
 
 void kernel_initialise(void)
 {
@@ -46,20 +45,23 @@ void kernel_initialise(void)
 	const bool_t mem_init_ok = mem_initialise(
 			memory_start,
 			memory_end);
-
 	kernel_assert("Failed to Initialise Memory Manager", mem_init_ok);
+
+	mem_pool_info_t * const pool = mem_get_default_pool();
 
 	debug_print("Time: Initialising services...\n");
 	time_initialise();
-	alarm_initialse(mem_get_default_pool());
+	alarm_initialse(pool);
 
 	debug_print("Process: Initialising Management...\n");
+	proc_list = proc_create(pool);
 
-	proc_initialise();
+	debug_print("Syscall: Initialising...\n");
+	syscall_handler = create_handler(pool, proc_list);
+	int_setup_handler(syscall_handler);
 
 	debug_print("Registry: Initialising the Registry...\n");
-
-	registry_initialise(mem_get_default_pool());
+	registry_initialise(pool);
 
 	debug_print("Kernel: Initialising Kernel Process...\n");
 
@@ -80,6 +82,7 @@ void kernel_initialise(void)
 		.data_size = (uint32_t)(data_end - data_pos)
 	};
 	proc_create_process(
+			proc_list,
 			"kernel",
 			"kernel_idle",
 			kernel_idle,
@@ -96,6 +99,11 @@ void kernel_initialise(void)
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
 
 	sch_initialise_scheduler();
+}
+
+proc_list_t * kernel_get_proc_list(void)
+{
+	return proc_list;
 }
 
 process_t * kernel_get_process(void)
