@@ -13,40 +13,24 @@
 #include "kernel/devices/kernel_intc_device.h"
 #include "intc.h"
 
-void int_setup_handler(syscall_handler_t * const syscall_handler);
+typedef struct interrupt_controller_t interrupt_controller_t;
 
- void int_install_isr(const intc_t * const intc);
+interrupt_controller_t * int_create(mem_pool_info_t * const pool, syscall_handler_t * const syscall_handler);
 
- error_t int_handle_external_vector(tgt_context_t * const context);
+void int_install_isr(interrupt_controller_t * const intc, const intc_t * const rintc);
 
-/**
- * Interrupt that occurs when a the BSP requests a context
- * switch and the scheduler is executed
- * @param vector The interrupt vector from the processor
- * @param context The saved execution context
- * @param context_size The size of the context data
- */
+error_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_context_t * const context);
+
 void int_context_switch_interrupt(
+		interrupt_controller_t * const intc,
 		tgt_context_t * const context);
 
-/**
- * Interrupt that occurs when the executing program/process/thread
- * incurs a fatal error and must be terminated
- * @param vector The interrupt vector from the processor
- * @param context The saved execution context
- * @param context_size The size of the context data
- */
 void int_fatal_program_error_interrupt(
+		interrupt_controller_t * const intc,
 		tgt_context_t * const context);
 
-/**
- * Interrupt that occurs when the executing program/process/thread
- * requests the kernel to perform a system function
- * @param vector The interrupt vector from the processor
- * @param context The saved execution context
- * @param context_size The size of the context data
- */
 void int_syscall_request_interrupt(
+		interrupt_controller_t * const intc,
 		tgt_context_t * const context);
 
 #endif /* INTERRUPT_MANAGER_H_ */

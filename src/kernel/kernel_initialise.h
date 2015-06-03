@@ -9,7 +9,7 @@
 #ifndef KERNEL_INITIALISE_H_
 #define KERNEL_INITIALISE_H_
 
-#include "kernel/kernel_initialise.h"
+#include "kernel/interrupts/interrupt_manager.h"
 #include "kernel/process/process_list.h"
 #include "kernel/process/process.h"
 
@@ -18,6 +18,8 @@
  * This should only be done once the BSP has been initialised
  */
 void kernel_initialise(void);
+
+interrupt_controller_t * kernel_get_intc(void);
 
 proc_list_t * kernel_get_proc_list(void);
 

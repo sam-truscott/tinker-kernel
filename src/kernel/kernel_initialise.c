@@ -20,6 +20,7 @@
 #include "kernel/utils/util_memset.h"
 #include "kernel/objects/registry.h"
 #include "kernel/syscall/syscall_handler.h"
+#include "kernel/scheduler/scheduler.hv"
 #include "arch/tgt.h"
 
 static process_t * kernel_process = NULL;
@@ -29,6 +30,8 @@ static thread_t * kernel_idle_thread = NULL;
 static proc_list_t * proc_list = NULL;
 
 static syscall_handler_t * syscall_handler = NULL;
+
+static interrupt_controller_t * interrupt_controller = NULL;
 
 void kernel_initialise(void)
 {
@@ -58,7 +61,9 @@ void kernel_initialise(void)
 
 	debug_print("Syscall: Initialising...\n");
 	syscall_handler = create_handler(pool, proc_list);
-	int_setup_handler(syscall_handler);
+
+	debug_print("Intc: Initialising Interrupt Controller...\n");
+	interrupt_controller = int_create(pool, syscall_handler);
 
 	debug_print("Registry: Initialising the Registry...\n");
 	registry_initialise(pool);
@@ -99,6 +104,11 @@ void kernel_initialise(void)
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
 
 	sch_initialise_scheduler();
+}
+
+interrupt_controller_t * kernel_get_intc(void)
+{
+	return interrupt_controller;
 }
 
 proc_list_t * kernel_get_proc_list(void)

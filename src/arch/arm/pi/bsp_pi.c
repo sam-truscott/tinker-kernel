@@ -31,6 +31,7 @@ static tinker_time_t scheduler_time;
 static tinker_time_t scheduler_period;
 static intc_t * bcm2835_intc;
 static kernel_device_t uart;
+static interrupt_controller_t * interrupt_controller;
 
 void bsp_initialise(void)
 {
@@ -46,8 +47,10 @@ void bsp_initialise(void)
 	ivt_initialise();
 }
 
-void bsp_setup(void)
+void bsp_setup(interrupt_controller_t * const controller)
 {
+	interrupt_controller = controller;
+
 	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
 	arm_enable_mmu();
@@ -55,7 +58,7 @@ void bsp_setup(void)
 	bcm2835_uart_get_device(&uart);
 
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
-	int_install_isr(bcm2835_intc);
+	int_install_isr(controller, bcm2835_intc);
 
 	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
@@ -105,15 +108,15 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	case VECTOR_PRETECH_ABORT:
 	case VECTOR_DATA_ABORT:
 	case VECTOR_RESERVED:
-		int_fatal_program_error_interrupt(context);
+		int_fatal_program_error_interrupt(interrupt_controller, context);
 		break;
 	case VECTOR_SYSTEM_CALL:
-		int_syscall_request_interrupt(context);
+		int_syscall_request_interrupt(interrupt_controller, context);
 		break;
 	case VECTOR_IRQ:
 	case VECTOR_FIQ:
 	{
-		const error_t handled = int_handle_external_vector(context);
+		const error_t handled = int_handle_external_vector(interrupt_controller, context);
 		if (handled != NO_ERROR)
 		{
 			debug_print("BSP: Failed to handle external interrupt, error = %d\n", handled);
@@ -138,7 +141,7 @@ static void bsp_scheduler_timeout(tgt_context_t * const context)
 	debug_print("BSP: sp %x lr %x\n", context->sp, context->lr);
 	debug_print("BSP: ----------------------\n");
 #endif
-	int_context_switch_interrupt(context);
+	int_context_switch_interrupt(interrupt_controller, context);
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: ----------------------\n");
 	debug_print("BSP: Scheduler timeout done\n");

@@ -16,6 +16,7 @@
 #include "kernel/console/print_out.h"
 #include "kernel/shell/kshell.h"
 #include "kernel/process/process_list.h"
+#include "kernel/scheduler/scheduler.h"
 #include "kernel_in.h"
 #include "tests/unit_tests.h"
 
@@ -49,7 +50,7 @@ void kernel_main(void)
 	 * Get the BSP to configure itself
 	 */
 	debug_print("BSP: Setting up the Board...\n");
-	bsp_setup();
+	bsp_setup(kernel_get_intc());
 	debug_print("BSP: Setup Complete\n");
 
 	/*
