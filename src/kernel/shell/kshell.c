@@ -78,7 +78,7 @@ static const char ksh_pipe_dir[4][13] =
 void kshell_start(void)
 {
 	registry_t * const registry = kernel_get_reg();
-	thread_t * const shell_thread = sch_get_current_thread();
+	thread_t * const shell_thread = sch_get_current_thread(kernel_get_sch());
 	process_t * const shell_proc = thread_get_parent(shell_thread);
 	object_thread_t * const shell_thread_obj =
 		(object_thread_t*)obj_get_object(process_get_object_table(shell_proc), thread_get_object_no(shell_thread));

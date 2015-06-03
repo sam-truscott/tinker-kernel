@@ -14,7 +14,6 @@
 #include "kernel/console/print_out.h"
 #include "kernel/memory/memory_manager.h"
 #include "kernel/process/process_list.h"
-#include "kernel/scheduler/scheduler.h"
 #include "kernel/time/time_manager.h"
 #include "kernel/time/alarm_manager.h"
 
@@ -31,10 +30,12 @@ typedef struct object_thread_t
 	priority_t original_priority;
 	mem_pool_info_t * pool;
 	uint32_t alarm_id;
+	scheduler_t * scheduler;
 } object_thread_internal_t;
 
 error_t obj_create_thread(
 		mem_pool_info_t * const pool,
+		scheduler_t * const scheduler,
 		object_table_t * const table,
 		const uint32_t thread_id,
 		thread_t * const thread,
@@ -53,12 +54,13 @@ error_t obj_create_thread(
 			obj_initialise_object(&no->object, objno, THREAD_OBJ);
 			no->pool = pool;
 			no->tid = thread_id;
+			no->scheduler = scheduler;
 			no->thread = thread;
 			no->original_priority = thread_get_priority(thread);
 			no->priority_inheritance = 0;
 			no->alarm_id = 0;
 
-			sch_notify_new_thread(thread);
+			sch_notify_new_thread(scheduler, thread);
 
 			if ( object_no )
 			{
@@ -131,7 +133,7 @@ error_t obj_exit_thread(object_thread_t * const o)
 			/* update the reason for the exit and
 			 * notify the scheduler so it can do something else*/
 			thread_set_state(t, THREAD_TERMINATED);
-			sch_notify_exit_thread(t);
+			sch_notify_exit_thread(o->scheduler, t);
 
 			/* free up the stack space used by the thread*/
 			thread_exit(t);
@@ -184,7 +186,7 @@ error_t obj_set_thread_waiting(
 		{
 			thread_set_state(o->thread, THREAD_WAITING);
 			thread_set_waiting_on(o->thread, waiting_on);
-			sch_notify_pause_thread(o->thread);
+			sch_notify_pause_thread(o->scheduler, o->thread);
 		}
 	}
 	else
@@ -222,7 +224,7 @@ error_t obj_set_thread_ready(object_thread_t * const o)
 		{
 			thread_set_state(o->thread, THREADY_READY);
 			thread_set_waiting_on(o->thread, NULL);
-			sch_notify_resume_thread(o->thread);
+			sch_notify_resume_thread(o->scheduler, o->thread);
 		}
 	}
 	else
@@ -286,7 +288,7 @@ error_t obj_set_thread_priority(
 				o->original_priority = priority;
 			}
 
-			sch_notify_change_priority(o->thread, old_pri);
+			sch_notify_change_priority(o->scheduler, o->thread, old_pri);
 		}
 		else
 		{
@@ -311,7 +313,7 @@ error_t obj_reset_thread_original_priority(object_thread_t * const o)
 
 		thread_set_priority(o->thread, o->original_priority);
 		o->priority_inheritance = 0;
-		sch_notify_change_priority(o->thread, old_pri);
+		sch_notify_change_priority(o->scheduler, o->thread, old_pri);
 	}
 	else
 	{
@@ -366,7 +368,7 @@ static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t *
 	if (o && o->alarm_id == alarm_id)
 	{
 		thread_set_state(o->thread, THREADY_READY);
-		sch_notify_resume_thread(o->thread);
+		sch_notify_resume_thread(o->scheduler, o->thread);
 		alarm_unset_alarm(alarm_id);
 	}
 }
@@ -385,7 +387,7 @@ error_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const 
 				&o->alarm_id);
 		thread_set_state(o->thread, THREAD_WAITING);
 		thread_set_waiting_on(o->thread, NULL);
-		sch_notify_pause_thread(o->thread);
+		sch_notify_pause_thread(o->scheduler, o->thread);
 	}
 	else
 	{

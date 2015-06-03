@@ -32,6 +32,7 @@ typedef struct syscall_handler_t
 {
 	proc_list_t * process_list;
 	registry_t * reg;
+	scheduler_t * scheduler;
 } syscall_handler_t;
 
 static inline object_number_t syscall_get_thread_oid(const thread_t * const thread)
@@ -45,15 +46,17 @@ static inline object_thread_t * syscall_get_thread_object(const thread_t * const
 }
 
 static error_t syscall_delete_object(
+		scheduler_t * const scheduler,
 		const object_number_t obj_no)
 {
 	return obj_remove_object(
 			process_get_object_table(
-					thread_get_parent(sch_get_current_thread())),
+					thread_get_parent(sch_get_current_thread(scheduler))),
 					obj_no);
 }
 
 static error_t syscall_get_sema(
+		scheduler_t * const scheduler,
 		const thread_t * const thread,
 		const object_number_t sema_no,
 		object_sema_t ** sema)
@@ -61,7 +64,7 @@ static error_t syscall_get_sema(
 	error_t ret = UNKNOWN_ERROR;
 
 	const object_table_t * const table =
-			process_get_object_table(thread_get_parent(sch_get_current_thread()));
+			process_get_object_table(thread_get_parent(sch_get_current_thread(scheduler)));
 
 	object_thread_t * const thread_obj = syscall_get_thread_object(thread);
 	if (table && thread_obj)
@@ -95,13 +98,15 @@ static error_t syscall_get_sema(
 syscall_handler_t * create_handler(
 		mem_pool_info_t * const pool,
 		proc_list_t * const proc_list,
-		registry_t * const reg)
+		registry_t * const reg,
+		scheduler_t * const scheduler)
 {
 	syscall_handler_t * const sys = mem_alloc(pool, sizeof(syscall_handler_t));
 	if (sys)
 	{
 		sys->process_list = proc_list;
 		sys->reg = reg;
+		sys->scheduler = scheduler;
 	}
 	return sys;
 }
@@ -120,7 +125,7 @@ void syscall_handle_system_call(
 	param[4] = tgt_get_syscall_param(context, 5);
 	param[5] = tgt_get_syscall_param(context, 6);
 	param[6] = tgt_get_syscall_param(context, 7);
-	thread_t * const this_thread = sch_get_current_thread();
+	thread_t * const this_thread = sch_get_current_thread(handler->scheduler);
 
 	/* This is accounting for things being passed on the
 	 * stack which'll have a different base address as they'll be
@@ -322,7 +327,7 @@ void syscall_handle_system_call(
 			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
 			object_sema_t * sema_obj = NULL;
 
-			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
+			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
 				ret = obj_get_semaphore( thread_obj, sema_obj);
@@ -339,7 +344,7 @@ void syscall_handle_system_call(
 			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
 			object_sema_t * sema_obj = NULL;
 
-			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
+			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
 				ret = obj_release_semaphore( thread_obj, sema_obj);
@@ -350,13 +355,13 @@ void syscall_handle_system_call(
 		{
 			object_sema_t * sema_obj = NULL;
 
-			ret = syscall_get_sema(this_thread, (object_number_t)param[0], &sema_obj);
+			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj)
 			{
 				ret = object_delete_semaphore(sema_obj);
 				if (ret == NO_ERROR)
 				{
-					ret = syscall_delete_object((object_number_t)param[0]);
+					ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
 				}
 			}
 			break;
@@ -382,7 +387,7 @@ void syscall_handle_system_call(
 			ret = obj_delete_pipe(pipe);
 			if (ret == NO_ERROR)
 			{
-				ret = syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
 			}
 		}
 			break;
@@ -410,7 +415,7 @@ void syscall_handle_system_call(
 			ret = obj_delete_pipe(pipe);
 			if (ret == NO_ERROR)
 			{
-				ret = syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
 			}
 		}
 			break;
@@ -504,12 +509,13 @@ void syscall_handle_system_call(
 			ret = obj_delete_shm(shm);
 			if (ret == NO_ERROR)
 			{
-				ret = syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
 			}
 			break;
 		}
 		case SYSCALL_CREATE_TIMER:
 			ret = obj_create_timer(
+					handler->scheduler,
 					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(const priority_t)param[1],
@@ -542,7 +548,7 @@ void syscall_handle_system_call(
 			ret = obj_delete_timer(timer);
 			if (ret == NO_ERROR)
 			{
-				ret = syscall_delete_object((object_number_t)param[0]);
+				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
 			}
 			break;
 		}
@@ -605,7 +611,7 @@ void syscall_handle_system_call(
 		 (state != THREAD_RUNNING) )
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
-		sch_set_context_for_next_thread(context, state);
+		sch_set_context_for_next_thread(handler->scheduler, context, state);
 		if (!scheduled)
 		{
 			bsp_enable_schedule_timer();

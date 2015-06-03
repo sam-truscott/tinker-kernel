@@ -11,11 +11,15 @@
 
 #include "kernel/syscall/syscall_handler.h"
 #include "kernel/devices/kernel_intc_device.h"
+#include "kernel/scheduler/scheduler.h"
 #include "intc.h"
 
 typedef struct interrupt_controller_t interrupt_controller_t;
 
-interrupt_controller_t * int_create(mem_pool_info_t * const pool, syscall_handler_t * const syscall_handler);
+interrupt_controller_t * int_create(
+		mem_pool_info_t * const pool,
+		syscall_handler_t * const syscall_handler,
+		scheduler_t * const scheduler);
 
 void int_install_isr(interrupt_controller_t * const intc, const intc_t * const rintc);
 

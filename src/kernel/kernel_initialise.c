@@ -35,6 +35,8 @@ static interrupt_controller_t * interrupt_controller = NULL;
 
 static registry_t * registry = NULL;
 
+static scheduler_t * scheduler = NULL;
+
 void kernel_initialise(void)
 {
 	const uint32_t memory_start = bsp_get_usable_memory_start();
@@ -58,17 +60,20 @@ void kernel_initialise(void)
 	time_initialise();
 	alarm_initialse(pool);
 
-	debug_print("Process: Initialising Management...\n");
-	proc_list = proc_create(pool);
-
 	debug_print("Registry: Initialising the Registry...\n");
 	registry = registry_create(pool);
 
+	debug_print("Scheduler: Initialising Scheduler...\n");
+	scheduler = sch_create_scheduler(pool);
+
+	debug_print("Process: Initialising Management...\n");
+	proc_list = proc_create(pool, scheduler);
+
 	debug_print("Syscall: Initialising...\n");
-	syscall_handler = create_handler(pool, proc_list, registry);
+	syscall_handler = create_handler(pool, proc_list, registry, scheduler);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
-	interrupt_controller = int_create(pool, syscall_handler);
+	interrupt_controller = int_create(pool, syscall_handler, scheduler);
 
 	debug_print("Kernel: Initialising Kernel Process...\n");
 
@@ -104,8 +109,11 @@ void kernel_initialise(void)
 	kernel_assert("Kernel Idle Thread not created", kernel_idle_thread != NULL);
 
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
+}
 
-	sch_initialise_scheduler();
+scheduler_t * kernel_get_sch(void)
+{
+	return scheduler;
 }
 
 registry_t * kernel_get_reg(void)

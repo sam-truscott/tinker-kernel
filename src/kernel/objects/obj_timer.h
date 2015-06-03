@@ -12,6 +12,7 @@
 #include "tinker_api_timer.h"
 #include "kernel/objects/object.h"
 #include "kernel/process/process.h"
+#include "kernel/scheduler/scheduler.h"
 
 typedef struct object_timer_t object_timer_t;
 
@@ -21,6 +22,7 @@ object_number_t obj_timer_get_oid
 	(const object_timer_t * const o);
 
 error_t obj_create_timer(
+		scheduler_t * const scheduler,
 		process_t * const process,
 		object_number_t * objectno,
 		const priority_t priority,

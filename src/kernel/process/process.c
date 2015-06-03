@@ -44,6 +44,7 @@ HASH_MAP_TYPE_ITERATOR_BODY(extern, thread_it_t, thread_map_t, uint32_t, thread_
 
 typedef struct process_t
 {
+	scheduler_t * 			scheduler;
 	uint32_t				process_id;
 	thread_map_t	*		threads;
 	mem_pool_info_t * 		memory_pool;
@@ -103,6 +104,7 @@ static void process_add_mem_sec(
 }
 
 error_t process_create(
+		scheduler_t * const scheduler,
 		mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,
@@ -119,6 +121,7 @@ error_t process_create(
 		new_proc->process_id = pid;
 		new_proc->kernel_process = is_kernel;
 		new_proc->parent = mempool;
+		new_proc->scheduler = scheduler;
 		new_proc->memory_pool = (mem_pool_info_t *)pool;
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Allocating memory for page table: %s\n", name);
@@ -320,6 +323,7 @@ bool_t process_add_thread(
 		// create an object in the table
 		ret = obj_create_thread(
 				process->memory_pool,
+				process->scheduler,
 				process->object_table,
 				thread_id,
 				thread,

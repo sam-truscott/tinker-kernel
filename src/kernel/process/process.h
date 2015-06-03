@@ -13,6 +13,7 @@
 #include "kernel/process/thread.h"
 #include "kernel/memory/mem_section.h"
 #include "kernel/objects/object_table.h"
+#include "kernel/scheduler/scheduler.h"
 
 typedef struct process_t process_t;
 
@@ -20,6 +21,7 @@ HASH_MAP_TYPE_ITERATOR_TYPE(thread_it_t)
 HASH_MAP_TYPE_ITERATOR_SPEC(extern, thread_it_t, thread_t*)
 
 error_t process_create(
+		scheduler_t * const scheduler,
 		mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,

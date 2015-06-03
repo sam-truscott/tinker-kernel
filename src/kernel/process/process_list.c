@@ -39,15 +39,17 @@ UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, process_
 
 typedef struct proc_list_t
 {
+	scheduler_t * scheduler;
 	process_list_t * process_list;
 } proc_list_t;
 
-proc_list_t * proc_create(mem_pool_info_t * const pool)
+proc_list_t * proc_create(mem_pool_info_t * const pool, scheduler_t * const scheduler)
 {
 	proc_list_t * const list = mem_alloc(pool, sizeof(process_list_t));
 	if (list)
 	{
 		list->process_list = process_list_t_create(pool);
+		list->scheduler = scheduler;
 	}
 	return list;
 }
@@ -94,7 +96,7 @@ error_t proc_create_process(
 	 *
 	 * Otherwise we need to use the current processes pool.
 	 */
-	const thread_t * const curr_thread = sch_get_current_thread();
+	const thread_t * const curr_thread = sch_get_current_thread(list->scheduler);
 	mem_pool_info_t * parent_pool;
 	if (curr_thread == NULL)
 	{
@@ -144,6 +146,7 @@ error_t proc_create_process(
 		debug_print("Process: Building process: %s\n", image);
 #endif
 		ret = process_create(
+				list->scheduler,
 				parent_pool,
 				proc_id,
 				image,

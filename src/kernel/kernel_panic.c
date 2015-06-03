@@ -9,7 +9,6 @@
 #include "kernel_panic.h"
 
 #include "arch/board_support.h"
-#include "console/stack_trace.h"
 #include "console/print_out.h"
 #include "arch/tgt.h"
 
@@ -21,7 +20,6 @@ void kernel_panic(void)
 	tgt_disable_external_interrupts();
 
 	error_print("KERNEL PANIC\n");
-	print_current_stack_trace();
 	volatile int crash = 0;
 
 	/*

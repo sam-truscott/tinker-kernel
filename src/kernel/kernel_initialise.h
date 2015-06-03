@@ -19,6 +19,8 @@
  */
 void kernel_initialise(void);
 
+scheduler_t * kernel_get_sch(void);
+
 registry_t * kernel_get_reg(void);
 
 interrupt_controller_t * kernel_get_intc(void);

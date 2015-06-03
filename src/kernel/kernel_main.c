@@ -69,7 +69,7 @@ void kernel_main(void)
 	 */
 	thread_t * const idle_thread = kernel_get_idle_thread();
 	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
-	sch_set_current_thread(idle_thread);
+	sch_set_current_thread(kernel_get_sch(), idle_thread);
 
 	kernel_in_initialise(kernel_get_reg());
 

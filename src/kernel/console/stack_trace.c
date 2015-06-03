@@ -10,16 +10,9 @@
 #include "stack_trace.h"
 #include "print_out.h"
 #include "arch/tgt.h"
-#include "kernel/scheduler/scheduler.h"
 
-void print_current_stack_trace(void)
+void print_stack_trace(process_t * const proc, const uint32_t frame_pointer)
 {
-	print_stack_trace(tgt_get_frame_pointer());
-}
-
-void print_stack_trace(const uint32_t frame_pointer)
-{
-	const process_t * const proc = thread_get_parent(sch_get_current_thread());
 	const uint32_t * fp = (const uint32_t*)frame_pointer;
 	uint8_t limit = ISR_PRINT_STACKTRACE_LIMIT;
 

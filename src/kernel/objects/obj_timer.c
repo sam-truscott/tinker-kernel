@@ -22,6 +22,7 @@ typedef struct object_timer_t
 {
 	object_internal_t object;
 	mem_pool_info_t * pool;
+	scheduler_t * scheduler;
 	tinker_timer_callback_t * callback;
 	tinker_timeout_time_t timeout;
 	const void * parameter;
@@ -82,7 +83,7 @@ static void obj_timer_timeout(
 #if defined(TIMER_DEBUGGING)
 		debug_print("Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);
 #endif
-		sch_notify_resume_thread(timer->callback_thread);
+		sch_notify_resume_thread(timer->scheduler, timer->callback_thread);
 		thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
 		thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
 		timer->callback = NULL;
@@ -91,6 +92,7 @@ static void obj_timer_timeout(
 }
 
 error_t obj_create_timer(
+		scheduler_t * const scheduler,
 		process_t * const process,
 		object_number_t * objectno,
 		const priority_t priority,
@@ -125,12 +127,13 @@ error_t obj_create_timer(
 					thread_set_state(no->callback_thread, THREAD_WAITING);
 					thread_set_waiting_on(no->callback_thread, (object_t*)no);
 					obj_initialise_object(&no->object, objno, TIMER_OBJ);
-					sch_notify_pause_thread(no->callback_thread);
+					sch_notify_pause_thread(scheduler, no->callback_thread);
 					no->timeout.seconds = seconds;
 					no->timeout.nanoseconds = nanoseconds;
 					no->callback = callback;
 					no->parameter = parameter;
 					no->pool = pool;
+					no->scheduler = scheduler;
 					*objectno = no->object.object_number;
 					const tinker_time_t timeout = {
 							.seconds = seconds,
@@ -173,7 +176,7 @@ static void obj_timer_delete_thread(object_timer_t * const timer)
 
 	if (state != THREAD_TERMINATED && state != THREAD_NOT_CREATED)
 	{
-		sch_notify_exit_thread(thread);
+		sch_notify_exit_thread(timer->scheduler, thread);
 	}
 	process_thread_exit(thread_get_parent(thread), thread);
 	obj_exit_thread(timer->thread_obj);
