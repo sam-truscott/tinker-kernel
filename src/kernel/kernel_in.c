@@ -13,7 +13,7 @@
 
 static object_pipe_t * kernel_in_pipe;
 
-void kernel_in_initialise(void)
+void kernel_in_initialise(registry_t * const reg)
 {
 #if defined (DEBUG_IN)
 	debug_print("System: Creating input pipe...\n");
@@ -21,6 +21,7 @@ void kernel_in_initialise(void)
 	object_number_t kenrel_input = INVALID_OBJECT_ID;
 	process_t * const kernel_process = kernel_get_process();
 	const error_t result = obj_create_pipe(
+			reg,
 			kernel_process,
 			&kenrel_input,
 			"in",	// TODO CONFIG

@@ -20,7 +20,7 @@
 #include "kernel/utils/util_memset.h"
 #include "kernel/objects/registry.h"
 #include "kernel/syscall/syscall_handler.h"
-#include "kernel/scheduler/scheduler.hv"
+#include "kernel/scheduler/scheduler.h"
 #include "arch/tgt.h"
 
 static process_t * kernel_process = NULL;
@@ -32,6 +32,8 @@ static proc_list_t * proc_list = NULL;
 static syscall_handler_t * syscall_handler = NULL;
 
 static interrupt_controller_t * interrupt_controller = NULL;
+
+static registry_t * registry = NULL;
 
 void kernel_initialise(void)
 {
@@ -59,14 +61,14 @@ void kernel_initialise(void)
 	debug_print("Process: Initialising Management...\n");
 	proc_list = proc_create(pool);
 
+	debug_print("Registry: Initialising the Registry...\n");
+	registry = registry_create(pool);
+
 	debug_print("Syscall: Initialising...\n");
-	syscall_handler = create_handler(pool, proc_list);
+	syscall_handler = create_handler(pool, proc_list, registry);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
 	interrupt_controller = int_create(pool, syscall_handler);
-
-	debug_print("Registry: Initialising the Registry...\n");
-	registry_initialise(pool);
 
 	debug_print("Kernel: Initialising Kernel Process...\n");
 
@@ -104,6 +106,11 @@ void kernel_initialise(void)
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
 
 	sch_initialise_scheduler();
+}
+
+registry_t * kernel_get_reg(void)
+{
+	return registry;
 }
 
 interrupt_controller_t * kernel_get_intc(void)

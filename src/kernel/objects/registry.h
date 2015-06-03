@@ -15,22 +15,29 @@
 #include "kernel/process/process.h"
 #include "kernel/objects/obj_thread.h"
 
-void registry_initialise(mem_pool_info_t * const pool);
+typedef struct registry_t registry_t;
+
+registry_t * registry_create(mem_pool_info_t * const pool);
 
 error_t regsitery_add(
+		registry_t * const reg,
 		const char * const name,
 		const process_t * const process,
 		const object_number_t number);
 
 error_t registry_get(
+		registry_t * const reg,
 		const char * const name,
 		process_t ** process,
 		object_number_t * objno);
 
 void registry_wait_for(
+		registry_t * const reg,
 		object_thread_t * const thread,
 		const char * const name);
 
-error_t registry_remove(const char * const name);
+error_t registry_remove(
+		registry_t * const reg,
+		const char * const name);
 
 #endif /* REGISTRY_H_ */

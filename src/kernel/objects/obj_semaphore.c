@@ -13,7 +13,6 @@
 #include "object_private.h"
 #include "obj_thread.h"
 #include "object_table.h"
-#include "registry.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/unbounded_queue.h"
@@ -49,6 +48,7 @@ typedef struct object_sema_t
 	object_internal_t object;
 	mem_pool_info_t * pool;
 	sema_type_t sema_type;
+	registry_t * reg;
 	union
 	{
 		struct
@@ -101,6 +101,7 @@ object_number_t obj_semaphore_get_oid
 }
 
 error_t obj_create_semaphore(
+		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * name,
@@ -130,9 +131,10 @@ error_t obj_create_semaphore(
 					no->data.owner.owners = thread_obj_queue_t_create(pool);
 					no->data.owner.highest_priority = 0;
 					no->pool = pool;
+					no->reg = reg;
 					util_memset(no->data.owner.name, 0, sizeof(no->data.owner.name));
 					util_memcpy(no->data.owner.name, name, util_strlen(name,MAX_SHARED_OBJECT_NAME_LENGTH));
-					regsitery_add(name, process, no->object.object_number);
+					regsitery_add(reg, name, process, no->object.object_number);
 					*objectno = no->object.object_number;
 				}
 			}
@@ -156,6 +158,7 @@ error_t obj_create_semaphore(
 }
 
 error_t obj_open_semaphore(
+		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * name)
@@ -170,7 +173,7 @@ error_t obj_open_semaphore(
 		{
 			process_t * other_process;
 			object_number_t other_obj_no;
-			if (registry_get(name, &other_process, &other_obj_no) == NO_ERROR)
+			if (registry_get(reg, name, &other_process, &other_obj_no) == NO_ERROR)
 			{
 				object_t * const other_obj = obj_get_object(
 						process_get_object_table(other_process),
@@ -192,6 +195,7 @@ error_t obj_open_semaphore(
 								no->sema_type = sema_type_link;
 								no->data.link.link = other_sema;
 								no->pool = pool;
+								no->reg = reg;
 								*objectno = no->object.object_number;
 							}
 							else
@@ -245,7 +249,7 @@ error_t object_delete_semaphore(
 			result = INVALID_OBJECT;
 			break;
 		case sema_type_owner:
-			registry_remove(semaphore->data.owner.name);
+			registry_remove(semaphore->reg, semaphore->data.owner.name);
 			thread_obj_queue_t_delete(semaphore->data.owner.listeners);
 			thread_obj_queue_t_delete(semaphore->data.owner.owners);
 			mem_free(semaphore->pool, semaphore);

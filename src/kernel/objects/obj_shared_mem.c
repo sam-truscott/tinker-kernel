@@ -6,11 +6,10 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "config.h"
 #include "obj_shared_mem.h"
+#include "config.h"
 #include "arch/tgt_types.h"
 #include "object_private.h"
-#include "registry.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/utils/collections/unbounded_list.h"
 
@@ -37,6 +36,7 @@ typedef struct object_shm_t
 {
 	object_internal_t object;
 	mem_pool_info_t * pool;
+	registry_t * reg;
 	process_t * process;
 	uint32_t real_addr;
 	uint32_t virt_addr;
@@ -72,6 +72,7 @@ object_number_t obj_shm_get_oid
 }
 
 error_t obj_create_shm(
+		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * name,
@@ -111,6 +112,7 @@ error_t obj_create_shm(
 						obj_initialise_object(&no->object, objno, SHARED_MEMORY_OBJ);
 						no->size = size;
 						no->pool = pool;
+						no->reg = reg;
 						no->process = process;
 						no->real_addr = (uint32_t)memory;
 						no->virt_addr = virt_addr;
@@ -118,7 +120,7 @@ error_t obj_create_shm(
 						no->parent_shm = NULL;
 						util_memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
 						util_memcpy(no->name, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
-						regsitery_add(name, process, no->object.object_number);
+						regsitery_add(reg, name, process, no->object.object_number);
 						*objectno = no->object.object_number;
 						*address = (void*)virt_addr;
 					}
@@ -147,6 +149,7 @@ error_t obj_create_shm(
 }
 
 error_t obj_open_shm(
+		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * name,
@@ -165,7 +168,7 @@ error_t obj_open_shm(
 			util_memset(no, 0, sizeof(object_shm_t));
 			process_t * other_process = NULL;
 			object_number_t other_obj_no;
-			if (registry_get(name, &other_process, &other_obj_no) == NO_ERROR)
+			if (registry_get(reg, name, &other_process, &other_obj_no) == NO_ERROR)
 			{
 				object_t * const other_obj =
 						obj_get_object(process_get_object_table(other_process), other_obj_no);
@@ -194,6 +197,7 @@ error_t obj_open_shm(
 									obj_initialise_object(&no->object, objno, SHARED_MEMORY_OBJ);
 									no->size = size;
 									no->pool = pool;
+									no->reg = reg;
 									no->process = process;
 									no->real_addr = other_shm_obj->real_addr;
 									no->virt_addr = virt_addr;
@@ -202,7 +206,8 @@ error_t obj_open_shm(
 									shm_client_list_t_add(other_shm_obj->client_list, no);
 									util_memset(no->name, 0, sizeof(no->name));
 									util_memcpy(no->name, name, util_strlen(name, sizeof(name)));
-									regsitery_add(name, process, no->object.object_number);
+									// FIXME why are we adding it again?
+									regsitery_add(reg, name, process, no->object.object_number);
 									*objectno = no->object.object_number;
 									*address = (void*)virt_addr;
 								}
@@ -288,7 +293,7 @@ error_t obj_delete_shm(
 #if defined(SHM_DEBUGGING)
 			debug_print("Removing SHM from registry\n");
 #endif
-			registry_remove(shm->name);
+			registry_remove(shm->reg, shm->name);
 			mem_free(shm->pool, shm);
 		}
 		else

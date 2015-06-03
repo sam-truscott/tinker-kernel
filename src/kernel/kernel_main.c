@@ -71,7 +71,7 @@ void kernel_main(void)
 	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
 	sch_set_current_thread(idle_thread);
 
-	kernel_in_initialise();
+	kernel_in_initialise(kernel_get_reg());
 
 	// TODO move to unit tests
 #if defined(SYSCALL_DEBUGGING)

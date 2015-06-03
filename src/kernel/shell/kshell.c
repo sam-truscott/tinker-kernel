@@ -77,6 +77,7 @@ static const char ksh_pipe_dir[4][13] =
 
 void kshell_start(void)
 {
+	registry_t * const registry = kernel_get_reg();
 	thread_t * const shell_thread = sch_get_current_thread();
 	process_t * const shell_proc = thread_get_parent(shell_thread);
 	object_thread_t * const shell_thread_obj =
@@ -90,6 +91,7 @@ void kshell_start(void)
 
 	object_number_t input_pipe_no = INVALID_OBJECT_ID;
 	error_t input_result = obj_open_pipe(
+			registry,
 			shell_proc,
 			shell_thread_obj,
 			&input_pipe_no,

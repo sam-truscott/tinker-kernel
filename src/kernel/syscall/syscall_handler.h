@@ -12,10 +12,14 @@
 #include "arch/tgt_types.h"
 #include "kernel/memory/memory_manager.h"
 #include "kernel/process/process_list.h"
+#include "kernel/objects/registry.h"
 
 typedef struct syscall_handler_t syscall_handler_t;
 
-syscall_handler_t * create_handler(mem_pool_info_t * const pool, proc_list_t * const proc_list);
+syscall_handler_t * create_handler(
+		mem_pool_info_t * const pool,
+		proc_list_t * const proc_list,
+		registry_t * const reg);
 
 void syscall_handle_system_call(
 		syscall_handler_t * const handler,

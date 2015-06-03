@@ -31,6 +31,7 @@
 typedef struct syscall_handler_t
 {
 	proc_list_t * process_list;
+	registry_t * reg;
 } syscall_handler_t;
 
 static inline object_number_t syscall_get_thread_oid(const thread_t * const thread)
@@ -91,12 +92,16 @@ static error_t syscall_get_sema(
 	return ret;
 }
 
-syscall_handler_t * create_handler(mem_pool_info_t * const pool, proc_list_t * const proc_list)
+syscall_handler_t * create_handler(
+		mem_pool_info_t * const pool,
+		proc_list_t * const proc_list,
+		registry_t * const reg)
 {
 	syscall_handler_t * const sys = mem_alloc(pool, sizeof(syscall_handler_t));
 	if (sys)
 	{
 		sys->process_list = proc_list;
+		sys->reg = reg;
 	}
 	return sys;
 }
@@ -273,6 +278,7 @@ void syscall_handle_system_call(
 					if (proc)
 					{
 						ret = obj_create_semaphore(
+								handler->reg,
 								proc,
 								(object_number_t*)param[0],
 								(char*)param[1],
@@ -297,7 +303,7 @@ void syscall_handle_system_call(
 				process_t * const proc = thread_get_parent(this_thread);
 				if (proc)
 				{
-					ret = obj_open_semaphore(proc, (object_number_t*)param[0],(char*)param[1]);
+					ret = obj_open_semaphore(handler->reg, proc, (object_number_t*)param[0],(char*)param[1]);
 				}
 				else
 				{
@@ -357,6 +363,7 @@ void syscall_handle_system_call(
 		}
 		case SYSCALL_CREATE_PIPE:
 			ret = obj_create_pipe(
+					handler->reg,
 					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(const char*)param[1],
@@ -381,6 +388,7 @@ void syscall_handle_system_call(
 			break;
 		case SYSCALL_OPEN_PIPE:
 			ret = obj_open_pipe(
+					handler->reg,
 					thread_get_parent(this_thread),
 					syscall_get_thread_object(this_thread),
 					(object_number_t*)param[0],
@@ -467,6 +475,7 @@ void syscall_handle_system_call(
 
 		case SYSCALL_CREATE_SHM:
 			ret = obj_create_shm(
+					handler->reg,
 					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(char*)param[1],
@@ -475,6 +484,7 @@ void syscall_handle_system_call(
 			break;
 		case SYSCALL_OPEN_SHM:
 			ret = obj_open_shm(
+					handler->reg,
 					thread_get_parent(this_thread),
 					(object_number_t*)param[0],
 					(char*)param[1],

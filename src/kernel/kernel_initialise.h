@@ -19,6 +19,8 @@
  */
 void kernel_initialise(void);
 
+registry_t * kernel_get_reg(void);
+
 interrupt_controller_t * kernel_get_intc(void);
 
 proc_list_t * kernel_get_proc_list(void);

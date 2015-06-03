@@ -56,6 +56,7 @@ typedef struct object_pipe_t
 	uint8_t * memory;
 	rx_data_t rx_data;
 	tx_data_t tx_data;
+	registry_t * reg;
 	char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 } object_pipe_internal_t;
 
@@ -169,6 +170,7 @@ static bool_t pipe_can_send_to_all(
 }
 
 error_t obj_create_pipe(
+		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * const name,
@@ -264,6 +266,7 @@ error_t obj_create_pipe(
 					no->direction = direction;
 					no->pool = pool;
 					no->memory = memory;
+					no->reg = reg;
 					no->tx_data.readers = rx_queue;
 					no->rx_data.senders = tx_queue;
 					util_memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
@@ -283,7 +286,7 @@ error_t obj_create_pipe(
 					no->rx_data = rx_data;
 					no->tx_data = tx_data;
 					// register it - create
-					result = regsitery_add(name, process, no->object.object_number);
+					result = regsitery_add(reg, name, process, no->object.object_number);
 				}
 				else
 				{
@@ -309,6 +312,7 @@ error_t obj_create_pipe(
 }
 
 error_t obj_open_pipe(
+		registry_t * const reg,
 		process_t * const process,
 		object_thread_t * const thread,
 		object_number_t * objectno,
@@ -327,7 +331,7 @@ error_t obj_open_pipe(
 	process_t * other_proc = NULL;
 	object_pipe_t * other_pipe = NULL;
 	object_number_t other_pipe_no = INVALID_OBJECT_ID;
-	result = registry_get(name, &other_proc, &other_pipe_no);
+	result = registry_get(reg, name, &other_proc, &other_pipe_no);
 	// check that the pipe is in the registry
 	if (result == NO_ERROR)
 	{
@@ -382,7 +386,7 @@ error_t obj_open_pipe(
 	}
 	else
 	{
-		registry_wait_for(thread, name);
+		registry_wait_for(reg, thread, name);
 		result = BLOCKED_RETRY;
 	}
 #if defined(PIPE_TRACING)
@@ -478,6 +482,7 @@ error_t obj_open_pipe(
 								.sending_thread = NULL};
 						no->rx_data = rx_data;
 						no->tx_data = tx_data;
+						no->reg = reg;
 						switch(direction)
 						{
 						case PIPE_DIRECTION_UNKNOWN:
@@ -531,7 +536,7 @@ error_t obj_delete_pipe(object_pipe_t * const pipe)
 
 	if (pipe)
 	{
-		registry_remove(pipe->name);
+		registry_remove(pipe->reg, pipe->name);
 		mem_free(pipe->pool, pipe->memory);
 		mem_free(pipe->pool, pipe);
 	}

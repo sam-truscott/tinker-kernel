@@ -24,6 +24,7 @@ object_number_t obj_pipe_get_oid
 	(const object_pipe_t * const o);
 
 error_t obj_create_pipe(
+		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * const name,
@@ -32,6 +33,7 @@ error_t obj_create_pipe(
 		const uint32_t messages);
 
 error_t obj_open_pipe(
+		registry_t * const reg,
 		process_t * const process,
 		object_thread_t * const thread,
 		object_number_t * objectno,
