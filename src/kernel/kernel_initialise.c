@@ -21,6 +21,7 @@
 #include "kernel/objects/registry.h"
 #include "kernel/syscall/syscall_handler.h"
 #include "kernel/scheduler/scheduler.h"
+#include "kernel/shell/kshell.h"
 #include "arch/tgt.h"
 
 static process_t * kernel_process = NULL;
@@ -109,6 +110,8 @@ void kernel_initialise(void)
 	kernel_assert("Kernel Idle Thread not created", kernel_idle_thread != NULL);
 
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
+
+	kshell_setup(pool, scheduler, registry, proc_list);
 }
 
 scheduler_t * kernel_get_sch(void)

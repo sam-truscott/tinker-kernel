@@ -9,7 +9,6 @@
 #include "kshell.h"
 #if defined(KERNEL_SHELL)
 #include "api/tinker_api_types.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/console/print_out.h"
 #include "kernel/process/process_list.h"
 #include "kernel/utils/util_strlen.h"
@@ -26,9 +25,16 @@
 
 #define MAX_LINE_INPUT 256
 
-static char ksh_input_buffer[MAX_LINE_INPUT];
+typedef struct kshell_t
+{
+	scheduler_t * scheduler;
+	registry_t * reg;
+	proc_list_t * proc_list;
+	uint16_t ksh_input_pointer;
+	char ksh_input_buffer[MAX_LINE_INPUT];
+} kshell_t;
 
-static uint16_t ksh_input_pointer;
+static kshell_t * kshell;
 
 static bool_t kshell_strcmp(const char * a, const char * b);
 
@@ -75,14 +81,28 @@ static const char ksh_pipe_dir[4][13] =
 		"RECEIVE     \0"
 };
 
+void kshell_setup(
+		mem_pool_info_t * const pool,
+		scheduler_t * const scheduler,
+		registry_t * const reg,
+		proc_list_t * const proc_list)
+{
+	kshell = mem_alloc(pool, sizeof(kshell_t));
+	if (kshell)
+	{
+		kshell->scheduler = scheduler;
+		kshell->reg = reg;
+		kshell->proc_list = proc_list;
+	}
+}
+
 void kshell_start(void)
 {
-	registry_t * const registry = kernel_get_reg();
-	thread_t * const shell_thread = sch_get_current_thread(kernel_get_sch());
+	thread_t * const shell_thread = sch_get_current_thread(kshell->scheduler);
 	process_t * const shell_proc = thread_get_parent(shell_thread);
 	object_thread_t * const shell_thread_obj =
 		(object_thread_t*)obj_get_object(process_get_object_table(shell_proc), thread_get_object_no(shell_thread));
-	ksh_input_pointer = 0;
+	kshell->ksh_input_pointer = 0;
 	bool_t running = true;
 
 #if defined(KERNEL_SHELL_DEBUG)
@@ -91,7 +111,7 @@ void kshell_start(void)
 
 	object_number_t input_pipe_no = INVALID_OBJECT_ID;
 	error_t input_result = obj_open_pipe(
-			registry,
+			kshell->reg,
 			shell_proc,
 			shell_thread_obj,
 			&input_pipe_no,
@@ -130,30 +150,30 @@ void kshell_start(void)
 			uint16_t p = 0;
 			while(p != (*bytesReceived))
 			{
-				ksh_input_buffer[ksh_input_pointer++] = received[p++];
+				kshell->ksh_input_buffer[kshell->ksh_input_pointer++] = received[p++];
 			}
-			ksh_input_pointer--;
-			if (ksh_input_buffer[ksh_input_pointer] == '\r'
-					|| ksh_input_buffer[ksh_input_pointer] == '\n')
+			kshell->ksh_input_pointer--;
+			if (kshell->ksh_input_buffer[kshell->ksh_input_pointer] == '\r'
+					|| kshell->ksh_input_buffer[kshell->ksh_input_pointer] == '\n')
 			{
-				ksh_input_buffer[ksh_input_pointer] = '\0';
-				if (ksh_input_pointer)
+				kshell->ksh_input_buffer[kshell->ksh_input_pointer] = '\0';
+				if (kshell->ksh_input_pointer)
 				{
-					if (kshell_strcmp(ksh_input_buffer, "exit"))
+					if (kshell_strcmp(kshell->ksh_input_buffer, "exit"))
 					{
 						running = false;
 					}
 					else
 					{
-						kshell_execute_command(ksh_input_buffer);
-						ksh_input_pointer = 0;
-						util_memset(ksh_input_buffer, 0, MAX_LINE_INPUT);
+						kshell_execute_command(kshell->ksh_input_buffer);
+						kshell->ksh_input_pointer = 0;
+						util_memset(kshell->ksh_input_buffer, 0, MAX_LINE_INPUT);
 					}
 				}
 			}
 			else
 			{
-				ksh_input_pointer++;
+				kshell->ksh_input_pointer++;
 			}
 		}
 	}
@@ -204,11 +224,10 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 
 static void kshell_process_list(void)
 {
-	proc_list_t * const proc_list = kernel_get_proc_list();
 	process_list_it_t * list = NULL;
 	process_t * proc = NULL;
 
-	list = proc_list_procs(proc_list);
+	list = proc_list_procs(kshell->proc_list);
 	process_list_it_t_get(list, &proc);
 
 	print_out("ProcessId\tThreads\tName\n");
@@ -231,11 +250,10 @@ static void kshell_process_list(void)
 
 static void kshell_task_list(void)
 {
-	proc_list_t * const proc_list = kernel_get_proc_list();
 	process_list_it_t * list = NULL;
 	process_t * proc = NULL;
 
-	list = proc_list_procs(proc_list);
+	list = proc_list_procs(kshell->proc_list);
 	process_list_it_t_get(list, &proc);
 
 	while (proc)
@@ -280,8 +298,7 @@ static void kshell_task_list(void)
 
 static void kshell_object_table(void)
 {
-	proc_list_t * const proc_list = kernel_get_proc_list();
-	process_list_it_t * const list = proc_list_procs(proc_list);
+	process_list_it_t * const list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
 	process_list_it_t_get(list, &proc);
 
