@@ -32,6 +32,7 @@ static tinker_time_t scheduler_period;
 static intc_t * bcm2835_intc;
 static kernel_device_t uart;
 static interrupt_controller_t * interrupt_controller;
+static time_manager_t * time_manager;
 
 void bsp_initialise(void)
 {
@@ -47,9 +48,10 @@ void bsp_initialise(void)
 	ivt_initialise();
 }
 
-void bsp_setup(interrupt_controller_t * const controller)
+void bsp_setup(interrupt_controller_t * const controller, time_manager_t * const tm)
 {
 	interrupt_controller = controller;
+	time_manager = tm;
 
 	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
@@ -60,7 +62,7 @@ void bsp_setup(interrupt_controller_t * const controller)
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(controller, bcm2835_intc);
 
-	time_set_system_clock(bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
+	time_set_system_clock(tm, bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
@@ -157,15 +159,10 @@ static void bsp_scheduler_timeout(tgt_context_t * const context)
 void bsp_enable_schedule_timer(void)
 {
 	tinker_time_t now;
-	time_get_system_time(&now);
+	time_get_system_time(time_manager, &now);
 	tinker_time_milliseconds(100, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
 	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, &bsp_scheduler_timeout);
-}
-
-void bsp_check_timers_and_alarms(void)
-{
-	// unused - we don't need this as we have two timers
 }
 
 uint32_t bsp_get_usable_memory_start()

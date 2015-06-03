@@ -53,7 +53,7 @@ static void test_memcpy_memset(void)
 {
 	char source[11];
 	char dest[11];
-	source[11] = dest[11] = 0;
+	source[10] = dest[10] = 0;
 	for (uint8_t i = 0 ; i < 10 ; i++)
 	{
 		source[i] = '0' + i;

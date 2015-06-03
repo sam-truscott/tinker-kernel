@@ -22,15 +22,13 @@
  */
 void bsp_initialise(void) BOOT_CODE;
 
-void bsp_setup(interrupt_controller_t * const controller);
+void bsp_setup(interrupt_controller_t * const controller, time_manager_t * const tm);
 
 /**
  * Call from the kernel to tell the BSP to activate the
  * required timer to perform the next context switch
  */
 void bsp_enable_schedule_timer(void);
-
-void bsp_check_timers_and_alarms(const tgt_context_t * const context);
 
 uint32_t bsp_get_usable_memory_start();
 

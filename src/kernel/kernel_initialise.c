@@ -38,6 +38,8 @@ static registry_t * registry = NULL;
 
 static scheduler_t * scheduler = NULL;
 
+static time_manager_t * time_manager = NULL;
+
 void kernel_initialise(void)
 {
 	const uint32_t memory_start = bsp_get_usable_memory_start();
@@ -58,7 +60,7 @@ void kernel_initialise(void)
 	mem_pool_info_t * const pool = mem_get_default_pool();
 
 	debug_print("Time: Initialising services...\n");
-	time_initialise();
+	time_manager = time_initialise(pool);
 	alarm_initialse(pool);
 
 	debug_print("Registry: Initialising the Registry...\n");
@@ -71,7 +73,7 @@ void kernel_initialise(void)
 	proc_list = proc_create(pool, scheduler);
 
 	debug_print("Syscall: Initialising...\n");
-	syscall_handler = create_handler(pool, proc_list, registry, scheduler);
+	syscall_handler = create_handler(pool, proc_list, registry, scheduler, time_manager);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
 	interrupt_controller = int_create(pool, syscall_handler, scheduler);
@@ -127,6 +129,11 @@ registry_t * kernel_get_reg(void)
 interrupt_controller_t * kernel_get_intc(void)
 {
 	return interrupt_controller;
+}
+
+time_manager_t * kernel_get_tm(void)
+{
+	return time_manager;
 }
 
 proc_list_t * kernel_get_proc_list(void)

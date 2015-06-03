@@ -33,6 +33,7 @@ typedef struct syscall_handler_t
 	proc_list_t * process_list;
 	registry_t * reg;
 	scheduler_t * scheduler;
+	time_manager_t * time_manager;
 } syscall_handler_t;
 
 static inline object_number_t syscall_get_thread_oid(const thread_t * const thread)
@@ -99,7 +100,8 @@ syscall_handler_t * create_handler(
 		mem_pool_info_t * const pool,
 		proc_list_t * const proc_list,
 		registry_t * const reg,
-		scheduler_t * const scheduler)
+		scheduler_t * const scheduler,
+		time_manager_t * const tm)
 {
 	syscall_handler_t * const sys = mem_alloc(pool, sizeof(syscall_handler_t));
 	if (sys)
@@ -107,6 +109,7 @@ syscall_handler_t * create_handler(
 		sys->process_list = proc_list;
 		sys->reg = reg;
 		sys->scheduler = scheduler;
+		sys->time_manager = tm;
 	}
 	return sys;
 }
@@ -555,7 +558,7 @@ void syscall_handle_system_call(
 		case SYSCALL_GET_TIME:
 			if (param[0])
 			{
-				time_get_system_time(((tinker_time_t*)param[0]));
+				time_get_system_time(handler->time_manager, ((tinker_time_t*)param[0]));
 				ret = NO_ERROR;
 			}
 			else

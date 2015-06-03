@@ -36,7 +36,7 @@ static kernel_device_t rs232_port_1;
 
 static intc_t * opic_intc;
 
-static timer_t ppc32_time_base_timer;
+static timer_t opic_timer;
 
 
 /**
@@ -189,8 +189,8 @@ void bsp_setup(void)
 	ppc_setup_timebase_details(&sim_clock, 64);
 	time_set_system_clock(ppc_get_ppc_timebase_clock());
 
-	ppc_get_timer(kernel_get_process(), &ppc32_time_base_timer);
-	alarm_set_timer(&ppc32_time_base_timer);
+	opic_tmr_get_timer(kernel_get_process(), &opic_timer);
+	alarm_set_timer(&opic_timer);
 
 	// route UART -> OPIC -> CPU
 	intc_setup(opic_intc, 1, 1, INTC_LEVEL, INTC_ACTIVE_HIGH);
@@ -216,11 +216,6 @@ static void bsp_external_interrupt(
 {
 	(void)vector;
 	int_handle_external_vector(context);
-}
-
-void bsp_check_timers_and_alarms(tgt_context_t * const context)
-{
-	ppc_check_timer(&ppc32_time_base_timer, context);
 }
 
 uint32_t bsp_get_usable_memory_start()

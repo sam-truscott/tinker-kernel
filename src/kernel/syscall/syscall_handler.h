@@ -20,7 +20,8 @@ syscall_handler_t * create_handler(
 		mem_pool_info_t * const pool,
 		proc_list_t * const proc_list,
 		registry_t * const reg,
-		scheduler_t * const scheduler);
+		scheduler_t * const scheduler,
+		time_manager_t * const tm);
 
 void syscall_handle_system_call(
 		syscall_handler_t * const handler,

@@ -10,26 +10,37 @@
 
 #include "kernel/kernel_assert.h"
 #include "time.h"
+#include "kernel/console/print_out.h"
 
-static uint64_t time_system_time_ns;
-static clock_device_t * time_system_clock;
-
-void time_initialise(void)
+typedef struct time_manager_t
 {
-	time_system_time_ns = 0;
-	time_system_clock = NULL;
-}
+	clock_device_t * time_system_clock;
+} time_manager_t;
 
-void time_set_system_clock(clock_device_t * const device)
+time_manager_t * time_initialise(mem_pool_info_t * const pool)
 {
-	time_system_clock = device;
-}
-
-void time_get_system_time(tinker_time_t * const time)
-{
-	if (time_system_clock && time)
+	time_manager_t * const tm = mem_alloc(pool, sizeof(time_manager_t));
+	if (tm)
 	{
-		time_system_time_ns = time_system_clock->get_time(time_system_clock->user_data);
+		tm->time_system_clock = NULL;
+		print_set_time_manager(tm);
+	}
+	return tm;
+}
+
+void time_set_system_clock(time_manager_t * const tm, clock_device_t * const device)
+{
+	if (tm)
+	{
+		tm->time_system_clock = device;
+	}
+}
+
+void time_get_system_time(time_manager_t * const tm, tinker_time_t * const time)
+{
+	if (tm && tm->time_system_clock && time)
+	{
+		uint64_t time_system_time_ns = tm->time_system_clock->get_time(tm->time_system_clock->user_data);
 		time->seconds = time_system_time_ns / ONE_SECOND_AS_NANOSECONDS;
 		time->nanoseconds = (int64_t)(time_system_time_ns - ((int64_t)time->seconds * ONE_SECOND_AS_NANOSECONDS));
 	}

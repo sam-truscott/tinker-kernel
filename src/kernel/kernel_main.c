@@ -50,7 +50,7 @@ void kernel_main(void)
 	 * Get the BSP to configure itself
 	 */
 	debug_print("BSP: Setting up the Board...\n");
-	bsp_setup(kernel_get_intc());
+	bsp_setup(kernel_get_intc(), kernel_get_tm());
 	debug_print("BSP: Setup Complete\n");
 
 	/*

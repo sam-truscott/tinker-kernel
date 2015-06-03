@@ -58,11 +58,8 @@ void bsp_decrementer_interrupt(
 		tgt_context_t * const context)
 {
 	asm("mfdec %r10");
-	if ( vector == ppc32_vector_decrementer )
+	if (vector == ppc32_vector_decrementer)
 	{
-		/* check for any timers that may have expired */
-		bsp_check_timers_and_alarms(context);
-
 		/* switch the context afterwards as what we change to may
 		 * have changed because of any alarms/timers */
 		int_context_switch_interrupt(context);

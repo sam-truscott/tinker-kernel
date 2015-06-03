@@ -25,6 +25,8 @@ registry_t * kernel_get_reg(void);
 
 interrupt_controller_t * kernel_get_intc(void);
 
+time_manager_t * kernel_get_tm(void);
+
 proc_list_t * kernel_get_proc_list(void);
 
 process_t * kernel_get_process(void);

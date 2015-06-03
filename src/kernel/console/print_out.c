@@ -16,6 +16,8 @@
 #define MAX_INTEGER_LENGTH 10
 #define MAX_HEX_INTEGER_LENGTH 8
 
+static time_manager_t * time_manager = NULL;
+
 static void print_out_process(const char ** const ptr, __builtin_va_list * const list);
 
 static void print_out_print_char(const char c);
@@ -28,10 +30,15 @@ static void print_out_print_hex(
 		const uint32_t,
 		const bool_t upper_case);
 
+void print_set_time_manager(time_manager_t * const tm)
+{
+	time_manager = tm;
+}
+
 void print_time(void)
 {
     tinker_time_t now = TINKER_ZERO_TIME;
-	time_get_system_time(&now);
+	time_get_system_time(time_manager, &now);
 	if (!tinker_time_eq(&now, &TINKER_ZERO_TIME))
 	{
 		char msg[20];
