@@ -41,15 +41,20 @@ typedef struct proc_list_t
 {
 	scheduler_t * scheduler;
 	process_list_t * process_list;
+	alarm_manager_t * alarm_manager;
 } proc_list_t;
 
-proc_list_t * proc_create(mem_pool_info_t * const pool, scheduler_t * const scheduler)
+proc_list_t * proc_create(
+		mem_pool_info_t * const pool,
+		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager)
 {
 	proc_list_t * const list = mem_alloc(pool, sizeof(process_list_t));
 	if (list)
 	{
 		list->process_list = process_list_t_create(pool);
 		list->scheduler = scheduler;
+		list->alarm_manager = alarm_manager;
 	}
 	return list;
 }
@@ -60,7 +65,7 @@ error_t proc_create_process(
 		const char * initial_task_name,
 		thread_entry_point * entry_point,
 		const uint8_t priority,
-		const tinker_meminfo_t * const meminfo,
+		tinker_meminfo_t * const meminfo,
 		const uint32_t flags,
 		process_t ** process)
 {
@@ -147,6 +152,7 @@ error_t proc_create_process(
 #endif
 		ret = process_create(
 				list->scheduler,
+				list->alarm_manager,
 				parent_pool,
 				proc_id,
 				image,

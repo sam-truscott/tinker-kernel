@@ -14,12 +14,14 @@
 #include "kernel/objects/object_table.h"
 #include "kernel/process/thread.h"
 #include "kernel/scheduler/scheduler.h"
+#include "kernel/time/alarm_manager.h"
 
 typedef struct object_thread_t object_thread_t;
 
 error_t obj_create_thread(
 		mem_pool_info_t * const pool,
 		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager,
 		object_table_t * const table,
 		const uint32_t thread_id,
 		thread_t * const thread,

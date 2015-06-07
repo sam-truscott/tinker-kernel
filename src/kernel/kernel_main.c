@@ -17,7 +17,6 @@
 #include "kernel/shell/kshell.h"
 #include "kernel/process/process_list.h"
 #include "kernel/scheduler/scheduler.h"
-#include "kernel_in.h"
 #include "tests/unit_tests.h"
 
 void kernel_main(void)
@@ -35,43 +34,10 @@ void kernel_main(void)
 	kernel_initialise();
 	debug_print("Kernel: Initialised OK.\n");
 
-	// Map the RAM into Kernel space
-	mem_section_t * const kernel_ram_sec = mem_sec_create(
-			mem_get_default_pool(),
-			4096,
-			0,
-			bsp_get_usable_memory_end(),
-			MMU_RANDOM_ACCESS_MEMORY,
-			MMU_KERNEL_ACCESS,
-			MMU_READ_WRITE);
-	tgt_map_memory(kernel_get_process(), kernel_ram_sec);
-
-	/*
-	 * Get the BSP to configure itself
-	 */
-	debug_print("BSP: Setting up the Board...\n");
-	bsp_setup(kernel_get_intc(), kernel_get_tm());
-	debug_print("BSP: Setup Complete\n");
-
 	/*
 	 * Start up message(s)
 	 */
 	debug_print("System: Up - Kernel Version: %s\n", KERNEL_VERSION);
-
-	/*
-	 * Show time; we're ready
-	 *
-	 * Sit in a holding pattern waiting for
-	 * the scheduler to take over
-	 *
-	 * This will also perform the first call to initialise
-	 * the timer
-	 */
-	thread_t * const idle_thread = kernel_get_idle_thread();
-	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
-	sch_set_current_thread(kernel_get_sch(), idle_thread);
-
-	kernel_in_initialise(kernel_get_reg());
 
 	// TODO move to unit tests
 #if defined(SYSCALL_DEBUGGING)
@@ -99,7 +65,7 @@ void kernel_main(void)
 	debug_print("System: Creating kshell\n");
 #endif
 	proc_create_thread(
-			thread_get_parent(idle_thread),
+			thread_get_parent(kernel_get_idle_thread()),
 			"kshell",
 			kshell_start,
 			1,

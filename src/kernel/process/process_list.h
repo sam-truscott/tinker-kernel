@@ -20,7 +20,10 @@ UNBOUNDED_LIST_TYPE(process_list_t)
 UNBOUNDED_LIST_ITERATOR_TYPE(process_list_it_t)
 UNBOUNDED_LIST_ITERATOR_SPEC(extern, process_list_it_t, process_list_t, process_t*)
 
-proc_list_t * proc_create(mem_pool_info_t * const pool, scheduler_t * const scheduler);
+proc_list_t * proc_create(
+		mem_pool_info_t * const pool,
+		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager);
 
 error_t proc_create_process(
 		proc_list_t * const list,
@@ -28,7 +31,7 @@ error_t proc_create_process(
 		const char * initial_task_name,
 		thread_entry_point * entry_point,
 		const uint8_t priority,
-		const tinker_meminfo_t * const meminfo,
+		tinker_meminfo_t * const meminfo,
 		const uint32_t flags,
 		process_t ** process);
 

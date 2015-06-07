@@ -13,6 +13,7 @@
 #include "kernel/objects/object.h"
 #include "kernel/process/process.h"
 #include "kernel/scheduler/scheduler.h"
+#include "kernel/time/alarm_manager.h"
 
 typedef struct object_timer_t object_timer_t;
 
@@ -23,6 +24,7 @@ object_number_t obj_timer_get_oid
 
 error_t obj_create_timer(
 		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager,
 		process_t * const process,
 		object_number_t * objectno,
 		const priority_t priority,

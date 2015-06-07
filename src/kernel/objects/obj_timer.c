@@ -23,6 +23,7 @@ typedef struct object_timer_t
 	object_internal_t object;
 	mem_pool_info_t * pool;
 	scheduler_t * scheduler;
+	alarm_manager_t * alarm_manager;
 	tinker_timer_callback_t * callback;
 	tinker_timeout_time_t timeout;
 	const void * parameter;
@@ -69,6 +70,7 @@ static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 }
 
 static void obj_timer_timeout(
+		alarm_manager_t * const am,
 		const uint32_t alarm_id,
 		void * const usr_data)
 {
@@ -87,12 +89,13 @@ static void obj_timer_timeout(
 		thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
 		thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
 		timer->callback = NULL;
-		alarm_unset_alarm(alarm_id);
+		alarm_unset_alarm(am, alarm_id);
 	}
 }
 
 error_t obj_create_timer(
 		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager,
 		process_t * const process,
 		object_number_t * objectno,
 		const priority_t priority,
@@ -134,13 +137,14 @@ error_t obj_create_timer(
 					no->parameter = parameter;
 					no->pool = pool;
 					no->scheduler = scheduler;
+					no->alarm_manager = alarm_manager;
 					*objectno = no->object.object_number;
 					const tinker_time_t timeout = {
 							.seconds = seconds,
 							.nanoseconds = nanoseconds
 					};
 					result = alarm_set_alarm(
-							pool,
+							alarm_manager,
 							&timeout,
 							obj_timer_timeout,
 							no,
@@ -194,7 +198,7 @@ error_t obj_cancel_timer(object_timer_t * const timer)
 	{
 		if (timer->callback)
 		{
-			alarm_unset_alarm(timer->alarm_id);
+			alarm_unset_alarm(timer->alarm_manager, timer->alarm_id);
 			timer->alarm_id = 0;
 			timer->callback = 0;
 			obj_timer_delete_thread(timer);
@@ -218,7 +222,7 @@ error_t obj_delete_timer(object_timer_t * const timer)
 	{
 		if (timer->callback)
 		{
-			alarm_unset_alarm(timer->alarm_id);
+			alarm_unset_alarm(timer->alarm_manager, timer->alarm_id);
 			timer->alarm_id = 0;
 			obj_timer_delete_thread(timer);
 		}

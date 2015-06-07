@@ -22,6 +22,7 @@
 #include "kernel/syscall/syscall_handler.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/shell/kshell.h"
+#include "kernel_in.h"
 #include "arch/tgt.h"
 
 static process_t * kernel_process = NULL;
@@ -61,7 +62,7 @@ void kernel_initialise(void)
 
 	debug_print("Time: Initialising services...\n");
 	time_manager = time_initialise(pool);
-	alarm_initialse(pool);
+	alarm_manager_t * const alarm_manager = alarm_initialse(pool, time_manager);
 
 	debug_print("Registry: Initialising the Registry...\n");
 	registry = registry_create(pool);
@@ -70,10 +71,16 @@ void kernel_initialise(void)
 	scheduler = sch_create_scheduler(pool);
 
 	debug_print("Process: Initialising Management...\n");
-	proc_list = proc_create(pool, scheduler);
+	proc_list = proc_create(pool, scheduler, alarm_manager);
 
 	debug_print("Syscall: Initialising...\n");
-	syscall_handler = create_handler(pool, proc_list, registry, scheduler, time_manager);
+	syscall_handler = create_handler(
+			pool,
+			proc_list,
+			registry,
+			scheduler,
+			time_manager,
+			alarm_manager);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
 	interrupt_controller = int_create(pool, syscall_handler, scheduler);
@@ -87,7 +94,7 @@ void kernel_initialise(void)
 	char * text_epos = (char*)&__text_end;
 	char * data_pos = 0;
 	char * data_end = (char*)&__data_end;
-	const tinker_meminfo_t meminfo =
+	tinker_meminfo_t meminfo =
 	{
 		.heap_size = KERNEL_HEAP,
 		.stack_size = KERNEL_IDLE_STACK,
@@ -114,26 +121,30 @@ void kernel_initialise(void)
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
 
 	kshell_setup(pool, scheduler, registry, proc_list);
-}
 
-scheduler_t * kernel_get_sch(void)
-{
-	return scheduler;
-}
+	// Map the RAM into Kernel space
+	mem_section_t * const kernel_ram_sec = mem_sec_create(
+			mem_get_default_pool(),
+			4096,
+			0,
+			bsp_get_usable_memory_end(),
+			MMU_RANDOM_ACCESS_MEMORY,
+			MMU_KERNEL_ACCESS,
+			MMU_READ_WRITE);
+	tgt_map_memory(kernel_get_process(), kernel_ram_sec);
 
-registry_t * kernel_get_reg(void)
-{
-	return registry;
-}
+	/*
+	 * Get the BSP to configure itself
+	 */
+	debug_print("BSP: Setting up the Board...\n");
+	bsp_setup(interrupt_controller, time_manager, alarm_manager);
+	debug_print("BSP: Setup Complete\n");
 
-interrupt_controller_t * kernel_get_intc(void)
-{
-	return interrupt_controller;
-}
+	thread_t * const idle_thread = kernel_get_idle_thread();
+	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
+	sch_set_current_thread(scheduler, idle_thread);
 
-time_manager_t * kernel_get_tm(void)
-{
-	return time_manager;
+	kernel_in_initialise(registry);
 }
 
 proc_list_t * kernel_get_proc_list(void)

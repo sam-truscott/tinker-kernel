@@ -11,7 +11,7 @@
 #define BCM2835_TIMER_H_
 
 #include "kernel/process/process.h"
-#include "kernel/time/timer.h"
+#include "kernel/time/alarm_manager.h"
 
 void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void * const base, const uint8_t instance);
 

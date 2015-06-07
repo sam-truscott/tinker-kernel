@@ -14,6 +14,7 @@
 #include "kernel/memory/mem_section.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/scheduler/scheduler.h"
+#include "kernel/time/alarm_manager.h"
 
 typedef struct process_t process_t;
 
@@ -22,12 +23,13 @@ HASH_MAP_TYPE_ITERATOR_SPEC(extern, thread_it_t, thread_t*)
 
 error_t process_create(
 		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager,
 		mem_pool_info_t * const mempool,
 		const uint32_t pid,
 		const char * const name,
 		const bool_t is_kernel,
-		const tinker_meminfo_t * const meminfo,
-		const mem_pool_info_t * pool,
+		tinker_meminfo_t * const meminfo,
+		mem_pool_info_t * pool,
 		process_t ** process);
 
 uint32_t process_get_pid(const process_t * const process);

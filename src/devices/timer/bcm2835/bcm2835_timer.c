@@ -26,12 +26,14 @@ typedef struct
 	timer_callback * callback;
 	uint8_t instance;
 	void * base;
+	void * param;
 } bcm2835_timer_usr_data_t;
 
 static void bcm2835_timer_setup(
 		const timer_param_t const usr_data,
 		const tinker_time_t * const timeout,
-		timer_callback * const call_back)
+		timer_callback * const call_back,
+		void * const param)
 {
 #if defined(TIMER_DEBUGGING)
 	debug_print("BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
@@ -42,6 +44,7 @@ static void bcm2835_timer_setup(
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
 		uint8_t offset;
 		data->callback = call_back;
+		data->param = param;
 		switch (data->instance)
 		{
 			case 0: offset = CLOCK_TIMER_COMPARE_0; break;
@@ -132,7 +135,7 @@ static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t pa
 #if defined(TIMER_DEBUGGING)
 			debug_print("BCM2835: Calling back to %x\n", data->callback);
 #endif
-			data->callback(context);
+			data->callback(context, data->param);
 #if defined(TIMER_DEBUGGING)
 			debug_print("BCM2835: Called back\n");
 #endif

@@ -48,7 +48,10 @@ void bsp_initialise(void)
 	ivt_initialise();
 }
 
-void bsp_setup(interrupt_controller_t * const controller, time_manager_t * const tm)
+void bsp_setup(
+		interrupt_controller_t * const controller,
+		time_manager_t * const tm,
+		alarm_manager_t * const am)
 {
 	interrupt_controller = controller;
 	time_manager = tm;
@@ -67,7 +70,7 @@ void bsp_setup(interrupt_controller_t * const controller, time_manager_t * const
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
 
-	alarm_set_timer(&bcm2835_system_timer);
+	alarm_set_timer(am, &bcm2835_system_timer);
 
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
@@ -131,8 +134,9 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	}
 }
 
-static void bsp_scheduler_timeout(tgt_context_t * const context)
+static void bsp_scheduler_timeout(tgt_context_t * const context, void * const param)
 {
+	(void)param; // UNUSED
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: ----------------------\n");
 	debug_print("BSP: Scheduler timeout\n");
@@ -162,7 +166,11 @@ void bsp_enable_schedule_timer(void)
 	time_get_system_time(time_manager, &now);
 	tinker_time_milliseconds(100, &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
-	bcm2835_scheduler_timer.timer_setup(bcm2835_scheduler_timer.usr_data, &scheduler_time, &bsp_scheduler_timeout);
+	bcm2835_scheduler_timer.timer_setup(
+			bcm2835_scheduler_timer.usr_data,
+			&scheduler_time,
+			&bsp_scheduler_timeout,
+			NULL);
 }
 
 uint32_t bsp_get_usable_memory_start()

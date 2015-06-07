@@ -26,30 +26,45 @@ static error_t opic_timer_write_register(
 static void opic_tmr_timer_setup(
 		const timer_param_t const usr_data,
 		const tinker_time_t * const timeout,
-		timer_callback * const call_back);
+		timer_callback * const call_back,
+		void * const param);
 
-static void opic_tmr_timer_cancel(const timer_param_t const usr_data);
-
-void opic_tmr_get_timer(uint32_t * base_address, timer_t * timer)
+typedef struct opic_timer_t
 {
-	if (base_address && timer)
+	void * base_address;
+	void * param;
+} opic_timer_t;
+
+static void opic_tmr_timer_cancel(timer_param_t usr_data);
+
+void opic_tmr_get_timer(mem_pool_info_t * const pool, uint32_t * base_address, timer_t * timer)
+{
+	if (base_address && timer && pool)
 	{
 		timer->timer_setup = opic_tmr_timer_setup;
 		timer->timer_cancel = opic_tmr_timer_cancel;
-		timer->usr_data = (timer_param_t)base_address;
-		timer->usr_data_size = (uint32_t)sizeof(uint32_t*);
+		timer->usr_data = mem_alloc(pool, sizeof(opic_timer_t));
+		if (timer->usr_data)
+		{
+			opic_timer_t * const opic_data = (opic_timer_t*)timer->usr_data;
+			opic_data->base_address = base_address;
+			opic_data->param = NULL;
+			timer->usr_data_size = sizeof(opic_timer_t);
+		}
 	}
 }
 
 void opic_tmr_timer_setup(
 		const timer_param_t const usr_data,
 		const tinker_time_t * const timeout,
-		timer_callback * const call_back)
+		timer_callback * const call_back,
+		void * param)
 {
 	if (usr_data && call_back)
 	{
+		((opic_timer_t*)usr_data)->param = param;
 		opic_timer_write_register(
-				(void*)usr_data,
+				((opic_timer_t*)usr_data)->base_address,
 				TMR_N_VECTOR_PRIORITY_REGISTER,
 				/* flags */
 				(ISU_POSITIVE_POLARITY_BIT)
@@ -59,21 +74,21 @@ void opic_tmr_timer_setup(
 				 | 1);
 
 		opic_timer_write_register(
-				(void*)usr_data,
+				((opic_timer_t*)usr_data)->base_address,
 				TMR_N_BASE_COUNT_REGISTER,
 				TIMER_DISABLED);
 
 		opic_timer_write_register(
-				(void*)usr_data,
+				((opic_timer_t*)usr_data)->base_address,
 				TMR_N_BASE_COUNT_REGISTER,
 				/* TIMER_TICKS */timeout->seconds); /* TODO need to work this one out */
 	}
 }
 
-void opic_tmr_timer_cancel(const timer_param_t const usr_data)
+void opic_tmr_timer_cancel(timer_param_t usr_data)
 {
 	opic_timer_write_register(
-			(void*)usr_data,
+			((opic_timer_t*)&usr_data)->base_address,
 			TMR_N_BASE_COUNT_REGISTER,
 			TIMER_DISABLED);
 }

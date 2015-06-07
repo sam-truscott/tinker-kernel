@@ -14,6 +14,7 @@
 #include "api/tinker_api_types.h"
 #include "api/tinker_api_errors.h"
 #include "kernel/interrupts/interrupt_manager.h"
+#include "kernel/time/alarm_manager.h"
 
 /**
  * Initialise the Board Support package. This should
@@ -22,7 +23,10 @@
  */
 void bsp_initialise(void) BOOT_CODE;
 
-void bsp_setup(interrupt_controller_t * const controller, time_manager_t * const tm);
+void bsp_setup(
+		interrupt_controller_t * const controller,
+		time_manager_t * const tm,
+		alarm_manager_t * const am);
 
 /**
  * Call from the kernel to tell the BSP to activate the

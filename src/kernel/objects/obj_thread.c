@@ -31,11 +31,13 @@ typedef struct object_thread_t
 	mem_pool_info_t * pool;
 	uint32_t alarm_id;
 	scheduler_t * scheduler;
+	alarm_manager_t * alarm_manager;
 } object_thread_internal_t;
 
 error_t obj_create_thread(
 		mem_pool_info_t * const pool,
 		scheduler_t * const scheduler,
+		alarm_manager_t * const alarm_manager,
 		object_table_t * const table,
 		const uint32_t thread_id,
 		thread_t * const thread,
@@ -59,6 +61,7 @@ error_t obj_create_thread(
 			no->original_priority = thread_get_priority(thread);
 			no->priority_inheritance = 0;
 			no->alarm_id = 0;
+			no->alarm_manager = alarm_manager;
 
 			sch_notify_new_thread(scheduler, thread);
 
@@ -369,7 +372,7 @@ static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t *
 	{
 		thread_set_state(o->thread, THREADY_READY);
 		sch_notify_resume_thread(o->scheduler, o->thread);
-		alarm_unset_alarm(alarm_id);
+		alarm_unset_alarm(o->alarm_manager, alarm_id);
 	}
 }
 
@@ -380,7 +383,7 @@ error_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const 
 	if (o && duration)
 	{
 		alarm_set_alarm(
-				process_get_mem_pool(thread_get_parent(o->thread)),
+				o->alarm_manager,
 				duration,
 				(alarm_call_back*)&obj_thread_sleep_callback,
 				o,

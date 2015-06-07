@@ -14,7 +14,7 @@
 #include "kernel/devices/kernel_device.h"
 #include "kernel/devices/kernel_intc_device.h"
 #include "kernel/objects/obj_pipe.h"
-#include "kernel/time/timer.h"
+#include "kernel/time/alarm_manager.h"
 
 typedef struct intc_t intc_t;
 
