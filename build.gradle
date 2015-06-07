@@ -193,18 +193,6 @@ model {
 	        }
 	    }
 	    // drivers
-	    driverIntcOpic(NativeLibrarySpec) {
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-		    	c {
-		    		lib base.static
-		    		source {
-		                 srcDirs "src/devices/intc/opic"
-		                 include "**/*.c"
-		             }
-		    	}
-	    	}
-	    }
 	    driverIntcBcm2835(NativeLibrarySpec) {
 	    	targetPlatform "tinkerArm4Soft"
 	    	targetPlatform "tinkerArm4HardVfp"
@@ -230,18 +218,6 @@ model {
 		    		lib base.static
 		    		source {
 		                 srcDirs "src/devices/timer/bcm2835"
-		                 include "**/*.c"
-		             }
-		    	}
-	    	}
-	    }
-	    driverTimerOpic(NativeLibrarySpec) {
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-		    	c {
-		    		lib base.static
-		    		source {
-		                 srcDirs "src/devices/timer/opic"
 		                 include "**/*.c"
 		             }
 		    	}
