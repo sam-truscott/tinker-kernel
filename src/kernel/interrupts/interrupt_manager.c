@@ -100,7 +100,6 @@ void int_fatal_program_error_interrupt(
 		interrupt_controller_t * const intc,
 		tgt_context_t * const context)
 {
-	(void)intc; // TODO remove?
 	kernel_assert("Fatal Interrupt Context missing", context != NULL);
 
 	thread_t * const current = sch_get_current_thread(intc->scheduler);
