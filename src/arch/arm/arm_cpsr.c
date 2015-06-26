@@ -12,13 +12,13 @@
 uint32_t arm_get_cpsr(void)
 {
 	uint32_t r;
-	asm("mrs %[ps], cpsr" : [ps]"=r" (r));
+	asm volatile("mrs %[ps], cpsr" : [ps]"=r" (r));
 	return r;
 }
 
 static void arm_set_cpsr(const uint32_t r)
 {
-    asm("msr cpsr, %[ps]" : : [ps]"r" (r));
+    asm volatile("msr cpsr, %[ps]" : : [ps]"r" (r));
 }
 
 void arm_enable_irq(void)

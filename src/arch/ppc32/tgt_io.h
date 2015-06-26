@@ -15,14 +15,14 @@
 	static inline void out_##N(T * const addr, const T const value) \
 	{ \
 		*((volatile T *)(addr)) = value; \
-		asm("eieio"); \
+		asm volatile("eieio"); \
 	}
 
 
 #define in_(N,T) \
 	static inline T in_##N(const T * const addr) \
 	{ \
-		asm("eieio"); \
+		asm volatile("eieio"); \
 		return *((volatile T*)(addr)); \
 	}
 

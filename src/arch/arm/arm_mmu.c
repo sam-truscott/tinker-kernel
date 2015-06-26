@@ -420,41 +420,41 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 
 void arm_invalidate_all_tlbs(void)
 {
-	asm("mov r0, #0x0");
-	asm("mcr p15, 0, r0, c8, c7, 0");	// invalidate all tlbs
+	asm volatile("mov r0, #0x0");
+	asm volatile("mcr p15, 0, r0, c8, c7, 0");	// invalidate all tlbs
 }
 
 void arm_disable_mmu(void)
 {
-	asm("mrc p15, 0, r0, c1, c0, 0");
-	asm("ldr r1, =0x1005");
-	asm("bic r0, r0, r1");		// disable Instruction & Data cache, disable MMU
-	asm("mcr p15, 0, r0, c1, c0, 0");
+	asm volatile("mrc p15, 0, r0, c1, c0, 0");
+	asm volatile("ldr r1, =0x1005");
+	asm volatile("bic r0, r0, r1");		// disable Instruction & Data cache, disable MMU
+	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
 
 void arm_enable_mmu(void)
 {
 	// domain
-	asm("mov r0, #0x3");
-	asm("mcr p15, 0, r0, c3, c0, 0");
+	asm volatile("mov r0, #0x3");
+	asm volatile("mcr p15, 0, r0, c3, c0, 0");
 
-	asm("mrc p15, 0, r0, c1, c0, 0");
-	asm("ldr r1, =0x1003");
-	asm("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
-	asm("mcr p15, 0, r0, c1, c0, 0");
+	asm volatile("mrc p15, 0, r0, c1, c0, 0");
+	asm volatile("ldr r1, =0x1003");
+	asm volatile("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
+	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
 
 static inline void arm_set_translation_control(const uint32_t ctl)
 {
 	(void)ctl;
-	asm("MCR p15, 0, r0, c2, c0, 2"); 	// TTBCR
+	asm volatile("MCR p15, 0, r0, c2, c0, 2"); 	// TTBCR
 }
 
 void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
 {
 	(void)base;
-	asm("mcr p15, 0, r0, c2, c0, 0");	// TTBR0
-	//asm("mcr p15, 0, r0, c2, c0, 1");	// TTBR1
+	asm volatile("mcr p15, 0, r0, c2, c0, 0");	// TTBR0
+	//asm volatile("mcr p15, 0, r0, c2, c0, 1");	// TTBR1
 	arm_set_translation_control(0);		// TTBR0
 	//arm_set_translation_control(2);	// TTBR1
 }

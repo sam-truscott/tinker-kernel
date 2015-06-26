@@ -12,57 +12,57 @@
 #pragma GCC optimize ("-O0") // TODO evaluate this
 
 #define SWITCH_TO_SYSTEM_MODE \
-	asm("mrs r0, cpsr"); \
-	asm("mov r2, r0"); \
-	asm("mov r1, #0xFFFFFF80"); \
-	asm("and r0, r0, r1"); \
-	asm("mov r1, #0xCF"); \
-	asm("orr r0, r0, r1"); \
-	asm("msr cpsr, r0");
+	asm volatile("mrs r0, cpsr"); \
+	asm volatile("mov r2, r0"); \
+	asm volatile("mov r1, #0xFFFFFF80"); \
+	asm volatile("and r0, r0, r1"); \
+	asm volatile("mov r1, #0xCF"); \
+	asm volatile("orr r0, r0, r1"); \
+	asm volatile("msr cpsr, r0");
 
 #define SWITCH_BACK \
-	asm("msr cpsr, r2");
+	asm volatile("msr cpsr, r2");
 
 #define FIX_STACK_ALIGNMENT \
-	asm ("and r1, sp, #4"); \
-	asm ("sub sp, sp, r1"); \
-	asm ("push {r1}");
+	asm volatile("and r1, sp, #4"); \
+	asm volatile("sub sp, sp, r1"); \
+	asm volatile("push {r1}");
 
 #define UNFIX_STACK_ALIGNMENT \
-	asm ("pop {r1}"); \
-	asm ("add sp, sp, r1");
+	asm volatile("pop {r1}"); \
+	asm volatile("add sp, sp, r1");
 
 #define EXCEPTION_START_COMMON \
 	uint32_t context; \
-	asm("stmfd sp!,{r0-r12,lr}");				/* store all the registers */ \
-	asm("mrs r0, spsr"); 						/* get the spsr */ \
-	asm("push {r0}"); 							/* store the spsr */ \
+	asm volatile("stmfd sp!,{r0-r12,lr}");				/* store all the registers */ \
+	asm volatile("mrs r0, spsr"); 						/* get the spsr */ \
+	asm volatile("push {r0}"); 							/* store the spsr */ \
 	SWITCH_TO_SYSTEM_MODE						/* switch to system mode so we can get r13(sp), r14(lr) */ \
-	asm("mov r3, sp");							/* get user stack pointer */ \
-	asm("mov r4, lr");							/* get user link pointer */ \
+	asm volatile("mov r3, sp");							/* get user stack pointer */ \
+	asm volatile("mov r4, lr");							/* get user link pointer */ \
 	SWITCH_BACK \
-	asm("push {r3, r4}");						/* store sp, lr */ \
+	asm volatile("push {r3, r4}");						/* store sp, lr */ \
 	FIX_STACK_ALIGNMENT \
-	asm("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */ \
+	asm volatile("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */ \
 
 #define EXCEPTION_START_SYSCALL \
 	EXCEPTION_START_COMMON
 
 #define EXCEPTION_START_VECTOR \
-	asm("sub lr, lr, #4"); 						/* update return addr */ \
+	asm volatile("sub lr, lr, #4"); 						/* update return addr */ \
 	EXCEPTION_START_COMMON
 
 #define EXCEPTION_END \
-	asm("nop"); \
+	asm volatile("nop"); \
 	UNFIX_STACK_ALIGNMENT \
-	asm("pop {r3, r4}");						/* get the sp and pc back */ \
+	asm volatile("pop {r3, r4}");						/* get the sp and pc back */ \
 	SWITCH_TO_SYSTEM_MODE \
-	asm("mov sp, r3");							/* restore the sp */ \
-	asm("mov lr, r4");							/* restore the sp */ \
+	asm volatile("mov sp, r3");							/* restore the sp */ \
+	asm volatile("mov lr, r4");							/* restore the sp */ \
 	SWITCH_BACK \
-	asm("pop {r0}");							/* get the spsr back */ \
-	asm("msr SPSR_cxsf, r0"); 					/* restore spsr */ \
-	asm("ldm sp!, {r0-r12,pc}^");				/* return! */
+	asm volatile("pop {r0}");							/* get the spsr back */ \
+	asm volatile("msr SPSR_cxsf, r0"); 					/* restore spsr */ \
+	asm volatile("ldm sp!, {r0-r12,pc}^");				/* return! */
 
 static arm_vec_handler_t * vector_table[8];
 

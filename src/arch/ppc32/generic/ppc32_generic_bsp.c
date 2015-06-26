@@ -57,7 +57,7 @@ void bsp_decrementer_interrupt(
 		const uint32_t vector,
 		tgt_context_t * const context)
 {
-	asm("mfdec %r10");
+	asm volatile("mfdec %r10");
 	if (vector == ppc32_vector_decrementer)
 	{
 		/* switch the context afterwards as what we change to may

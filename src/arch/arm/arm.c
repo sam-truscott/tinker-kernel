@@ -51,13 +51,13 @@ error_t tgt_initialise_process(process_t * const process)
 
 static void __attribute__((naked)) arm_bootstrap(thread_entry_point * const entry, uint32_t exit_function, const uint32_t sp)
 {
-	asm("mov sp, r2");				/* set the programs stack */
-	asm("push {fp, lr}");
-	asm("mov r0, r5");				/* set arg1 */
-	asm("mov r1, r6");				/* set arg2 */
+	asm volatile("mov sp, r2");				/* set the programs stack */
+	asm volatile("push {fp, lr}");
+	asm volatile("mov r0, r5");				/* set arg1 */
+	asm volatile("mov r1, r6");				/* set arg2 */
 	entry();
 	((thread_entry_point*)(exit_function))();
-	asm("pop {fp, lr}");
+	asm volatile("pop {fp, lr}");
 	(void)sp;
 }
 
@@ -232,7 +232,7 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
 uint32_t tgt_get_frame_pointer(void)
 {
 	uint32_t sp;
-	asm("mov %[ps], fp" : [ps]"=r" (sp));
+	asm volatile("mov %[ps], fp" : [ps]"=r" (sp));
 	return sp;
 }
 

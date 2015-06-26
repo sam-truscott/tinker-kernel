@@ -33,7 +33,7 @@ void tgt_initialise(void)
 
 void tgt_wait_for_interrupt(void)
 {
-	asm("li %r11, 0");
-	asm("lis %r11, 0x20");
-	asm("mtspr 1008, %r11");
+	asm volatile("li %r11, 0");
+	asm volatile("lis %r11, 0x20");
+	asm volatile("mtspr 1008, %r11");
 }
