@@ -72,6 +72,7 @@ scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool)
 	scheduler_t * sch = mem_alloc(pool, sizeof(scheduler_t));
 	if (sch)
 	{
+		util_memset(sch, 0, sizeof(scheduler_t));
 		for (uint16_t i = 0 ; i < MAX_PRIORITY + 1 ; i++)
 		{
 			thread_queue_t_initialise(&sch->sch_thread_queues[i], mem_get_default_pool());

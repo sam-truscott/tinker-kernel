@@ -143,9 +143,11 @@ static void test_i_to_a(void)
 	util_i_to_a(0, buffer, 10);
 	kernel_assert("should be true", util_streq("0", buffer, 10));
 
+	util_memset(buffer, 0, 11);
 	util_i_to_a(123456789, buffer, 10);
 	kernel_assert("should be true", util_streq("123456789", buffer, 10));
 
+	util_memset(buffer, 0, 11);
 	util_i_to_a(-123456789, buffer, 10);
 	kernel_assert("should be true", util_streq("-123456789", buffer, 10));
 

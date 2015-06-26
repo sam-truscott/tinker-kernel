@@ -20,7 +20,9 @@
 
 void tgt_initialise(void)
 {
+	print_out("Target: Disable MMU\n");
 	arm_disable_mmu();
+	print_out("Target: Invalidate TLBs\n");
 	arm_invalidate_all_tlbs();
 }
 

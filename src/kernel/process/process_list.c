@@ -79,7 +79,7 @@ error_t proc_create_process(
 
 	if (process)
 	{
-		* process = 0;
+		*process = 0;
 	}
 
 	/* get the new process id - SLOW! - TODO need to speed up */
@@ -87,7 +87,7 @@ error_t proc_create_process(
 	uint32_t proc_id = 0;
 	for ( uint32_t i = 0 ; i < MAX_PROCESSES ; i++ )
 	{
-		if ( !process_list_t_get(list->process_list, i, &tmp) )
+		if (!process_list_t_get(list->process_list, i, &tmp))
 		{
 			proc_id = i;
 			break;

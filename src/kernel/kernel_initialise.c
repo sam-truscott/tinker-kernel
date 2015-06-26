@@ -63,15 +63,19 @@ void kernel_initialise(void)
 	debug_print("Time: Initialising services...\n");
 	time_manager = time_initialise(pool);
 	alarm_manager_t * const alarm_manager = alarm_initialse(pool, time_manager);
+	debug_print("Time: Time Manager at %x, Alarm Manager at %x\n", time_manager, alarm_manager);
 
 	debug_print("Registry: Initialising the Registry...\n");
 	registry = registry_create(pool);
+	debug_print("Registry: Registry at %x\n", registry);
 
 	debug_print("Scheduler: Initialising Scheduler...\n");
 	scheduler = sch_create_scheduler(pool);
+	debug_print("Scheduler: Scheduler at %x\n", scheduler);
 
 	debug_print("Process: Initialising Management...\n");
 	proc_list = proc_create(pool, scheduler, alarm_manager);
+	debug_print("Process: Process list at %x\n", proc_list);
 
 	debug_print("Syscall: Initialising...\n");
 	syscall_handler = create_handler(
@@ -81,9 +85,11 @@ void kernel_initialise(void)
 			scheduler,
 			time_manager,
 			alarm_manager);
+	debug_print("Syscall: Syscall Handler at %x\n", syscall_handler);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
 	interrupt_controller = int_create(pool, syscall_handler, scheduler);
+	debug_print("Intc: Initialising Interrupt Controller at %x\n", interrupt_controller);
 
 	debug_print("Kernel: Initialising Kernel Process...\n");
 
@@ -103,6 +109,7 @@ void kernel_initialise(void)
 		.data_start = (uint32_t)data_pos,
 		.data_size = (uint32_t)(data_end - data_pos)
 	};
+	debug_print("Kernel: Process list %x\n", proc_list);
 	proc_create_process(
 			proc_list,
 			"kernel",

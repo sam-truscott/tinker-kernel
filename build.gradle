@@ -412,7 +412,7 @@ model {
 	                "-UINTC_DEBUGGING",
 	                "-DKERNEL_DEBUGGING",
 	                "-UMEMORY_DEBUGGING",
-	                "-DDEBUG_COLLECTIONS",
+	                "-UDEBUG_COLLECTIONS",
 	                "-UPROCESS_DEBUGGING",
 	                "-USHM_DEBUGGING",
 	                "-UTARGET_DEBUGGING",
