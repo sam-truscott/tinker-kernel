@@ -9,7 +9,7 @@
 
 #include "arm_vec.h"
 #include "kernel/console/print_out.h"
-#pragma GCC optimize ("-O0") // TODO evaluate this
+#pragma GCC optimize ("-O0")
 
 #define SWITCH_TO_SYSTEM_MODE \
 	asm volatile("mrs r0, cpsr"); \
