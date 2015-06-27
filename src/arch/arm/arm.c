@@ -53,29 +53,23 @@ static void __attribute__((naked)) arm_bootstrap(
 		thread_entry_point * const entry,
 		uint32_t exit_function,
 		const uint32_t sp,
-		const bool_t kernel)
+		const uint32_t cpsr_mode)
 {
-	asm volatile("mrs %r7, cpsr");
-	asm volatile("mov r8, #0xFFFFFFE0");
-	asm volatile("and r7, r7, r8");
-	if (!kernel)
-	{
-		asm volatile("orr r7, r7, #10");
-	}
-	else
-	{
-		asm volatile("orr r7, r7, #13");
-	}
-	asm volatile("msr cpsr, %r7");
+	asm volatile("mrs %r7, cpsr");			/* get cpsr */
+	asm volatile("mov r8, #0xFFFFFFE0");	/* blat out the mode */
+	asm volatile("and r7, r7, r8");			/* blat out the mode */
+	asm volatile("orr r7, r7, r3");			/* set the mode */
+	asm volatile("msr cpsr, %r7");			/* move the mode into cpsr */
 
 	asm volatile("mov sp, r2");				/* set the programs stack */
-	asm volatile("push {fp, lr}");
+	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
 	asm volatile("mov r0, r5");				/* set arg1 */
 	asm volatile("mov r1, r6");				/* set arg2 */
 	entry();
 	((thread_entry_point*)(exit_function))();
 	asm volatile("pop {fp, lr}");
 	(void)sp;
+	(void)cpsr_mode;
 }
 
 void tgt_initialise_context(
@@ -98,7 +92,14 @@ void tgt_initialise_context(
 		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
-		arm_context->gpr[3] = kernel_mode;
+		if (kernel_mode)
+		{
+			arm_context->gpr[3] = PSR_MODE_SUPERVISOR;
+		}
+		else
+		{
+			arm_context->gpr[3] = PSR_MODE_USER;
+		}
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
         if (!kernel_mode)
