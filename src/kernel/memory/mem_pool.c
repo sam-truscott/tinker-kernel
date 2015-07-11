@@ -140,5 +140,19 @@ uint32_t mem_get_start_addr(const mem_pool_info_t * const pool)
 
 uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 {
-	return pool->pool_alloc_size;
+	uint32_t size;
+	if (pool)
+	{
+		size = pool->pool_alloc_size;
+	}
+	else
+	{
+		size = 0;
+	}
+	return size;
+}
+
+uint32_t mem_get_allocd_size(const mem_pool_info_t * const pool)
+{
+	return mspace_footprint(pool->space);
 }

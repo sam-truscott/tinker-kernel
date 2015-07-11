@@ -17,6 +17,8 @@
 
 #if defined(UNIT_TESTS)
 
+#define TEST_POOL_SIZE 256 * 1024
+
 UNBOUNDED_LIST_TYPE(test_list_t)
 UNBOUNDED_LIST_INTERNAL_TYPE(test_list_t, uint32_t)
 UNBOUNDED_LIST_SPEC_INITIALISE(static, test_list_t, uint32_t)
@@ -271,9 +273,20 @@ static void test_queue(mem_pool_info_t * const pool)
 void test_collections(void)
 {
 	mem_pool_info_t * const pool = mem_get_default_pool();
-	test_list(pool);
-	test_hashmap(pool);
-	test_stack(pool);
-	test_queue(pool);
+
+	const uint32_t allocated = mem_get_allocd_size(pool);
+
+	void * const test_base = mem_alloc(pool, TEST_POOL_SIZE);
+	mem_pool_info_t * test_pool = NULL;
+	mem_init_memory_pool((uint32_t)test_base, TEST_POOL_SIZE, &test_pool);
+
+	test_list(test_pool);
+	test_hashmap(test_pool);
+	test_stack(test_pool);
+	test_queue(test_pool);
+
+	kernel_assert("collection memory leak", 0 == mem_get_allocd_size(test_pool));
+	mem_free(pool, test_base);
+	kernel_assert("collection memory leak in parent pool", allocated == mem_get_allocd_size(pool));
 }
 #endif
