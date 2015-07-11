@@ -154,5 +154,5 @@ uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 
 uint32_t mem_get_allocd_size(const mem_pool_info_t * const pool)
 {
-	return mspace_footprint(pool->space);
+	return mspace_mallinfo(pool->space).uordblks;
 }

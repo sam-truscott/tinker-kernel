@@ -33,13 +33,16 @@
 
 #define UNBOUNDED_QUEUE_SPEC_INITIALISE(PREFIX, QUEUE_T, ITEM_T) \
 	\
-	UNBOUNDED_LIST_SPEC_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	UNBOUNDED_LIST_SPEC_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
 	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, mem_pool_info_t * const pool); \
 	\
 
 #define UNBOUNDED_QUEUE_SPEC_CREATE(PREFIX, QUEUE_T, ITEM_T) \
+	\
+	UNBOUNDED_QUEUE_SPEC_INITIALISE(PREFIX, QUEUE_T, ITEM_T) \
+	\
 	PREFIX QUEUE_T * QUEUE_T##_create(mem_pool_info_t * const pool); \
 	\
 
@@ -94,8 +97,8 @@
 
 #define UNBOUNDED_QUEUE_BODY_INITIALISE(PREFIX, QUEUE_T, ITEM_T) \
 	\
-	UNBOUNDED_LIST_BODY_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	UNBOUNDED_LIST_BODY_CREATE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
 	\
 	PREFIX void QUEUE_T##_initialise(QUEUE_T * const queue, mem_pool_info_t * const pool) \
 	{ \
@@ -107,6 +110,9 @@
 	\
 
 #define UNBOUNDED_QUEUE_BODY_CREATE(PREFIX, QUEUE_T, ITEM_T) \
+	\
+	UNBOUNDED_QUEUE_BODY_INITIALISE(PREFIX, QUEUE_T, ITEM_T) \
+	\
 	PREFIX QUEUE_T * QUEUE_T##_create(mem_pool_info_t * const pool) \
 	{ \
 		QUEUE_T * queue = NULL; \

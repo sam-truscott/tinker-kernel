@@ -67,8 +67,8 @@ HASH_MAP_BODY_CONTAINS_KEY(static, test_map_t, uint32_t, MAP_BUCKET_SIZE)
 
 STACK_TYPE(test_stack_t)
 STACK_INTERNAL_TYPE(test_stack_t, uint32_t)
-STACK_SPEC_INITIALISE(static, test_stack_t, uint32_t)
-STACK_BODY_INITIALISE(static, test_stack_t, uint32_t)
+STACK_SPEC_CREATE(static, test_stack_t, uint32_t)
+STACK_BODY_CREATE(static, test_stack_t, uint32_t)
 STACK_SPEC_PUSH(static, test_stack_t, uint32_t)
 STACK_BODY_PUSH(static, test_stack_t, uint32_t)
 STACK_SPEC_POP(static, test_stack_t, uint32_t)
@@ -81,11 +81,13 @@ STACK_SPEC_GET(static, test_stack_t, uint32_t)
 STACK_BODY_GET(static, test_stack_t, uint32_t)
 STACK_SPEC_INSERT(static, test_stack_t, uint32_t)
 STACK_BODY_INSERT(static, test_stack_t, uint32_t)
+STACK_SPEC_DELETE(static, test_stack_t, uint32_t)
+STACK_BODY_DELETE(static, test_stack_t, uint32_t)
 
 UNBOUNDED_QUEUE_TYPE(test_queue_t)
 UNBOUNDED_QUEUE_INTERNAL_TYPE(test_queue_t, uint32_t)
-UNBOUNDED_QUEUE_SPEC_INITIALISE(static, test_queue_t, uint32_t)
-UNBOUNDED_QUEUE_BODY_INITIALISE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_CREATE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_CREATE(static, test_queue_t, uint32_t)
 UNBOUNDED_QUEUE_SPEC_PUSH(static, test_queue_t, uint32_t)
 UNBOUNDED_QUEUE_BODY_PUSH(static, test_queue_t, uint32_t)
 UNBOUNDED_QUEUE_SPEC_POP(static, test_queue_t, uint32_t)
@@ -98,6 +100,8 @@ UNBOUNDED_QUEUE_SPEC_SIZE(static, test_queue_t)
 UNBOUNDED_QUEUE_BODY_SIZE(static, test_queue_t)
 UNBOUNDED_QUEUE_SPEC_REMOVE(static, test_queue_t, uint32_t)
 UNBOUNDED_QUEUE_BODY_REMOVE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_SPEC_DELETE(static, test_queue_t, uint32_t)
+UNBOUNDED_QUEUE_BODY_DELETE(static, test_queue_t, uint32_t)
 
 static void test_list(mem_pool_info_t * const pool)
 {
@@ -203,71 +207,73 @@ static void test_hashmap(mem_pool_info_t * const pool)
 
 static void test_stack(mem_pool_info_t * const pool)
 {
-	test_stack_t stack;
-	test_stack_t_initialise(&stack, pool);
-	kernel_assert("size should be 0", test_stack_t_size(&stack) == 0);
+	test_stack_t * const stack = test_stack_t_create(pool);
+	kernel_assert("size should be 0", test_stack_t_size(stack) == 0);
 
-	kernel_assert("should return true", test_stack_t_push(&stack, 1));
-	kernel_assert("should return true", test_stack_t_push(&stack, 2));
-	kernel_assert("should return true", test_stack_t_push(&stack, 3));
-	kernel_assert("size should be 3", test_stack_t_size(&stack) == 3);
+	kernel_assert("should return true", test_stack_t_push(stack, 1));
+	kernel_assert("should return true", test_stack_t_push(stack, 2));
+	kernel_assert("should return true", test_stack_t_push(stack, 3));
+	kernel_assert("size should be 3", test_stack_t_size(stack) == 3);
 
 	uint32_t value = 0;
-	kernel_assert("should return true", test_stack_t_front(&stack, &value));
+	kernel_assert("should return true", test_stack_t_front(stack, &value));
 	kernel_assert("size should be 3", value == 3);
 
-	kernel_assert("should return true", test_stack_t_get(&stack, 1, &value));
+	kernel_assert("should return true", test_stack_t_get(stack, 1, &value));
 	kernel_assert("size should be 2", value == 2);
 
-	kernel_assert("should return true", test_stack_t_pop(&stack, &value));
+	kernel_assert("should return true", test_stack_t_pop(stack, &value));
 	kernel_assert("size should be 3", value == 3);
-	kernel_assert("size should be 3", test_stack_t_size(&stack) == 2);
+	kernel_assert("size should be 3", test_stack_t_size(stack) == 2);
 
 	// insert
-	kernel_assert("should return true", test_stack_t_insert(&stack, 2, 3));
+	kernel_assert("should return true", test_stack_t_insert(stack, 2, 3));
 	kernel_assert("size should be 3", value == 3);
-	kernel_assert("size should be 3", test_stack_t_size(&stack) == 3);
-	kernel_assert("should return false", !test_stack_t_insert(&stack, 5, 6));
+	kernel_assert("size should be 3", test_stack_t_size(stack) == 3);
+	kernel_assert("should return false", !test_stack_t_insert(stack, 5, 6));
 	kernel_assert("size should be 3", value == 3);
-	kernel_assert("size should be 3", test_stack_t_size(&stack) == 3);
+	kernel_assert("size should be 3", test_stack_t_size(stack) == 3);
+
+	test_stack_t_delete(stack);
 }
 
 static void test_queue(mem_pool_info_t * const pool)
 {
 	// remove
-	test_queue_t queue;
+	test_queue_t * const queue = test_queue_t_create(pool);
 	uint32_t value = 0;
-	test_queue_t_initialise(&queue, pool);
-	kernel_assert("should be 0", test_queue_t_size(&queue) == 0);
+	kernel_assert("should be 0", test_queue_t_size(queue) == 0);
 
-	kernel_assert("should return true", test_queue_t_reorder_first(&queue));
-	kernel_assert("should return false", !test_queue_t_front(&queue, &value));
-	kernel_assert("should return false", !test_queue_t_remove(&queue, 0));
+	kernel_assert("should return true", test_queue_t_reorder_first(queue));
+	kernel_assert("should return false", !test_queue_t_front(queue, &value));
+	kernel_assert("should return false", !test_queue_t_remove(queue, 0));
 
-	kernel_assert("should return true", test_queue_t_push(&queue, 1));
-	kernel_assert("should be 1", test_queue_t_size(&queue) == 1);
+	kernel_assert("should return true", test_queue_t_push(queue, 1));
+	kernel_assert("should be 1", test_queue_t_size(queue) == 1);
 
-	kernel_assert("should return true", test_queue_t_push(&queue, 2));
-	kernel_assert("should return true", test_queue_t_push(&queue, 3));
-	kernel_assert("should be 3", test_queue_t_size(&queue) == 3);
+	kernel_assert("should return true", test_queue_t_push(queue, 2));
+	kernel_assert("should return true", test_queue_t_push(queue, 3));
+	kernel_assert("should be 3", test_queue_t_size(queue) == 3);
 
-	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should return true", test_queue_t_front(queue, &value));
 	kernel_assert("should be 1", value == 1);
 
-	kernel_assert("should return true", test_queue_t_reorder_first(&queue));
+	kernel_assert("should return true", test_queue_t_reorder_first(queue));
 
-	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should return true", test_queue_t_front(queue, &value));
 	kernel_assert("should be 3", value == 3);
 
-	kernel_assert("should return true", test_queue_t_pop(&queue));
-	kernel_assert("should be 2", test_queue_t_size(&queue) == 2);
-	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should return true", test_queue_t_pop(queue));
+	kernel_assert("should be 2", test_queue_t_size(queue) == 2);
+	kernel_assert("should return true", test_queue_t_front(queue, &value));
 	kernel_assert("should be 2", value == 2);
 
-	kernel_assert("should return true", test_queue_t_remove(&queue, 1));
-	kernel_assert("should be 1", test_queue_t_size(&queue) == 1);
-	kernel_assert("should return true", test_queue_t_front(&queue, &value));
+	kernel_assert("should return true", test_queue_t_remove(queue, 1));
+	kernel_assert("should be 1", test_queue_t_size(queue) == 1);
+	kernel_assert("should return true", test_queue_t_front(queue, &value));
 	kernel_assert("should be 2", value == 2);
+
+	test_queue_t_delete(queue);
 }
 
 void test_collections(void)
@@ -280,13 +286,27 @@ void test_collections(void)
 	mem_pool_info_t * test_pool = NULL;
 	mem_init_memory_pool((uint32_t)test_base, TEST_POOL_SIZE, &test_pool);
 
+	const uint32_t collection_start_size = mem_get_allocd_size(test_pool);
+	debug_print("Start allocated memory %x\n", collection_start_size);
 	test_list(test_pool);
+	debug_print("Linked List allocated memory %x\n", mem_get_allocd_size(test_pool));
 	test_hashmap(test_pool);
+	debug_print("Hash Map allocated memory %x\n", mem_get_allocd_size(test_pool));
 	test_stack(test_pool);
+	debug_print("Stack allocated memory %x\n", mem_get_allocd_size(test_pool));
 	test_queue(test_pool);
+	debug_print("Queue allocated memory %x\n", mem_get_allocd_size(test_pool));
 
-	kernel_assert("collection memory leak", 0 == mem_get_allocd_size(test_pool));
+	const uint32_t collection_allocated = mem_get_allocd_size(test_pool);
 	mem_free(pool, test_base);
-	kernel_assert("collection memory leak in parent pool", allocated == mem_get_allocd_size(pool));
+	const uint32_t main_allocated = mem_get_allocd_size(pool);
+
+	debug_print("Collection memory still allocated %x, Main allocated was %x now %x\n",
+			collection_allocated,
+			allocated,
+			main_allocated);
+
+	kernel_assert("collection memory leak", collection_start_size == collection_allocated );
+	kernel_assert("collection memory leak in parent pool", allocated == main_allocated);
 }
 #endif

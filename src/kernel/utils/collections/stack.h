@@ -70,6 +70,8 @@
 	}
 #define STACK_BODY_CREATE(PREFIX, STACK_T, ITEM_T) \
 	\
+	STACK_BODY_INITIALISE(PREFIX, STACK_T, ITEM_T) \
+	\
 	PREFIX STACK_T * STACK_T##_create(mem_pool_info_t * const pool) \
 	{ \
 		STACK_T * stack = NULL; \

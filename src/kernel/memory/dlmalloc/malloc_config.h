@@ -38,7 +38,7 @@
 #define malloc_getpagesize MMU_PAGE_SIZE
 
 #define MSPACES 1
-#define ONLY_MSPACES 1
+#define ONLY_MSPACES 0
 
 #define HAVE_MMAP 0
 #define HAVE_MORECORE 0
@@ -47,7 +47,7 @@
 
 #define USE_LOCKS 0
 
-#define NO_MALLINFO 1
+#define NO_MALLINFO 0
 #define NO_MALLOC_STATS 1
 
 #define USE_BUILTIN_FFS 0
