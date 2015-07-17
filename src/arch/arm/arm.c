@@ -92,7 +92,7 @@ void tgt_initialise_context(
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
-        if (!kernel_mode)
+        if (kernel_mode)
         {
         	process_t * const kproc = kernel_get_process();
 			tgt_pg_tbl_t * const kernel_pg_tbl = process_get_page_table(kproc);
@@ -105,14 +105,7 @@ void tgt_initialise_context(
 				}
 			}
         }
-        if (kernel_mode)
-        {
-        	arm_context->apsr = PSR_MODE_SYSTEM;
-        }
-        else
-        {
-        	arm_context->apsr = PSR_MODE_USER;
-        }
+        arm_context->apsr = PSR_MODE_USER;
 #if defined(TARGET_DEBUGGING)
         debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
         debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
