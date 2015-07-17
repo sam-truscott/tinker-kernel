@@ -26,6 +26,10 @@ void kernel_idle(void)
 #if defined(IDLE_DEBUGGING)
 		debug_print("IDLE: Waiting for interrupt\n");
 #endif
-		tgt_wait_for_interrupt();
+		//tgt_wait_for_interrupt();
+		tinker_wait_for_interrupt();
+#if defined(IDLE_DEBUGGING)
+		debug_print("IDLE: Awoken\n");
+#endif
 	}
 }
