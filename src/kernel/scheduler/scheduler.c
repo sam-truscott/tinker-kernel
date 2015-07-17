@@ -93,7 +93,7 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 		thread_queue_t * const queue = &(scheduler->sch_thread_queues[thread_priority]);
 		thread_queue_t_push(queue, t);
 
-#if defined(PROCESS_DEBUGGING)
+#if defined(SCHEDULER_DEBUGGING)
 		debug_print("Scheduler: New thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
@@ -165,8 +165,8 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 			}
 		}
 	}
-#if defined(PROCESS_DEBUGGING)
-		debug_print("Scheduler: New priority, now (%d)\n", sch_current_priority);
+#if defined(SCHEDULER_DEBUGGING)
+		debug_print("Scheduler: New priority, now (%d)\n", scheduler->sch_current_priority);
 #endif
 }
 
@@ -178,7 +178,7 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 		thread_queue_t * const queue = &(scheduler->sch_thread_queues[thread_priority]);
 		const bool_t removed = thread_queue_t_remove(queue, t);
 
-#if defined(PROCESS_DEBUGGING)
+#if defined(SCHEDULER_DEBUGGING)
 		debug_print("Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 		if (removed && thread_queue_t_size(scheduler->sch_active_queue) == 0)
@@ -201,8 +201,8 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 			}
 		}
 	}
-#if defined(PROCESS_DEBUGGING)
-		debug_print("Scheduler: Exit priority, now (%d)\n", sch_current_priority);
+#if defined(SCHEDULER_DEBUGGING)
+		debug_print("Scheduler: Exit priority, now (%d)\n", scheduler->sch_current_priority);
 #endif
 }
 
@@ -225,7 +225,7 @@ void sch_notify_change_priority(
 	{
 		const priority_t thread_priority = thread_get_priority(t);
 
-#if defined(PROCESS_DEBUGGING)
+#if defined(SCHEDULER_DEBUGGING)
 		debug_print("Scheduler: Change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
@@ -251,8 +251,8 @@ void sch_notify_change_priority(
 			}
 		}
 	}
-#if defined(PROCESS_DEBUGGING)
-		debug_print("Scheduler: Change priority, now (%d)\n", sch_current_priority);
+#if defined(SCHEDULER_DEBUGGING)
+		debug_print("Scheduler: Change priority, now (%d)\n", scheduler->sch_current_priority);
 #endif
 }
 

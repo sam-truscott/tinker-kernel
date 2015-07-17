@@ -401,12 +401,14 @@ model {
 	        linker.args "-nostartfiles",
 		        "-nodefaultlibs",
 		        "-nostdlib",
-		        "-static"
+		        "-static",
+		        "-s"
 	        if (buildType == buildTypes.debug) {
 	            cCompiler.args "-O0", 
 	                "-g3",
 	                "-gdwarf-4",
 	                "-DKERNEL_SHELL",
+	                "-DKERNEL_SHELL_DEBUG",
 	                "-DUNIT_TESTS",
 	                "-UTIMER_DEBUGGING",
 	                "-UINTC_DEBUGGING",
@@ -414,6 +416,7 @@ model {
 	                "-UMEMORY_DEBUGGING",
 	                "-UDEBUG_COLLECTIONS",
 	                "-UPROCESS_DEBUGGING",
+	                "-USCHEDULER_DEBUGGING",
 	                "-USHM_DEBUGGING",
 	                "-UTARGET_DEBUGGING",
 	                "-USYSCALL_DEBUGGING",
@@ -422,7 +425,6 @@ model {
 	                "-UPIPE_DEBUGGING",
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
-	                "-UKERNEL_SHELL_DEBUG",
 	                "-ULOCK_DEBUGGING",
 	                "-ULOCK_TRACING"
 	        } else if (buildType == buildTypes.release) {

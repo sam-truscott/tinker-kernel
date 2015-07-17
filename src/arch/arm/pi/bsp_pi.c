@@ -15,6 +15,7 @@
 #include "arch/arm/arm_mmu.h"
 
 #include "kernel/kernel_initialise.h"
+#include "kernel/kernel_assert.h"
 #include "kernel/interrupts/interrupt_manager.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/process/process_list.h"
@@ -29,10 +30,10 @@ static timer_t bcm2835_scheduler_timer;
 static timer_t bcm2835_system_timer;
 static tinker_time_t scheduler_time;
 static tinker_time_t scheduler_period;
-static intc_t * bcm2835_intc;
+static intc_t * bcm2835_intc = NULL;
 static kernel_device_t uart;
-static interrupt_controller_t * interrupt_controller;
-static time_manager_t * time_manager;
+static interrupt_controller_t * interrupt_controller = NULL;
+static time_manager_t * time_manager = NULL;
 
 void bsp_initialise(void)
 {
@@ -115,6 +116,7 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 #if defined(TARGET_DEBUGGING)
 	debug_print("BSP: Vector %d\n", type);
 #endif
+	kernel_assert("interrupt controller not set in bsp\n", interrupt_controller != NULL);
 	tgt_context_t * const context = (tgt_context_t*)contextp;
 	switch(type)
 	{
