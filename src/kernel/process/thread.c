@@ -98,7 +98,6 @@ thread_t * thread_create(
 			tgt_initialise_context(
 					thread,
 					&thread->context,
-					process_is_kernel(thread->parent),
 					(const uint32_t)thread_end);
 		}
 		else

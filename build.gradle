@@ -408,7 +408,7 @@ model {
 	                "-g3",
 	                "-gdwarf-4",
 	                "-DKERNEL_SHELL",
-	                "-DKERNEL_SHELL_DEBUG",
+	                "-UKERNEL_SHELL_DEBUG",
 	                "-DUNIT_TESTS",
 	                "-UTIMER_DEBUGGING",
 	                "-UINTC_DEBUGGING",

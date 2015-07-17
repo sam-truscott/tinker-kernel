@@ -37,7 +37,6 @@ void tgt_unmap_memory(
 void tgt_initialise_context(
 		const thread_t * thread,
 		tgt_context_t ** const context,
-		const bool_t kernel_mode,
 		const uint32_t exit_function);
 
 void tgt_destroy_context(

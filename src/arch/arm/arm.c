@@ -73,7 +73,6 @@ static void __attribute__((naked)) arm_bootstrap(
 void tgt_initialise_context(
         const thread_t * thread,
         tgt_context_t ** const context,
-        const bool_t kernel_mode,
         const uint32_t exit_function)
 {
     if (context)
@@ -92,19 +91,6 @@ void tgt_initialise_context(
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
-        if (kernel_mode)
-        {
-        	process_t * const kproc = kernel_get_process();
-			tgt_pg_tbl_t * const kernel_pg_tbl = process_get_page_table(kproc);
-			tgt_pg_tbl_t * const process_pg_tbl = process_get_page_table(proc);
-			for (uint16_t s = 0 ; s < NUM_L1_ENTRIES ; s++)
-			{
-				if (kernel_pg_tbl->lvl1_entry[s] != 0)
-				{
-					process_pg_tbl->lvl1_entry[s] = kernel_pg_tbl->lvl1_entry[s];
-				}
-			}
-        }
         arm_context->apsr = PSR_MODE_USER;
 #if defined(TARGET_DEBUGGING)
         debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
