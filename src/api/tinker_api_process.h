@@ -13,6 +13,22 @@
 #include "tinker_api_errors.h"
 #include "tinker_api_kernel_interface.h"
 
+/* needs to match mmu_memory_t */
+typedef enum
+{
+	MEM_DEVICE_MEMORY		 	= 0,
+	MEM_RANDOM_ACCESS_MEMORY	= 1
+} tinker_memory_t;
+
+/* needs to match mmu_privilege_t */
+typedef enum
+{
+	MEM_NO_PRIVILEGE 	= 0,
+	MEM_USER_ACCESS		= 1,
+	MEM_KERNEL_ACCESS	= 2,
+	MEM_ALL_ACCESS		= 3
+} tinker_privilege_t;
+
 /**
  * The entry point for a new thread
  */
@@ -66,5 +82,12 @@ error_t tinker_exit_thread(void) TINKER_API_SUFFIX;
 void tinker_debug(const char * const str) TINKER_API_SUFFIX;
 
 void tinker_wait_for_interrupt(void) TINKER_API_SUFFIX;
+
+error_t tinker_map_mempry(
+		void * real,
+		uint32_t size,
+		tinker_memory_t type,
+		tinker_privilege_t access,
+		void ** virtual);
 
 #endif /* TINKER_API_PROCESS_H_ */

@@ -96,3 +96,13 @@ void tinker_wait_for_interrupt(void)
 {
 	TINKER_API_CALL_0(SYSCALL_WFI);
 }
+
+error_t tinker_map_mempry(
+		void * real,
+		uint32_t size,
+		tinker_memory_t type,
+		tinker_privilege_t access,
+		void ** virtual)
+{
+	return TINKER_API_CALL_5(SYSCALL_MMAP, (uint32_t)real, size, type, access, (uint32_t)virtual);
+}

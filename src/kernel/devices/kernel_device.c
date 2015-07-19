@@ -25,8 +25,9 @@ error_t kernel_device_map_memory
 	 const mmu_memory_t type,
 	 uint32_t * const virt)
 {
+	process_t * const kernel_proc = kernel_get_process();
 	const error_t result = process_allocate_vmem(
-			kernel_get_process(),
+			kernel_proc,
 			addr,
 			size,
 			type,
@@ -41,7 +42,9 @@ error_t kernel_device_map_memory
 		{
 			while (proc)
 			{
-				process_allocate_vmem(
+				if (proc != kernel_proc)
+				{
+					process_allocate_vmem(
 							proc,
 							addr,
 							size,
@@ -49,6 +52,7 @@ error_t kernel_device_map_memory
 							MMU_KERNEL_ACCESS,
 							MMU_READ_WRITE,
 							virt);
+				}
 				process_list_it_t_next(procs, &proc);
 			}
 			process_list_it_t_delete(procs);
