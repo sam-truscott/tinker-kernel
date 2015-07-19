@@ -76,6 +76,7 @@ void kernel_initialise(void)
 	debug_print("Process: Initialising Management...\n");
 	proc_list = proc_create(pool, scheduler, alarm_manager);
 	debug_print("Process: Process list at %x\n", proc_list);
+	kernel_device_set_process_list(proc_list);
 
 	debug_print("Syscall: Initialising...\n");
 	syscall_handler = create_handler(
