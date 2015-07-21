@@ -103,8 +103,6 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Review all the uses of ARCH_HAS_MMU
-	* Might be useful for an Arduino port
 * Kernel: Don't map the whole process memory pool to the user-space in the MMU
 	* Just map the entries you need (code, data, shm etc)
 	* Stops the process having access to it's own internal data structures
