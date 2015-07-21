@@ -11,17 +11,17 @@
 
 .global kernel_start
 kernel_start:
-	msr cpsr, #0xC1			/* enter fiq mode & disable interrupts */
+	msr cpsr, #0xD1			/* enter fiq mode & disable interrupts */
 	ldr sp, =__ivtse		/* setup fiq stack */
-	msr cpsr, #0xC2			/* enter irq mode & disable interrupts */
+	msr cpsr, #0xD2			/* enter irq mode & disable interrupts */
 	ldr sp, =__ivtse		/* setup irq stack */
-	msr cpsr, #0xCB			/* enter und mode & disable interrupts */
+	msr cpsr, #0xDB			/* enter und mode & disable interrupts */
 	ldr sp, =__ivtse		/* setup und stack */
-	msr cpsr, #0xC7			/* enter abt mode & disable interrupts */
+	msr cpsr, #0xD7			/* enter abt mode & disable interrupts */
 	ldr sp, =__ivtse		/* setup abt stack */
-	msr cpsr, #0xC3 		/* enter svc mode & disable interrupts */
+	msr cpsr, #0xD3 		/* enter svc mode & disable interrupts */
 	ldr sp, =__ivtse		/* setup svc stack */
-	msr cpsr, #0xCF			/* enter sys mode & disable interrupts */
+	msr cpsr, #0xDF			/* enter sys mode & disable interrupts */
 	ldr sp, =__bootse		/* setup sys stack */
 
 	// Clear out bss.

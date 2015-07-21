@@ -200,10 +200,11 @@ void tgt_enter_usermode(void)
 #if defined(TARGET_DEBUGGING)
 	printp_out("Kernel: Entering user mode\n");
 #endif
-	arm_set_psr_mode(PSR_MODE_SYSTEM);
+	printp_out("Kernel: CPSR %x\n", arm_get_cpsr());
 	arm_enable_irq();
+	printp_out("Kernel: CPSR %x\n", arm_get_cpsr());
 #if defined(TARGET_DEBUGGING)
-	tinker_debug("Kernel: User mode entered\n");
+	printp_out("Kernel: User mode entered\n");
 #endif
 }
 

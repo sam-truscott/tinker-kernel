@@ -16,7 +16,7 @@
 	asm volatile("mov r2, r0"); \
 	asm volatile("mov r1, #0xFFFFFF80"); \
 	asm volatile("and r0, r0, r1"); \
-	asm volatile("mov r1, #0xCF"); \
+	asm volatile("mov r1, #0xDF"); \
 	asm volatile("orr r0, r0, r1"); \
 	asm volatile("msr cpsr, r0");
 

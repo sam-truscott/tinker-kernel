@@ -25,6 +25,8 @@ typedef enum psr_mode
 
 uint32_t arm_get_cpsr(void);
 
+void arm_set_cpsr(const uint32_t r);
+
 void arm_enable_irq(void);
 
 void arm_disable_irq(void);

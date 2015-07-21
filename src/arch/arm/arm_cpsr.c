@@ -16,7 +16,7 @@ uint32_t arm_get_cpsr(void)
 	return r;
 }
 
-static void arm_set_cpsr(const uint32_t r)
+void arm_set_cpsr(const uint32_t r)
 {
     asm volatile("msr cpsr, %[ps]" : : [ps]"r" (r));
 }
