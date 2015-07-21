@@ -13,6 +13,7 @@
 #include "arch/tgt_types.h"
 #include "tinker_api_errors.h"
 #include "kernel/memory/mem_section.h"
+#include "kernel/process/process_list.h"
 
 struct kernel_device;
 
@@ -59,6 +60,9 @@ typedef struct kernel_device
 	kernel_device_isr * 			isr;
 	const void * user_data;
 } kernel_device_t;
+
+// TODO remove this and use an object
+void kernel_device_set_process_list(proc_list_t * const list);
 
 error_t kernel_device_map_memory
 	(const uint32_t addr,

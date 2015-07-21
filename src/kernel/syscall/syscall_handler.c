@@ -204,6 +204,29 @@ void syscall_handle_system_call(
 			}
 			break;
 
+		case SYSCALL_MMAP:
+		{
+			process_t * const process = thread_get_parent(this_thread);
+			uint32_t virtual = 0;
+			uint32_t real = (uint32_t)(param[0]);
+			if (real == 0)
+			{
+				ret = MMAP_NOT_ALLOWED_AT_ZERO;
+			}
+			else
+			{
+				ret = process_allocate_vmem(
+						process,
+						real,
+						(uint32_t)(param[1]),
+						(mmu_memory_t)(param[2]),
+						(mmu_privilege_t)(param[3]),
+						MMU_READ_WRITE,
+						&virtual);
+			}
+		}
+		break;
+
 		case SYSCALL_DEBUG:
 		{
 			const char * const msg = (const char * const)param[0];

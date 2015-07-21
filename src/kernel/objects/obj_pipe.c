@@ -63,7 +63,7 @@ typedef struct object_pipe_t
 object_pipe_t * obj_cast_pipe(object_t * const o)
 {
 	object_pipe_t * result = NULL;
-	if(o)
+	if (o)
 	{
 		const object_pipe_t * const tmp = (const object_pipe_t*)o;
 		if (tmp->object.type == PIPE_OBJ)
@@ -154,7 +154,7 @@ static bool_t pipe_can_send_to_all(
 	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
 	if (pipe_list_it_t_get(&it, &receiver))
 	{
-		while(receiver)
+		while (receiver)
 		{
 			const bool_t can_send_pipe = pipe_can_receive(receiver);
 			if (!can_send_pipe && blocking)
@@ -348,7 +348,7 @@ error_t obj_open_pipe(
 	debug_print("PipeO: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
 #endif
 				// we have a pipe! check that the direction is correct
-				switch(direction)
+				switch (direction)
 				{
 				default:
 				case PIPE_DIRECTION_UNKNOWN:
@@ -612,7 +612,7 @@ error_t obj_pipe_send_message(
 #if defined(PIPE_TRACING)
 			debug_print("PipeW: There are receivers waiting\n");
 #endif
-			while(receiver)
+			while (receiver)
 			{
 				obj_lock(&receiver->object);
 				if (pipe_can_receive(receiver))
@@ -753,7 +753,7 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 #if defined(PIPE_TRACING)
 			debug_print("PipeA: Has senders to notify\n");
 #endif
-			while(sender)
+			while (sender)
 			{
 #if defined(PIPE_TRACING)
 				debug_print("PipeA: Notifying sender\n");
