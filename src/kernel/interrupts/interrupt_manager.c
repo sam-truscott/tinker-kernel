@@ -78,7 +78,7 @@ error_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_cont
 	}
 	else
 	{
-		printp_out("INTC: Interrupt controller is null\n");
+		error_print("INTC: Interrupt controller is null\n");
 		return PARAMETERS_NULL;
 	}
 }
