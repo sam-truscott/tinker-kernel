@@ -38,23 +38,22 @@ static time_manager_t * time_manager = NULL;
 void bsp_initialise(void)
 {
 	early_uart_init();
-	const uint32_t cpsr = arm_get_cpsr();
-#if defined (KERNEL_DEBUGGING)
+#if defined (TARGET_DEBUGGING)
 	early_uart_put("BSP\n");
-	printp_out("CPSR %x\n", cpsr);
+	printp_out("CPSR %x\n", arm_get_cpsr());
 #endif
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
 
-#if defined (KERNEL_DEBUGGING)
+#if defined (TARGET_DEBUGGING)
 	early_uart_put("Target init done\n");
 #endif
 
 	/* Initialise the Interrupt Vector Table */
 	ivt_initialise();
 
-#if defined (KERNEL_DEBUGGING)
+#if defined (TARGET_DEBUGGING)
 	early_uart_put("Vector init done\n");
 #endif
 }

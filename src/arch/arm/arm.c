@@ -20,9 +20,13 @@
 
 void tgt_initialise(void)
 {
-	print_out("Target: Disable MMU\n");
+#if defined (TARGET_DEBUGGING)
+	debug_print("Target: Disable MMU\n");
+#endif
 	arm_disable_mmu();
-	print_out("Target: Invalidate TLBs\n");
+#if defined (TARGET_DEBUGGING)
+	debug_print("Target: Invalidate TLBs\n");
+#endif
 	arm_invalidate_all_tlbs();
 }
 
@@ -198,13 +202,13 @@ void tgt_disable_external_interrupts(void)
 void tgt_enter_usermode(void)
 {
 #if defined(TARGET_DEBUGGING)
-	printp_out("Kernel: Entering user mode\n");
+	debug_print("Kernel: Entering user mode\n");
+	debug_print("Kernel: CPSR %x\n", arm_get_cpsr());
 #endif
-	printp_out("Kernel: CPSR %x\n", arm_get_cpsr());
 	arm_enable_irq();
-	printp_out("Kernel: CPSR %x\n", arm_get_cpsr());
 #if defined(TARGET_DEBUGGING)
-	printp_out("Kernel: User mode entered\n");
+	debug_print("Kernel: CPSR %x\n", arm_get_cpsr());
+	debug_print("Kernel: User mode entered\n");
 #endif
 }
 
