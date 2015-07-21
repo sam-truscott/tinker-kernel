@@ -103,9 +103,6 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Allow user-mode to map to real addresses (user-mode drivers)
-    * (interrupts can be handled by pipes in the bsp)
-    * Already available for kernel space via kernel_device_map_memory
 * Kernel: Review all the uses of ARCH_HAS_MMU
 	* Might be useful for an Arduino port
 * Kernel: Don't map the whole process memory pool to the user-space in the MMU
