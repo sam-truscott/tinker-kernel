@@ -223,7 +223,7 @@ error_t obj_create_pipe(
 						total_size++;
 					}
 					memory = (uint8_t*)mem_alloc_aligned(
-							pool, total_size, MMU_PAGE_SIZE);
+							process_get_user_mem_pool(process), total_size, MMU_PAGE_SIZE);
 					if (!memory)
 					{
 						result = OUT_OF_MEMORY;
@@ -424,7 +424,7 @@ error_t obj_open_pipe(
 						total_size++;
 					}
 					memory = (uint8_t*)mem_alloc_aligned(
-							pool, total_size, MMU_PAGE_SIZE);
+							process_get_user_mem_pool(process), total_size, MMU_PAGE_SIZE);
 					if (memory)
 					{
 						util_memset(memory, 0, total_size);

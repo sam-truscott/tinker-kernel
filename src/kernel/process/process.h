@@ -46,6 +46,8 @@ void process_set_oid(
 
 mem_pool_info_t * process_get_mem_pool(const process_t * const process);
 
+mem_pool_info_t * process_get_user_mem_pool(const process_t * const process);
+
 object_table_t * process_get_object_table(const process_t * const process);
 
 bool_t process_add_thread(

@@ -89,7 +89,7 @@ error_t obj_create_shm(
 		if (no)
 		{
 			util_memset(no, 0, sizeof(object_shm_t));
-			const void * const memory = mem_alloc_aligned(pool, size, MMU_PAGE_SIZE);
+			const void * const memory = mem_alloc_aligned(process_get_user_mem_pool(process), size, MMU_PAGE_SIZE);
 			if (memory)
 			{
 				util_memset((void*)memory, 0, size);
