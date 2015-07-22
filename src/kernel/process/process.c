@@ -59,7 +59,7 @@ typedef struct process_t
 	uint32_t 				next_thread_id;
 	thread_t * 				initial_thread;
 	mem_pool_info_t * 		parent_pool;
-	tgt_pg_tbl_t *			page_table; /* TODO this also needs protecting */
+	tgt_pg_tbl_t *			page_table;
 } process_internal_t;
 
 static void process_add_mem_sec(
