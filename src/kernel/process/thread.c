@@ -243,6 +243,12 @@ uint32_t thread_get_virt_stack_base(
 	return vsb;
 }
 
+const tgt_context_t * thread_get_context(
+		const thread_t * const thread)
+{
+	return thread == NULL ? NULL : thread->context;
+}
+
 thread_entry_point * thread_get_entry_point(
 		const thread_t * const thread)
 {

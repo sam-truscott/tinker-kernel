@@ -85,4 +85,9 @@
  */
 #define MAX_ALARMS 256
 
+/**
+ * The maximum amount of padding to allow
+ */
+#define MAX_PADDING 256
+
 #endif /* CONFIG_H_ */

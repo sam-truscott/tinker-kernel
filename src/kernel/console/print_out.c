@@ -10,6 +10,8 @@
 #include "kernel/utils/util_i_to_a.h"
 #include "kernel/utils/util_case.h"
 #include "kernel/utils/util_memset.h"
+#include "kernel/utils/util_strlen.h"
+#include "kernel/utils/util_a_to_i.h"
 #include "arch/board_support.h"
 #include "kernel/time/time_manager.h"
 
@@ -22,11 +24,12 @@ static void print_out_process(const char ** const ptr, __builtin_va_list * const
 
 static void print_out_print_char(const char c);
 
-static void print_out_print_string(const char * string);
+static void print_out_print_string(const uint32_t padding, const char * string);
 
-static void print_out_print_signed(const int32_t);
+static void print_out_print_signed(const uint32_t padding, const int32_t);
 
 static void print_out_print_hex(
+		const uint32_t padding,
 		const uint32_t,
 		const bool_t upper_case);
 
@@ -129,34 +132,40 @@ void printp_out(const char * const msg, ...)
 
 void print_out(const char * const msg)
 {
-	print_out_print_string(msg);
+	print_out_print_string(0, msg);
 }
+
+#define MAX_PADDING_CHARS 9
 
 void print_out_process(const char ** const ptr, __builtin_va_list * const list)
 {
+	char pad[MAX_PADDING_CHARS];
+	util_memset(pad, 0, MAX_PADDING_CHARS);
+	unsigned char padp = 0;
 	char * rptr = (char*)(*ptr);
+start:
 	rptr++;
 	switch(*rptr)
 	{
 		case 's':
 			{
 				const char * const str = (const char *)__builtin_va_arg(*list, char*);
-				print_out_print_string(str);
+				print_out_print_string(util_a_to_i(pad, padp), str);
 			}
 			break;
 		case 'd':
-			print_out_print_signed(__builtin_va_arg(*list, int));
+			print_out_print_signed(util_a_to_i(pad, padp), __builtin_va_arg(*list, int));
 			break;
 		case 'x':
-			print_out_print_hex(__builtin_va_arg(*list, unsigned int), false);
+			print_out_print_hex(util_a_to_i(pad, padp), __builtin_va_arg(*list, unsigned int), false);
 			break;
 		case 'X':
-			print_out_print_hex(__builtin_va_arg(*list, unsigned int), true);
+			print_out_print_hex(util_a_to_i(pad, padp), __builtin_va_arg(*list, unsigned int), true);
 			break;
 		default:
-			print_out_print_char('%');
-			print_out_print_char(*rptr);
-			break;
+			pad[padp++] = *(rptr);
+			(*ptr)++;
+			goto start;
 	}
 }
 
@@ -165,22 +174,31 @@ void print_out_print_char(const char c)
 	bsp_write_debug_char(c);
 }
 
-void print_out_print_string(const char * string)
+void print_out_print_string(const uint32_t padding, const char * string)
 {
-	while(*string)
+	uint32_t size;
+	if ((size=util_strlen(string, MAX_PADDING)) < padding)
+	{
+		for (uint32_t i = 0 ; i < padding-size ; i++)
+		{
+			print_out_print_char('0');
+		}
+	}
+	while (*string)
 	{
 		print_out_print_char(*string++);
 	}
 }
 
-void print_out_print_signed(const int32_t i)
+void print_out_print_signed(const uint32_t padding, const int32_t i)
 {
 	char number[MAX_INTEGER_LENGTH + 1] = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 	util_i_to_a(i, number, MAX_INTEGER_LENGTH);
-	print_out_print_string(number);
+	print_out_print_string(padding, number);
 }
 
 void print_out_print_hex(
+		const uint32_t padding,
 		const uint32_t i,
 		const bool_t upper_case)
 {
@@ -196,5 +214,5 @@ void print_out_print_hex(
 		util_to_lower(hex_number);
 	}
 
-	print_out_print_string(hex_number);
+	print_out_print_string(padding, hex_number);
 }

@@ -77,6 +77,9 @@ object_number_t thread_get_object_no(
 uint32_t thread_get_virt_stack_base(
 		const thread_t * const thread);
 
+const tgt_context_t * thread_get_context(
+		const thread_t * const thread);
+
 thread_entry_point * thread_get_entry_point(
 		const thread_t * const thread);
 

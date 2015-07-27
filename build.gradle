@@ -401,8 +401,7 @@ model {
 	        linker.args "-nostartfiles",
 		        "-nodefaultlibs",
 		        "-nostdlib",
-		        "-static",
-		        "-s"
+		        "-static"
 	        if (buildType == buildTypes.debug) {
 	            cCompiler.args "-O0", 
 	                "-g3",
