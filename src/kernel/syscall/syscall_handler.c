@@ -227,6 +227,29 @@ void syscall_handle_system_call(
 		}
 		break;
 
+		case SYSCALL_SBRK:
+		{
+			process_t * const process = thread_get_parent(this_thread);
+			if (process)
+			{
+				void ** base = (void**)param[0];
+				*base = mem_realloc(process_get_user_mem_pool(process), *base, param[1]);
+				if (*base)
+				{
+					ret = NO_ERROR;
+				}
+				else
+				{
+					ret = OUT_OF_MEMORY;
+				}
+			}
+			else
+			{
+				ret = PARAMETERS_INVALID;
+			}
+		}
+		break;
+
 		case SYSCALL_DEBUG:
 		{
 			const char * const msg = (const char * const)param[0];
@@ -359,7 +382,7 @@ void syscall_handle_system_call(
 			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
-				ret = obj_get_semaphore( thread_obj, sema_obj);
+				ret = obj_get_semaphore(thread_obj, sema_obj);
 			}
 			else
 			{

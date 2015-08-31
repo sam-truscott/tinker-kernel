@@ -90,4 +90,6 @@ error_t tinker_map_mempry(
 		tinker_privilege_t access,
 		void ** virtual);
 
+void * tinker_sbrk(void * memory, uint32_t size);
+
 #endif /* TINKER_API_PROCESS_H_ */

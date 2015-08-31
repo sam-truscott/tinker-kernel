@@ -102,6 +102,19 @@ void *	mem_alloc(
 	return mem_alloc_aligned(pool, size, 0);
 }
 
+void *  mem_realloc(
+		mem_pool_info_t * const pool,
+		void * mem,
+		const uint32_t size)
+{
+	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
+	void * const new_base = mspace_realloc(pool->space, mem, size);
+#if defined (MEMORY_DEBUGGING)
+	debug_print("mem: base at 0x%x, size 0x%x, now 0x%x\n", mem, size, new_base);
+#endif
+	return new_base;
+}
+
 void* mem_alloc_aligned(
 		mem_pool_info_t * const pool,
 		const uint32_t size,

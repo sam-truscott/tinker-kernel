@@ -34,7 +34,7 @@
 
 #define KERNEL_IDLE_PRIORITY 0
 
-#define PRIVATE_POOL_SIZE 256 * 1024
+#define PRIVATE_POOL_SIZE (256 * 1024)
 
 /**
  * Because they're defined on the heap we can allow as many as possible

@@ -85,7 +85,7 @@ error_t proc_create_process(
 	/* get the new process id - SLOW! - TODO need to speed up */
 	process_t * tmp = NULL;
 	uint32_t proc_id = 0;
-	for ( uint32_t i = 0 ; i < MAX_PROCESSES ; i++ )
+	for (uint32_t i = 0 ; i < MAX_PROCESSES ; i++)
 	{
 		if (!process_list_t_get(list->process_list, i, &tmp))
 		{
@@ -139,7 +139,8 @@ error_t proc_create_process(
 			&new_mem_pool,
 			meminfo->heap_size
 				+ meminfo->stack_size
-				+ PAGE_TABLE_SIZE);
+				+ PAGE_TABLE_SIZE
+				+ PRIVATE_POOL_SIZE);
 
 	if (!pool_allocated)
 	{
