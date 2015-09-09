@@ -42,6 +42,7 @@ typedef struct proc_list_t
 	scheduler_t * scheduler;
 	process_list_t * process_list;
 	alarm_manager_t * alarm_manager;
+	uint32_t last_pid;
 } proc_list_t;
 
 proc_list_t * proc_create(
@@ -55,6 +56,7 @@ proc_list_t * proc_create(
 		list->process_list = process_list_t_create(pool);
 		list->scheduler = scheduler;
 		list->alarm_manager = alarm_manager;
+		list->last_pid = 1;
 	}
 	return list;
 }
@@ -82,14 +84,15 @@ error_t proc_create_process(
 		*process = 0;
 	}
 
-	/* get the new process id - SLOW! - TODO need to speed up */
+	/* get the new process id - TODO need to randomise */
 	process_t * tmp = NULL;
 	uint32_t proc_id = 0;
-	for (uint32_t i = 0 ; i < MAX_PROCESSES ; i++)
+	for (uint32_t i = list->last_pid ; i < MAX_PROCESSES ; i++)
 	{
 		if (!process_list_t_get(list->process_list, i, &tmp))
 		{
 			proc_id = i;
+			list->last_pid = i;
 			break;
 		}
 	}
