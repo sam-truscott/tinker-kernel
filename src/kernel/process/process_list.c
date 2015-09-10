@@ -19,6 +19,7 @@
 #include "kernel/memory/memory_manager.h"
 #include "kernel/console/print_out.h"
 
+#define INVALID_PROC_ID 0
 /**
  * A linked list of processes
  */
@@ -61,6 +62,163 @@ proc_list_t * proc_create(
 	return list;
 }
 
+static inline mem_pool_info_t * get_parent_pool(
+		const char * const image,
+		const thread_t * const curr_thread)
+{
+	/*
+	 * If the current thread is null we're in initialisation and
+	 * it means we're creating the kernels process so we can
+	 * use the default pool.
+	 *
+	 * Otherwise we need to use the current processes pool.
+	 */
+	mem_pool_info_t * parent_pool;
+	if (curr_thread == NULL)
+	{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Create process from default pool\n");
+#endif
+		parent_pool = mem_get_default_pool();
+	} else {
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Create process for %s from parent\n", image);
+#else
+		(void)image;
+#endif
+		// if the parent is the kernel, use the default pool instead
+		// of the kernel's
+		const process_t * const parent = thread_get_parent(curr_thread);
+		if (parent == kernel_get_process())
+		{
+			parent_pool = mem_get_default_pool();
+		}
+		else
+		{
+			parent_pool = process_get_mem_pool(parent);
+		}
+	}
+	return parent_pool;
+}
+
+static inline uint32_t get_proc_id(proc_list_t * const list)
+{
+	/* get the new process id - TODO need to randomise */
+	process_t * tmp = NULL;
+	uint32_t proc_id = INVALID_PROC_ID;
+	for (uint32_t i = list->last_pid ; i < MAX_PROCESSES ; i++)
+	{
+		if (!process_list_t_get(list->process_list, i, &tmp))
+		{
+			proc_id = i;
+			list->last_pid = i;
+			break;
+		}
+	}
+	return proc_id;
+}
+
+static inline bool_t initialise_mem_pool(
+		mem_pool_info_t * const parent_pool,
+		tinker_meminfo_t * const meminfo,
+		mem_pool_info_t ** new_mem_pool)
+{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
+				image,
+				meminfo->heap_size,
+				meminfo->stack_size,
+				parent_pool);
+#endif
+	return mem_init_process_memory(
+			parent_pool,
+			new_mem_pool,
+			meminfo->heap_size
+				+ meminfo->stack_size
+				+ PAGE_TABLE_SIZE
+				+ PRIVATE_POOL_SIZE);
+}
+
+static inline error_t create_process(
+		proc_list_t * const list,
+		mem_pool_info_t * const parent_pool,
+		const uint32_t proc_id,
+		const char * const image,
+		const bool_t is_kernel,
+		tinker_meminfo_t * const meminfo,
+		mem_pool_info_t * const new_mem_pool,
+		process_t ** proc)
+{
+#if defined (PROCESS_DEBUGGING)
+	debug_print("Process: Building process: %s\n", image);
+#endif
+	return process_create(
+			list->scheduler,
+			list->alarm_manager,
+			parent_pool,
+			proc_id,
+			image,
+			is_kernel,
+			meminfo,
+			new_mem_pool,
+			proc);
+}
+
+static inline error_t create_process_object(
+		process_t * const proc,
+		object_t * process_obj)
+{
+#if defined (PROCESS_DEBUGGING)
+	debug_print("Process: Building process object: %s\n", image);
+#endif
+	error_t ret = obj_create_process(
+			process_get_mem_pool(proc),
+			process_get_object_table(proc),
+			process_get_pid(proc),
+			proc,
+			&process_obj);
+	process_set_oid(proc, obj_get_number(process_obj));
+	return ret;
+}
+
+static inline error_t create_thread_object(
+		process_t * const proc,
+		const char * const initial_task_name,
+		thread_entry_point * const entry_point,
+		const uint8_t priority,
+		const uint32_t stack_size,
+		const uint32_t flags,
+		object_t ** thread_obj)
+{
+#if defined (PROCESS_DEBUGGING)
+	debug_print("Process: Building process entry thread: %s\n", image);
+#endif
+	return proc_create_thread(
+			proc,
+			initial_task_name,
+			entry_point,
+			priority,
+			stack_size,
+			flags,
+			thread_obj,
+			NULL);
+}
+
+static inline bool_t add_process_to_list(
+		proc_list_t * const list,
+		process_t * const proc)
+{
+
+#if defined (PROCESS_DEBUGGING)
+	debug_print("Process: Adding process to process list: %s\n", image);
+#endif
+	bool_t ok = (process_list_t_add(list->process_list, proc));
+#if defined (PROCESS_DEBUGGING)
+	debug_print("Process: Add process to process list: %s = %d\n", image, ok);
+#endif
+	return ok;
+}
+
 error_t proc_create_process(
 		proc_list_t * const list,
 		const char * image,
@@ -74,152 +232,80 @@ error_t proc_create_process(
 	error_t ret = NO_ERROR;
 	process_t * proc = NULL;
 #if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Create process with image %s, entry %x, priority %d, meminfo %x, flags %x\n",
-				image, entry_point, priority, meminfo, flags);
-		debug_print("Process: Create process with heap %x stack %x\n", meminfo->heap_size, meminfo->stack_size);
+	debug_print("Process: Create process with image %s, entry %x, priority %d, meminfo %x, flags %x\n",
+			image, entry_point, priority, meminfo, flags);
+	debug_print("Process: Create process with heap %x stack %x\n", meminfo->heap_size, meminfo->stack_size);
 #endif
 
 	if (process)
 	{
-		*process = 0;
+		*process = NULL;
 	}
 
-	/* get the new process id - TODO need to randomise */
-	process_t * tmp = NULL;
-	uint32_t proc_id = 0;
-	for (uint32_t i = list->last_pid ; i < MAX_PROCESSES ; i++)
+	const uint32_t proc_id = get_proc_id(list);
+	if (proc_id == INVALID_PROC_ID)
 	{
-		if (!process_list_t_get(list->process_list, i, &tmp))
-		{
-			proc_id = i;
-			list->last_pid = i;
-			break;
-		}
+		ret = OUT_OF_PROCESS_IDS;
 	}
-
-	/*
-	 * If the current thread is null we're in initialisation and
-	 * it means we're creating the kernels process so we can
-	 * use the default pool.
-	 *
-	 * Otherwise we need to use the current processes pool.
-	 */
-	const thread_t * const curr_thread = sch_get_current_thread(list->scheduler);
-	mem_pool_info_t * parent_pool;
-	if (curr_thread == NULL)
+	bool_t pool_allocated = false;
+	mem_pool_info_t * new_mem_pool = NULL;
+	mem_pool_info_t * parent_pool = NULL;
+	object_t * process_obj = NULL;
+	object_t * thread_obj = NULL;
+	if (ret == NO_ERROR)
 	{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Create process from default pool\n");
-#endif
-		parent_pool = mem_get_default_pool();
-	} else {
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Create process for %s from parent\n", image);
-#endif
-		// if the parent is the kernel, use the default pool instead
-		// of the kernel's
-		const process_t * const parent = thread_get_parent(curr_thread);
-		if (parent == kernel_get_process())
+		const thread_t * const curr_thread = sch_get_current_thread(list->scheduler);
+		parent_pool = get_parent_pool(image, curr_thread);
+
+		pool_allocated = initialise_mem_pool(parent_pool, meminfo, &new_mem_pool);
+		if (!pool_allocated)
 		{
-		    parent_pool = mem_get_default_pool();
+			ret = OUT_OF_MEMORY;
 		}
 		else
 		{
-		    parent_pool = process_get_mem_pool(parent);
-		}
-	}
-
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
-				image,
-				meminfo->heap_size,
-				meminfo->stack_size,
-				parent_pool);
-#endif
-	mem_pool_info_t * new_mem_pool = NULL;
-	const bool_t pool_allocated = mem_init_process_memory(
-			parent_pool,
-			&new_mem_pool,
-			meminfo->heap_size
-				+ meminfo->stack_size
-				+ PAGE_TABLE_SIZE
-				+ PRIVATE_POOL_SIZE);
-
-	if (!pool_allocated)
-	{
-		ret = OUT_OF_MEMORY;
-	}
-	else
-	{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Building process: %s\n", image);
-#endif
-		ret = process_create(
-				list->scheduler,
-				list->alarm_manager,
-				parent_pool,
-				proc_id,
-				image,
-				(curr_thread == NULL),
-				meminfo,
-				new_mem_pool,
-				&proc);
-
-		if (ret == NO_ERROR)
-		{
-			object_t * process_obj = NULL;
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Building process object: %s\n", image);
-#endif
-			ret = obj_create_process(
-					process_get_mem_pool(proc),
-					process_get_object_table(proc),
-					process_get_pid(proc),
-					proc,
-					&process_obj);
-			process_set_oid(proc, obj_get_number(process_obj));
-
-			if ( ret == NO_ERROR )
+			ret = create_process(list, parent_pool, proc_id, image, (curr_thread == NULL), meminfo, new_mem_pool, &proc);
+			if (ret == NO_ERROR)
 			{
-				object_t * thread_obj = NULL;
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Building process entry thread: %s\n", image);
-#endif
-				ret = proc_create_thread(
-						proc,
-						initial_task_name,
-						entry_point,
-						priority,
-						meminfo->stack_size,
-						flags,
-						&thread_obj,
-						NULL);
+				ret = create_process_object(proc, process_obj);
+
 				if (ret == NO_ERROR)
 				{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Adding process to process list: %s\n", image);
-#endif
-					if (process_list_t_add(list->process_list, proc) == false)
+					ret = create_thread_object(
+							proc, initial_task_name, entry_point, priority, meminfo->stack_size, flags, &thread_obj);
+					if (ret == NO_ERROR)
 					{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Failed to add process to process list: %s\n", image);
-#endif
-						process_exit(proc);
-						ret = OUT_OF_MEMORY;
+						if (add_process_to_list(list, proc))
+						{
+							if (process)
+							{
+								(*process) = proc;
+							}
+						}
+						else
+						{
+							ret = OUT_OF_MEMORY;
+						}
 					}
 					else
 					{
-						if ( process )
-						{
-							* process = proc;
-						}
+						ret = OBJECT_ADD_FAILED;
 					}
 				}
-				else
-				{
-					ret = OBJECT_ADD_FAILED;
-				}
 			}
+		}
+	}
+
+	if (ret != NO_ERROR)
+	{
+		// will delete any objects remaining in the table
+		if (proc)
+		{
+			process_exit(proc);
+		}
+		if (pool_allocated)
+		{
+			mem_free(parent_pool, new_mem_pool);
 		}
 	}
 
@@ -296,11 +382,11 @@ error_t proc_create_thread(
 
 void proc_delete_proc(
 		proc_list_t * const list,
-		const process_t * const process)
+		process_t * const process)
 {
 	if (list)
 	{
-		process_list_t_remove_item(list->process_list, (process_t*const)process);
+		process_list_t_remove_item(list->process_list, process);
 	}
 }
 

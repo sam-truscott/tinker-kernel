@@ -49,6 +49,6 @@ process_list_it_t * proc_list_procs(proc_list_t * const list);
 
 void proc_delete_proc(
 		proc_list_t * const list,
-		const process_t * const process);
+		process_t * const process);
 
 #endif /* PROCESS_MANAGER_H_ */
