@@ -44,6 +44,7 @@ typedef struct proc_list_t
 	process_list_t * process_list;
 	alarm_manager_t * alarm_manager;
 	uint32_t last_pid;
+	process_t * kernel_process;
 } proc_list_t;
 
 proc_list_t * proc_create(
@@ -58,11 +59,28 @@ proc_list_t * proc_create(
 		list->scheduler = scheduler;
 		list->alarm_manager = alarm_manager;
 		list->last_pid = 1;
+		list->kernel_process = NULL;
 	}
 	return list;
 }
 
+void proc_set_kernel_process(
+		proc_list_t * const list,
+		process_t * const kernel_process)
+{
+	if (list)
+	{
+		list->kernel_process = kernel_process;
+	}
+}
+
+process_t * proc_get_kernel_process(proc_list_t * const list)
+{
+	return list == NULL ? NULL : list->kernel_process;
+}
+
 static inline mem_pool_info_t * get_parent_pool(
+		proc_list_t * const list,
 		const char * const image,
 		const thread_t * const curr_thread)
 {
@@ -89,7 +107,7 @@ static inline mem_pool_info_t * get_parent_pool(
 		// if the parent is the kernel, use the default pool instead
 		// of the kernel's
 		const process_t * const parent = thread_get_parent(curr_thread);
-		if (parent == kernel_get_process())
+		if (list->kernel_process == NULL || parent == list->kernel_process)
 		{
 			parent_pool = mem_get_default_pool();
 		}
@@ -165,6 +183,7 @@ static inline error_t create_process(
 }
 
 static inline error_t create_process_object(
+		proc_list_t * const list,
 		process_t * const proc,
 		object_t * process_obj)
 {
@@ -172,6 +191,7 @@ static inline error_t create_process_object(
 	debug_print("Process: Building process object: %s\n", image);
 #endif
 	error_t ret = obj_create_process(
+			list,
 			process_get_mem_pool(proc),
 			process_get_object_table(proc),
 			process_get_pid(proc),
@@ -255,7 +275,7 @@ error_t proc_create_process(
 	if (ret == NO_ERROR)
 	{
 		const thread_t * const curr_thread = sch_get_current_thread(list->scheduler);
-		parent_pool = get_parent_pool(image, curr_thread);
+		parent_pool = get_parent_pool(list, image, curr_thread);
 
 		pool_allocated = initialise_mem_pool(parent_pool, meminfo, &new_mem_pool);
 		if (!pool_allocated)
@@ -267,7 +287,7 @@ error_t proc_create_process(
 			ret = create_process(list, parent_pool, proc_id, image, (curr_thread == NULL), meminfo, new_mem_pool, &proc);
 			if (ret == NO_ERROR)
 			{
-				ret = create_process_object(proc, process_obj);
+				ret = create_process_object(list, proc, process_obj);
 
 				if (ret == NO_ERROR)
 				{

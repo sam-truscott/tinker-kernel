@@ -25,6 +25,12 @@ proc_list_t * proc_create(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager);
 
+void proc_set_kernel_process(
+		proc_list_t * const list,
+		process_t * const kernel_process);
+
+process_t * proc_get_kernel_process(proc_list_t * const list);
+
 error_t proc_create_process(
 		proc_list_t * const list,
 		const char * image,

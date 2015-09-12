@@ -66,6 +66,21 @@ To build everything (all targets, debug and release) use:
 	# Linux
 	./gradlew clean assemble
 	
+Unit Tests
+==========
+
+Unit tests can be enabled at compile time to run at kernel initialisation - this ensures they run on the target
+and with the target compiler as opposed to the host compiler. However, for debugging purposes a host variant is provided.
+
+
+	# Windows
+	gradlew debugHost_testsExecutable
+	
+	# Linux
+	./gradlew debugHost_testsExecutable
+	
+You'll need a gcc available on the PATH for this to build.
+	
 Toolchains
 ==========
 

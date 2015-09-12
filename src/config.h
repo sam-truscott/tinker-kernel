@@ -15,6 +15,8 @@
 
 #if defined(ARCH_HAS_MMU)
 #define VIRTUAL_ADDRESS_SPACE 0xC0000000u
+#else
+#define VIRTUAL_ADDRESS_SPACE 0
 #endif
 
 #define ISR_PRINT_STACKTRACE_LIMIT 20

@@ -14,6 +14,7 @@
 void test_memory(void)
 {
 	mem_pool_info_t * const pool = mem_get_default_pool();
+	kernel_assert("collection present", pool != NULL);
 	const uint32_t allocated = mem_get_allocd_size(pool);
 
 	void * base = mem_realloc(pool, 0, 128);

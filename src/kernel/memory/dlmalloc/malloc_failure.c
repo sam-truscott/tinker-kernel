@@ -9,4 +9,7 @@
 
 #include "malloc_failure.h"
 
-void malloc_failure(void);
+void malloc_failure(void)
+{
+	// TODO
+}

@@ -13,7 +13,6 @@
 
 #include "kernel/kernel_assert.h"
 #include "kernel/kernel_panic.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/process/process_list.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_semaphore.h"
@@ -63,6 +62,7 @@ typedef struct scheduler_t
 	thread_queue_t sch_thread_queues[MAX_PRIORITY + 1];
 	priority_t sch_current_priority;
 	queue_stack_t sch_queue_stack;
+	thread_t * idle_thread;
 } scheduler_t;
 
 static void sch_priority_find_next_queue(scheduler_t * const scheduler, thread_t * const t);
@@ -83,6 +83,14 @@ scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool)
 		queue_stack_t_push(&sch->sch_queue_stack, sch->sch_active_queue);
 	}
 	return sch;
+}
+
+void sch_set_kernel_idle_thread(scheduler_t * const sch, thread_t * const idle_thread)
+{
+	if (sch)
+	{
+		sch->idle_thread = idle_thread;
+	}
 }
 
 void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
@@ -261,7 +269,7 @@ void sch_terminate_current_thread(
 		const tgt_context_t * const context)
 {
 	thread_t * const thread = sch_get_current_thread(scheduler);
-	kernel_assert("Attempted to terminate idle thread\n", thread!=kernel_get_idle_thread());
+	kernel_assert("Attempted to terminate idle thread\n", thread!=scheduler->idle_thread);
 	if (thread)
 	{
 		thread_set_state(thread, THREAD_TERMINATED);
@@ -338,7 +346,7 @@ void sch_set_context_for_next_thread(
 
 	if (scheduler->sch_current_thread == NULL)
 	{
-		scheduler->sch_current_thread = kernel_get_idle_thread();
+		scheduler->sch_current_thread = scheduler->idle_thread;
 	}
 
 	// the thread changed so save the state of the previous thread

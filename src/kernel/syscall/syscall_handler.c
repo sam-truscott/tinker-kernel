@@ -270,7 +270,7 @@ void syscall_handle_system_call(
 				{
 					object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
 					object_t * const obj = obj_get_object(table, thread_no);
-					object_thread_t * thread_obj;
+					object_thread_t * thread_obj = NULL;
 					if (obj)
 					{
 						thread_obj = obj_cast_thread(obj);

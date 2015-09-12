@@ -11,7 +11,7 @@
 #include "kernel/kernel_assert.h"
 #include "kernel/objects/obj_pipe.h"
 
-static object_pipe_t * kernel_in_pipe;
+static object_pipe_t * kernel_in_pipe = NULL;
 
 void kernel_in_initialise(registry_t * const reg)
 {

@@ -10,6 +10,7 @@
 #define OBJ_PROCESS_H_
 
 #include "arch/tgt_types.h"
+#include "kernel/process/process_list.h"
 #include "kernel/process/process.h"
 #include "kernel/objects/object.h"
 #include "kernel/objects/object_table.h"
@@ -23,6 +24,7 @@ object_number_t obj_process_get_oid
 	(const object_process_t * const o);
 
 error_t obj_create_process(
+		proc_list_t * const proc_list,
 		mem_pool_info_t * const pool,
 		object_table_t * const table,
 		const uint32_t process_id,
