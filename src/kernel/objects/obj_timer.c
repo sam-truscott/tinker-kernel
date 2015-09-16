@@ -80,7 +80,7 @@ static void obj_timer_timeout(
 #endif
 	if (timer && (alarm_id == timer->alarm_id))
 	{
-		thread_set_state(timer->callback_thread, THREADY_READY);
+		thread_set_state(timer->callback_thread, THREAD_READY);
 		thread_set_waiting_on(timer->callback_thread, NULL);
 #if defined(TIMER_DEBUGGING)
 		debug_print("Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);

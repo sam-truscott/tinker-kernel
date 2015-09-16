@@ -368,7 +368,7 @@ error_t proc_create_thread(
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Added thread %s to process %s OK\n", name, process_get_image(process));
 #endif
-			if (thread_get_state(thread) != THREADY_READY)
+			if (thread_get_state(thread) != THREAD_READY)
 			{
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Thread %s is NOT ready\n", name);

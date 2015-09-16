@@ -6,33 +6,13 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "kernel/process/thread.h"
-
+#include "thread.h"
+#include "thread_private.h"
 #include "config.h"
 #include "arch/tgt.h"
-#include "kernel/process/process.h"
-#include "kernel/objects/object.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/kernel_assert.h"
 #include "tinker_api_kernel_interface.h"
-
-typedef struct thread_t
-{
-	uint32_t			thread_id;
-	void 				* stack;
-	uint32_t			r_stack_base;
-	uint32_t			v_stack_base;
-	uint32_t			stack_size;
-	priority_t			priority;
-	uint32_t			flags;
-	process_t 		*	parent;
-	thread_state_t	state;
-	const object_t *	waiting_on;
-	thread_entry_point * 	entry_point;
-	object_number_t		object_number;
-	tgt_context_t		* context;
-	char 				name[MAX_THREAD_NAME_LEN + 1];
-} thread_internal_t;
 
 static void thread_end(void) __attribute__((section(".api")));
 
@@ -89,7 +69,7 @@ thread_t * thread_create(
 		if (thread->stack)
 		{
 			thread->stack_size = stack;
-			thread->state = THREADY_READY;
+			thread->state = THREAD_READY;
 			/*
 			 * We need to ensure that the context information
 			 * is configured properly

@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 
 #define HOST_MEMORY_SIZE 1 * 1024 * 1024
 
@@ -59,7 +60,7 @@ void tgt_initialise_context() {}
 void tgt_set_context_param() {}
 void tgt_disable_external_interrupts() {}
 void tgt_enter_usermode() {}
-void tgt_wait_for_interrupt() {}
+void tgt_wait_for_interrupt() {raise(SIGABRT);}
 void tgt_prepare_context() {}
 void tgt_destroy_context() {}
 void tgt_get_context_stack_pointer() {}

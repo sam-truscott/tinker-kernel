@@ -400,7 +400,9 @@ model {
 	    host_tests(NativeExecutableSpec) {
 	    	binaries.all {
 	            File srcDir = new File('src')
-	            cCompiler.args "-DIS_HOST_UNIT_TEST=1"
+	            cCompiler.args "-DIS_HOST_UNIT_TEST=1",
+	            	"-DSCHEDULER_DEBUGGING",
+	            	"-DKERNEL_DEBUGGING"
 	        }
 	    	sources {
 			    c {

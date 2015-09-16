@@ -225,7 +225,7 @@ error_t obj_set_thread_ready(object_thread_t * const o)
 		const thread_state_t state = thread_get_state(o->thread);
 		if (state == THREAD_WAITING)
 		{
-			thread_set_state(o->thread, THREADY_READY);
+			thread_set_state(o->thread, THREAD_READY);
 			thread_set_waiting_on(o->thread, NULL);
 			sch_notify_resume_thread(o->scheduler, o->thread);
 		}
@@ -370,7 +370,7 @@ static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t *
 {
 	if (o && o->alarm_id == alarm_id)
 	{
-		thread_set_state(o->thread, THREADY_READY);
+		thread_set_state(o->thread, THREAD_READY);
 		sch_notify_resume_thread(o->scheduler, o->thread);
 		alarm_unset_alarm(o->alarm_manager, alarm_id);
 	}
