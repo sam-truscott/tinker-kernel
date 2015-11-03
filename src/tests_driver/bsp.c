@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <signal.h>
 
+#include "tinker_api_errors.h"
+#include "kernel/memory/mem_pool.h"
+
 #define HOST_MEMORY_SIZE 1 * 1024 * 1024
 
 static void * memory = NULL;
@@ -50,10 +53,10 @@ unsigned int tgt_get_syscall_param()
 	return 0;
 }
 void tgt_set_syscall_return() {}
-void tgt_initialise_page_table() {}
+tgt_pg_tbl_t* tgt_initialise_page_table(mem_pool_info_t * const pool) { return mem_alloc(pool, 4); }
 void tgt_map_memory() {}
 void tgt_unmap_memory() {}
-void tgt_initialise_process() {}
+error_t tgt_initialise_process() { return NO_ERROR; }
 void tgt_load_context() {}
 void tgt_save_context() {}
 void tgt_initialise_context() {}

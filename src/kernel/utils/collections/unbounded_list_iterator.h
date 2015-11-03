@@ -47,7 +47,7 @@
 	 */ \
 	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, const LIST_T * const list) \
 	{ \
-		 if ( it && list ) \
+		 if (it && list) \
 		 { \
 			 it->list = list; \
 			 if (list->size > 0) \
@@ -67,7 +67,7 @@
 	PREFIX ITERATOR_T * ITERATOR_T##_create(const LIST_T * const list) \
 	{ \
 		ITERATOR_T * it = NULL; \
-		if ( list ) \
+		if (list) \
 		{ \
 			it = mem_alloc(list->pool, sizeof(ITERATOR_T)); \
 			ITERATOR_T##_initialise(it, list); \
@@ -81,7 +81,7 @@
 	\
 	PREFIX void ITERATOR_T##_delete(ITERATOR_T * it) \
 	{ \
-		 if ( it ) \
+		 if (it) \
 		 { \
 			 mem_free(it->list->pool, it); \
 		 } \
@@ -120,9 +120,9 @@
 		 { \
 			util_memset(item, 0, sizeof(ITEM_T)); \
 			\
-			 if ( it->current ) \
+			 if (it->current) \
 			 { \
-				 if ( it->current->next ) \
+				 if (it->current->next) \
 				 { \
 					 util_memcpy(item, &(it->current->next->item), sizeof(ITEM_T)); \
 					 it->current = it->current->next; \
@@ -136,7 +136,7 @@
 	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it) \
 	{ \
-		if ( it ) \
+		if (it) \
 		{ \
 			it->current = it->list->head; \
 		} \

@@ -402,7 +402,11 @@ model {
 	            File srcDir = new File('src')
 	            cCompiler.args "-DIS_HOST_UNIT_TEST=1",
 	            	"-DSCHEDULER_DEBUGGING",
-	            	"-DKERNEL_DEBUGGING"
+	            	"-DKERNEL_DEBUGGING",
+	            	"-ftest-coverage",
+	            	"-fprofile-arcs"
+            	linker.args  "-ftest-coverage",
+	            	"-fprofile-arcs"
 	        }
 	    	sources {
 			    c {

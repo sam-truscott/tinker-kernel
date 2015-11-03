@@ -10,7 +10,6 @@
 
 #include "arch/board_support.h"
 #include "kernel/kernel_assert.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/console/print_out.h"
 #include "kernel/console/stack_trace.h"
 #include "kernel/scheduler/scheduler.h"

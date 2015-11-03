@@ -20,15 +20,15 @@
 
 void test_scheduler(void)
 {
-	char pool_mem[SIZE];
 	mem_pool_info_t * pool = NULL;
-
+	char * pool_mem = (char*)mem_alloc(mem_get_default_pool(), SIZE);
 	mem_init_memory_pool(
 				(uint32_t)pool_mem,
 				SIZE,
 				&pool);
 
 	scheduler_t * const sch = sch_create_scheduler(pool);
+	kernel_assert("scheduler should be non null", sch != NULL);
 	kernel_assert("kernel idle thread should be null", sch->idle_thread == NULL);
 	kernel_assert("kernel idle thread should be 0", sch->curr_priority == 0);
 	kernel_assert("kernel idle thread should be null", sch->curr_thread == NULL);
@@ -102,4 +102,6 @@ void test_scheduler(void)
 	kernel_assert("thread should be equal", &idle_thread == sch_get_current_thread(sch));
 
 	// sch_terminate_current_thread
+
+	mem_free(mem_get_default_pool(), pool_mem);
 }

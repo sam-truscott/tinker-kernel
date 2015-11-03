@@ -24,7 +24,7 @@ static void sch_priority_find_next_queue(scheduler_t * const scheduler, thread_t
 
 scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool)
 {
-	scheduler_t * sch = mem_alloc(pool, sizeof(scheduler_t));
+	scheduler_t * const sch = mem_alloc(pool, sizeof(scheduler_t));
 	if (sch)
 	{
 		util_memset(sch, 0, sizeof(scheduler_t));

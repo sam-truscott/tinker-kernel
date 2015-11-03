@@ -13,7 +13,6 @@
 #include "arch/tgt_types.h"
 #include "object_private.h"
 #include "obj_thread.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/time/alarm_manager.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/process/process_list.h"

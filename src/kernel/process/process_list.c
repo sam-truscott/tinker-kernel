@@ -7,11 +7,10 @@
  *  All Rights Reserved.
  */
 #include "process_list.h"
+#include "process_list_private.h"
 
 #include "config.h"
 #include "arch/tgt.h"
-#include "kernel/kernel_initialise.h"
-#include "kernel/scheduler/scheduler.h"
 #include "kernel/utils/util_strlen.h"
 #include "kernel/objects/object_table.h"
 #include "kernel/objects/obj_process.h"
@@ -20,32 +19,9 @@
 #include "kernel/console/print_out.h"
 
 #define INVALID_PROC_ID 0
-/**
- * A linked list of processes
- */
-UNBOUNDED_LIST_INTERNAL_TYPE(process_list_t, process_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, process_list_t, process_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, process_list_t, process_t*)
-UNBOUNDED_LIST_SPEC_GET(static, process_list_t, process_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, process_list_t, process_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, process_list_t, process_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, process_list_t, process_t*)
-UNBOUNDED_LIST_BODY_GET(static, process_list_t, process_t*)
-UNBOUNDED_LIST_BODY_ADD(static, process_list_t, process_t*)
-UNBOUNDED_LIST_BODY_REMOVE(static, process_list_t, process_t*)
-UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, process_list_t, process_t*)
 
 UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, process_t*)
 UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, process_t*)
-
-typedef struct proc_list_t
-{
-	scheduler_t * scheduler;
-	process_list_t * process_list;
-	alarm_manager_t * alarm_manager;
-	uint32_t last_pid;
-	process_t * kernel_process;
-} proc_list_t;
 
 proc_list_t * proc_create(
 		mem_pool_info_t * const pool,
@@ -270,7 +246,6 @@ error_t proc_create_process(
 	bool_t pool_allocated = false;
 	mem_pool_info_t * new_mem_pool = NULL;
 	mem_pool_info_t * parent_pool = NULL;
-	object_t * process_obj = NULL;
 	object_t * thread_obj = NULL;
 	if (ret == NO_ERROR)
 	{
@@ -287,6 +262,7 @@ error_t proc_create_process(
 			ret = create_process(list, parent_pool, proc_id, image, (curr_thread == NULL), meminfo, new_mem_pool, &proc);
 			if (ret == NO_ERROR)
 			{
+				object_t * process_obj = NULL;
 				ret = create_process_object(list, proc, process_obj);
 
 				if (ret == NO_ERROR)

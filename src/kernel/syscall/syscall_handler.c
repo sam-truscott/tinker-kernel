@@ -11,7 +11,6 @@
 #include "arch/tgt.h"
 #include "arch/board_support.h"
 #include "tinker_api_kernel_interface.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/kernel_main.h"
 #include "kernel/process/process_list.h"
 #include "kernel/scheduler/scheduler.h"

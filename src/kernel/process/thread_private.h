@@ -1,8 +1,10 @@
 /*
- * thread_private.h
  *
- *  Created on: 14 Sep 2015
- *      Author: sam
+ * TINKER Source Code
+ *
+ *
+ *  [2009] - [2013] Samuel Steven Truscott
+ *  All Rights Reserved.
  */
 
 #ifndef KERNEL_PROCESS_THREAD_PRIVATE_H_
