@@ -35,8 +35,4 @@ object_type_t obj_get_type(const object_t * const o);
 
 uint32_t obj_get_number(const object_t * const o);
 
-void obj_lock(object_t * const o);
-
-void obj_unlock(object_t * const o);
-
 #endif /* OBJECT_H_ */

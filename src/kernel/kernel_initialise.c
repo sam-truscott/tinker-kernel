@@ -131,7 +131,7 @@ void kernel_initialise(void)
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
 
 #if defined(KERNEL_SHELL)
-	kshell_setup(pool, scheduler, registry, proc_list);
+	kshell_setup(pool, proc_list);
 #endif
 
 	// Map the RAM into Kernel space
@@ -155,7 +155,7 @@ void kernel_initialise(void)
 	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);
 	sch_set_current_thread(scheduler, kernel_idle_thread);
 
-	kernel_in_initialise(registry);
+	kernel_in_initialise(scheduler);
 }
 
 process_t * kernel_get_process(void)

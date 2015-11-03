@@ -24,6 +24,7 @@ UNBOUNDED_QUEUE_SPEC_POP(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_SPEC_REMOVE(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_SPEC_REORDER_FIRST(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_SPEC_SIZE(static, thread_queue_t)
+UNBOUNDED_QUEUE_SPEC_CONTAINS(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_BODY_INITIALISE(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_BODY_FRONT(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_BODY_PUSH(static, thread_queue_t, thread_t*)
@@ -31,6 +32,7 @@ UNBOUNDED_QUEUE_BODY_POP(extern, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_BODY_REMOVE(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_BODY_REORDER_FIRST(static, thread_queue_t, thread_t*)
 UNBOUNDED_QUEUE_BODY_SIZE(static, thread_queue_t)
+UNBOUNDED_QUEUE_BODY_CONTAINS(static, thread_queue_t, thread_t*)
 
 STACK_TYPE(queue_stack_t)
 STACK_INTERNAL_TYPE(queue_stack_t, thread_queue_t*)
@@ -75,6 +77,10 @@ typedef struct scheduler_t
 	 * The scheduler's idle thread
 	 */
 	thread_t * idle_thread;
+	/**
+	 * Has a scheduler event changed the current thread
+	 */
+	bool_t eval_new_thread;
 } scheduler_t;
 
 

@@ -13,7 +13,7 @@
 #include "arch/tgt_types.h"
 #include "kernel/objects/registry.h"
 
-void kernel_in_initialise(registry_t * const reg);
+void kernel_in_initialise(scheduler_t * const sch);
 
 void kernel_in_write(char * const buffer, const uint16_t size);
 

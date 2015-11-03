@@ -13,6 +13,7 @@
 #include "kernel/utils/util_memcpy.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/memory/memory_manager.h"
+#include "kernel/console/print_out.h"
 
 #if defined (DEBUG_COLLECTIONS)
 #define UNBOUNDED_LIST_DEBUG debug_print
@@ -91,6 +92,8 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 	PREFIX bool_t LIST_T##_next(const LIST_T * const list, const ITEM_T current, ITEM_T * const next_ptr);
 #define UNBOUNDED_LIST_SPEC_SIZE(PREFIX, LIST_T) \
 	PREFIX inline uint32_t LIST_T##_size(const LIST_T * const list);
+#define UNBOUNDED_LIST_SPEC_CONTAINS(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_contains(LIST_T * const list, ITEM_T item);
 
 #define UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, LIST_T, ITEM_T) \
 	\
@@ -329,6 +332,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 				ret = true; \
 			} \
 		} \
+		UNBOUNDED_LIST_DEBUG("unbounded list: size is %d after remove %x\n", list->size, list); \
 		\
 		return ret; \
 	}
@@ -347,6 +351,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 			{ \
 				if (e->item == item) \
 				{ \
+					UNBOUNDED_LIST_DEBUG("unbounded list: removing item %d from list %x\n", p, list); \
 					ret = LIST_T##_remove(list, p); \
 					break; \
 				} \
@@ -355,6 +360,29 @@ static inline void empty1(const char * const x, ...) {if (x){}}
 		} \
 		return ret; \
 	}
+
+#define UNBOUNDED_LIST_BODY_CONTAINS(PREFIX, LIST_T, ITEM_T) \
+	PREFIX bool_t LIST_T##_contains(LIST_T * const list, ITEM_T item) \
+	{ \
+		bool_t ret = false; \
+		\
+		if (list && list->size) \
+		{ \
+			LIST_T##_element_t * e = list->head; \
+			for (uint32_t p = 0 ; p < list->size ; p++ ) \
+			{ \
+				if (e->item == item) \
+				{ \
+					ret = true; \
+					break; \
+				} \
+				e = e->next; \
+			} \
+		} \
+		\
+		return ret; \
+	}
+
 #define UNBOUNDED_LIST_BODY_REMOVE_TAIL(PREFIX, LIST_T) \
 	PREFIX bool_t LIST_T##_remove_tail(LIST_T * const list) \
 	{ \

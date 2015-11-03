@@ -9,7 +9,6 @@
 #include "kernel_idle.h"
 #include "arch/tgt_types.h"
 #include "arch/tgt.h"
-#include "kernel/console/print_out.h"
 
 // TODO keep or remove
 //#if defined(IDLE_DEBUGGING)
@@ -19,17 +18,17 @@
 void kernel_idle(void)
 {
 #if defined(IDLE_DEBUGGING)
-	debug_print("IDLE: kernel idle starting\n");
+	tinker_debug("IDLE: kernel idle starting\n");
 #endif
 	while(1 != 2)
 	{
 #if defined(IDLE_DEBUGGING)
-		debug_print("IDLE: Waiting for interrupt\n");
+		tinker_debug("IDLE: Waiting for interrupt\n");
 #endif
 		//tgt_wait_for_interrupt();
 		tinker_wait_for_interrupt();
 #if defined(IDLE_DEBUGGING)
-		debug_print("IDLE: Awoken\n");
+		tinker_debug("IDLE: Awoken\n");
 #endif
 	}
 }

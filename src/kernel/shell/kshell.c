@@ -9,6 +9,7 @@
 #include "kshell.h"
 #if defined(KERNEL_SHELL)
 #include "api/tinker_api_types.h"
+#include "tinker_api_pipe.h"
 #include "arch/tgt.h"
 #include "kernel/console/print_out.h"
 #include "kernel/process/process_list.h"
@@ -19,17 +20,21 @@
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_pipe.h"
-#include "kernel/scheduler/scheduler.h"
 #include "kernel/process/thread.h"
 #include "kernel/utils/collections/hashed_map.h"
 #include "kernel/utils/collections/hashed_map_iterator.h"
 
 #define MAX_LINE_INPUT 256
 
+/**
+ * TODO read this
+ * Why does this run in kernel code and access structs without syscalls?
+ * It's to do with returning from a blocking call?
+ * Look back at the commit messages.
+ */
+
 typedef struct kshell_t
 {
-	scheduler_t * scheduler;
-	registry_t * reg;
 	proc_list_t * proc_list;
 	uint16_t ksh_input_pointer;
 	char ksh_input_buffer[MAX_LINE_INPUT];
@@ -86,66 +91,47 @@ static const char ksh_pipe_dir[4][13] =
 
 void kshell_setup(
 		mem_pool_info_t * const pool,
-		scheduler_t * const scheduler,
-		registry_t * const reg,
 		proc_list_t * const proc_list)
 {
 	kshell = mem_alloc(pool, sizeof(kshell_t));
 	if (kshell)
 	{
-		kshell->scheduler = scheduler;
-		kshell->reg = reg;
 		kshell->proc_list = proc_list;
 	}
 }
 
 void kshell_start(void)
 {
-	thread_t * const shell_thread = sch_get_current_thread(kshell->scheduler);
-	process_t * const shell_proc = thread_get_parent(shell_thread);
-	object_thread_t * const shell_thread_obj =
-		(object_thread_t*)obj_get_object(process_get_object_table(shell_proc), thread_get_object_no(shell_thread));
 	kshell->ksh_input_pointer = 0;
 	bool_t running = true;
 
 #if defined(KERNEL_SHELL_DEBUG)
-	printp_out("KSHELL\n");
+	print_out("KSHELL\n");
 #endif
 
-	object_number_t input_pipe_no = INVALID_OBJECT_ID;
-	error_t input_result = obj_open_pipe(
-			kshell->reg,
-			shell_proc,
-			shell_thread_obj,
-			&input_pipe_no,
-			"in",
-			PIPE_RECEIVE,
-			4,
-			MAX_LINE_INPUT);
+	tinker_pipe_t pipe;
+	error_t input_result = tinker_open_pipe(&pipe, "in", PIPE_RECEIVE, 4, MAX_LINE_INPUT);
+
 	if (input_result != NO_ERROR)
 	{
 		printp_out("KSHELL failed to open input pipe, error was %d\n", input_result);
 		return;
 	}
 
-	object_pipe_t * const input_pipe =
-			obj_cast_pipe(obj_get_object(process_get_object_table(shell_proc), input_pipe_no));
 	while (running)
 	{
 		char * received = NULL;
 		uint32_t * bytesReceived = NULL;
-		error_t read_status = obj_pipe_receive_message(
-				input_pipe,
-				shell_thread_obj,
-				(void**)&received,
-				&bytesReceived,
-				true);
+#if defined(KERNEL_SHELL_DEBUG)
+		print_out("KSHELL Rx\n");
+#endif
+		error_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
 #if defined(KERNEL_SHELL_DEBUG)
 		printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
 #endif
 		if (read_status == NO_ERROR)
 		{
-			error_t ack = obj_pipe_received_message(input_pipe);
+			error_t ack = tinker_received_message(pipe);
 			if (ack != NO_ERROR)
 			{
 				printp_out("KSHELL Failed to ack packet with error %d\n", ack);

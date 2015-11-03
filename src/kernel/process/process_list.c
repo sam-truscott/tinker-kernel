@@ -113,6 +113,7 @@ static inline uint32_t get_proc_id(proc_list_t * const list)
 }
 
 static inline bool_t initialise_mem_pool(
+		const char * const image,
 		mem_pool_info_t * const parent_pool,
 		tinker_meminfo_t * const meminfo,
 		mem_pool_info_t ** new_mem_pool)
@@ -123,6 +124,8 @@ static inline bool_t initialise_mem_pool(
 				meminfo->heap_size,
 				meminfo->stack_size,
 				parent_pool);
+#else
+		(void)image;
 #endif
 	return mem_init_process_memory(
 			parent_pool,
@@ -159,12 +162,15 @@ static inline error_t create_process(
 }
 
 static inline error_t create_process_object(
+		const char * const image,
 		proc_list_t * const list,
 		process_t * const proc,
 		object_t * process_obj)
 {
 #if defined (PROCESS_DEBUGGING)
 	debug_print("Process: Building process object: %s\n", image);
+#else
+		(void)image;
 #endif
 	error_t ret = obj_create_process(
 			list,
@@ -178,6 +184,7 @@ static inline error_t create_process_object(
 }
 
 static inline error_t create_thread_object(
+		const char * const image,
 		process_t * const proc,
 		const char * const initial_task_name,
 		thread_entry_point * const entry_point,
@@ -188,6 +195,8 @@ static inline error_t create_thread_object(
 {
 #if defined (PROCESS_DEBUGGING)
 	debug_print("Process: Building process entry thread: %s\n", image);
+#else
+		(void)image;
 #endif
 	return proc_create_thread(
 			proc,
@@ -201,12 +210,15 @@ static inline error_t create_thread_object(
 }
 
 static inline bool_t add_process_to_list(
+		const char * const image,
 		proc_list_t * const list,
 		process_t * const proc)
 {
 
 #if defined (PROCESS_DEBUGGING)
 	debug_print("Process: Adding process to process list: %s\n", image);
+#else
+		(void)image;
 #endif
 	bool_t ok = (process_list_t_add(list->process_list, proc));
 #if defined (PROCESS_DEBUGGING)
@@ -252,7 +264,7 @@ error_t proc_create_process(
 		const thread_t * const curr_thread = sch_get_current_thread(list->scheduler);
 		parent_pool = get_parent_pool(list, image, curr_thread);
 
-		pool_allocated = initialise_mem_pool(parent_pool, meminfo, &new_mem_pool);
+		pool_allocated = initialise_mem_pool(image, parent_pool, meminfo, &new_mem_pool);
 		if (!pool_allocated)
 		{
 			ret = OUT_OF_MEMORY;
@@ -263,15 +275,22 @@ error_t proc_create_process(
 			if (ret == NO_ERROR)
 			{
 				object_t * process_obj = NULL;
-				ret = create_process_object(list, proc, process_obj);
+				ret = create_process_object(image, list, proc, process_obj);
 
 				if (ret == NO_ERROR)
 				{
 					ret = create_thread_object(
-							proc, initial_task_name, entry_point, priority, meminfo->stack_size, flags, &thread_obj);
+							image,
+							proc,
+							initial_task_name,
+							entry_point,
+							priority,
+							meminfo->stack_size,
+							flags,
+							&thread_obj);
 					if (ret == NO_ERROR)
 					{
-						if (add_process_to_list(list, proc))
+						if (add_process_to_list(image, list, proc))
 						{
 							if (process)
 							{

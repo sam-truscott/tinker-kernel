@@ -19,6 +19,7 @@
 
 typedef enum thread_state
 {
+	THREAD_UNKNOWN = 0,
 	THREAD_NOT_CREATED = 1,
 	THREAD_IDLE = 2,
 	THREAD_READY = 3,

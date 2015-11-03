@@ -258,6 +258,9 @@ const object_t * thread_get_waiting_on(
 	const object_t * waiting_on = NULL;
 	if (thread)
 	{
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Process: Thread %s Waiting on %x\n", thread->name, thread->waiting_on);
+#endif
 		waiting_on = thread->waiting_on;
 	}
 	return waiting_on;
@@ -268,6 +271,9 @@ void thread_set_waiting_on(
 		const object_t * const object)
 {
 	kernel_assert("thread is null", thread != NULL);
+#if defined (PROCESS_DEBUGGING)
+	debug_print("Process: Thread %s Waiting on %x\n", thread->name, object);
+#endif
 	thread->waiting_on = object;
 }
 

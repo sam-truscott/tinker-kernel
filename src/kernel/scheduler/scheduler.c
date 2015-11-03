@@ -19,7 +19,6 @@
 #include "kernel/objects/obj_semaphore.h"
 #include "kernel/utils/util_memcpy.h"
 
-
 static void sch_priority_find_next_queue(scheduler_t * const scheduler, thread_t * const t);
 
 scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool)
@@ -36,6 +35,7 @@ scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool)
 		sch->curr_queue = &(sch->priority_queues[0]);
 		queue_stack_t_initialise( &sch->queue_stack, mem_get_default_pool() );
 		queue_stack_t_push(&sch->queue_stack, sch->curr_queue);
+		sch->eval_new_thread = false;
 	}
 	return sch;
 }
@@ -119,25 +119,38 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 	{
 		const priority_t thread_priority = thread_get_priority(t);
 		thread_queue_t * const queue = &(scheduler->priority_queues[thread_priority]);
-		thread_queue_t_push(queue, t);
+		if (!thread_queue_t_contains(queue, t))
+		{
+#if defined(SCHEDULER_TRACING)
+			debug_print("Push thread %s onto priority queue %d\n", thread_get_name(t), thread_priority);
+#endif
+			thread_queue_t_push(queue, t);
+		}
 
 #if defined(SCHEDULER_DEBUGGING)
 		debug_print("Scheduler: New thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
 
+		/*
+		 * a new thread that's higher than the current priority
+		 */
 		if (thread_priority > scheduler->curr_priority)
 		{
+			scheduler->eval_new_thread = true;
 			scheduler->curr_priority = thread_priority;
 			scheduler->curr_queue = &(scheduler->priority_queues[scheduler->curr_priority]);
 			queue_stack_t_push(&scheduler->queue_stack, scheduler->curr_queue);
 		}
+		/*
+		 * a thread of lower or equal priority - inside it into the stack
+		 */
 		else if ( thread_priority < scheduler->curr_priority )
 		{
 			insert_lower_priority_queue_to_stack(scheduler, thread_priority, queue);
 		}
 	}
 #if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: New priority, now (%d)\n", scheduler->curr_priority);
+	debug_print("Scheduler: New priority, now (%d)\n", scheduler->curr_priority);
 #endif
 }
 
@@ -152,27 +165,31 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 #if defined(SCHEDULER_DEBUGGING)
 		debug_print("Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 #endif
-		if (removed && thread_queue_t_size(scheduler->curr_queue) == 0)
+		if (removed)
 		{
-			/* pop the one we're using off */
-			queue_stack_t_pop(&scheduler->queue_stack, &scheduler->curr_queue);
-			/* pop the next queue off the stack - if one can't be found
-			 * perform a slow search */
-			if (queue_stack_t_front(&scheduler->queue_stack, &scheduler->curr_queue))
+			scheduler->eval_new_thread = true;
+			if (thread_queue_t_size(scheduler->curr_queue) == 0)
 			{
-				thread_t * first_thread = NULL;
-				if (thread_queue_t_front(scheduler->curr_queue, &first_thread))
+				/* pop the one we're using off */
+				queue_stack_t_pop(&scheduler->queue_stack, &scheduler->curr_queue);
+				/* pop the next queue off the stack - if one can't be found
+				 * perform a slow search */
+				if (queue_stack_t_front(&scheduler->queue_stack, &scheduler->curr_queue))
 				{
-					scheduler->curr_priority = thread_get_priority(first_thread);
+					thread_t * first_thread = NULL;
+					if (thread_queue_t_front(scheduler->curr_queue, &first_thread))
+					{
+						scheduler->curr_priority = thread_get_priority(first_thread);
+					}
+					else
+					{
+						scheduler->curr_priority = 0;
+					}
 				}
 				else
 				{
-					scheduler->curr_priority = 0;
+					sch_priority_find_next_queue(scheduler, t);
 				}
-			}
-			else
-			{
-				sch_priority_find_next_queue(scheduler, t);
 			}
 		}
 	}
@@ -221,6 +238,7 @@ void sch_notify_change_priority(
 		}
 		if (thread_priority > original_priority)
 		{
+			scheduler->eval_new_thread = true;
 			scheduler->curr_priority = thread_priority;
 			scheduler->curr_queue = queue;
 			queue_stack_t_push(&scheduler->queue_stack, queue);
@@ -238,6 +256,7 @@ void sch_notify_change_priority(
 				thread_t * new_thread = NULL;
 				if (thread_queue_t_front(scheduler->curr_queue, &new_thread))
 				{
+					scheduler->eval_new_thread = true;
 					scheduler->curr_priority = thread_get_priority(new_thread);
 				}
 				else
@@ -325,7 +344,7 @@ void sch_set_context_for_next_thread(
 		kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const thread_state_t state = thread_get_state(scheduler->curr_thread);
 
-		if (state == THREAD_READY || state == THREAD_SYSTEM)
+		if (state == THREAD_READY || state == THREAD_SYSTEM || state == THREAD_RUNNING)
 		{
 			thread_set_state(scheduler->curr_thread, THREAD_RUNNING);
 		}
@@ -341,8 +360,16 @@ void sch_set_context_for_next_thread(
 	}
 
 	// the thread changed so save the state of the previous thread
-	if (current_thread != scheduler->curr_thread)
+#if defined(SCHEDULER_DEBUGGING)
+	debug_print("Scheduler: Current Thread is %s, new Thread is %s\n",
+			current_thread == NULL ? "NULL" : thread_get_name(current_thread),
+			scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
+#endif
+	if ((current_thread != scheduler->curr_thread) || scheduler->eval_new_thread)
 	{
+#if defined(SCHEDULER_DEBUGGING)
+		debug_print("Scheduler: Switching to %s\n", scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
+#endif
 		if (thread_state == THREAD_RUNNING)
 		{
 			thread_set_state(current_thread, THREAD_READY);
@@ -353,6 +380,13 @@ void sch_set_context_for_next_thread(
 		}
 		// load in the state of the new thread
         tgt_prepare_context(context, scheduler->curr_thread, thread_get_parent(scheduler->curr_thread));
+	}
+#if defined(SCHEDULER_TRACING)
+	debug_print("Scheduler: Current queue size is %d\n", thread_queue_t_size(scheduler->curr_queue));
+#endif
+	if (thread_queue_t_size(scheduler->curr_queue) > 1)
+	{
+		bsp_enable_schedule_timer();
 	}
 	kernel_assert("Scheduler couldn't get next thread", scheduler->curr_thread != NULL);
 }

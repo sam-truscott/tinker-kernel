@@ -66,7 +66,7 @@ void kernel_main(void)
 #endif
 	proc_create_thread(
 			kernel_get_process(),
-			"kshell",
+			"kernel_shell",
 			kshell_start,
 			1,
 			0x400,

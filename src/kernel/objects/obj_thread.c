@@ -185,7 +185,15 @@ error_t obj_set_thread_waiting(
 	if (o)
 	{
 		const thread_state_t state = thread_get_state(o->thread);
-		if (state == THREAD_RUNNING)
+#if defined(PROCESS_DEBUGGING)
+		debug_print("Process: State of %s is %x\n", thread_get_name(o->thread), state);
+#endif
+		if (state == THREAD_RUNNING
+				|| state == THREAD_READY
+				|| state == THREAD_PAUSED
+				|| state == THREAD_IDLE
+				|| state == THREAD_WAITING
+				|| state == THREAD_SYSTEM)
 		{
 			thread_set_state(o->thread, THREAD_WAITING);
 			thread_set_waiting_on(o->thread, waiting_on);
