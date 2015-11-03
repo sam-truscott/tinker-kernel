@@ -121,14 +121,18 @@ void kernel_initialise(void)
 			THREAD_FLAG_NONE,
 			&kernel_process);
 
+	proc_set_kernel_process(proc_list, kernel_process);
 	kernel_idle_thread = process_get_main_thread(kernel_process);
+	sch_set_kernel_idle_thread(scheduler, kernel_idle_thread);
 
 	kernel_assert("Kernel Process not created",kernel_process != NULL);
 	kernel_assert("Kernel Idle Thread not created", kernel_idle_thread != NULL);
 
 	thread_set_state(kernel_idle_thread, THREAD_SYSTEM);
 
-	kshell_setup(pool, scheduler, registry, proc_list);
+#if defined(KERNEL_SHELL)
+	kshell_setup(pool, proc_list);
+#endif
 
 	// Map the RAM into Kernel space
 	mem_section_t * const kernel_ram_sec = mem_sec_create(
@@ -148,24 +152,13 @@ void kernel_initialise(void)
 	bsp_setup(interrupt_controller, time_manager, alarm_manager);
 	debug_print("BSP: Setup Complete\n");
 
-	thread_t * const idle_thread = kernel_get_idle_thread();
-	kernel_assert("Kernel couldn't start Idle Thread", idle_thread != NULL);
-	sch_set_current_thread(scheduler, idle_thread);
+	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);
+	sch_set_current_thread(scheduler, kernel_idle_thread);
 
-	kernel_in_initialise(registry);
-}
-
-proc_list_t * kernel_get_proc_list(void)
-{
-	return proc_list;
+	kernel_in_initialise(scheduler);
 }
 
 process_t * kernel_get_process(void)
 {
 	return kernel_process;
-}
-
-thread_t * kernel_get_idle_thread(void)
-{
-	return kernel_idle_thread;
 }

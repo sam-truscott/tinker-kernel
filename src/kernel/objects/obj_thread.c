@@ -185,7 +185,15 @@ error_t obj_set_thread_waiting(
 	if (o)
 	{
 		const thread_state_t state = thread_get_state(o->thread);
-		if (state == THREAD_RUNNING)
+#if defined(PROCESS_DEBUGGING)
+		debug_print("Process: State of %s is %x\n", thread_get_name(o->thread), state);
+#endif
+		if (state == THREAD_RUNNING
+				|| state == THREAD_READY
+				|| state == THREAD_PAUSED
+				|| state == THREAD_IDLE
+				|| state == THREAD_WAITING
+				|| state == THREAD_SYSTEM)
 		{
 			thread_set_state(o->thread, THREAD_WAITING);
 			thread_set_waiting_on(o->thread, waiting_on);
@@ -225,7 +233,7 @@ error_t obj_set_thread_ready(object_thread_t * const o)
 		const thread_state_t state = thread_get_state(o->thread);
 		if (state == THREAD_WAITING)
 		{
-			thread_set_state(o->thread, THREADY_READY);
+			thread_set_state(o->thread, THREAD_READY);
 			thread_set_waiting_on(o->thread, NULL);
 			sch_notify_resume_thread(o->scheduler, o->thread);
 		}
@@ -370,7 +378,7 @@ static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t *
 {
 	if (o && o->alarm_id == alarm_id)
 	{
-		thread_set_state(o->thread, THREADY_READY);
+		thread_set_state(o->thread, THREAD_READY);
 		sch_notify_resume_thread(o->scheduler, o->thread);
 		alarm_unset_alarm(o->alarm_manager, alarm_id);
 	}

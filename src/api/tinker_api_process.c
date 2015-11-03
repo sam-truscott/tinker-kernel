@@ -106,3 +106,10 @@ error_t tinker_map_mempry(
 {
 	return TINKER_API_CALL_5(SYSCALL_MMAP, (uint32_t)real, size, type, access, (uint32_t)virtual);
 }
+
+void * tinker_sbrk(void * memory, uint32_t size)
+{
+	void ** memory_addr = &memory;
+	TINKER_API_CALL_2(SYSCALL_SBRK, (uint32_t)memory_addr, size);
+	return *memory_addr;
+}

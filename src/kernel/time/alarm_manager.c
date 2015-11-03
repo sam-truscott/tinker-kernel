@@ -91,7 +91,14 @@ error_t alarm_set_alarm(
 {
 	error_t ret = NO_ERROR;
 #if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Setting up a new alarm for %d.%d\n", timeout->seconds, timeout->nanoseconds);
+	if (timeout)
+	{
+		debug_print("Alarms: Setting up a new alarm for %d.%d\n", timeout->seconds, timeout->nanoseconds);
+	}
+	else
+	{
+		debug_print("Alarms: Setting up a new alarm for NULL\n");
+	}
 #endif
 	if (am && timeout)
 	{

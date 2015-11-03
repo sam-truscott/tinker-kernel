@@ -18,7 +18,6 @@ void obj_initialise_object(
 {
 	o->object_number = id;
 	o->type = type;
-	lock_init(&o->lock);
 }
 
 object_type_t obj_get_type(const object_t * const o)
@@ -40,32 +39,3 @@ uint32_t obj_get_number(const object_t * const o)
 	}
 	return no;
 }
-
-void obj_lock(object_t * const o)
-{
-	if (o)
-	{
-#if defined (LOCK_DEBUGGING)
-		debug_print("Locking object %d\n", o->object_number);
-#endif
-		lock(&o->lock);
-#if defined (LOCK_DEBUGGING)
-		debug_print("Locked object %d\n", o->object_number);
-#endif
-	}
-}
-
-void obj_unlock(object_t * const o)
-{
-	if (o)
-	{
-#if defined (LOCK_DEBUGGING)
-		debug_print("Unlocking object %d\n", o->object_number);
-#endif
-		unlock(&o->lock);
-#if defined (LOCK_DEBUGGING)
-		debug_print("Unlocked object %d\n", o->object_number);
-#endif
-	}
-}
-

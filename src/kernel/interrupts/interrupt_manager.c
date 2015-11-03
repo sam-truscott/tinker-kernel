@@ -10,7 +10,6 @@
 
 #include "arch/board_support.h"
 #include "kernel/kernel_assert.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/console/print_out.h"
 #include "kernel/console/stack_trace.h"
 #include "kernel/scheduler/scheduler.h"
@@ -22,7 +21,6 @@ typedef struct interrupt_controller_t
 {
 	const intc_t * interrupt_manager_root;
 	volatile bool_t is_external;
-	volatile bool_t is_scheduler;
 	syscall_handler_t * handler;
 	scheduler_t * scheduler;
 } interrupt_controller_t;
@@ -37,7 +35,6 @@ interrupt_controller_t * int_create(
 	{
 		intc->interrupt_manager_root = NULL;
 		intc->is_external = false;
-		intc->is_scheduler = false;
 		intc->handler = syscall_handler;
 		intc->scheduler = scheduler;
 	}
@@ -57,22 +54,21 @@ error_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_cont
 	if (intc)
 	{
 		intc->is_external = true;
-		intc->is_scheduler = false;
 		const thread_t * const current_thread = sch_get_current_thread(intc->scheduler);
+#if defined(INTC_DEBUGGING)
+		debug_print("INTC: Thread before external vector: %s\n", thread_get_name(current_thread));
+#endif
 		const error_t intc_result = intc_handle(intc->interrupt_manager_root, context);
+	#if defined(INTC_DEBUGGING)
+		debug_print("INTC: Switching thread due to external interrupt\n");
+	#endif
+		sch_set_context_for_next_thread(
+				intc->scheduler, context,
+				thread_get_state(current_thread));
+	#if defined(INTC_DEBUGGING)
 		const thread_t * const new_thread = sch_get_current_thread(intc->scheduler);
-		if (!intc->is_scheduler && current_thread != new_thread)
-		{
-	#if defined(INTC_DEBUGGING)
-			debug_print("INTC: Switching thread due to external interrupt\n");
+		debug_print("INTC: Thread after external vector: %s\n", thread_get_name(new_thread));
 	#endif
-			sch_set_context_for_next_thread(intc->scheduler, context, thread_get_state(current_thread));
-			bsp_enable_schedule_timer();
-		}
-	#if defined(INTC_DEBUGGING)
-		debug_print("INTC: Current thread after external vector: %s\n", thread_get_name(new_thread));
-	#endif
-		intc->is_scheduler = false;
 		intc->is_external = false;
 		return intc_result;
 	}
@@ -90,10 +86,10 @@ void int_context_switch_interrupt(
 	if (intc)
 	{
 		kernel_assert("Context Switch Context missing", context != NULL);
-		intc->is_scheduler = true;
 		/* Copy over the context for the scheduler */
-		sch_set_context_for_next_thread(intc->scheduler, context, thread_get_state(sch_get_current_thread(intc->scheduler)));
-		bsp_enable_schedule_timer();
+		sch_set_context_for_next_thread(
+				intc->scheduler, context,
+				thread_get_state(sch_get_current_thread(intc->scheduler)));
 	}
 }
 
@@ -109,7 +105,10 @@ void int_fatal_program_error_interrupt(
 			thread_get_name(current));
 	print_stack_trace(thread_get_parent(current), tgt_get_context_stack_pointer(context));
 	sch_terminate_current_thread(intc->scheduler, context);
-	sch_set_context_for_next_thread(intc->scheduler, context, thread_get_state(current));
+	sch_set_context_for_next_thread(
+			intc->scheduler,
+			context,
+			thread_get_state(current));
 }
 
 void int_syscall_request_interrupt(

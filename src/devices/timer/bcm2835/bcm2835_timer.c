@@ -182,34 +182,6 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 	}
 }
 
-bool_t bcm2835_has_timer_expired(const timer_t * const timer)
-{
-	bool_t fired = false;
-	if (timer && timer->usr_data)
-	{
-		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)timer->usr_data;
-		const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
-		if (control & (1 << data->instance))
-		{
-			fired = true;
-		}
-	}
-	return fired;
-}
-
-void bcm2835_reset_timer(const timer_t * const timer)
-{
-	if (timer && timer->usr_data)
-	{
-		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)timer->usr_data;
-		const uint32_t control = in_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)));
-		if (control & (1 << data->instance))
-		{
-			out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), (1 << data->instance));
-		}
-	}
-}
-
 static uint64_t bcm2835_get_time(void * const user_data)
 {
 	volatile uint64_t * const timer = (volatile uint64_t*)((uint8_t*)user_data + CLOCK_OFFSET);

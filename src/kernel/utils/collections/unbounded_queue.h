@@ -95,6 +95,13 @@
 	PREFIX bool_t QUEUE_T##_remove(QUEUE_T * const queue, ITEM_T item); \
 	\
 
+#define UNBOUNDED_QUEUE_SPEC_CONTAINS(PREFIX, QUEUE_T, ITEM_T) \
+	\
+	UNBOUNDED_LIST_SPEC_CONTAINS(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	\
+	PREFIX bool_t QUEUE_T##_contains(QUEUE_T * const queue, ITEM_T item); \
+	\
+
 #define UNBOUNDED_QUEUE_BODY_INITIALISE(PREFIX, QUEUE_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_BODY_INITIALISE(PREFIX, QUEUE_T##_list_t, ITEM_T) \
@@ -238,7 +245,22 @@
 		} \
 		\
 		return ret; \
-	} \
+	}
+
+#define UNBOUNDED_QUEUE_BODY_CONTAINS(PREFIX, QUEUE_T, ITEM_T) \
 	\
+	UNBOUNDED_LIST_BODY_CONTAINS(PREFIX, QUEUE_T##_list_t, ITEM_T) \
+	\
+	PREFIX bool_t QUEUE_T##_contains(QUEUE_T * const queue, ITEM_T item) \
+	{ \
+		bool_t ret = false; \
+		\
+		if (queue && queue->list) \
+		{ \
+			ret = QUEUE_T##_list_t_contains(queue->list, item); \
+		} \
+		\
+		return ret; \
+	}
 
 #endif /* UNBOUNDED_QUEUE_H_ */

@@ -15,6 +15,8 @@
 
 #if defined(ARCH_HAS_MMU)
 #define VIRTUAL_ADDRESS_SPACE 0xC0000000u
+#else
+#define VIRTUAL_ADDRESS_SPACE 0
 #endif
 
 #define ISR_PRINT_STACKTRACE_LIMIT 20
@@ -33,6 +35,8 @@
 #define KERNEL_IDLE_STACK 0x400
 
 #define KERNEL_IDLE_PRIORITY 0
+
+#define PRIVATE_POOL_SIZE (256 * 1024)
 
 /**
  * Because they're defined on the heap we can allow as many as possible
@@ -82,5 +86,10 @@
  * The maximum number of alarms the system can support
  */
 #define MAX_ALARMS 256
+
+/**
+ * The maximum amount of padding to allow
+ */
+#define MAX_PADDING 256
 
 #endif /* CONFIG_H_ */

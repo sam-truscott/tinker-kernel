@@ -11,7 +11,6 @@
 #include "arch/tgt.h"
 #include "arch/board_support.h"
 #include "tinker_api_kernel_interface.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/kernel_main.h"
 #include "kernel/process/process_list.h"
 #include "kernel/scheduler/scheduler.h"
@@ -148,7 +147,7 @@ void syscall_handle_system_call(
 #endif
 
 #if defined(SYSCALL_DEBUGGING)
-	debug_print("Syscall: API %d\n", api);
+	debug_print("Syscall: API %d from %s\n", api, thread_get_name(this_thread));
 #endif
 
 	/*
@@ -227,6 +226,29 @@ void syscall_handle_system_call(
 		}
 		break;
 
+		case SYSCALL_SBRK:
+		{
+			process_t * const process = thread_get_parent(this_thread);
+			if (process)
+			{
+				void ** base = (void**)param[0];
+				*base = mem_realloc(process_get_user_mem_pool(process), *base, param[1]);
+				if (*base)
+				{
+					ret = NO_ERROR;
+				}
+				else
+				{
+					ret = OUT_OF_MEMORY;
+				}
+			}
+			else
+			{
+				ret = PARAMETERS_INVALID;
+			}
+		}
+		break;
+
 		case SYSCALL_DEBUG:
 		{
 			const char * const msg = (const char * const)param[0];
@@ -247,7 +269,7 @@ void syscall_handle_system_call(
 				{
 					object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
 					object_t * const obj = obj_get_object(table, thread_no);
-					object_thread_t * thread_obj;
+					object_thread_t * thread_obj = NULL;
 					if (obj)
 					{
 						thread_obj = obj_cast_thread(obj);
@@ -293,6 +315,14 @@ void syscall_handle_system_call(
 					{
 						ret = obj_process_thread_exit(proc_obj, thread_obj);
 					}
+					else
+					{
+						ret = INVALID_OBJECT;
+					}
+				}
+				else
+				{
+					ret = INVALID_OBJECT;
 				}
 			}
 			break;
@@ -300,6 +330,8 @@ void syscall_handle_system_call(
 		case SYSCALL_WAIT_THREAD:
 			{
 				thread_set_state(this_thread, THREAD_WAITING);
+				sch_notify_pause_thread(handler->scheduler, this_thread);
+				ret = NO_ERROR;
 			}
 			break;
 
@@ -328,6 +360,10 @@ void syscall_handle_system_call(
 					ret = PARAMETERS_INVALID;
 				}
 
+			}
+			else
+			{
+				ret = PARAMETERS_INVALID;
 			}
 			break;
 
@@ -359,13 +395,12 @@ void syscall_handle_system_call(
 			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
 			if (ret == NO_ERROR && sema_obj && thread_obj)
 			{
-				ret = obj_get_semaphore( thread_obj, sema_obj);
+				ret = obj_get_semaphore(thread_obj, sema_obj);
 			}
 			else
 			{
 				ret = INVALID_OBJECT;
 			}
-			/* TODO check the return vector if the current thread isn't right */
 			break;
 		}
 		case SYSCALL_RELEASE_SEMAPHORE:
@@ -596,35 +631,39 @@ void syscall_handle_system_call(
 		case SYSCALL_SLEEP:
 		{
 			const tinker_time_t * const duration = (const tinker_time_t*)param[0];
-			object_thread_t * const thread_obj =syscall_get_thread_object(this_thread);
+			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
 			ret = obj_thread_sleep(thread_obj, duration);
 		}
 		break;
 		case SYSCALL_WFI:
 			tgt_wait_for_interrupt();
+			ret = NO_ERROR;
 			break;
 		case SYSCALL_LOAD_THREAD:
 			/* uses the current thread from the scheduler */
 			tgt_prepare_context(context, this_thread, NULL);
+			ret = NO_ERROR;
 			break;
 
 		default:
 			/* setup the error_number and add associated error number utilities */
-			ret = SYSCALL_UNKNOWN;
+			ret = ERROR_UNKNOWN_SYSCALL;
 			break;
 	}
 
 	/* This will over-ride the result of a system-call
 	 * if the exception occurs just after the system call has been made. */
-	bool_t scheduled = false;
-	if (api != SYSCALL_LOAD_THREAD && api != SYSCALL_EXIT_THREAD)
+	if (api == SYSCALL_LOAD_THREAD
+			|| api == SYSCALL_EXIT_THREAD)
 	{
-		tgt_set_syscall_return(context, ret);
+#if defined(SYSCALL_DEBUGGING)
+		debug_print("Syscall: Initial Kernel mode call to start scheduler\n");
+#endif
+		bsp_enable_schedule_timer();
 	}
 	else
 	{
-		scheduled = true;
-		bsp_enable_schedule_timer();
+		tgt_set_syscall_return(context, ret);
 	}
 
 	/* If the thread has been un-scheduled we need to switch process */
@@ -637,15 +676,16 @@ void syscall_handle_system_call(
 	{
 		state = thread_get_state(this_thread);
 	}
+	/**
+	 * Check to see if the current thread that made the syscall is
+	 * still running - if it's not running anymore then we need to
+	 * run the scheduler to perform a context switch on our way out
+	 */
 	if ( (state != THREAD_SYSTEM) &&
 		 (state != THREAD_RUNNING) )
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
 		sch_set_context_for_next_thread(handler->scheduler, context, state);
-		if (!scheduled)
-		{
-			bsp_enable_schedule_timer();
-		}
 	}
 #if defined(SYSCALL_DEBUGGING)
 	debug_print("Syscall: API %d RET %d\n", api, ret);

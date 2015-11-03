@@ -55,6 +55,7 @@ typedef enum syscall_function
 	SYSCALL_WFI,
 	/* 30 */ SYSCALL_WAIT_THREAD,
 	SYSCALL_MMAP,
+	SYSCALL_SBRK,
 
 	MAX_SYSCALL
 } syscall_function_t;

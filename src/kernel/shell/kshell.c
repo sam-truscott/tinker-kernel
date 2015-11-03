@@ -9,6 +9,8 @@
 #include "kshell.h"
 #if defined(KERNEL_SHELL)
 #include "api/tinker_api_types.h"
+#include "tinker_api_pipe.h"
+#include "arch/tgt.h"
 #include "kernel/console/print_out.h"
 #include "kernel/process/process_list.h"
 #include "kernel/utils/util_strlen.h"
@@ -18,17 +20,21 @@
 #include "kernel/objects/obj_process.h"
 #include "kernel/objects/obj_thread.h"
 #include "kernel/objects/obj_pipe.h"
-#include "kernel/scheduler/scheduler.h"
 #include "kernel/process/thread.h"
 #include "kernel/utils/collections/hashed_map.h"
 #include "kernel/utils/collections/hashed_map_iterator.h"
 
 #define MAX_LINE_INPUT 256
 
+/**
+ * TODO read this
+ * Why does this run in kernel code and access structs without syscalls?
+ * It's to do with returning from a blocking call?
+ * Look back at the commit messages.
+ */
+
 typedef struct kshell_t
 {
-	scheduler_t * scheduler;
-	registry_t * reg;
 	proc_list_t * proc_list;
 	uint16_t ksh_input_pointer;
 	char ksh_input_buffer[MAX_LINE_INPUT];
@@ -45,6 +51,8 @@ static void kshell_process_list(void);
 static void kshell_task_list(void);
 
 static void kshell_object_table(void);
+
+static void kshell_memory_info(void);
 
 static const char ksh_thread_states[10][8] =
 {
@@ -83,66 +91,47 @@ static const char ksh_pipe_dir[4][13] =
 
 void kshell_setup(
 		mem_pool_info_t * const pool,
-		scheduler_t * const scheduler,
-		registry_t * const reg,
 		proc_list_t * const proc_list)
 {
 	kshell = mem_alloc(pool, sizeof(kshell_t));
 	if (kshell)
 	{
-		kshell->scheduler = scheduler;
-		kshell->reg = reg;
 		kshell->proc_list = proc_list;
 	}
 }
 
 void kshell_start(void)
 {
-	thread_t * const shell_thread = sch_get_current_thread(kshell->scheduler);
-	process_t * const shell_proc = thread_get_parent(shell_thread);
-	object_thread_t * const shell_thread_obj =
-		(object_thread_t*)obj_get_object(process_get_object_table(shell_proc), thread_get_object_no(shell_thread));
 	kshell->ksh_input_pointer = 0;
 	bool_t running = true;
 
 #if defined(KERNEL_SHELL_DEBUG)
-	printp_out("KSHELL\n");
+	print_out("KSHELL\n");
 #endif
 
-	object_number_t input_pipe_no = INVALID_OBJECT_ID;
-	error_t input_result = obj_open_pipe(
-			kshell->reg,
-			shell_proc,
-			shell_thread_obj,
-			&input_pipe_no,
-			"in",
-			PIPE_RECEIVE,
-			4,
-			MAX_LINE_INPUT);
+	tinker_pipe_t pipe;
+	error_t input_result = tinker_open_pipe(&pipe, "in", PIPE_RECEIVE, 4, MAX_LINE_INPUT);
+
 	if (input_result != NO_ERROR)
 	{
 		printp_out("KSHELL failed to open input pipe, error was %d\n", input_result);
 		return;
 	}
 
-	object_pipe_t * const input_pipe =
-			obj_cast_pipe(obj_get_object(process_get_object_table(shell_proc), input_pipe_no));
 	while (running)
 	{
 		char * received = NULL;
 		uint32_t * bytesReceived = NULL;
-		error_t read_status = obj_pipe_receive_message(
-				input_pipe,
-				shell_thread_obj,
-				(void**)&received,
-				&bytesReceived,
-				true);
+#if defined(KERNEL_SHELL_DEBUG)
+		print_out("KSHELL Rx\n");
+#endif
+		error_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
 #if defined(KERNEL_SHELL_DEBUG)
 		printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
 #endif
 		if (read_status == NO_ERROR)
 		{
-			error_t ack = obj_pipe_received_message(input_pipe);
+			error_t ack = tinker_received_message(pipe);
 			if (ack != NO_ERROR)
 			{
 				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
@@ -189,9 +178,13 @@ static void kshell_execute_command(const char* command)
 	{
 		kshell_task_list();
 	}
-	else if ( kshell_strcmp(command, "objects"))
+	else if (kshell_strcmp(command, "objects"))
 	{
 		kshell_object_table();
+	}
+	else if (kshell_strcmp(command, "mem"))
+	{
+		kshell_memory_info();
 	}
 	else
 	{
@@ -201,9 +194,9 @@ static void kshell_execute_command(const char* command)
 
 static bool_t kshell_strcmp(const char * a, const char * b)
 {
-	const uint32_t length = util_strlen(a, 65535);
+	const uint32_t length = util_strlen(a, MAX_LINE_INPUT);
 
-	if (length != util_strlen(b, 65535))
+	if (length != util_strlen(b, MAX_LINE_INPUT))
 	{
 		return false;
 	}
@@ -211,7 +204,7 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 	uint32_t p;
 	bool_t ok = true;
 
-	for (p = 0 ; p < length && p < 65535 && ok ; p++)
+	for (p = 0 ; p < length && p < MAX_LINE_INPUT && ok ; p++)
 	{
 		if (a[p] != b[p])
 		{
@@ -230,15 +223,15 @@ static void kshell_process_list(void)
 	list = proc_list_procs(kshell->proc_list);
 	process_list_it_t_get(list, &proc);
 
-	print_out("ProcessId\tThreads\tName\n");
-	print_out("---------\t-------\t----\n");
+	print_out("Proc. Id\tThreads \tName\n");
+	print_out("--------\t--------\t----\n");
 
 	while (proc)
 	{
-		printp_out("\t%d", process_get_pid(proc));
-		printp_out("\t%d", process_get_thread_count(proc));
+		printp_out("%8d", process_get_pid(proc));
+		printp_out("\t%8d", process_get_thread_count(proc));
 		printp_out("\t%s\n", process_get_image(proc));
-		if ( !process_list_it_t_next(list, &proc) )
+		if (!process_list_it_t_next(list, &proc))
 		{
 			proc = NULL;
 		}
@@ -264,16 +257,17 @@ static void kshell_task_list(void)
 		thread_it_t_get(tlist, &t);
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
-		print_out("Thread ID\tStack\tPri\tState\tEntry\tName\n");
-		print_out("---------\t-----\t---\t-----\t-----\t----\n");
+		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tName\n");
+		print_out("--------\t----------\t----------\t---\t--------\t-----\t----\n");
 
 		while (t)
 		{
-			printp_out("\t%d", thread_get_tid(t));
-			printp_out("\t0x%X", thread_get_stack_size(t));
-			printp_out("\t%d", thread_get_priority(t));
+			printp_out("%8d", thread_get_tid(t));
+			printp_out("\t0x%8X", thread_get_stack_size(t));
+			printp_out("\t0x%8X", tgt_get_context_stack_pointer(thread_get_context(t)));
+			printp_out("\t%3d", thread_get_priority(t));
+			printp_out("\t%8x", thread_get_entry_point(t));
 			printp_out("\t%s", ksh_thread_states[thread_get_state(t)]);
-			printp_out("\t%x", thread_get_entry_point(t));
 			printp_out("\t%s", thread_get_name(t));
 			print_out("\n");
 
@@ -307,8 +301,8 @@ static void kshell_object_table(void)
 		object_table_it_t * const it = obj_iterator(process_get_object_table(proc));
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
-		print_out("ObjNo.\tType\t\n");
-		print_out("------\t----\t\n");
+		print_out("Obj No. \tType\t\n");
+		print_out("--------\t----\t\n");
 
 		if (it)
 		{
@@ -319,7 +313,7 @@ static void kshell_object_table(void)
 			{
 				const object_type_t type = obj_get_type(obj);
 
-				printp_out("%d\t", obj_get_number(obj));
+				printp_out("%8d\t", obj_get_number(obj));
 				printp_out("%s\t", ksh_object_types[type]);
 
 				switch (type)
@@ -432,5 +426,34 @@ static void kshell_object_table(void)
 
 	process_list_it_t_delete(list);
 	print_out("Complete\n");
+}
+
+static void kshell_memory_info(void)
+{
+	process_list_it_t * const list = proc_list_procs(kshell->proc_list);
+	process_t * proc = NULL;
+	process_list_it_t_get(list, &proc);
+
+	print_out("Proc\tPool Sz    Pool Usd   P.Pool Sz  P.Pool Usd\n");
+	print_out("----\t---------- ---------- ---------- ----------\n");
+
+	while (proc)
+	{
+		printp_out("%s\t", process_get_image(proc));
+		mem_pool_info_t * const pool = process_get_user_mem_pool(proc);
+		mem_pool_info_t * const prv_pool = process_get_mem_pool(proc);
+		printp_out("0x%8x 0x%8x 0x%8x 0x%8x\n",
+				mem_get_alloc_size(pool),
+				mem_get_allocd_size(pool),
+				mem_get_alloc_size(prv_pool),
+				mem_get_allocd_size(prv_pool));
+
+		if (!process_list_it_t_next(list, &proc))
+		{
+			proc = NULL;
+		}
+	}
+
+	process_list_it_t_delete(list);
 }
 #endif /* KERNEL_SHELL */

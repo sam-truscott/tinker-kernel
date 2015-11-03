@@ -21,7 +21,7 @@
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.636194821" name="Cross GCC" nonInternalBuilderId="cdt.managedbuild.builder.gnu.cross" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1729940091" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="arm-eabi-" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF;org.eclipse.cdt.core.PE" id="cdt.managedbuild.targetPlatform.gnu.cross.306414198" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder arguments="" buildPath="${workspace_loc:/tinker}" command="gradlew.bat" id="cdt.managedbuild.builder.gnu.cross.621266924" incrementalBuildTarget="debugPiBinary" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/tinker}" cleanBuildTarget="clean" command="gradlew.bat" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="false" id="cdt.managedbuild.builder.gnu.cross.621266924" incrementalBuildTarget="debugHost_testsExecutable" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.753197187" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.1154864503" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.597656215" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
@@ -30,6 +30,10 @@
 									<listOptionValue builtIn="false" value="UNIT_TESTS"/>
 									<listOptionValue builtIn="false" value="KERNEL_SHELLBUILDING_KERNEL"/>
 									<listOptionValue builtIn="false" value="BUILDING_KERNEL"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.paths.1206912527" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\Dev\xtools\arm-eabi\arm-eabi\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Dev\xtools\arm-eabi\lib\gcc\arm-eabi\4.9.2\include&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.693281916" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -74,6 +78,9 @@
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.1265110038.240745262;cdt.managedbuild.config.gnu.cross.exe.debug.1265110038.240745262.;cdt.managedbuild.tool.gnu.cross.c.compiler.753197187;cdt.managedbuild.tool.gnu.c.compiler.input.693281916">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.997242459;cdt.managedbuild.config.gnu.cross.exe.debug.997242459.;cdt.managedbuild.tool.gnu.cross.c.compiler.2058871369;cdt.managedbuild.tool.gnu.c.compiler.input.867526916">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>

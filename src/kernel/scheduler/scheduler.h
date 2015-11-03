@@ -15,6 +15,8 @@ typedef struct scheduler_t scheduler_t;
 
 scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool);
 
+void sch_set_kernel_idle_thread(scheduler_t * const sch, thread_t * const idle_thread);
+
 void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t);
 void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t);
 void sch_notify_pause_thread(scheduler_t * const scheduler, thread_t * const t);

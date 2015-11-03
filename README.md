@@ -66,6 +66,21 @@ To build everything (all targets, debug and release) use:
 	# Linux
 	./gradlew clean assemble
 	
+Unit Tests
+==========
+
+Unit tests can be enabled at compile time to run at kernel initialisation - this ensures they run on the target
+and with the target compiler as opposed to the host compiler. However, for debugging purposes a host variant is provided.
+
+
+	# Windows
+	gradlew debugHost_testsExecutable
+	
+	# Linux
+	./gradlew debugHost_testsExecutable
+	
+You'll need a gcc available on the PATH for this to build.
+	
 Toolchains
 ==========
 
@@ -103,14 +118,8 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Allow user-mode to map to real addresses (user-mode drivers)
-    * (interrupts can be handled by pipes in the bsp)
-    * Already available for kernel space via kernel_device_map_memory
-* Kernel: Review all the uses of ARCH_HAS_MMU
-	* Might be useful for an Arduino port
-* Kernel: Don't map the whole process memory pool to the user-space in the MMU
-	* Just map the entries you need (code, data, shm etc)
-	* Stops the process having access to it's own internal data structures
+* Kernel: Add a sbrk syscall to get a block of memory / heap
+* Kernel: Review TODO/FIXMEs and add them here
 * Kernel: Break up the syscalls into separate static/inline functions
 * Support: Create newlib port
 * Kernel: Add mechanism to load elfs

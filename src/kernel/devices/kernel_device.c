@@ -9,7 +9,6 @@
 
 
 #include "kernel/devices/kernel_device.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/process/process.h"
 
 static proc_list_t * proc_list = NULL;
@@ -25,7 +24,7 @@ error_t kernel_device_map_memory
 	 const mmu_memory_t type,
 	 uint32_t * const virt)
 {
-	process_t * const kernel_proc = kernel_get_process();
+	process_t * const kernel_proc = proc_get_kernel_process(proc_list);
 	const error_t result = process_allocate_vmem(
 			kernel_proc,
 			addr,

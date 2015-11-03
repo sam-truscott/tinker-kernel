@@ -9,6 +9,22 @@
 #ifndef MALLOC_CONFIG_H_
 #define MALLOC_CONFIG_H_
 
+#if defined(IS_HOST_UNIT_TEST)
+
+#define MSPACES 1
+#define ONLY_MSPACES 0
+
+#define HAVE_MORECORE 0
+#define MORECORE_CONTIGUOUS 0
+#define MORECORE_CANNOT_TRIM 1
+
+#define USE_LOCKS 0
+
+#define NO_MALLINFO 0
+#define NO_MALLOC_STATS 1
+
+#else /* IS_HOST_UNIT_TEST */
+
 #undef WIN32
 #undef _WIN32
 #define DLMALLOC_EXPORT extern
@@ -51,5 +67,7 @@
 #define NO_MALLOC_STATS 1
 
 #define USE_BUILTIN_FFS 0
+
+#endif /* IS_HOST_UNIT_TEST */
 
 #endif /* MALLOC_CONFIG_H_ */

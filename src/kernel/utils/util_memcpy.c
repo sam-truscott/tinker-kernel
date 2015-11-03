@@ -13,7 +13,9 @@
 #define SIZE_OF_16 sizeof(uint16_t)
 #define SIZE_OF_8 sizeof(uint8_t)
 
-#if !defined(MEMCPY)
+#if defined(MEMCPY)
+#include <string.h>
+#else
 #pragma GCC optimize ("-O3")
 void memcpy(void * dst, const void * src, uint32_t size)
 {

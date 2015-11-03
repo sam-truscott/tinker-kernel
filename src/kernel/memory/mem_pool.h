@@ -42,6 +42,14 @@ void *	mem_alloc(
 		const uint32_t size);
 
 /**
+ * dynamically re-allocate memory from the heap
+ */
+void *  mem_realloc(
+		mem_pool_info_t * const pool,
+		void * mem,
+		const uint32_t size);
+
+/**
  * dynamically allocate memory from the heap
  */
 void *	mem_alloc_aligned(

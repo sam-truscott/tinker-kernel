@@ -9,9 +9,6 @@
 #ifndef MALLOC_FAILURE_H_
 #define MALLOC_FAILURE_H_
 
-void malloc_failure(void)
-{
-	// TODO
-}
+void malloc_failure(void);
 
 #endif /* MALLOC_FAILURE_H_ */

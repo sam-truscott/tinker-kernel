@@ -35,6 +35,4 @@ void arm_disable_fiq(void);
 
 psr_mode_t arm_get_psr_mode(void);
 
-void arm_set_psr_mode(const psr_mode_t psr_mode);
-
 #endif /* ARM_PSR_H_ */

@@ -10,7 +10,6 @@
 #include "object.h"
 #include "object_private.h"
 #include "object_table.h"
-#include "kernel/kernel_initialise.h"
 #include "kernel/kernel_assert.h"
 #include "kernel/console/print_out.h"
 #include "kernel/process/thread.h"
@@ -23,6 +22,7 @@ typedef struct object_process_t
 	uint32_t pid;
 	mem_pool_info_t * pool;
 	process_t * process;
+	proc_list_t * proc_list;
 } object_process_internal_t;
 
 object_process_t * obj_cast_process(object_t * o)
@@ -40,6 +40,7 @@ object_process_t * obj_cast_process(object_t * o)
 }
 
 error_t obj_create_process(
+		proc_list_t * const proc_list,
 		mem_pool_info_t * const pool,
 		object_table_t * const table,
 		const uint32_t process_id,
@@ -54,6 +55,7 @@ error_t obj_create_process(
 		if (table)
 		{
 			no = (object_process_t*)mem_alloc(pool, sizeof(object_process_t));
+			util_memset(no, 0, sizeof(object_process_t));
 #if defined (PROCESS_DEBUGGING)
 			debug_print("Objects: Creating process, address is %x\n", no);
 #endif
@@ -70,6 +72,7 @@ error_t obj_create_process(
 					no->pid = process_id;
 					no->pool = pool;
 					no->process = process;
+					no->proc_list = proc_list;
 					*object = (object_t*)no;
 				}
 				else
@@ -134,7 +137,7 @@ void obj_process_exit(object_process_t * const o)
 #endif
 	process_t * const proc = o->process;
 	obj_delete_process(o);
-	proc_delete_proc(kernel_get_proc_list(), proc);
+	proc_delete_proc(o->proc_list, proc);
 	process_exit(proc);
 }
 

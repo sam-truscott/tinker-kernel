@@ -7,6 +7,7 @@
  *  All Rights Reserved.
  */
 #include "process.h"
+#include "process_private.h"
 
 #include "config.h"
 #include "arch/tgt.h"
@@ -19,47 +20,9 @@
 #include "kernel/objects/obj_shared_mem.h"
 #include "kernel/objects/obj_timer.h"
 #include "kernel/utils/util_strlen.h"
-#include "kernel/utils/collections/hashed_map.h"
-
-HASH_MAP_TYPE_T(thread_map_t)
-HASH_MAP_INTERNAL_TYPE_T(thread_map_t, uint32_t, thread_t*, MAX_THREADS, 16)
-HASH_MAP_SPEC_CREATE(static, thread_map_t)
-HASH_MAP_SPEC_INITALISE(static, thread_map_t)
-HASH_MAP_SPEC_SIZE(static, thread_map_t)
-HASH_MAP_SPEC_CONTAINS_KEY(static, thread_map_t, uint32_t)
-HASH_MAP_SPEC_PUT(static, thread_map_t, uint32_t, thread_t*)
-HASH_MAP_SPEC_REMOVE(static, thread_map_t, uint32_t, thread_t*)
-HASH_MAP_SPEC_DELETE(static, thread_map_t)
-HASH_FUNCS_VALUE(thread_map_t, uint32_t)
-HASH_MAP_BODY_CREATE(static, thread_map_t)
-HASH_MAP_BODY_INITALISE(static, thread_map_t, MAX_THREADS, 16)
-HASH_MAP_BODY_SIZE(static, thread_map_t)
-HASH_MAP_BODY_CONTAINS_KEY(static, thread_map_t, uint32_t, 16)
-HASH_MAP_BODY_PUT(static, thread_map_t, uint32_t, thread_t*, MAX_THREADS, 16)
-HASH_MAP_BODY_REMOVE(static, thread_map_t, uint32_t, 16)
-HASH_MAP_BODY_DELETE(static, thread_map_t, MAX_THREADS, 16)
 
 HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(thread_it_t, thread_map_t)
 HASH_MAP_TYPE_ITERATOR_BODY(extern, thread_it_t, thread_map_t, uint32_t, thread_t*, MAX_THREADS, 16)
-
-typedef struct process_t
-{
-	scheduler_t * 			scheduler;
-	alarm_manager_t * 		alarm_manager;
-	uint32_t				process_id;
-	thread_map_t	*		threads;
-	mem_pool_info_t * 		memory_pool;
-	object_table_t *		object_table;
-	object_number_t			object_number;
-	bool_t					kernel_process;
-	tgt_mem_t				mem_info;
-	mem_section_t *			first_section;
-	char					image[MAX_PROCESS_IMAGE_LEN + 1];
-	uint32_t 				next_thread_id;
-	thread_t * 				initial_thread;
-	mem_pool_info_t * 		parent;
-	tgt_pg_tbl_t *			page_table;
-} process_internal_t;
 
 static void process_add_mem_sec(
 		process_t * const process,
@@ -122,30 +85,64 @@ error_t process_create(
 		util_memset(new_proc, 0, sizeof(process_t));
 		new_proc->process_id = pid;
 		new_proc->kernel_process = is_kernel;
-		new_proc->parent = mempool;
+		new_proc->parent_pool = mempool;
 		new_proc->scheduler = scheduler;
 		new_proc->alarm_manager = alarm_manager;
 		new_proc->memory_pool = pool;
+
+		/* allocate a private (kernel) pool for page tables etc */
+		kernel_assert(
+				"private process pool created ok",
+				mem_init_memory_pool(
+						(uint32_t)mem_alloc(new_proc->parent_pool, PRIVATE_POOL_SIZE),
+						PRIVATE_POOL_SIZE,
+						&new_proc->private_pool));
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Private pool allocated space is %d before page table\n", mem_get_allocd_size(new_proc->private_pool));
+#endif
+		new_proc->page_table = tgt_initialise_page_table(new_proc->private_pool);
+#if defined (PROCESS_DEBUGGING)
+		debug_print("Private pool allocated space is %d after page table\n", mem_get_allocd_size(new_proc->private_pool));
+#endif
+		kernel_assert("new process's pool wasn't created from private pool", new_proc->page_table != NULL);
+
 #if defined (PROCESS_DEBUGGING)
 		debug_print("Process: Allocating memory for page table: %s\n", name);
 #endif
-		new_proc->page_table = tgt_initialise_page_table(mempool);
 		new_proc->threads = thread_map_t_create(
 		        hash_basic_integer,
 		        hash_equal_integer,
 		        true,
-		        new_proc->memory_pool);
+		        new_proc->private_pool);
 		const uint32_t length = util_strlen(name,MAX_PROCESS_IMAGE_LEN);
 		util_memcpy(new_proc->image, name, length);
 		new_proc->image[length] = '\0';
-		new_proc->object_table = obj_table_create(new_proc->memory_pool);
+		new_proc->object_table = obj_table_create(new_proc->private_pool);
 		new_proc->next_thread_id = 0;
 		new_proc->initial_thread = NULL;
 		new_proc->first_section = NULL;
+
+		/* create a section for the private memory pool */
+		process_add_mem_sec(
+						new_proc,
+						mem_sec_create(
+							new_proc->private_pool,
+							mem_get_start_addr(new_proc->private_pool),
+		#if defined (ARCH_HAS_MMU)
+							VIRTUAL_ADDRESS_SPACE,
+		#else
+							mem_get_start_addr(new_proc->private_pool),
+		#endif
+							mem_get_alloc_size(new_proc->private_pool),
+							MMU_RANDOM_ACCESS_MEMORY,
+							MMU_KERNEL_ACCESS,
+							MMU_READ_WRITE));
+
+		/* create a section for the heap - allocated from the private pool */
 		process_add_mem_sec(
 				new_proc,
 				mem_sec_create(
-					new_proc->memory_pool,
+					new_proc->private_pool,
 					mem_get_start_addr(new_proc->memory_pool),
 #if defined (ARCH_HAS_MMU)
 					VIRTUAL_ADDRESS_SPACE,
@@ -157,10 +154,11 @@ error_t process_create(
 					MMU_USER_ACCESS,
 					MMU_READ_WRITE));
 
+		/* create a section for code - allocated from the private pool */
 		process_add_mem_sec(
 				new_proc,
 				mem_sec_create(
-					new_proc->memory_pool,
+					new_proc->private_pool,
 				    meminfo->text_start,
 					meminfo->text_start,
 					meminfo->text_size,
@@ -168,10 +166,11 @@ error_t process_create(
 					MMU_USER_ACCESS,
 					MMU_READ_ONLY));
 
+		/* create a section for the data - allocated from the private pool */
 		process_add_mem_sec(
                 new_proc,
                 mem_sec_create(
-                    new_proc->memory_pool,
+                    new_proc->private_pool,
                     meminfo->data_start,
                     meminfo->data_start,
                     meminfo->data_size,
@@ -183,10 +182,11 @@ error_t process_create(
         char * api = (char*)&__api;
         char * eapi = (char*)&__api_end;
 
+        /* create a memory for the API/SYSCALL code - allocated from the private pool */
         process_add_mem_sec(
                 new_proc,
                 mem_sec_create(
-                    new_proc->memory_pool,
+                    new_proc->private_pool,
                     (const uint32_t)api,
                     (const uint32_t)api,
                     (const uint32_t)(eapi - api),
@@ -258,9 +258,14 @@ mem_pool_info_t * process_get_mem_pool(const process_t * const process)
 	mem_pool_info_t * pool = NULL;
 	if (process)
 	{
-		pool = process->memory_pool;
+		pool = process->private_pool;
 	}
 	return pool;
+}
+
+mem_pool_info_t * process_get_user_mem_pool(const process_t * const process)
+{
+	return process == NULL ? NULL : process->memory_pool;
 }
 
 object_table_t * process_get_object_table(const process_t * const process)
@@ -325,7 +330,7 @@ bool_t process_add_thread(
 
 		// create an object in the table
 		ret = obj_create_thread(
-				process->memory_pool,
+				process->private_pool,
 				process->scheduler,
 				process->alarm_manager,
 				process->object_table,
@@ -381,7 +386,7 @@ void process_thread_exit(process_t * const process, thread_t * const thread)
 void process_exit(process_t * const process)
 {
 	kernel_assert("process_exit - check process is not null", process != NULL);
-	// thread list
+	// thread list - process should only die when this is empty
 	thread_map_t_delete(process->threads);
 	// object table
 	object_table_it_t * const it = obj_iterator(process->object_table);
@@ -470,7 +475,7 @@ void process_exit(process_t * const process)
 	}
 	obj_table_delete(process->object_table);
 
-	// memory sections
+	// memory sections - contained iin the private_pool
 	const mem_section_t * section = process->first_section;
 	while (section)
 	{
@@ -480,9 +485,10 @@ void process_exit(process_t * const process)
 		mem_sec_delete(tmp);
 	}
 
-	mem_free(process->parent, process->page_table);
-	mem_free(process->parent, process->memory_pool);
-	mem_free(process->parent, process);
+	mem_free(process->private_pool, process->page_table);
+	mem_free(process->parent_pool, process->private_pool);
+	mem_free(process->parent_pool, process->memory_pool);
+	mem_free(process->parent_pool, process);
 }
 
 uint32_t process_virt_to_real(
@@ -532,7 +538,7 @@ error_t process_allocate_vmem(
 			{
 				// there's room
 				mem_section_t * const new_section =
-						mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
+						mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access);
 				if (new_section)
 				{
 					// insert into list
@@ -569,7 +575,7 @@ error_t process_allocate_vmem(
 		{
 			vmem_start += (vmem_start % MMU_PAGE_SIZE);
 			mem_section_t * const new_section =
-					mem_sec_create(process->memory_pool, real_address, vmem_start, size, type, priv, access);
+					mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access);
 			mem_sec_set_next(prev, new_section);
 #if defined(ARCH_HAS_MMU)
 			*virt_address = vmem_start;

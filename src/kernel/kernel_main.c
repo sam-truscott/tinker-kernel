@@ -65,8 +65,8 @@ void kernel_main(void)
 	debug_print("System: Creating kshell\n");
 #endif
 	proc_create_thread(
-			thread_get_parent(kernel_get_idle_thread()),
-			"kshell",
+			kernel_get_process(),
+			"kernel_shell",
 			kshell_start,
 			1,
 			0x400,

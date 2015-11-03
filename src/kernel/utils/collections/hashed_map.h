@@ -30,6 +30,7 @@
 #include "kernel/utils/hash/basic_hashes.h"
 #include "kernel/utils/util_memset.h"
 #include "kernel/kernel_panic.h"
+#include "kernel/kernel_assert.h"
 
 /*
  * This abstract data type is used to model a hash-map.

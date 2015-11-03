@@ -69,8 +69,8 @@ error_t tinker_send_message(
 		const uint32_t message_size,
 		const bool_t block)
 {
-	error_t result = BLOCKED_RETRY;
-	while(result == BLOCKED_RETRY)
+	error_t result = UNKNOWN_ERROR;
+	while (result == BLOCKED_RETRY || result == UNKNOWN_ERROR)
 	{
 		result = TINKER_API_CALL_5(
 				SYSCALL_SEND_MESSAGE,
@@ -79,14 +79,19 @@ error_t tinker_send_message(
 				(uint32_t)message,
 				(uint32_t)message_size,
 				block);
+		if (result == BLOCKED_RETRY)
+		{
+			int i = 0;
+			i++;
+		}
 	}
 	return result;
 }
 
 error_t tinker_receive_message(
 		tinker_pipe_t pipe,
-		const void ** message,
-		const uint32_t ** const message_size,
+		void ** message,
+		uint32_t ** const message_size,
 		const bool_t block)
 {
 	return TINKER_API_CALL_4(

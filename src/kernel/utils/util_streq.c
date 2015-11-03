@@ -25,6 +25,14 @@ bool_t util_streq(const char * const l, const char * const r, uint32_t length)
 			{
 				eq = false;
 			}
+			else if (r == NULL && l != NULL)
+			{
+				eq = false;
+			}
+			else if (r != NULL && l == NULL)
+			{
+				eq = false;
+			}
 			else if (r[p] == 0 && l[p] != 0)
 			{
 				eq = false;

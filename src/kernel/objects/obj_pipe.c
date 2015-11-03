@@ -123,6 +123,11 @@ static void pipe_receive_message(
 #if defined(PIPE_TRACING)
 	debug_print("PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
 #endif
+#if defined(PIPE_TRACING)
+	debug_print("PipeW: Receiver has thread %x blocking on %x\n",
+			(receiver->rx_data.blocked_owner),
+			receiver);
+#endif
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
 	{
 #if defined(PIPE_TRACING)
@@ -223,7 +228,7 @@ error_t obj_create_pipe(
 						total_size++;
 					}
 					memory = (uint8_t*)mem_alloc_aligned(
-							pool, total_size, MMU_PAGE_SIZE);
+							process_get_user_mem_pool(process), total_size, MMU_PAGE_SIZE);
 					if (!memory)
 					{
 						result = OUT_OF_MEMORY;
@@ -424,7 +429,7 @@ error_t obj_open_pipe(
 						total_size++;
 					}
 					memory = (uint8_t*)mem_alloc_aligned(
-							pool, total_size, MMU_PAGE_SIZE);
+							process_get_user_mem_pool(process), total_size, MMU_PAGE_SIZE);
 					if (memory)
 					{
 						util_memset(memory, 0, total_size);
@@ -564,7 +569,6 @@ error_t obj_pipe_send_message(
 
 	if (pipe)
 	{
-		obj_lock(&pipe->object);
 #if defined(PIPE_TRACING)
 		debug_print("PipeW: Direction %d\n", pipe->direction);
 #endif
@@ -579,6 +583,9 @@ error_t obj_pipe_send_message(
 				if (block)
 				{
 					pipe->tx_data.sending_thread = thread;
+#if defined(PIPE_TRACING)
+					debug_print("PipeW: Thread %x blocking on pipe %x\n", thread, pipe);
+#endif
 					obj_set_thread_waiting(thread, (object_t*)pipe);
 					result = BLOCKED_RETRY;
 					// TODO need to block in kernel mode
@@ -593,7 +600,6 @@ error_t obj_pipe_send_message(
 		{
 			result = PIPE_POLARITY_WRONG;
 		}
-		obj_unlock(&pipe->object);
 	}
 	else
 	{
@@ -614,15 +620,13 @@ error_t obj_pipe_send_message(
 #endif
 			while (receiver)
 			{
-				obj_lock(&receiver->object);
 				if (pipe_can_receive(receiver))
 				{
 #if defined(PIPE_TRACING)
-					debug_print("PipeW: Receiver is ready to receive the message\n");
+					debug_print("PipeW: Receiver %x is ready to receive the message\n", receiver);
 #endif
 					pipe_receive_message(receiver, message, message_size);
 				}
-				obj_unlock(&receiver->object);
 				pipe_list_it_t_next(&it, &receiver);
 			}
 		}
@@ -652,8 +656,6 @@ error_t obj_pipe_receive_message(
 				*message = NULL;
 				*message_size = 0;
 
-				bool_t locked = true;
-				obj_lock(&pipe->object);
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
 #if defined(PIPE_TRACING)
@@ -669,13 +671,10 @@ error_t obj_pipe_receive_message(
 						*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
 						*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
+#if defined(PIPE_TRACING)
+						debug_print("PipeR: Thread %x blocking on pipe %x\n", thread, pipe);
+#endif
 						pipe->rx_data.blocked_owner = thread;
-						if (process_is_kernel(thread_get_parent(obj_get_thread(thread))))
-						{
-							obj_unlock(&pipe->object);
-							locked = false;
-							tinker_thread_wait();
-						}
 					}
 					else
 					{
@@ -689,10 +688,6 @@ error_t obj_pipe_receive_message(
 #endif
 					*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
 					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
-				}
-				if (locked)
-				{
-					obj_unlock(&pipe->object);
 				}
 			}
 			else
@@ -709,7 +704,6 @@ error_t obj_pipe_receive_message(
 	{
 		result = INVALID_OBJECT;
 	}
-
 	return result;
 }
 
@@ -723,7 +717,6 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 
 	if (pipe)
 	{
-		obj_lock(&pipe->object);
 		pipe->rx_data.free_messages++;
 
 		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
@@ -758,13 +751,10 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 #if defined(PIPE_TRACING)
 				debug_print("PipeA: Notifying sender\n");
 #endif
-				obj_lock(&sender->object);
 				obj_set_thread_ready(sender->tx_data.sending_thread);
-				obj_unlock(&sender->object);
 				pipe_list_it_t_next(&it, &sender);
 			}
 		}
-		obj_unlock(&pipe->object);
 	}
 	else
 	{

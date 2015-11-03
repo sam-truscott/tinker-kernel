@@ -20,6 +20,14 @@ model {
                     args << "-mcpu=powerpc"
                     args << "-DARCH_HAS_MMU"
                     args << "-Wno-maybe-uninitialized"
+                    args << "-fpic"
+                    args << "-fno-builtin"
+	            	args << "-ffreestanding"
+                }
+                linker.withArguments { args ->
+                	args << "-nostartfiles"
+		       		args << "-nodefaultlibs"
+		        	args << "-nostdlib"
                 }
             }
             target("tinkerArm4Soft") {
@@ -35,6 +43,14 @@ model {
                     args << "-marm"
                     args << "-DARCH_HAS_MMU"
 					args << "-march=armv5"
+                    args << "-fpic"
+                    args << "-fno-builtin"
+	            	args << "-ffreestanding"
+                }
+                linker.withArguments { args ->
+                	args << "-nostartfiles"
+		       		args << "-nodefaultlibs"
+		        	args << "-nostdlib"
                 }
             }
             target("tinkerArm4HardVfp") {
@@ -52,11 +68,18 @@ model {
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
 					args << "-march=armv5"
+                    args << "-fpic"
+                    args << "-fno-builtin"
+	            	args << "-ffreestanding"
                 }
                 linker.withArguments { args ->
                 	args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
 					args << "-march=armv5"
+                    args << "-fpic"
+                	args << "-nostartfiles"
+		       		args << "-nodefaultlibs"
+		        	args << "-nostdlib"
                 }
             }
 			target("tinkerArm7Soft") {
@@ -71,6 +94,14 @@ model {
                     args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
                     args << "-DARCH_HAS_MMU"
 					args << "-march=armv7-a"
+                    args << "-fpic"
+                    args << "-fno-builtin"
+	            	args << "-ffreestanding"
+                }
+                linker.withArguments { args ->
+                	args << "-nostartfiles"
+		       		args << "-nodefaultlibs"
+		        	args << "-nostdlib"
                 }
             }
             target("tinkerArm7HardVfp") {
@@ -87,11 +118,18 @@ model {
                     args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
 					args << "-march=armv7-a"
+                    args << "-fpic"
+                    args << "-fno-builtin"
+	            	args << "-ffreestanding"
                 }
                 linker.withArguments { args ->
                 	args << "-mfpu=vfp"
                     args << "-mfloat-abi=hard"
 					args << "-march=armv5"
+                    args << "-fpic"
+                	args << "-nostartfiles"
+		       		args << "-nodefaultlibs"
+		        	args << "-nostdlib"
                 }
             }
         }
@@ -358,32 +396,37 @@ model {
 		        }
 	        }
 	    }
-//	    ppc32Gdb(NativeExecutableSpec) {
-//	        targetPlatform "tinkerPpc"
-//	        binaries.all {
-//	            File srcDir = new File('src')
-//	            linker.args "-lgcc",
-//	                 "-T",
-//	                 (srcDir.getAbsolutePath() + "\\arch\\ppc32\\gdb_sim\\linker.ld")
-//	        }
-//	        sources {
-//		        c {
-//		            lib base.static        // base headers
-//		            lib api.static         // api layer
-//		            lib archPowerPc.static // powerpc code
-//		            lib boot.static        // boot c code into kernel
-//		            lib core.static        // the core kernel
-//		            lib driverSerialUart16550.static
-//		            lib driverTimerPpc32tbr.static
-//		            lib driverTimerOpic.static
-//		            lib driverIntcOpic.static
-//		            source {
-//		                srcDirs "src/arch/ppc32/gdb_sim", "src/arch/ppc32/generic"
-//		                include "**/*.c"
-//		            }
-//		        }
-//	        }
-//	    }
+	    // host based unit tests
+	    host_tests(NativeExecutableSpec) {
+	    	binaries.all {
+	            File srcDir = new File('src')
+	            cCompiler.args "-DIS_HOST_UNIT_TEST=1",
+	            	"-DSCHEDULER_DEBUGGING",
+	            	"-DKERNEL_DEBUGGING",
+	            	"-ftest-coverage",
+	            	"-fprofile-arcs"
+            	linker.args  "-ftest-coverage",
+	            	"-fprofile-arcs"
+	        }
+	    	sources {
+			    c {
+		             exportedHeaders {
+		                 srcDirs "src/tests_driver", "src", "src/api"
+		             }
+		             source {
+		                 srcDirs  "src/tests_driver",
+		                 	"src/api",
+			               	"src/kernel",
+			                "src/tests"
+		                 include "**/*.c"
+		                 exclude "kernel_initialise.c",
+		                 	"kernel_main.c",
+		                 	"kernel_in.c",
+		                 	"kernel/kshell.c"
+		             }
+		        }
+	        }
+	    }
 	    
 	    binaries.all {
 	    	cCompiler.args "-pedantic",
@@ -394,29 +437,23 @@ model {
 	            "-c",
 	            "-fmessage-length=0",
 	            "-std=gnu11",
-	            "-fno-builtin",
-	            "-fpic",
-	            "-ffreestanding",
 	            "-DBUILDING_KERNEL"
-	        linker.args "-nostartfiles",
-		        "-nodefaultlibs",
-		        "-nostdlib",
-		        "-static",
-		        "-s"
+	        linker.args  "-static"
 	        if (buildType == buildTypes.debug) {
 	            cCompiler.args "-O0", 
 	                "-g3",
 	                "-gdwarf-4",
+	                "-UKERNEL_DEBUGGING",
 	                "-DKERNEL_SHELL",
 	                "-UKERNEL_SHELL_DEBUG",
-	                "-DUNIT_TESTS",
+	                "-UUNIT_TESTS",
 	                "-UTIMER_DEBUGGING",
 	                "-UINTC_DEBUGGING",
-	                "-DKERNEL_DEBUGGING",
 	                "-UMEMORY_DEBUGGING",
 	                "-UDEBUG_COLLECTIONS",
 	                "-UPROCESS_DEBUGGING",
 	                "-USCHEDULER_DEBUGGING",
+	                "-USCHEDULER_TRACING",
 	                "-USHM_DEBUGGING",
 	                "-UTARGET_DEBUGGING",
 	                "-USYSCALL_DEBUGGING",
@@ -426,7 +463,8 @@ model {
 	                "-UPIPE_TRACING",
 	                "-UIDLE_DEBUGGING",
 	                "-ULOCK_DEBUGGING",
-	                "-ULOCK_TRACING"
+	                "-ULOCK_TRACING",
+	                "-UIN_DEBUGGING"
 	        } else if (buildType == buildTypes.release) {
 	            cCompiler.args "-Os",
 	                "-g0",
