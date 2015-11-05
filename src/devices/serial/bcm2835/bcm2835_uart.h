@@ -22,6 +22,7 @@ void early_uart_putc(const char c);
 void early_uart_put(const char * c);
 
 void bcm2835_uart_get_device(
-		kernel_device_t * const device);
+		kernel_device_t * const device,
+		const char * const name);
 
 #endif // #ifndef UART_H_

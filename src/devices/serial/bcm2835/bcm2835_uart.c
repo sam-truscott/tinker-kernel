@@ -185,7 +185,8 @@ static error_t bcm2835_uart_write(
 }
 
 void bcm2835_uart_get_device(
-		kernel_device_t * const device)
+		kernel_device_t * const device,
+		const char * const name)
 {
 	if (device)
 	{
@@ -200,8 +201,7 @@ void bcm2835_uart_get_device(
 		device->user_data = kernel_device_malloc(sizeof(bcm2835_user_data_t));
 		util_memset(device->user_data, 0, sizeof(bcm2835_user_data_t));
 		((bcm2835_user_data_t*)device->user_data)->base = base;
-		// TODO in -> config file
-		((bcm2835_user_data_t*)device->user_data)->input_pipe = kernel_isr_get_pipe("in");
+		((bcm2835_user_data_t*)device->user_data)->input_pipe = kernel_isr_get_pipe(name);
 		device->isr = bcm2835_uart_isr;
 	}
 }

@@ -68,15 +68,21 @@ void * kernel_device_malloc(
 }
 
 object_pipe_t * kernel_isr_get_pipe(
-		char * name)
+		const char * const name)
 {
 	object_pipe_t * pipe = NULL;
-	process_t * other_proc = NULL;
 	object_pipe_t * other_pipe = NULL;
 	object_number_t other_pipe_no = INVALID_OBJECT_ID;
-	if (NO_ERROR == registry_get(kernel_get_registry(), name, &other_proc, &other_pipe_no))
+	if (NO_ERROR == obj_create_pipe(
+			kernel_get_registry(),
+			kernel_get_process(),
+			&other_pipe_no,
+			name,
+			PIPE_SEND,
+			4,
+			256))
 	{
-		const object_table_t * const table = process_get_object_table(other_proc);
+		const object_table_t * const table = process_get_object_table(kernel_get_process());
 		object_t * const other_obj = obj_get_object(table, other_pipe_no);
 		if (other_obj)
 		{

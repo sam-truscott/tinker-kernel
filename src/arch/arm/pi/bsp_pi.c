@@ -25,6 +25,9 @@
 #include "devices/timer/bcm2835/bcm2835_timer.h"
 #include "devices/serial/bcm2835/bcm2835_uart.h"
 #include "devices/intc/bcm2835/bcm2835_intc.h"
+#include "kernel/shell/kshell.h"
+
+#define UART_DEVICE_NAME "/dev/char/bcm2835_uart"
 
 static timer_t bcm2835_scheduler_timer;
 static timer_t bcm2835_system_timer;
@@ -70,7 +73,8 @@ void bsp_setup(
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
 	arm_enable_mmu();
 
-	bcm2835_uart_get_device(&uart);
+	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
+	kshell_set_input_device(UART_DEVICE_NAME);
 
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(controller, bcm2835_intc);

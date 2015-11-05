@@ -75,7 +75,7 @@ void * kernel_device_malloc(
 		const uint32_t size);
 
 object_pipe_t * kernel_isr_get_pipe(
-		char * name);
+		const char * const name);
 
 error_t kernel_isr_write_pipe(
 		object_pipe_t * const pipe,

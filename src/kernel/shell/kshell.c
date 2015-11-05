@@ -26,13 +26,6 @@
 
 #define MAX_LINE_INPUT 256
 
-/**
- * TODO read this
- * Why does this run in kernel code and access structs without syscalls?
- * It's to do with returning from a blocking call?
- * Look back at the commit messages.
- */
-
 typedef struct kshell_t
 {
 	proc_list_t * proc_list;
@@ -41,6 +34,8 @@ typedef struct kshell_t
 } kshell_t;
 
 static kshell_t * kshell;
+
+static char kshell_dev_name[MAX_SHARED_OBJECT_NAME_LENGTH];
 
 static bool_t kshell_strcmp(const char * a, const char * b);
 
@@ -121,6 +116,12 @@ void kshell_setup(
 	}
 }
 
+void kshell_set_input_device(const char * const dev)
+{
+	util_memset(kshell_dev_name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
+	util_memcpy(kshell_dev_name, dev, util_strlen(dev, MAX_SHARED_OBJECT_NAME_LENGTH));
+}
+
 void kshell_start(void)
 {
 	kshell->ksh_input_pointer = 0;
@@ -130,7 +131,12 @@ void kshell_start(void)
 	print_out("Commands: procs, tasks, objects, mem\n");
 
 	tinker_pipe_t pipe;
-	error_t input_result = tinker_open_pipe(&pipe, "in", PIPE_RECEIVE, 4, MAX_LINE_INPUT);
+	error_t input_result = tinker_open_pipe(
+			&pipe,
+			kshell_dev_name,
+			PIPE_RECEIVE,
+			4,
+			MAX_LINE_INPUT);
 
 	if (input_result != NO_ERROR)
 	{

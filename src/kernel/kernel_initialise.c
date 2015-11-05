@@ -22,7 +22,6 @@
 #include "kernel/syscall/syscall_handler.h"
 #include "kernel/scheduler/scheduler.h"
 #include "kernel/shell/kshell.h"
-#include "kernel_in.h"
 #include "arch/tgt.h"
 
 static process_t * kernel_process = NULL;
@@ -147,8 +146,6 @@ void kernel_initialise(void)
 
 	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);
 	sch_set_current_thread(scheduler, kernel_idle_thread);
-
-	kernel_in_initialise(registry);
 
 	/* Get the BSP to configure itself */
 	debug_print("BSP: Setting up the Board...\n");

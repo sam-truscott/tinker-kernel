@@ -15,6 +15,8 @@ void kshell_setup(
 		mem_pool_info_t * const pool,
 		proc_list_t * const proc_list);
 
+void kshell_set_input_device(const char * const dev);
+
 void kshell_start(void);
 
 #endif /* KSHELL_H_ */
