@@ -89,6 +89,27 @@ static const char ksh_pipe_dir[4][13] =
 		"RECEIVE     \0"
 };
 
+static const char ksh_mem_type[2][4] =
+{
+		"DEV\0",
+		"MEM\0"
+};
+
+static const char ksh_mem_priv[4][5] =
+{
+		"NONE\0",
+		"USER\0",
+		"KERN\0",
+		"ALL \0"
+};
+
+static const char ksh_mem_acc[3][4] =
+{
+		"N/A\0",
+		"RO \0",
+		"RW \0"
+};
+
 void kshell_setup(
 		mem_pool_info_t * const pool,
 		proc_list_t * const proc_list)
@@ -430,7 +451,7 @@ static void kshell_object_table(void)
 
 static void kshell_memory_info(void)
 {
-	process_list_it_t * const list = proc_list_procs(kshell->proc_list);
+	process_list_it_t * list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
 	process_list_it_t_get(list, &proc);
 
@@ -454,6 +475,35 @@ static void kshell_memory_info(void)
 		}
 	}
 
+	process_list_it_t_delete(list);
+
+	print_out("\nMemory mappings:\n");
+
+	printp_out("Real       Virt       Size       Type Priv Access\n");
+	print_out("----------  ---------- ---------- ---- ---- ------\n");
+
+	list = proc_list_procs(kshell->proc_list);
+	process_list_it_t_get(list, &proc);
+	while (proc)
+	{
+		printp_out("%s\n", process_get_image(proc));
+		const mem_section_t * sec = process_get_first_section(proc);
+		while (sec)
+		{
+			printp_out("0x%8x 0x%8x 0x%8x %s %s %s\n",
+					mem_sec_get_real_addr(sec),
+					mem_sec_get_virt_addr(sec),
+					mem_sec_get_size(sec),
+					ksh_mem_type[mem_sec_get_mem_type(sec)],
+					ksh_mem_priv[mem_sec_get_priv(sec)],
+					ksh_mem_acc[mem_sec_get_access(sec)]);
+			sec = mem_sec_get_next(sec);
+		}
+		if (!process_list_it_t_next(list, &proc))
+		{
+			proc = NULL;
+		}
+	}
 	process_list_it_t_delete(list);
 }
 #endif /* KERNEL_SHELL */
