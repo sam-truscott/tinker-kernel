@@ -126,9 +126,8 @@ void kshell_start(void)
 	kshell->ksh_input_pointer = 0;
 	bool_t running = true;
 
-#if defined(KERNEL_SHELL_DEBUG)
 	print_out("KSHELL\n");
-#endif
+	print_out("Commands: procs, tasks, objects, mem\n");
 
 	tinker_pipe_t pipe;
 	error_t input_result = tinker_open_pipe(&pipe, "in", PIPE_RECEIVE, 4, MAX_LINE_INPUT);
