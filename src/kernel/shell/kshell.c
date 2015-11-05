@@ -484,8 +484,8 @@ static void kshell_memory_info(void)
 
 	print_out("\nMemory mappings:\n");
 
-	printp_out("Real       Virt       Size       Type Priv Access\n");
-	print_out("----------  ---------- ---------- ---- ---- ------\n");
+	print_out("Real       Virt       Size       Typ Priv Access\n");
+	print_out("---------- ---------- ---------- --- ---- ------\n");
 
 	list = proc_list_procs(kshell->proc_list);
 	process_list_it_t_get(list, &proc);
