@@ -16,7 +16,6 @@
 #include "arch/tgt_types.h"
 #include "tgt_io.h"
 #include "bcm2835_uart.h"
-#include "kernel/kernel_in.h"
 
 // The GPIO registers base address.
 #define GPIO_BASE 0x20200000
@@ -50,6 +49,12 @@
 #define UART0_ITIP    0x84
 #define UART0_ITOP    0x88
 #define UART0_TDR     0x8C
+
+typedef struct bcm2835_user_data
+{
+	uint32_t base;
+	object_pipe_t * input_pipe;
+} bcm2835_user_data_t;
 
 /*
  * delay function
@@ -145,12 +150,11 @@ static error_t bcm2835_uart_isr(
 		const void * const usr_data,
 		const uint32_t vector)
 {
-	(void)usr_data;
 	(void)vector;
+	bcm2835_user_data_t * const user_data = (bcm2835_user_data_t*)usr_data;
 	char buffer[2] = {0, 0};
-	buffer[0] = bcm2835_uart_getc((uint32_t)usr_data);
-	kernel_in_write(buffer, 1);
-	return NO_ERROR;
+	buffer[0] = bcm2835_uart_getc(user_data->base);
+	return kernel_isr_write_pipe(user_data->input_pipe, buffer, 1);
 }
 
 void early_uart_putc(const char c)
@@ -175,7 +179,8 @@ static error_t bcm2835_uart_write(
 		const uint32_t val)
 {
 	(void)id;
-	bcm2835_uart_putc(((usr_data == NULL) ? UART0_BASE : (uint32_t)usr_data), val);
+	bcm2835_user_data_t * const user_data = (bcm2835_user_data_t*)usr_data;
+	bcm2835_uart_putc(((usr_data == NULL) ? UART0_BASE : user_data->base), val);
 	return NO_ERROR;
 }
 
@@ -192,7 +197,11 @@ void bcm2835_uart_get_device(
 		device->write_register = bcm2835_uart_write;
 		uint32_t base = 0;
 		kernel_device_map_memory(UART0_BASE, 0x1000, MMU_DEVICE_MEMORY, &base);
-		device->user_data = (void*)base;
+		device->user_data = kernel_device_malloc(sizeof(bcm2835_user_data_t));
+		util_memset(device->user_data, 0, sizeof(bcm2835_user_data_t));
+		((bcm2835_user_data_t*)device->user_data)->base = base;
+		// TODO in -> config file
+		((bcm2835_user_data_t*)device->user_data)->input_pipe = kernel_isr_get_pipe("in");
 		device->isr = bcm2835_uart_isr;
 	}
 }

@@ -10,6 +10,7 @@
 
 #include "kernel/devices/kernel_device.h"
 #include "kernel/process/process.h"
+#include "kernel/kernel_initialise.h"
 
 static proc_list_t * proc_list = NULL;
 
@@ -58,4 +59,47 @@ error_t kernel_device_map_memory
 		}
 	}
 	return result;
+}
+
+void * kernel_device_malloc(
+		const uint32_t size)
+{
+	return mem_alloc(mem_get_default_pool(), size);
+}
+
+object_pipe_t * kernel_isr_get_pipe(
+		char * name)
+{
+	object_pipe_t * pipe = NULL;
+	process_t * other_proc = NULL;
+	object_pipe_t * other_pipe = NULL;
+	object_number_t other_pipe_no = INVALID_OBJECT_ID;
+	if (NO_ERROR == registry_get(kernel_get_registry(), name, &other_proc, &other_pipe_no))
+	{
+		const object_table_t * const table = process_get_object_table(other_proc);
+		object_t * const other_obj = obj_get_object(table, other_pipe_no);
+		if (other_obj)
+		{
+			other_pipe = obj_cast_pipe(other_obj);
+			if (other_pipe)
+			{
+				pipe = other_pipe;
+			}
+		}
+	}
+	return pipe;
+}
+
+error_t kernel_isr_write_pipe(
+		object_pipe_t * const pipe,
+		void * buffer,
+		uint32_t size)
+{
+	return obj_pipe_send_message(
+			pipe,
+			NULL,
+			PIPE_TX_SEND_AVAILABLE,
+			buffer,
+			size,
+			false);
 }

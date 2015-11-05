@@ -145,20 +145,23 @@ void kernel_initialise(void)
 			MMU_READ_WRITE);
 	tgt_map_memory(kernel_get_process(), kernel_ram_sec);
 
-	/*
-	 * Get the BSP to configure itself
-	 */
-	debug_print("BSP: Setting up the Board...\n");
-	bsp_setup(interrupt_controller, time_manager, alarm_manager);
-	debug_print("BSP: Setup Complete\n");
-
 	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);
 	sch_set_current_thread(scheduler, kernel_idle_thread);
 
-	kernel_in_initialise(scheduler);
+	kernel_in_initialise(registry);
+
+	/* Get the BSP to configure itself */
+	debug_print("BSP: Setting up the Board...\n");
+	bsp_setup(interrupt_controller, time_manager, alarm_manager);
+	debug_print("BSP: Setup Complete\n");
 }
 
 process_t * kernel_get_process(void)
 {
 	return kernel_process;
+}
+
+registry_t * kernel_get_registry(void)
+{
+	return registry;
 }

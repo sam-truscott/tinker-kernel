@@ -14,6 +14,7 @@
 #include "tinker_api_errors.h"
 #include "kernel/memory/mem_section.h"
 #include "kernel/process/process_list.h"
+#include "kernel/objects/obj_pipe.h"
 
 struct kernel_device;
 
@@ -51,14 +52,14 @@ typedef error_t (kernel_device_isr)(
 
 typedef struct kernel_device
 {
-	kernel_device_initialise * 	initialise;
+	kernel_device_initialise * 		initialise;
 	kernel_device_control	*		control;
-	kernel_device_write_register *write_register;
+	kernel_device_write_register *	write_register;
 	kernel_device_read_register *	read_register;
 	kernel_device_write_buffer *	write_buffer;
-	kernel_device_read_buffer *	read_buffer;
+	kernel_device_read_buffer *		read_buffer;
 	kernel_device_isr * 			isr;
-	const void * user_data;
+	void * 							user_data;
 } kernel_device_t;
 
 // TODO remove this and use an object
@@ -69,5 +70,16 @@ error_t kernel_device_map_memory
 	 const uint32_t size,
 	 const mmu_memory_t type,
 	 uint32_t * const virt);
+
+void * kernel_device_malloc(
+		const uint32_t size);
+
+object_pipe_t * kernel_isr_get_pipe(
+		char * name);
+
+error_t kernel_isr_write_pipe(
+		object_pipe_t * const pipe,
+		void * buffer,
+		uint32_t size);
 
 #endif /* KERNEL_DEVICE_H_ */

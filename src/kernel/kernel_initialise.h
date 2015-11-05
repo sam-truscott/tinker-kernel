@@ -21,4 +21,6 @@ void kernel_initialise(void);
 
 process_t * kernel_get_process(void);
 
+registry_t * kernel_get_registry(void);
+
 #endif /* KERNEL_INITIALISE_H_ */
