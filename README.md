@@ -118,7 +118,6 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Add a sbrk syscall to get a block of memory / heap
 * Kernel: Review TODO/FIXMEs and add them here
 * Kernel: Break up the syscalls into separate static/inline functions
 * Support: Create newlib port
