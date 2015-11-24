@@ -22,7 +22,6 @@
 #include "kernel/objects/obj_pipe.h"
 #include "kernel/objects/obj_shared_mem.h"
 #include "kernel/objects/obj_timer.h"
-#include "kernel/utils/util_memcpy.h"
 #include "kernel/time/time_manager.h"
 
 #define MAX_SYSCALL_ARGS 7
@@ -41,59 +40,32 @@ static inline object_number_t syscall_get_thread_oid(const thread_t * const thre
 	return thread_get_object_no(thread);
 }
 
-static inline object_thread_t * syscall_get_thread_object(const thread_t * const thread)
+static inline object_thread_t * syscall_get_thread_object(
+		const process_t * const process,
+		const thread_t * const thread)
 {
-	return (object_thread_t*)obj_get_object(process_get_object_table(thread_get_parent(thread)), syscall_get_thread_oid(thread));
+	return (object_thread_t*)obj_get_object(
+			process_get_object_table(process),
+			syscall_get_thread_oid(thread));
 }
 
-static error_t syscall_delete_object(
-		scheduler_t * const scheduler,
+static inline error_t syscall_delete_object(
+		const process_t * const process,
 		const object_number_t obj_no)
 {
 	return obj_remove_object(
-			process_get_object_table(
-					thread_get_parent(sch_get_current_thread(scheduler))),
-					obj_no);
+			process_get_object_table(process),
+			obj_no);
 }
 
-static error_t syscall_get_sema(
-		scheduler_t * const scheduler,
-		const thread_t * const thread,
-		const object_number_t sema_no,
-		object_sema_t ** sema)
+static inline object_sema_t * syscall_get_sema_obj(
+		process_t * const process,
+		object_number_t sema_id)
 {
-	error_t ret = UNKNOWN_ERROR;
-
-	const object_table_t * const table =
-			process_get_object_table(thread_get_parent(sch_get_current_thread(scheduler)));
-
-	object_thread_t * const thread_obj = syscall_get_thread_object(thread);
-	if (table && thread_obj)
-	{
-		object_t * const possible_sema = obj_get_object(table,sema_no);
-		if (possible_sema)
-		{
-			object_sema_t * const sema_obj = obj_cast_semaphore(possible_sema);
-			if (sema_obj)
-			{
-				*sema = sema_obj;
-				ret = NO_ERROR;
-			}
-			else
-			{
-				ret = WRONG_OBJ_TYPE;
-			}
-		}
-		else
-		{
-			ret = INVALID_OBJECT;
-		}
-	}
-	else
-	{
-		ret = INVALID_OBJECT;
-	}
-	return ret;
+	return obj_cast_semaphore(
+			obj_get_object(
+					process_get_object_table(process),
+					sema_id));
 }
 
 syscall_handler_t * create_handler(
@@ -116,406 +88,397 @@ syscall_handler_t * create_handler(
 	return sys;
 }
 
-void syscall_handle_system_call(
-		syscall_handler_t * const handler,
-		tgt_context_t * const context)
+static inline uint32_t virtual_to_real(
+		process_t * process,
+		uint32_t address)
 {
-	syscall_function_t api = (syscall_function_t)tgt_get_syscall_param(context, 0);
-	error_t ret = UNKNOWN_ERROR;
-	uint32_t param[MAX_SYSCALL_ARGS];
-	param[0] = tgt_get_syscall_param(context, 1);
-	param[1] = tgt_get_syscall_param(context, 2);
-	param[2] = tgt_get_syscall_param(context, 3);
-	param[3] = tgt_get_syscall_param(context, 4);
-	param[4] = tgt_get_syscall_param(context, 5);
-	param[5] = tgt_get_syscall_param(context, 6);
-	param[6] = tgt_get_syscall_param(context, 7);
-	thread_t * const this_thread = sch_get_current_thread(handler->scheduler);
+	/* TODO the below code needs fixing */
+	return ((address >= VIRTUAL_ADDRESS_SPACE) ? process_virt_to_real(process, address) : address);
+}
 
-	/* This is accounting for things being passed on the
-	 * stack which'll have a different base address as they'll be
-	 * at some weird virtual address */
-#if defined(ARCH_HAS_MMU)
-	/* FIXME This is the bad code, fix it */
-	for (uint8_t i = 0 ; i < MAX_SYSCALL_ARGS ; i++)
+static error_t syscall_tst(tgt_context_t * const context) {
+	if (tgt_get_syscall_param(context, 1) != SYSCALL_TEST_1 || tgt_get_syscall_param(context, 2) != SYSCALL_TEST_2
+			|| tgt_get_syscall_param(context, 3) != SYSCALL_TEST_3 || tgt_get_syscall_param(context, 4) != SYSCALL_TEST_4
+			|| tgt_get_syscall_param(context, 5) != SYSCALL_TEST_5 || tgt_get_syscall_param(context, 6) != SYSCALL_TEST_6
+			|| tgt_get_syscall_param(context, 7) != SYSCALL_TEST_7)
 	{
-		if (param[i] >= VIRTUAL_ADDRESS_SPACE)
+		kernel_panic();
+	}
+	return NO_ERROR;
+}
+
+static error_t syscall_create_process(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		process_t * const parent) {
+	process_t * process = NULL;
+	error_t ret = proc_create_process(
+			handler->process_list,
+			(const char*) virtual_to_real(parent, tgt_get_syscall_param(context, 1)),
+			MAIN_THREAD_NAME,
+			(thread_entry_point*) (virtual_to_real(parent, tgt_get_syscall_param(context, 2))),
+			(const uint8_t) tgt_get_syscall_param(context, 3),
+			(tinker_meminfo_t* const ) virtual_to_real(parent, tgt_get_syscall_param(context, 4)),
+			(uint32_t) tgt_get_syscall_param(context, 5),
+			(process_t**) &process);
+	*((object_number_t*) virtual_to_real(parent, tgt_get_syscall_param(context, 6))) = process_get_oid(process);
+	return ret;
+}
+
+static error_t syscall_create_thread(
+		tgt_context_t * const context,
+		process_t * const process) {
+	thread_t * thread = NULL;
+	error_t ret = proc_create_thread(
+			process,
+			(const char*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+			(thread_entry_point*) (virtual_to_real(process, tgt_get_syscall_param(context, 2))),
+			(const uint8_t) tgt_get_syscall_param(context, 3),
+			(const uint32_t) tgt_get_syscall_param(context, 4),
+			(uint32_t) tgt_get_syscall_param(context, 5),
+			NULL,
+			(thread_t**) &thread);
+	*((object_number_t*) virtual_to_real(process, tgt_get_syscall_param(context, 6))) = thread_get_object_no(thread);
+	return ret;
+}
+
+static error_t syscall_mmap(tgt_context_t* const context, process_t* const process) {
+	uint32_t virtual = 0;
+	const uint32_t real = virtual_to_real(process, tgt_get_syscall_param(context, 1));
+	error_t ret;
+	if (real == 0)
+	{
+		ret = MMAP_NOT_ALLOWED_AT_ZERO;
+	}
+	else
+	{
+		ret = process_allocate_vmem(process,
+				real,
+				(uint32_t) (tgt_get_syscall_param(context, 2)),
+				(mmu_memory_t) (tgt_get_syscall_param(context, 3)),
+				(mmu_privilege_t) (tgt_get_syscall_param(context, 4)),
+				MMU_READ_WRITE,
+				&virtual);
+	}
+	*((uint32_t*) virtual_to_real(process, tgt_get_syscall_param(context, 5))) = virtual;
+	return ret;
+}
+
+static error_t syscall_sbrk(
+		tgt_context_t* const context,
+		thread_t* const this_thread) {
+	process_t* const process = thread_get_parent(this_thread);
+	void** base = (void**)virtual_to_real(process, tgt_get_syscall_param(context, 1));
+	*base = mem_realloc(
+			process_get_user_mem_pool(process),
+			*base,
+			tgt_get_syscall_param(context, 2));
+	error_t ret;
+	if (*base)
+	{
+		ret = NO_ERROR;
+	}
+	else
+	{
+		ret = OUT_OF_MEMORY;
+	}
+	return ret;
+}
+
+static error_t syscall_debug(
+		tgt_context_t* const context,
+		thread_t* const this_thread) {
+	const char * const msg = (const char*const )virtual_to_real(thread_get_parent(this_thread), tgt_get_syscall_param(context, 1));
+	if (msg)
+	{
+		print_time();
+		print_out(msg);
+	}
+	return NO_ERROR;
+}
+
+static error_t syscall_thread_priority(
+		tgt_context_t* const context,
+		thread_t* const this_thread) {
+	process_t* const process = thread_get_parent(this_thread);
+	object_number_t thread_no = (object_number_t) tgt_get_syscall_param(context, 1);
+	priority_t* priority = (priority_t*) virtual_to_real(process, tgt_get_syscall_param(context, 2));
+	error_t ret;
+	if (thread_no && priority) {
+		object_table_t* const table = process_get_object_table(process);
+		object_t* const obj = obj_get_object(table, thread_no);
+		object_thread_t* thread_obj = NULL;
+		if (obj)
 		{
-			param[i] = process_virt_to_real(thread_get_parent(this_thread), param[i]);
+			thread_obj = obj_cast_thread(obj);
+		}
+		if (thread_obj)
+		{
+			ret = obj_get_thread_priority(thread_obj, priority);
+		}
+		else
+		{
+			ret = INVALID_OBJECT;
 		}
 	}
-#endif
-
-#if defined(SYSCALL_DEBUGGING)
-	debug_print("Syscall: API %d from %s\n", api, thread_get_name(this_thread));
-#endif
-
-	/*
-	 * This could use a jump table but I think in this
-	 * case this is a bit more readable.
-	 */
-	switch (api)
+	else
 	{
-		case SYSCALL_TEST:
-			if (param[0] != SYSCALL_TEST_1
-					|| param[1] != SYSCALL_TEST_2
-					|| param[2] != SYSCALL_TEST_3
-					|| param[3] != SYSCALL_TEST_4
-					|| param[4] != SYSCALL_TEST_5
-					|| param[5] != SYSCALL_TEST_6
-					|| param[6] != SYSCALL_TEST_7)
-			{
-				kernel_panic();
-			}
-			ret = NO_ERROR;
-			break;
+		ret = INVALID_OBJECT;
+	}
+	return ret;
+}
 
-		case SYSCALL_CREATE_PROCESS:
-			{
-				process_t * process;
-				ret = proc_create_process(
-						handler->process_list,
-						(const char *)param[0],
-						"main",
-						(thread_entry_point*)(param[1]),
-						(const uint8_t)param[2],
-						(tinker_meminfo_t* const)param[3],
-						(uint32_t)param[4],
-						(process_t **)&process);
-				*((object_number_t*)param[5]) = process_get_oid(process);
-			}
-			break;
+static error_t syscall_get_thread_id(
+		tgt_context_t* const context,
+		thread_t* const this_thread)
+{
+	const object_number_t objno = syscall_get_thread_oid(this_thread);
+	object_number_t * oid = (object_number_t*) virtual_to_real(
+			thread_get_parent(this_thread),
+			tgt_get_syscall_param(context, 1));
+	if (oid)
+	{
+		*oid = objno;
+	}
+	return NO_ERROR;
+}
 
-		case SYSCALL_CREATE_THREAD:
-			{
-				process_t * const process = thread_get_parent(this_thread);
-				thread_t * thread = NULL;
-				ret = proc_create_thread(
-						process,
-						(const char*)param[0],
-						(thread_entry_point*)(param[1]),
-						(const uint8_t)param[2],
-						(const uint32_t)param[3],
-						(uint32_t)param[4],
-						NULL,
-						(thread_t **)&thread);
-				*((object_number_t*)param[5]) = thread_get_object_no(thread);
-			}
-			break;
-
-		case SYSCALL_MMAP:
+static error_t syscall_exit_thread(
+		thread_t* const this_thread)
+{
+	error_t ret;
+	process_t* const parent = thread_get_parent(this_thread);
+	const object_table_t* const table = process_get_object_table(parent);
+	object_thread_t* const thread_obj = obj_cast_thread(
+			obj_get_object(table, syscall_get_thread_oid(this_thread)));
+	if (thread_obj)
+	{
+		object_process_t* const proc_obj = obj_cast_process(
+				obj_get_object(table, process_get_oid(parent)));
+		if (proc_obj)
 		{
-			process_t * const process = thread_get_parent(this_thread);
-			uint32_t virtual = 0;
-			uint32_t real = (uint32_t)(param[0]);
-			if (real == 0)
-			{
-				ret = MMAP_NOT_ALLOWED_AT_ZERO;
-			}
-			else
-			{
-				ret = process_allocate_vmem(
-						process,
-						real,
-						(uint32_t)(param[1]),
-						(mmu_memory_t)(param[2]),
-						(mmu_privilege_t)(param[3]),
-						MMU_READ_WRITE,
-						&virtual);
-			}
+			ret = obj_process_thread_exit(proc_obj, thread_obj);
 		}
-		break;
-
-		case SYSCALL_SBRK:
+		else
 		{
-			process_t * const process = thread_get_parent(this_thread);
-			if (process)
-			{
-				void ** base = (void**)param[0];
-				*base = mem_realloc(process_get_user_mem_pool(process), *base, param[1]);
-				if (*base)
-				{
-					ret = NO_ERROR;
-				}
-				else
-				{
-					ret = OUT_OF_MEMORY;
-				}
-			}
-			else
-			{
-				ret = PARAMETERS_INVALID;
-			}
+			ret = INVALID_OBJECT;
 		}
-		break;
+	}
+	else
+	{
+		ret = INVALID_OBJECT;
+	}
+	return ret;
+}
 
-		case SYSCALL_DEBUG:
+static error_t syscall_wait_thread(
+		syscall_handler_t* const handler,
+		thread_t* const this_thread)
+{
+	thread_set_state(this_thread, THREAD_WAITING);
+	sch_notify_pause_thread(handler->scheduler, this_thread);
+	return NO_ERROR;
+}
+
+static error_t syscall_create_sema(
+		syscall_handler_t* const handler,
+		tgt_context_t* const context,
+		thread_t* const this_thread)
+{
+	process_t * const proc = thread_get_parent(this_thread);
+	object_number_t * const obj = (object_number_t*)virtual_to_real(thread_get_parent(this_thread), tgt_get_syscall_param(context, 1));
+	error_t ret;
+	if (obj)
+	{
+		ret = obj_create_semaphore(
+				handler->reg, proc,
+				obj,
+				(char*) virtual_to_real(proc, tgt_get_syscall_param(context, 2)),
+				(const uint32_t) tgt_get_syscall_param(context, 3));
+	}
+	else
+	{
+		ret = PARAMETERS_INVALID;
+	}
+	return ret;
+}
+
+static error_t syscall_open_sema(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t * const proc = thread_get_parent(this_thread);
+	return obj_open_semaphore(
+			handler->reg,
+			proc,
+			(object_number_t*) virtual_to_real(proc, tgt_get_syscall_param(context, 1)),
+			(char*) virtual_to_real(proc, tgt_get_syscall_param(context, 2)));
+}
+
+static error_t syscall_get_sema(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t * const proc = thread_get_parent(this_thread);
+	object_thread_t* const thread_obj = syscall_get_thread_object(proc, this_thread);
+	object_sema_t * const sema_obj = syscall_get_sema_obj(
+			proc,
+			(object_number_t) tgt_get_syscall_param(context, 1));
+	error_t ret;
+	if (sema_obj && thread_obj)
+	{
+		ret = obj_get_semaphore(thread_obj, sema_obj);
+	}
+	else
+	{
+		ret = INVALID_OBJECT;
+	}
+	return ret;
+}
+
+static error_t syscall_release_sema(
+		tgt_context_t * const context,
+		thread_t const * this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	object_thread_t* const thread_obj = syscall_get_thread_object(process, this_thread);
+	object_sema_t* const sema_obj = syscall_get_sema_obj(process, (object_number_t) tgt_get_syscall_param(context, 1));
+	error_t ret;
+	if (sema_obj && thread_obj)
+	{
+		ret = obj_release_semaphore(thread_obj, sema_obj);
+	}
+	else
+	{
+		ret = INVALID_OBJECT;
+	}
+	return ret;
+}
+
+static error_t syscall_close_sema(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t * const process = thread_get_parent(this_thread);
+	object_number_t sema_id = (object_number_t) tgt_get_syscall_param(context, 1);
+	object_sema_t * const sema_obj = syscall_get_sema_obj(process, sema_id);
+	error_t ret;
+	if (sema_obj)
+	{
+		ret = object_delete_semaphore(sema_obj);
+		if (ret == NO_ERROR)
 		{
-			const char * const msg = (const char * const)param[0];
-			if (msg)
-			{
-				print_time();
-				print_out(msg);
-			}
-			ret = NO_ERROR;
+			ret = syscall_delete_object(process, sema_id);
 		}
-			break;
+	}
+	else
+	{
+		ret = INVALID_OBJECT;
+	}
+	return ret;
+}
 
-		case SYSCALL_THREAD_PRIORITY:
-			{
-				object_number_t thread_no = (object_number_t)param[0];
-				priority_t * priority = (priority_t*)param[1];
-				if (thread_no && priority)
-				{
-					object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
-					object_t * const obj = obj_get_object(table, thread_no);
-					object_thread_t * thread_obj = NULL;
-					if (obj)
-					{
-						thread_obj = obj_cast_thread(obj);
-					}
-					if (thread_obj)
-					{
-						ret = obj_get_thread_priority(thread_obj, priority);
-					}
-					else
-					{
-						ret = INVALID_OBJECT;
-					}
-				}
-				else
-				{
-					ret = INVALID_OBJECT;
-				}
-			}
-			break;
+static error_t syscall_create_pipe(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	return obj_create_pipe(
+			handler->reg,
+			process,
+			(object_number_t*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+			(const char*) virtual_to_real(process, tgt_get_syscall_param(context, 2)),
+			(const tinker_pipe_direction_t) tgt_get_syscall_param(context, 3),
+			(const uint32_t) tgt_get_syscall_param(context, 4),
+			(const uint32_t) tgt_get_syscall_param(context, 5));
+}
 
-		case SYSCALL_THREAD_OBJECT:
-			{
-				const object_number_t objno = syscall_get_thread_oid(this_thread);
-				*((object_number_t*)param[0]) = objno;
-				ret = NO_ERROR;
-			}
-			break;
+static error_t syscall_delete_pipe(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	object_number_t pipe_id = tgt_get_syscall_param(context, 1);
+	object_table_t* const table = process_get_object_table(process);
+	object_pipe_t* const pipe = obj_cast_pipe(obj_get_object(table, pipe_id));
+	error_t ret = obj_delete_pipe(pipe);
+	if (ret == NO_ERROR)
+	{
+		ret = syscall_delete_object(process, pipe_id);
+	}
+	return ret;
+}
 
-		case SYSCALL_EXIT_THREAD:
-			{
-				process_t * const parent = thread_get_parent(this_thread);
-				const object_table_t * const table = process_get_object_table(parent);
-				object_thread_t * const thread_obj
-					= obj_cast_thread(obj_get_object(table, syscall_get_thread_oid(this_thread)));
-				if (thread_obj)
-				{
-					object_process_t * const proc_obj =
-							obj_cast_process(
-								obj_get_object(table,
-									process_get_oid(parent)));
+static error_t syscall_open_pipe(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	return obj_open_pipe(
+			handler->reg,
+			process,
+			syscall_get_thread_object(process, this_thread),
+			(object_number_t*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+			(const char*) virtual_to_real(process, tgt_get_syscall_param(context, 2)),
+			(const tinker_pipe_direction_t) tgt_get_syscall_param(context, 3),
+			(const uint32_t) tgt_get_syscall_param(context, 4),
+			(const uint32_t) tgt_get_syscall_param(context, 5));
+}
 
-					if (proc_obj)
-					{
-						ret = obj_process_thread_exit(proc_obj, thread_obj);
-					}
-					else
-					{
-						ret = INVALID_OBJECT;
-					}
-				}
-				else
-				{
-					ret = INVALID_OBJECT;
-				}
-			}
-			break;
+static error_t syscall_close_pipe(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t * const process = thread_get_parent(this_thread);
+	object_number_t pipe_id = tgt_get_syscall_param(context, 1);
+	object_pipe_t* const pipe = obj_cast_pipe(
+			obj_get_object(
+					process_get_object_table(
+							process),
+					pipe_id));
+	// FIXME This will release memory but isn't right,
+	// close needs to remove the item from the senders list etc
+	error_t ret = obj_delete_pipe(pipe);
+	if (ret == NO_ERROR)
+	{
+		ret = syscall_delete_object(process, pipe_id);
+	}
+	return ret;
+}
 
-		case SYSCALL_WAIT_THREAD:
-			{
-				thread_set_state(this_thread, THREAD_WAITING);
-				sch_notify_pause_thread(handler->scheduler, this_thread);
-				ret = NO_ERROR;
-			}
-			break;
+static error_t syscall_send_message(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	object_pipe_t* const pipe = obj_cast_pipe(
+			obj_get_object(process_get_object_table(process),
+					(object_number_t) tgt_get_syscall_param(context, 1)));
+	return obj_pipe_send_message(pipe,
+			syscall_get_thread_object(process, this_thread),
+			(tinker_pipe_send_kind_t) tgt_get_syscall_param(context, 2),
+			(void*) virtual_to_real(process, tgt_get_syscall_param(context, 3)),
+			(const uint32_t) tgt_get_syscall_param(context, 4),
+			(const bool_t) tgt_get_syscall_param(context, 5));
+}
 
-		case SYSCALL_CREATE_SEMAPHORE:
-			if (param[0])
-			{
-				if (this_thread)
-				{
-					process_t * const proc = thread_get_parent(this_thread);
-					if (proc)
-					{
-						ret = obj_create_semaphore(
-								handler->reg,
-								proc,
-								(object_number_t*)param[0],
-								(char*)param[1],
-								(const uint32_t)param[2]);
-					}
-					else
-					{
-						ret = PARAMETERS_INVALID;
-					}
-				}
-				else
-				{
-					ret = PARAMETERS_INVALID;
-				}
-
-			}
-			else
-			{
-				ret = PARAMETERS_INVALID;
-			}
-			break;
-
-		case SYSCALL_OPEN_SEMAPHORE:
-			if (this_thread)
-			{
-				process_t * const proc = thread_get_parent(this_thread);
-				if (proc)
-				{
-					ret = obj_open_semaphore(handler->reg, proc, (object_number_t*)param[0],(char*)param[1]);
-				}
-				else
-				{
-					ret = PARAMETERS_INVALID;
-				}
-			}
-			else
-			{
-				ret = PARAMETERS_INVALID;
-			}
-
-			break;
-
-		case SYSCALL_GET_SEMAPHORE:
-		{
-			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
-			object_sema_t * sema_obj = NULL;
-
-			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
-			if (ret == NO_ERROR && sema_obj && thread_obj)
-			{
-				ret = obj_get_semaphore(thread_obj, sema_obj);
-			}
-			else
-			{
-				ret = INVALID_OBJECT;
-			}
-			break;
-		}
-		case SYSCALL_RELEASE_SEMAPHORE:
-		{
-			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
-			object_sema_t * sema_obj = NULL;
-
-			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
-			if (ret == NO_ERROR && sema_obj && thread_obj)
-			{
-				ret = obj_release_semaphore( thread_obj, sema_obj);
-			}
-			break;
-		}
-		case SYSCALL_CLOSE_SEMAPHORE:
-		{
-			object_sema_t * sema_obj = NULL;
-
-			ret = syscall_get_sema(handler->scheduler, this_thread, (object_number_t)param[0], &sema_obj);
-			if (ret == NO_ERROR && sema_obj)
-			{
-				ret = object_delete_semaphore(sema_obj);
-				if (ret == NO_ERROR)
-				{
-					ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
-				}
-			}
-			break;
-		}
-		case SYSCALL_CREATE_PIPE:
-			ret = obj_create_pipe(
-					handler->reg,
-					thread_get_parent(this_thread),
-					(object_number_t*)param[0],
-					(const char*)param[1],
-					(const tinker_pipe_direction_t)param[2],
-					(const uint32_t)param[3],
-					(const uint32_t)param[4]);
-			break;
-		case SYSCALL_DELETE_PIPE:
-		{
-			object_table_t * table = NULL;
-			table = process_get_object_table(thread_get_parent(this_thread));
-			object_pipe_t * const pipe = obj_cast_pipe(
-					obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = obj_delete_pipe(pipe);
-			if (ret == NO_ERROR)
-			{
-				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
-			}
-		}
-			break;
-		case SYSCALL_OPEN_PIPE:
-			ret = obj_open_pipe(
-					handler->reg,
-					thread_get_parent(this_thread),
-					syscall_get_thread_object(this_thread),
-					(object_number_t*)param[0],
-					(const char*)param[1],
-					(const tinker_pipe_direction_t)param[2],
-					(const uint32_t)param[3],
-					(const uint32_t)param[4]);
-			break;
-		case SYSCALL_CLOSE_PIPE:
-		{
-			object_table_t * table = NULL;
-			table = process_get_object_table(thread_get_parent(this_thread));
-			object_pipe_t * const pipe = obj_cast_pipe(
-					obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			// FIXME This will release memory but isn't right,
-			// close needs to remove the item from the senders list etc
-			ret = obj_delete_pipe(pipe);
-			if (ret == NO_ERROR)
-			{
-				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
-			}
-		}
-			break;
-		case SYSCALL_SEND_MESSAGE:
-		{
-			object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
-			object_pipe_t * const pipe = obj_cast_pipe(
-					obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = obj_pipe_send_message(
-					pipe,
-					syscall_get_thread_object(this_thread),
-					(tinker_pipe_send_kind_t)param[1],
-					(void*)param[2],
-					(const uint32_t)param[3],
-					(const bool_t)param[4]);
-		}
-			break;
-		case SYSCALL_RECEIVE_MESSAGE:
-		{
-			object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
-			object_pipe_t * const pipe = obj_cast_pipe(
-					obj_get_object(
-							table,
-							(object_number_t)param[0]));
-
-			uint8_t ** msg = (uint8_t**)param[1];
-			uint32_t ** msg_size = (uint32_t**)param[2];
-			ret = obj_pipe_receive_message(
-					pipe,
-					syscall_get_thread_object(this_thread),
-					(void**)msg,
-					msg_size,
-					(const bool_t)param[3]);
-
+static error_t syscall_receive_message(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	object_table_t* const table = process_get_object_table(process);
+	object_pipe_t* const pipe = obj_cast_pipe(
+			obj_get_object(table, (object_number_t) tgt_get_syscall_param(context, 1)));
+	uint8_t** msg = (uint8_t**) virtual_to_real(process,
+			tgt_get_syscall_param(context, 2));
+	uint32_t** msg_size = (uint32_t**) virtual_to_real(process,
+			tgt_get_syscall_param(context, 3));
+	const error_t ret = obj_pipe_receive_message(pipe, syscall_get_thread_object(process, this_thread),
+			(void**) msg, msg_size, (const bool_t) tgt_get_syscall_param(context, 4));
 #if defined (ARCH_HAS_MMU)
 			// FIXME this shouldn't be here - it should be in the pipe object code
 			process_t * const proc = thread_get_parent(this_thread);
@@ -529,124 +492,274 @@ void syscall_handle_system_call(
 				msg_size -= pool_start;
 			}
 #endif
-		}
+	return ret;
+}
+
+static error_t syscall_received_message(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	object_table_t* const table = process_get_object_table(
+			thread_get_parent(this_thread));
+	object_pipe_t* const pipe = obj_cast_pipe(
+			obj_get_object(table, (object_number_t) tgt_get_syscall_param(context, 1)));
+	return obj_pipe_received_message(pipe);
+}
+
+static error_t syscall_create_shm(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	return obj_create_shm(handler->reg, process,
+			(object_number_t*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+			(char*) virtual_to_real(process, tgt_get_syscall_param(context, 2)),
+			(uint32_t) tgt_get_syscall_param(context, 3),
+			(void**) virtual_to_real(process, tgt_get_syscall_param(context, 4)));
+}
+
+static error_t syscall_open_shm(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	return obj_open_shm(handler->reg, thread_get_parent(this_thread),
+			(object_number_t*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+			(char*) virtual_to_real(process, tgt_get_syscall_param(context, 2)),
+			(uint32_t) tgt_get_syscall_param(context, 3),
+			(void**) virtual_to_real(process, tgt_get_syscall_param(context, 4)));
+}
+
+static error_t syscall_create_timer(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	return obj_create_timer(handler->scheduler, handler->alarm_manager,
+			thread_get_parent(this_thread),
+			(object_number_t*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+			(const priority_t) tgt_get_syscall_param(context, 2),
+			(const uint32_t) tgt_get_syscall_param(context, 3),
+			(const uint32_t) tgt_get_syscall_param(context, 4),
+			(tinker_timer_callback_t*) virtual_to_real(process,
+					tgt_get_syscall_param(context, 5)),
+			(void*) virtual_to_real(process, tgt_get_syscall_param(context, 6)));
+}
+
+static error_t syscall_destroy_shm(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	object_number_t oid = tgt_get_syscall_param(context, 1);
+	process_t* const process = thread_get_parent(this_thread);
+	object_table_t* const table = process_get_object_table(process);
+	object_shm_t* const shm = obj_cast_shm(
+			(object_t*) obj_get_object(table, oid));
+	error_t ret = obj_delete_shm(shm);
+	if (ret == NO_ERROR)
+	{
+		ret = syscall_delete_object(process, oid);
+	}
+	return ret;
+}
+
+static error_t syscall_cancel_timer(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	object_table_t* const table = process_get_object_table(
+			thread_get_parent(this_thread));
+	object_timer_t* const timer = obj_cast_timer(
+			(object_t*) obj_get_object(table,
+					(object_number_t) tgt_get_syscall_param(context, 1)));
+	return obj_cancel_timer(timer);
+}
+
+static error_t syscall_delete_timer(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	object_number_t oid = tgt_get_syscall_param(context, 1);
+	process_t* const process = thread_get_parent(this_thread);
+	object_table_t* const table = process_get_object_table(process);
+	object_timer_t* const timer = obj_cast_timer(
+			(object_t*) obj_get_object(table, oid));
+	error_t ret = obj_delete_timer(timer);
+	if (ret == NO_ERROR)
+	{
+		ret = syscall_delete_object(process, oid);
+	}
+	return ret;
+}
+
+static error_t syscall_get_time(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	tinker_time_t* time = (tinker_time_t*) virtual_to_real(process,
+			tgt_get_syscall_param(context, 1));
+	error_t ret;
+	if (time)
+	{
+		time_get_system_time(handler->time_manager, time);
+		ret = NO_ERROR;
+	}
+	else
+	{
+		ret = PARAMETERS_NULL;
+	}
+	return ret;
+}
+
+static error_t syscall_sleep(
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	const tinker_time_t* const duration = (const tinker_time_t*) virtual_to_real(
+			process, tgt_get_syscall_param(context, 1));
+	object_thread_t* const thread_obj = syscall_get_thread_object(
+			thread_get_parent(this_thread), this_thread);
+	return obj_thread_sleep(thread_obj, duration);
+}
+
+static error_t syscall_wfi(void)
+{
+	tgt_wait_for_interrupt();
+	return NO_ERROR;
+}
+
+static error_t syscall_load_thread(
+		tgt_context_t * const context,
+		thread_t const * this_thread)
+{
+	/* uses the current thread from the scheduler */
+	tgt_prepare_context(context, this_thread, NULL);
+	return NO_ERROR;
+}
+
+void syscall_handle_system_call(
+		syscall_handler_t * const handler,
+		tgt_context_t * const context)
+{
+	const syscall_function_t api = (syscall_function_t)tgt_get_syscall_param(context, 0);
+	error_t ret = UNKNOWN_ERROR;
+	thread_t * const this_thread = sch_get_current_thread(handler->scheduler);
+
+#if defined(SYSCALL_DEBUGGING)
+	debug_print("Syscall: API %d from %s\n", api, thread_get_name(this_thread));
+#endif
+
+	/*
+	 * This could use a jump table but I think in this
+	 * case this is a bit more readable.
+	 */
+	switch (api)
+	{
+		case SYSCALL_TEST:
+			ret = syscall_tst(context);
+			break;
+		case SYSCALL_CREATE_PROCESS:
+			ret = syscall_create_process(handler, context, thread_get_parent(this_thread));
+			break;
+		case SYSCALL_CREATE_THREAD:
+			ret = syscall_create_thread(context, thread_get_parent(this_thread));
+			break;
+		case SYSCALL_MMAP:
+			ret = syscall_mmap(context, thread_get_parent(this_thread));
+			break;
+		case SYSCALL_SBRK:
+			ret = syscall_sbrk(context, this_thread);
+			break;
+		case SYSCALL_DEBUG:
+			ret = syscall_debug(context, this_thread);
+			break;
+		case SYSCALL_THREAD_PRIORITY:
+			ret = syscall_thread_priority(context, this_thread);
+			break;
+		case SYSCALL_THREAD_OBJECT:
+			ret = syscall_get_thread_id(context, this_thread);
+			break;
+		case SYSCALL_EXIT_THREAD:
+			ret = syscall_exit_thread(this_thread);
+			break;
+		case SYSCALL_WAIT_THREAD:
+			ret = syscall_wait_thread(handler, this_thread);
+			break;
+		case SYSCALL_CREATE_SEMAPHORE:
+			ret = syscall_create_sema(handler, context, this_thread);
+			break;
+		case SYSCALL_OPEN_SEMAPHORE:
+			ret = syscall_open_sema(handler, context, this_thread);
+			break;
+		case SYSCALL_GET_SEMAPHORE:
+			ret = syscall_get_sema(context, this_thread);
+			break;
+		case SYSCALL_RELEASE_SEMAPHORE:
+			ret = syscall_release_sema(context, this_thread);
+			break;
+		case SYSCALL_CLOSE_SEMAPHORE:
+			ret = syscall_close_sema(context, this_thread);
+			break;
+		case SYSCALL_CREATE_PIPE:
+			ret = syscall_create_pipe(handler, context, this_thread);
+			break;
+		case SYSCALL_DELETE_PIPE:
+			ret = syscall_delete_pipe(context, this_thread);
+			break;
+		case SYSCALL_OPEN_PIPE:
+			ret = syscall_open_pipe(handler, context, this_thread);
+			break;
+		case SYSCALL_CLOSE_PIPE:
+			ret = syscall_close_pipe(context, this_thread);
+			break;
+		case SYSCALL_SEND_MESSAGE:
+			ret = syscall_send_message(context, this_thread);
+			break;
+		case SYSCALL_RECEIVE_MESSAGE:
+			ret = syscall_receive_message(context, this_thread);
 			break;
 		case SYSCALL_RECEIVED_MESSAGE:
-		{
-			object_table_t * const table = process_get_object_table(thread_get_parent(this_thread));
-			object_pipe_t * const pipe = obj_cast_pipe(
-					obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = obj_pipe_received_message(pipe);
-		}
+			ret = syscall_received_message(context, this_thread);
 			break;
-
 		case SYSCALL_CREATE_SHM:
-			ret = obj_create_shm(
-					handler->reg,
-					thread_get_parent(this_thread),
-					(object_number_t*)param[0],
-					(char*)param[1],
-					(uint32_t)param[2],
-					(void**)param[3]);
+			ret = syscall_create_shm(handler, context, this_thread);
 			break;
 		case SYSCALL_OPEN_SHM:
-			ret = obj_open_shm(
-					handler->reg,
-					thread_get_parent(this_thread),
-					(object_number_t*)param[0],
-					(char*)param[1],
-					(uint32_t)param[2],
-					(void**)param[3]);
+			ret = syscall_open_shm(handler, context, this_thread);
 			break;
-
 		case SYSCALL_DESTROY_SHM:
-		{
-			object_table_t * const table =
-					process_get_object_table(
-							thread_get_parent(this_thread));
-			object_shm_t * const shm = obj_cast_shm(
-					(object_t *)obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = obj_delete_shm(shm);
-			if (ret == NO_ERROR)
-			{
-				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
-			}
+			ret = syscall_destroy_shm(context, this_thread);
 			break;
-		}
 		case SYSCALL_CREATE_TIMER:
-			ret = obj_create_timer(
-					handler->scheduler,
-					handler->alarm_manager,
-					thread_get_parent(this_thread),
-					(object_number_t*)param[0],
-					(const priority_t)param[1],
-					(const uint32_t)param[2],
-					(const uint32_t)param[3],
-					(tinker_timer_callback_t*)param[4],
-					(void*)param[5]);
+			ret = syscall_create_timer(handler, context, this_thread);
 			break;
 		case SYSCALL_CANCEL_TIMER:
-		{
-			object_table_t * const table =
-					process_get_object_table(
-							thread_get_parent(this_thread));
-			object_timer_t * const timer = obj_cast_timer(
-					(object_t *)obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = obj_cancel_timer(timer);
+			ret = syscall_cancel_timer(context, this_thread);
 			break;
-		}
 		case SYSCALL_DELETE_TIMER:
-		{
-			object_table_t * const table =
-					process_get_object_table(
-							thread_get_parent(this_thread));
-			object_timer_t * const timer = obj_cast_timer(
-					(object_t *)obj_get_object(
-							table,
-							(object_number_t)param[0]));
-			ret = obj_delete_timer(timer);
-			if (ret == NO_ERROR)
-			{
-				ret = syscall_delete_object(handler->scheduler, (object_number_t)param[0]);
-			}
+			ret = syscall_delete_timer(context, this_thread);
 			break;
-		}
 		case SYSCALL_GET_TIME:
-			if (param[0])
-			{
-				time_get_system_time(handler->time_manager, ((tinker_time_t*)param[0]));
-				ret = NO_ERROR;
-			}
-			else
-			{
-				ret = PARAMETERS_NULL;
-			}
+			ret = syscall_get_time(handler, context, this_thread);
 			break;
 		case SYSCALL_SLEEP:
-		{
-			const tinker_time_t * const duration = (const tinker_time_t*)param[0];
-			object_thread_t * const thread_obj = syscall_get_thread_object(this_thread);
-			ret = obj_thread_sleep(thread_obj, duration);
-		}
-		break;
+			ret = syscall_sleep(context, this_thread);
+			break;
 		case SYSCALL_WFI:
-			tgt_wait_for_interrupt();
-			ret = NO_ERROR;
+			ret = syscall_wfi();
 			break;
 		case SYSCALL_LOAD_THREAD:
 			/* uses the current thread from the scheduler */
-			tgt_prepare_context(context, this_thread, NULL);
-			ret = NO_ERROR;
+			ret = syscall_load_thread(context, this_thread);
 			break;
 
 		default:
-			/* setup the error_number and add associated error number utilities */
 			ret = ERROR_UNKNOWN_SYSCALL;
 			break;
 	}

@@ -102,7 +102,7 @@ object_number_t obj_thread_get_oid
 	return oid;
 }
 
-object_thread_t * obj_cast_thread(object_t * o)
+object_thread_t * obj_cast_thread(object_t * const o)
 {
 	object_thread_t * result = NULL;
 	if(o)

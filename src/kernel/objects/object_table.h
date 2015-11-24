@@ -38,7 +38,7 @@ error_t obj_remove_object(
 		object_table_t * const t,
 		const object_number_t objno);
 
-object_t * obj_get_object(const object_table_t * t, object_number_t oid);
+object_t * obj_get_object(const object_table_t * const t, object_number_t oid);
 
 object_table_it_t * obj_iterator(const object_table_t * t);
 

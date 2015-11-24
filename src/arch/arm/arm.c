@@ -137,7 +137,7 @@ void tgt_destroy_context(
 }
 
 uint32_t tgt_get_syscall_param(
-        const tgt_context_t * const context,
+        tgt_context_t * const context,
         const uint8_t param)
 {
 	return context->gpr[param];

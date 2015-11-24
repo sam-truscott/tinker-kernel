@@ -179,7 +179,7 @@ void bsp_enable_schedule_timer(void)
 {
 	tinker_time_t now;
 	time_get_system_time(time_manager, &now);
-	tinker_time_milliseconds(100, &scheduler_period);
+	tinker_time_milliseconds((1000 / SCHEDULER_HERTZ), &scheduler_period);
 	tinker_time_add(&now, &scheduler_period, &scheduler_time);
 	bcm2835_scheduler_timer.timer_setup(
 			bcm2835_scheduler_timer.usr_data,

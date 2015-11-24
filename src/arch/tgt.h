@@ -61,7 +61,7 @@ void tgt_save_context(
 		const tgt_context_t * const context);
 
 uint32_t tgt_get_syscall_param(
-		const tgt_context_t * const context,
+		tgt_context_t * const context,
 		const uint8_t param);
 
 void tgt_set_context_param(

@@ -6,6 +6,54 @@ model {
         debug
         release
     }
+    binaries {
+    	all {
+	    	cCompiler.args "-pedantic",
+	            "-pedantic-errors",
+	            "-Wall",
+	            "-Wextra",
+	            "-Werror",
+	            "-c",
+	            "-fmessage-length=0",
+	            "-std=gnu11",
+	            "-DBUILDING_KERNEL"
+	        linker.args  "-static"
+	        if (buildType == buildTypes.debug) {
+	            cCompiler.args "-O0", 
+	                "-g3",
+	                "-gdwarf-4",
+	                "-UKERNEL_DEBUGGING",
+	                "-DKERNEL_SHELL",
+	                "-UKERNEL_SHELL_DEBUG",
+	                "-UUNIT_TESTS",
+	                "-UTIMER_DEBUGGING",
+	                "-UINTC_DEBUGGING",
+	                "-UMEMORY_DEBUGGING",
+	                "-UDEBUG_COLLECTIONS",
+	                "-UPROCESS_DEBUGGING",
+	                "-USCHEDULER_DEBUGGING",
+	                "-USCHEDULER_TRACING",
+	                "-USHM_DEBUGGING",
+	                "-UTARGET_DEBUGGING",
+	                "-USYSCALL_DEBUGGING",
+	                "-UALARM_DEBUGGING",
+	                "-UREGISTRY_DEBUGGING",
+	                "-UPIPE_DEBUGGING",
+	                "-UPIPE_TRACING",
+	                "-UIDLE_DEBUGGING",
+	                "-ULOCK_DEBUGGING",
+	                "-ULOCK_TRACING",
+	                "-UIN_DEBUGGING"
+	        } else if (buildType == buildTypes.release) {
+	            cCompiler.args "-Os",
+	                "-g0",
+	                "-UKERNEL_DEBUGGING",
+	                "-DKERNEL_SHELL",
+	                "-UKERNEL_SHELL_DEBUG"
+	            linker.args "-s"
+		    }
+    	}
+    }
     toolChains {
         xgcc(Gcc) {
             target("tinkerPpc") {
@@ -427,101 +475,50 @@ model {
 		        }
 	        }
 	    }
-	    
-	    binaries.all {
-	    	cCompiler.args "-pedantic",
-	            "-pedantic-errors",
-	            "-Wall",
-	            "-Wextra",
-	            "-Werror",
-	            "-c",
-	            "-fmessage-length=0",
-	            "-std=gnu11",
-	            "-DBUILDING_KERNEL"
-	        linker.args  "-static"
-	        if (buildType == buildTypes.debug) {
-	            cCompiler.args "-O0", 
-	                "-g3",
-	                "-gdwarf-4",
-	                "-UKERNEL_DEBUGGING",
-	                "-DKERNEL_SHELL",
-	                "-UKERNEL_SHELL_DEBUG",
-	                "-UUNIT_TESTS",
-	                "-UTIMER_DEBUGGING",
-	                "-UINTC_DEBUGGING",
-	                "-UMEMORY_DEBUGGING",
-	                "-UDEBUG_COLLECTIONS",
-	                "-UPROCESS_DEBUGGING",
-	                "-USCHEDULER_DEBUGGING",
-	                "-USCHEDULER_TRACING",
-	                "-USHM_DEBUGGING",
-	                "-UTARGET_DEBUGGING",
-	                "-USYSCALL_DEBUGGING",
-	                "-UALARM_DEBUGGING",
-	                "-UREGISTRY_DEBUGGING",
-	                "-UPIPE_DEBUGGING",
-	                "-UPIPE_TRACING",
-	                "-UIDLE_DEBUGGING",
-	                "-ULOCK_DEBUGGING",
-	                "-ULOCK_TRACING",
-	                "-UIN_DEBUGGING"
-	        } else if (buildType == buildTypes.release) {
-	            cCompiler.args "-Os",
-	                "-g0",
-	                "-UKERNEL_DEBUGGING",
-	                "-DKERNEL_SHELL",
-	                "-UKERNEL_SHELL_DEBUG"
-	            linker.args "-s"
-	        }
-	    }
     }
-}
-
-
-binaries.withType(SharedLibraryBinary) {
-     buildable false
-}
-
-task debugPiBinary(type:Exec) {
-  dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
-  }
-  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
-  standardOutput = new ByteArrayOutputStream()
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
-
-task releasePiBinary(type:Exec) {
-  dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
-  }
-  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
-  standardOutput = new ByteArrayOutputStream()
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
-
-task debugPi2Binary(type:Exec) {
-  dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
-  }
-  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/debug/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/debug/kernel.img'
-  standardOutput = new ByteArrayOutputStream()
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
-
-task releasePi2Binary(type:Exec) {
-  dependsOn binaries.withType(NativeExecutableBinary).matching {
-    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
-  }
-  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/release/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/release/kernel.img'
-  standardOutput = new ByteArrayOutputStream()
-  ext.output = {
-    return standardOutput.toString()
-  }
+    tasks {
+	    debugPiBinary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+		
+		releasePiBinary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+		
+		debugPi2Binary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/debug/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/debug/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+		
+		releasePi2Binary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/release/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/release/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+    }
 }
