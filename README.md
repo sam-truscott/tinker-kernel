@@ -3,16 +3,16 @@ Tinker Hybrid Kernel
 
 Hybrid Kernel written in C and assembly.
 
-# Supported targets
-## ARM
+## Supported targets
+### ARM
 - Raspberry Pi
 
-# In development:
-## ARM
+## In development:
+### ARM
 - Raspberry Pi 2
 
-# Deprecated
-## PowerPC
+## Deprecated
+### PowerPC
 - gdb simulator (aka PSIM)
 
 License
@@ -119,7 +119,6 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Kernel: Review TODO/FIXMEs and add them here
-* Kernel: Break up the syscalls into separate static/inline functions
 * Support: Create newlib port
 * Kernel: Add mechanism to load elfs
 * Support: Create bootstrap for kernel + services
