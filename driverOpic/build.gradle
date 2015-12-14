@@ -1,0 +1,28 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+    components {
+        driverOpicPrivate(NativeLibrarySpec) {
+            targetPlatform "tinkerPpc"
+        }
+        driverOpicIntc(NativeLibrarySpec) {
+           targetPlatform "tinkerPpc"
+           sources {
+              c {
+                   lib project: ':base', library: 'base', linkage: 'static'
+                   lib project: ':kernel', library: 'kernel', linkage: 'static'
+              }
+           }
+        }
+        driverOpicTimer(NativeLibrarySpec) {
+           targetPlatform "tinkerPpc"
+           sources {
+              c {
+                   lib project: ':base', library: 'base', linkage: 'static'
+                   lib project: ':kernel', library: 'kernel', linkage: 'static'
+              }
+          }
+       }
+    }
+}

@@ -74,17 +74,17 @@ and with the target compiler as opposed to the host compiler. However, for debug
 
 
 	# Windows
-	gradlew debugHost_testsExecutable
+	gradlew debugHostTestDriverExecutable
 	
 	# Linux
-	./gradlew debugHost_testsExecutable
+	./gradlew debugHostTestDriverExecutable
 	
 You'll need a gcc available on the PATH for this to build.
 	
 Toolchains
 ==========
 
-For ARM I'm using 4.9.2 for PowerPC I'm using 4.9.0.
+For ARM I'm using 5.2.0 for PowerPC I'm using 4.9.0.
 
 Loading
 =======

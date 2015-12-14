@@ -1,0 +1,14 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+	components {
+	   bspPowerPcGeneric(NativeLibrarySpec) {
+	       targetPlatform "tinkerPpc"
+	       sources {
+                c {
+                }
+            }
+	   }
+	}
+}

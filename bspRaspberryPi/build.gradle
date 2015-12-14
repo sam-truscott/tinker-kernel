@@ -1,0 +1,102 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+	components {
+		armRaspPi(NativeExecutableSpec) {
+	    	targetPlatform "tinkerArm4HardVfp"
+	        binaries.all {
+	            linker.args "-lgcc",
+	                 "-T",
+	                 'src/armRaspPi/resources/linker.ld'
+	        }
+	        sources {
+		        c {
+		            lib project: ':driverSocBcm2835', library: 'driverTimerBcm2835', linkage: 'static'
+		            lib project: ':driverSocBcm2835', library: 'driverSerialBcm2835', linkage: 'static'
+		            lib project: ':driverSocBcm2835', library: 'driverIntcBcm2835', linkage: 'static'
+		            lib project: ':boot', library: 'boot', linkage: 'static'
+		            lib project: ':kernel', library: 'kernel', linkage: 'static'
+		            lib project: ':archArm', library: 'archArm', linkage: 'static'
+		            lib project: ':api', library: 'api', linkage: 'static'
+		            lib project: ':base', library: 'base', linkage: 'static'
+		        }
+	        }
+	    }
+		armRaspPi2(NativeExecutableSpec) {
+	    	targetPlatform "tinkerArm7HardVfp"
+	        binaries.all {
+	            linker.args "-lgcc",
+	                 "-T",
+	                 'src/armRaspPi/resources/linker.ld'
+	        }
+	        sources {
+		        c {
+		            lib project: ':driverSocBcm2835', library: 'driverTimerBcm2835', linkage: 'static'
+		            lib project: ':driverSocBcm2835', library: 'driverSerialBcm2835', linkage: 'static'
+		            lib project: ':driverSocBcm2835', library: 'driverIntcBcm2835', linkage: 'static'
+		            lib project: ':boot', library: 'boot', linkage: 'static'
+		            lib project: ':kernel', library: 'kernel', linkage: 'static'
+		            lib project: ':archArm', library: 'archArm', linkage: 'static'
+		            lib project: ':api', library: 'api', linkage: 'static'
+		            lib project: ':base', library: 'base', linkage: 'static'
+		            source {
+		                srcDirs "src/armRaspPi/c"
+		                include "**/*.c"
+		            }
+		        }
+		        asm {
+		        	source {
+		        		srcDirs "src/armRaspPi/asm"
+		        		include "**/*.S"
+		        	}
+		        }
+	        }
+	    }
+	}
+	tasks {
+	    debugPiBinary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi*', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+		
+		releasePiBinary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi*', 'build/binaries/armRaspPiExecutable/release/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+		
+		debugPi2Binary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/debug/armRaspPi2*', 'build/binaries/armRaspPi2Executable/debug/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+		
+		releasePi2Binary(Exec) {
+		  dependsOn $('binaries').findAll {
+		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
+		  }
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/release/armRaspPi2*', 'build/binaries/armRaspPi2Executable/release/kernel.img'
+		  standardOutput = new ByteArrayOutputStream()
+		  ext.output = {
+		    return standardOutput.toString()
+		  }
+		}
+    }
+}

@@ -1,0 +1,20 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+	components {
+		api(NativeLibrarySpec) {
+	    	targetPlatform "tinkerArm4Soft"
+	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArm7Soft"
+	    	targetPlatform "tinkerArm7HardVfp"
+	    	targetPlatform "tinkerPpc"
+            targetPlatform "windows_x86"
+	    	sources {
+			    c {
+		             lib project: ':base', library: 'base', linkage: 'static'
+		         }
+	         }
+	    }
+	}
+}

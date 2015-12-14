@@ -1,0 +1,17 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+    components {
+    	hostTestDriver(NativeExecutableSpec) {
+	    	sources {
+			    c {
+			        lib project: ':base', library: 'base', linkage: 'static'
+			        lib project: ':kernel', library: 'kernelTests', linkage: 'static'
+                    lib project: ':kernel', library: 'kernel', linkage: 'static'
+                    lib project: ':api', library: 'api', linkage: 'static'
+		        }
+	        }
+	    }
+    }
+}

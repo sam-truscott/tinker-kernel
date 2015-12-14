@@ -1,0 +1,16 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+	components {
+		archPowerPc(NativeLibrarySpec) {
+	        targetPlatform "tinkerPpc"
+	        sources {
+		        c {
+		            lib project: ':base', library: 'base', linkage: 'static'
+		            lib project: ':kernel', library: 'kernel', linkage: 'static'
+		        }
+	        }
+	    }
+	}
+}

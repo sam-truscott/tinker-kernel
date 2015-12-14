@@ -1,18 +1,5 @@
-/.settings
-/build
+**/.settings
+**/build
 /.gradle
-/debug_*
-/release_*
-/.nb-gradle/private/
-/Raspberry Pi/
-/*.vcxproj
-/*.filters
-/*.sln
-/*.sdf
-/*.opensdf
-/*.suo
-/.nb-gradle-properties
-/.vs
-/.nb-gradle
-.project
-.cproject
+**/.project
+**/.cproject

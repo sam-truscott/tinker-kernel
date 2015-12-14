@@ -1,524 +1,230 @@
 apply plugin: 'assembler'
 apply plugin: 'c'
 
-model {
-    buildTypes {
-        debug
-        release
-    }
-    binaries {
-    	all {
-	    	cCompiler.args "-pedantic",
-	            "-pedantic-errors",
-	            "-Wall",
-	            "-Wextra",
-	            "-Werror",
-	            "-c",
-	            "-fmessage-length=0",
-	            "-std=gnu11",
-	            "-DBUILDING_KERNEL"
-	        linker.args  "-static"
-	        if (buildType == buildTypes.debug) {
-	            cCompiler.args "-O0", 
-	                "-g3",
-	                "-gdwarf-4",
-	                "-UKERNEL_DEBUGGING",
-	                "-DKERNEL_SHELL",
-	                "-UKERNEL_SHELL_DEBUG",
-	                "-UUNIT_TESTS",
-	                "-UTIMER_DEBUGGING",
-	                "-UINTC_DEBUGGING",
-	                "-UMEMORY_DEBUGGING",
-	                "-UDEBUG_COLLECTIONS",
-	                "-UPROCESS_DEBUGGING",
-	                "-USCHEDULER_DEBUGGING",
-	                "-USCHEDULER_TRACING",
-	                "-USHM_DEBUGGING",
-	                "-UTARGET_DEBUGGING",
-	                "-USYSCALL_DEBUGGING",
-	                "-UALARM_DEBUGGING",
-	                "-UREGISTRY_DEBUGGING",
-	                "-UPIPE_DEBUGGING",
-	                "-UPIPE_TRACING",
-	                "-UIDLE_DEBUGGING",
-	                "-ULOCK_DEBUGGING",
-	                "-ULOCK_TRACING",
-	                "-UIN_DEBUGGING"
-	        } else if (buildType == buildTypes.release) {
-	            cCompiler.args "-Os",
-	                "-g0",
-	                "-UKERNEL_DEBUGGING",
-	                "-DKERNEL_SHELL",
-	                "-UKERNEL_SHELL_DEBUG"
-	            linker.args "-s"
-		    }
-    	}
-    }
-    toolChains {
-        xgcc(Gcc) {
-            target("tinkerPpc") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "powerpc-eabi-gcc"
-                cCompiler.executable = "powerpc-eabi-gcc"
-                assembler.executable = "powerpc-eabi-gcc"
-                linker.executable = "powerpc-eabi-gcc"
-                staticLibArchiver.executable = "powerpc-eabi-ar"
-                cCompiler.withArguments { args ->
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/ppc32"
-                    args << "-mcpu=powerpc"
-                    args << "-DARCH_HAS_MMU"
-                    args << "-Wno-maybe-uninitialized"
-                    args << "-fpic"
-                    args << "-fno-builtin"
-	            	args << "-ffreestanding"
-                }
-                linker.withArguments { args ->
-                	args << "-nostartfiles"
-		       		args << "-nodefaultlibs"
-		        	args << "-nostdlib"
-                }
-            }
-            target("tinkerArm4Soft") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "arm-eabi-gcc"
-                cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-gcc"
-                linker.executable = "arm-eabi-gcc"
-                staticLibArchiver.executable = "arm-eabi-ar"
-                cCompiler.withArguments { args ->
-                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
-                    args << "-marm"
-                    args << "-DARCH_HAS_MMU"
-					args << "-march=armv5"
-                    args << "-fpic"
-                    args << "-fno-builtin"
-	            	args << "-ffreestanding"
-                }
-                linker.withArguments { args ->
-                	args << "-nostartfiles"
-		       		args << "-nodefaultlibs"
-		        	args << "-nostdlib"
-                }
-            }
-            target("tinkerArm4HardVfp") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "arm-eabi-gcc"
-                cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-gcc"
-                linker.executable = "arm-eabi-gcc"
-                staticLibArchiver.executable = "arm-eabi-ar"
-                cCompiler.withArguments { args ->
-                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm5"
-                    args << "-marm"
-                    args << "-DARCH_HAS_MMU"
-                    args << "-mfpu=vfp"
-                    args << "-mfloat-abi=hard"
-					args << "-march=armv5"
-                    args << "-fpic"
-                    args << "-fno-builtin"
-	            	args << "-ffreestanding"
-                }
-                linker.withArguments { args ->
-                	args << "-mfpu=vfp"
-                    args << "-mfloat-abi=hard"
-					args << "-march=armv5"
-                    args << "-fpic"
-                	args << "-nostartfiles"
-		       		args << "-nodefaultlibs"
-		        	args << "-nostdlib"
-                }
-            }
-			target("tinkerArm7Soft") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "arm-eabi-gcc"
-                cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-gcc"
-                linker.executable = "arm-eabi-gcc"
-                staticLibArchiver.executable = "arm-eabi-ar"
-                cCompiler.withArguments { args ->
-                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
-                    args << "-DARCH_HAS_MMU"
-					args << "-march=armv7-a"
-                    args << "-fpic"
-                    args << "-fno-builtin"
-	            	args << "-ffreestanding"
-                }
-                linker.withArguments { args ->
-                	args << "-nostartfiles"
-		       		args << "-nodefaultlibs"
-		        	args << "-nostdlib"
-                }
-            }
-            target("tinkerArm7HardVfp") {
-                File srcDir = new File("src")
-                cppCompiler.executable = "arm-eabi-gcc"
-                cCompiler.executable = "arm-eabi-gcc"
-                assembler.executable = "arm-eabi-gcc"
-                linker.executable = "arm-eabi-gcc"
-                staticLibArchiver.executable = "arm-eabi-ar"
-                cCompiler.withArguments { args ->
-                	args << "-I" + srcDir.getAbsolutePath() + "/arch/arm"
-                    args << "-I" + srcDir.getAbsolutePath() + "/arch/arm/arm7"
-                    args << "-DARCH_HAS_MMU"
-                    args << "-mfpu=vfp"
-                    args << "-mfloat-abi=hard"
-					args << "-march=armv7-a"
-                    args << "-fpic"
-                    args << "-fno-builtin"
-	            	args << "-ffreestanding"
-                }
-                linker.withArguments { args ->
-                	args << "-mfpu=vfp"
-                    args << "-mfloat-abi=hard"
-					args << "-march=armv5"
-                    args << "-fpic"
-                	args << "-nostartfiles"
-		       		args << "-nodefaultlibs"
-		        	args << "-nostdlib"
-                }
-            }
-        }
-    }
-    platforms {
-        tinkerArm4Soft {
-            architecture "arm"
-        }
-        tinkerArm4HardVfp {
-            architecture "arm"
-        }
-		tinkerArm7Soft {
-            architecture "arm"
-        }
-        tinkerArm7HardVfp {
-            architecture "arm"
-        }
-        tinkerPpc {
-            architecture "ppc"
-        }
-    }
-    components {
-    	// the base (headers)
-    	base(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	targetPlatform "tinkerPpc"
-    		sources {
-		    	c {
-		            exportedHeaders {
-		                srcDirs "src", "src/api"
-		            }
-		        }
-	        }
-    	}
-    	// architectures
-	    archArm(NativeLibrarySpec) {
-	        targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	        sources {
-		        c {
-		            lib base.static
-		            source {
-		                srcDirs "src/arch/arm"
-		                include "*.c"
-		            }
-		            exportedHeaders {
-		                srcDir "src/arch/arm"
-		            }
-		        }
-		        asm {
-		            source {
-		                srcDirs "src/arch/arm"
-		                include "*.S"
-		            }
-		        }
-	        }
+allprojects {
+	model {
+	    buildTypes {
+	        debug
+	        release
 	    }
-	    archPowerPc(NativeLibrarySpec) {
-	    	targetPlatform "tinkerPpc"
-	        sources {
-		        c {
-		            lib base.static
-		            source {
-		                srcDirs "src/arch/ppc32"
-		                include "*.c"
-		            }
-		            exportedHeaders {
-		                srcDir "src/arch/ppc32"
-		            }
-		        }
-		        asm {
-		            source {
-		                srcDirs "src/arch/ppc32"
-		                include "*.S"
-		            }
-		        }
+	    binaries {
+	        withType (SharedLibraryBinarySpec) {
+	           buildable false
 	        }
-	    }
-	    // the core
-	    core(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-			    c {
-		             lib base.static
-		             source {
-		                 srcDirs "src/kernel", "src/tests"
-		                 include "**/*.c"
-		             }
-		        }
-	        }
-	    }
-	    // drivers
-	    driverIntcBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	sources {
-		    	c {
-		    		lib base.static
-		    		source {
-		                 srcDirs "src/devices/intc/bcm2835"
-		                 include "**/*.c"
-		             }
-		    	}
+	    	all {
+		    	cCompiler.args "-pedantic",
+		            "-pedantic-errors",
+		            "-Wall",
+		            "-Wextra",
+		            "-Werror",
+		            "-c",
+		            "-fmessage-length=0",
+		            "-std=gnu11",
+		            "-DBUILDING_KERNEL"
+		        linker.args  "-static"
+		        if (buildType == buildTypes.debug) {
+		            cCompiler.args "-O0", 
+		                "-g3",
+		                "-gdwarf-4",
+		                "-UKERNEL_DEBUGGING",
+		                "-DKERNEL_SHELL",
+		                "-UKERNEL_SHELL_DEBUG",
+		                "-UUNIT_TESTS",
+		                "-UTIMER_DEBUGGING",
+		                "-UINTC_DEBUGGING",
+		                "-UMEMORY_DEBUGGING",
+		                "-UDEBUG_COLLECTIONS",
+		                "-UPROCESS_DEBUGGING",
+		                "-USCHEDULER_DEBUGGING",
+		                "-USCHEDULER_TRACING",
+		                "-USHM_DEBUGGING",
+		                "-UTARGET_DEBUGGING",
+		                "-USYSCALL_DEBUGGING",
+		                "-UALARM_DEBUGGING",
+		                "-UREGISTRY_DEBUGGING",
+		                "-UPIPE_DEBUGGING",
+		                "-UPIPE_TRACING",
+		                "-UIDLE_DEBUGGING",
+		                "-ULOCK_DEBUGGING",
+		                "-ULOCK_TRACING",
+		                "-UIN_DEBUGGING"
+		        } else if (buildType == buildTypes.release) {
+		            cCompiler.args "-Os",
+		                "-g0",
+		                "-UKERNEL_DEBUGGING",
+		                "-DKERNEL_SHELL",
+		                "-UKERNEL_SHELL_DEBUG"
+		            linker.args "-s"
+			    }
 	    	}
 	    }
-	    driverTimerBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	sources {
-		    	c {
-		    		lib base.static
-		    		source {
-		                 srcDirs "src/devices/timer/bcm2835"
-		                 include "**/*.c"
-		             }
-		    	}
-	    	}
-	    }
-	    driverTimerPpc32tbr(NativeLibrarySpec) {
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-		    	c {
-		    		lib base.static
-		    		source {
-		                 srcDirs "src/devices/timer/ppc32tbr"
-		                 include "**/*.c"
-		             }
-		    	}
-	    	}
-	    }
-	    driverSerialUart16550(NativeLibrarySpec) {
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-			    c {
-					lib base.static
-					source {
-			             srcDirs "src/devices/serial/uart16550"
-			             include "**/*.c"
-			         }
-				}
-			}
-	    }
-	    driverSerialBcm2835(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	sources {
-		    	c {
-		    		lib base.static
-		    		source {
-		                 srcDirs "src/devices/serial/bcm2835"
-		                 include "**/*.c"
-		             }
-		    	}
-	    	}
-	    }
-	    // low-level
-	    boot(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-			    c {
-		             lib base.static
-		             source {
-		                 srcDir "src/boot"
-		                 include "**/*.c"
-		             }
-		         }
-	         }
-	    }
-	    // api
-	    api(NativeLibrarySpec) {
-	    	targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	targetPlatform "tinkerPpc"
-	    	sources {
-			    c {
-		             lib base.static
-		             source {
-		                 srcDir "src/api"
-		                 include "**/*.c"
-		             }
-		         }
-	         }
-	    }
-	    armRaspPi(NativeExecutableSpec) {
-	    	targetPlatform "tinkerArm4HardVfp"
-	        binaries.all {
-	            File srcDir = new File('src')
-	            linker.args "-lgcc",
-	                 "-T",
-	                 (srcDir.getAbsolutePath() + "/arch/arm/pi/linker.ld")
+	    toolChains {
+	        gcc(Gcc) {
+	           target("windows_x86") {
+	               File srcDir = new File("src")
+	               cCompiler.withArguments { args ->
+	                   args << "-Wno-maybe-uninitialized"
+	                   args << "-Wno-pointer-to-int-cast"
+	                   args << "-Wno-int-to-pointer-cast"
+	                   args << "-Wno-type-limits"
+                       args << "-DUNIT_TESTS"
+	                   args << "-DIS_HOST_UNIT_TEST"
+                       args << "-DSCHEDULER_DEBUGGING"
+                       args << "-DKERNEL_DEBUGGING"
+                       args << "-DMEMSET"
+                       args << "-ftest-coverage"
+                       args << "-fprofile-arcs"
+	                   args << "-I" + srcDir.getAbsolutePath() + "/../hostTestDriver/src/hostTestDriver/headers"
+	               }
+	               linker.withArguments { args ->
+	                   args << "-ftest-coverage"
+	                   args << "-fprofile-arcs"
+	               }
+	           }
 	        }
-	        sources {
-		        c {
-		            lib driverTimerBcm2835.static
-		            lib driverSerialBcm2835.static
-		            lib driverIntcBcm2835.static
-		            lib boot.static        // boot c code into kernel
-		            lib core.static        // the core kernel
-		            lib archArm.static     // generic arm code
-		            lib api.static         // api layer
-		            lib base.static        // base headers
-		            source {
-		                srcDirs "src/arch/arm/pi"
-		                include "**/*.c"
-		            }
-		        }
-		        asm {
-		        	source {
-		        		srcDirs "src/arch/arm/pi"
-		        		include "**/*.S"
-		        	}
-		        }
-	        }
-	    }
-		armRaspPi2(NativeExecutableSpec) {
-	    	targetPlatform "tinkerArm7HardVfp"
-	        binaries.all {
-	            File srcDir = new File('src')
-	            linker.args "-lgcc",
-	                 "-T",
-	                 (srcDir.getAbsolutePath() + "/arch/arm/pi/linker.ld")
-	        }
-	        sources {
-		        c {
-		            lib driverTimerBcm2835.static
-		            lib driverSerialBcm2835.static
-		            lib driverIntcBcm2835.static
-		            lib boot.static        // boot c code into kernel
-		            lib core.static        // the core kernel
-		            lib archArm.static     // generic arm code
-		            lib api.static         // api layer
-		            lib base.static        // base headers
-		            source {
-		                srcDirs "src/arch/arm/pi"
-		                include "**/*.c"
-		            }
-		        }
-		        asm {
-		        	source {
-		        		srcDirs "src/arch/arm/pi"
-		        		include "**/*.S"
-		        	}
-		        }
-	        }
-	    }
-	    // host based unit tests
-	    host_tests(NativeExecutableSpec) {
-	    	binaries.all {
-	            File srcDir = new File('src')
-	            cCompiler.args "-DIS_HOST_UNIT_TEST=1",
-	            	"-DSCHEDULER_DEBUGGING",
-	            	"-DKERNEL_DEBUGGING",
-	            	"-ftest-coverage",
-	            	"-fprofile-arcs"
-            	linker.args  "-ftest-coverage",
-	            	"-fprofile-arcs"
-	        }
-	    	sources {
-			    c {
-		             exportedHeaders {
-		                 srcDirs "src/tests_driver", "src", "src/api"
-		             }
-		             source {
-		                 srcDirs  "src/tests_driver",
-		                 	"src/api",
-			               	"src/kernel",
-			                "src/tests"
-		                 include "**/*.c"
-		                 exclude "kernel_initialise.c",
-		                 	"kernel_main.c",
-		                 	"kernel_in.c",
-		                 	"kernel/kshell.c"
-		             }
-		        }
+	        xgcc(Gcc) {
+	            target("tinkerPpc") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "powerpc-eabi-gcc"
+	                cCompiler.executable = "powerpc-eabi-gcc"
+	                assembler.executable = "powerpc-eabi-gcc"
+	                linker.executable = "powerpc-eabi-gcc"
+	                staticLibArchiver.executable = "powerpc-eabi-ar"
+	                cCompiler.withArguments { args ->
+	                    args << "-I" + srcDir.getAbsolutePath() + "/../archPowerPc/src/archPowerPc/headers"
+	                    args << "-mcpu=powerpc"
+	                    args << "-DARCH_HAS_MMU"
+	                    args << "-Wno-maybe-uninitialized"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            	args << "-ffreestanding"
+	                }
+	                linker.withArguments { args ->
+	                	args << "-nostartfiles"
+			       		args << "-nodefaultlibs"
+			        	args << "-nostdlib"
+	                }
+	            }
+	            target("tinkerArm4Soft") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "arm-eabi-gcc"
+	                cCompiler.executable = "arm-eabi-gcc"
+	                assembler.executable = "arm-eabi-gcc"
+	                linker.executable = "arm-eabi-gcc"
+	                staticLibArchiver.executable = "arm-eabi-ar"
+	                cCompiler.withArguments { args ->
+	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
+	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm5"
+	                    args << "-marm"
+	                    args << "-DARCH_HAS_MMU"
+						args << "-march=armv5"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            	args << "-ffreestanding"
+	                }
+	                linker.withArguments { args ->
+	                	args << "-nostartfiles"
+			       		args << "-nodefaultlibs"
+			        	args << "-nostdlib"
+	                }
+	            }
+	            target("tinkerArm4HardVfp") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "arm-eabi-gcc"
+	                cCompiler.executable = "arm-eabi-gcc"
+	                assembler.executable = "arm-eabi-gcc"
+	                linker.executable = "arm-eabi-gcc"
+	                staticLibArchiver.executable = "arm-eabi-ar"
+	                cCompiler.withArguments { args ->
+	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
+	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm5"
+	                    args << "-marm"
+	                    args << "-DARCH_HAS_MMU"
+	                    args << "-mfpu=vfp"
+	                    args << "-mfloat-abi=hard"
+						args << "-march=armv5"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            	args << "-ffreestanding"
+	                }
+	                linker.withArguments { args ->
+	                	args << "-mfpu=vfp"
+	                    args << "-mfloat-abi=hard"
+						args << "-march=armv5"
+	                    args << "-fpic"
+	                	args << "-nostartfiles"
+			       		args << "-nodefaultlibs"
+			        	args << "-nostdlib"
+	                }
+	            }
+				target("tinkerArm7Soft") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "arm-eabi-gcc"
+	                cCompiler.executable = "arm-eabi-gcc"
+	                assembler.executable = "arm-eabi-gcc"
+	                linker.executable = "arm-eabi-gcc"
+	                staticLibArchiver.executable = "arm-eabi-ar"
+	                cCompiler.withArguments { args ->
+	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
+	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm7"
+	                    args << "-DARCH_HAS_MMU"
+						args << "-march=armv7-a"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            	args << "-ffreestanding"
+	                }
+	                linker.withArguments { args ->
+	                	args << "-nostartfiles"
+			       		args << "-nodefaultlibs"
+			        	args << "-nostdlib"
+	                }
+	            }
+	            target("tinkerArm7HardVfp") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "arm-eabi-gcc"
+	                cCompiler.executable = "arm-eabi-gcc"
+	                assembler.executable = "arm-eabi-gcc"
+	                linker.executable = "arm-eabi-gcc"
+	                staticLibArchiver.executable = "arm-eabi-ar"
+	                cCompiler.withArguments { args ->
+	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
+	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm7"
+	                    args << "-DARCH_HAS_MMU"
+	                    args << "-mfpu=vfp"
+	                    args << "-mfloat-abi=hard"
+						args << "-march=armv7-a"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            	args << "-ffreestanding"
+	                }
+	                linker.withArguments { args ->
+	                	args << "-mfpu=vfp"
+	                    args << "-mfloat-abi=hard"
+						args << "-march=armv5"
+	                    args << "-fpic"
+	                	args << "-nostartfiles"
+			       		args << "-nodefaultlibs"
+			        	args << "-nostdlib"
+	                }
+	            }
 	        }
 	    }
-    }
-    tasks {
-	    debugPiBinary(Exec) {
-		  dependsOn $('binaries').findAll {
-		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
-		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
-		}
-		
-		releasePiBinary(Exec) {
-		  dependsOn $('binaries').findAll {
-		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
-		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi.exe', 'build/binaries/armRaspPiExecutable/release/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
-		}
-		
-		debugPi2Binary(Exec) {
-		  dependsOn $('binaries').findAll {
-		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
-		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/debug/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/debug/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
-		}
-		
-		releasePi2Binary(Exec) {
-		  dependsOn $('binaries').findAll {
-		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
-		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/release/armRaspPi2.exe', 'build/binaries/armRaspPi2Executable/release/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
-		}
-    }
+	    platforms {
+	        tinkerArm4Soft {
+	            architecture "arm"
+	        }
+	        tinkerArm4HardVfp {
+	            architecture "arm"
+	        }
+			tinkerArm7Soft {
+	            architecture "arm"
+	        }
+	        tinkerArm7HardVfp {
+	            architecture "arm"
+	        }
+	        tinkerPpc {
+	            architecture "ppc"
+	        }
+	    }
+	}
 }
