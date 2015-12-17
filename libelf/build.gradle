@@ -1,0 +1,14 @@
+apply plugin: 'c'
+
+model {
+    components {
+        libelf(NativeLibrarySpec) {
+            targetPlatform "tinkerArm4Soft"
+            targetPlatform "tinkerArm4HardVfp"
+            targetPlatform "tinkerArm7Soft"
+            targetPlatform "tinkerArm7HardVfp"
+            targetPlatform "tinkerPpc"
+            targetPlatform "windows_x86"
+        }
+    }
+}
