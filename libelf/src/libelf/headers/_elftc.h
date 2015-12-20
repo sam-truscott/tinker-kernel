@@ -370,6 +370,18 @@ extern const char *__progname;
  ** Per-OS configuration.
  **/
 
+#if defined(__Tinker__)
+
+#if !defined(roundup)
+//#define roundup(n,width)(((n) + (width) - 1) & ~(unsigned int((width) - 1)))
+#define roundup roundup2
+#endif
+#if !defined(roundup2)
+#define roundup2(x,y )	(((x)+((y)-1))&(~((y)-1)))
+#endif
+
+#endif /* __Tinker__ */
+
 #if defined(__APPLE__)
 
 #include <libkern/OSByteOrder.h>

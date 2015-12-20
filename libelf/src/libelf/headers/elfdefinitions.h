@@ -42,6 +42,9 @@
 #ifndef _ELFDEFINITIONS_H_
 #define _ELFDEFINITIONS_H_
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #include <stdint.h>
 
 /*
@@ -2612,5 +2615,7 @@ typedef struct {
 	uint32_t	gh_maskwords;	/* #maskwords used in bloom filter. */
 	uint32_t	gh_shift2;	/* Bloom filter shift count. */
 } Elf_GNU_Hash_Header;
+
+#pragma GCC diagnostic pop
 
 #endif	/* _ELFDEFINITIONS_H_ */

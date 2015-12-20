@@ -40,6 +40,22 @@
 
 #endif	/* __DragonFly__ */
 
+#ifdef __Tinker__
+
+#if	defined(__arm__)
+
+#define	LIBELF_ARCH		EM_ARM
+#if	defined(__ARMEB__)	/* Big-endian ARM. */
+#define	LIBELF_BYTEORDER	ELFDATA2MSB
+#else
+#define	LIBELF_BYTEORDER	ELFDATA2LSB
+#endif
+#define	LIBELF_CLASS		ELFCLASS32
+
+#endif /* __arm__ */
+
+#endif /* __Tinker__ */
+
 #ifdef __FreeBSD__
 
 /*
