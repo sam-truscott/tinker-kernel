@@ -59,7 +59,7 @@ model {
 		  dependsOn $('binaries').findAll {
 		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
 		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/debug/armRaspPi*', 'build/binaries/armRaspPiExecutable/debug/kernel.img'
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi/debug/armRaspPi*', 'build/exe/armRaspPi/debug/kernel.img'
 		  standardOutput = new ByteArrayOutputStream()
 		  ext.output = {
 		    return standardOutput.toString()
@@ -70,7 +70,7 @@ model {
 		  dependsOn $('binaries').findAll {
 		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
 		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPiExecutable/release/armRaspPi*', 'build/binaries/armRaspPiExecutable/release/kernel.img'
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi/release/armRaspPi*', 'build/exe/armRaspPi/release/kernel.img'
 		  standardOutput = new ByteArrayOutputStream()
 		  ext.output = {
 		    return standardOutput.toString()
@@ -81,7 +81,7 @@ model {
 		  dependsOn $('binaries').findAll {
 		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
 		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/debug/armRaspPi2*', 'build/binaries/armRaspPi2Executable/debug/kernel.img'
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi2/debug/armRaspPi2*', 'build/exe/armRaspPi2/debug/kernel.img'
 		  standardOutput = new ByteArrayOutputStream()
 		  ext.output = {
 		    return standardOutput.toString()
@@ -92,7 +92,7 @@ model {
 		  dependsOn $('binaries').findAll {
 		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
 		  }
-		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/binaries/armRaspPi2Executable/release/armRaspPi2*', 'build/binaries/armRaspPi2Executable/release/kernel.img'
+		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi2/release/armRaspPi2*', 'build/exe/armRaspPi2/release/kernel.img'
 		  standardOutput = new ByteArrayOutputStream()
 		  ext.output = {
 		    return standardOutput.toString()
