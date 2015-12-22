@@ -11,9 +11,6 @@ model {
             targetPlatform "windows_x86"
             
             binaries {
-                withType (SharedLibraryBinarySpec) {
-                   buildable false
-                }
                 all {
                     cCompiler.args "-Wno-error",
                     "-Wno-pedantic",

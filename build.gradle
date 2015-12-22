@@ -8,9 +8,6 @@ allprojects {
 	        release
 	    }
 	    binaries {
-	        withType (SharedLibraryBinarySpec) {
-	           buildable false
-	        }
 	    	all {
 		    	cCompiler.args "-pedantic",
 		            "-pedantic-errors",
