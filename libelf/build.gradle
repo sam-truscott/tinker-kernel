@@ -14,10 +14,7 @@ model {
                 all {
                     cCompiler.args "-Wno-error",
                     "-Wno-pedantic",
-                    "-Wno-type-limits",
-                    "-D__GNU__",
-                    "-D__Tinker__",
-                    "-D__arm__" //FIXME: arm only
+                    "-Wno-type-limits"
                 }
             }
         }
