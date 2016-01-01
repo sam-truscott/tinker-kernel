@@ -17,7 +17,8 @@ model {
                     "-Wno-type-limits",
                     "-Wno-sign-compare",
                     "-Wno-int-conversion",
-                    "-Wno-unused-variable"
+                    "-Wno-unused-variable",
+                    "-Wno-incompatible-pointer-types"
                 }
             }
         }

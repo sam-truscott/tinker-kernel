@@ -23,6 +23,8 @@
 #define EL_ARCH_USES_RELA
 #elif defined(__arm__)
 #define EM_THIS EM_ARM
+#define EL_ARCH_USES_RELA
+#define EL_ARCH_USES_REL
 #elif defined(__aarch64__)
 #define EM_THIS EM_AARCH64
 #define EL_ARCH_USES_RELA
