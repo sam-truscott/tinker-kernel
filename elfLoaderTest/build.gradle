@@ -1,0 +1,21 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+    components {
+        elfLoaderTest(NativeExecutableSpec) {
+            targetPlatform "tinkerArm4HardVfp"
+            binaries.all {
+                linker.args "-lgcc",
+                     "-T",
+                     'src/elfLoaderTest/resources/linker.ld'
+            }
+            sources {
+                c {
+                    lib project: ':api', library: 'api', linkage: 'static'
+                    lib project: ':base', library: 'base', linkage: 'static'
+                }
+            }
+        }
+    }
+}

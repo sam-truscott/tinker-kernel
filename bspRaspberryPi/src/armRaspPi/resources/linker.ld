@@ -44,7 +44,7 @@ SECTIONS{
         __ivtse = .;
     } > RAM
     
-        /* Block Started by Symbol */
+     /* Block Started by Symbol */
     .bss ALIGN (0x1000) : {
         *(COMMON)
         _bss_start = .;
