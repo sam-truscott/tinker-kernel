@@ -14,7 +14,10 @@ model {
                 all {
                     cCompiler.args "-Wno-error",
                     "-Wno-pedantic",
-                    "-Wno-type-limits"
+                    "-Wno-type-limits",
+                    "-Wno-sign-compare",
+                    "-Wno-int-conversion",
+                    "-Wno-unused-variable"
                 }
             }
         }
