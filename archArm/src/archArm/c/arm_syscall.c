@@ -21,7 +21,6 @@ uint32_t TINKER_API_CALL_7(
 		uint32_t param_6,
 		uint32_t param_7)
 {
-	kernel_assert("tinker: syscall error\n", api<MAX_SYSCALL);
 	register long _r0 __asm__("r0")=(long)(api);
 	register long _r7 __asm__("r7")=(long)(param_7);
 	register long _r6 __asm__("r6")=(long)(param_6);

@@ -10,6 +10,12 @@ ENTRY (main)
 
 SECTIONS{
 
+    /* code */
+    .text ALIGN (0x1000) : {
+        *(.text)
+        *(.api)
+    }
+
     /* Block Started by Symbol */
     .bss : {
         *(COMMON)
@@ -39,10 +45,5 @@ SECTIONS{
         *(.data.*)
         *(.got2)
         *(.fixup)
-    }
-    
-    /* code */
-    .text ALIGN (0x1000) : {
-        *(.text)
     }
 }
