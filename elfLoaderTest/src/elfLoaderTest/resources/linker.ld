@@ -10,6 +10,8 @@ ENTRY (main)
 
 SECTIONS{
 
+    . = 0x8000;
+
     /* code */
     .text ALIGN (0x1000) : {
         *(.text)

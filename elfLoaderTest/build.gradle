@@ -4,7 +4,10 @@ apply plugin: 'c'
 model {
     components {
         elfLoaderTest(NativeExecutableSpec) {
+            targetPlatform "tinkerArm4Soft"
             targetPlatform "tinkerArm4HardVfp"
+            targetPlatform "tinkerArm7Soft"
+            targetPlatform "tinkerArm7HardVfp"
             binaries.all {
                 linker.args "-lgcc",
                      "-T",
@@ -14,7 +17,6 @@ model {
                 c {
                     lib project: ':api', library: 'api', linkage: 'static'
                     lib project: ':base', library: 'base', linkage: 'static'
-                    lib project: ':api', library: 'api', linkage: 'static'
                     lib project: ':archArm', library: 'archArm', linkage: 'static'
                 }
             }
