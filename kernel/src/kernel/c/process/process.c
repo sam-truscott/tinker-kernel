@@ -53,7 +53,6 @@ static void process_add_mem_sec(
 					{
 						process->first_section = section;
 					}
-					mem_sec_set_next(section,s);
 					assigned = true;
 					break;
 				}
@@ -126,18 +125,32 @@ error_t process_create(
 
 		if (!is_kernel)
 		{
+			uint32_t end_of_ram = bsp_get_usable_memory_end();
+			mem_section_t * const kernel_ram_sec = mem_sec_create(
+					new_proc->private_pool,
+					4096,
+					0,
+					bsp_get_usable_memory_end(),
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_KERNEL_ACCESS,
+					MMU_READ_WRITE);
+			tgt_map_memory(new_proc, kernel_ram_sec);
 			while (ksection)
 			{
-				process_add_mem_sec(
-						new_proc,
-						mem_sec_create(
-								new_proc->private_pool,
-								mem_sec_get_real_addr(ksection),
-								mem_sec_get_virt_addr(ksection),
-								mem_sec_get_size(ksection),
-								mem_sec_get_mem_type(ksection),
-								mem_sec_get_priv(ksection),
-								mem_sec_get_access(ksection)));
+				uint32_t real = mem_sec_get_real_addr(ksection);
+				if (real > end_of_ram)
+				{
+					process_add_mem_sec(
+							new_proc,
+							mem_sec_create(
+									new_proc->private_pool,
+									real,
+									mem_sec_get_virt_addr(ksection),
+									mem_sec_get_size(ksection),
+									mem_sec_get_mem_type(ksection),
+									mem_sec_get_priv(ksection),
+									mem_sec_get_access(ksection)));
+				}
 				ksection = mem_sec_get_next(ksection);
 			}
 		}
