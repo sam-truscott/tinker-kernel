@@ -19,17 +19,13 @@ void print_stack_trace(process_t * const proc, const uint32_t frame_pointer)
 	while (*fp != 0 && --limit)
 	{
 		fp = (uint32_t*)*fp;
-#if defined(ARCH_HAS_MMU)
-		if ((uint32_t)fp >= VIRTUAL_ADDRESS_SPACE)
+		if ((uint32_t)fp >= VIRTUAL_ADDRESS_SPACE(process_is_kernel(proc)))
 		{
 			uint32_t * real_fp;
 			real_fp = (uint32_t*)process_virt_to_real(proc, (uint32_t)fp);
 			error_print("0x%X -> 0x%X: ", fp, real_fp);
 			fp = real_fp;
 		}
-#else
-		(void)proc;
-#endif
 		// FIXME - PPC only, not ARM
 		uint32_t pc = *(fp + 4);
 

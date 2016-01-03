@@ -21,17 +21,13 @@ static void thread_setup_stack(thread_t * const thread)
 	const uint32_t stack_size = thread->stack_size;
 	const uint32_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
 	uint32_t vsp;
-
-	if (!process_is_kernel(thread->parent))
+	bool_t is_kernel = process_is_kernel(thread->parent);
+	if (!is_kernel)
 	{
-#if defined (ARCH_HAS_MMU)
-		vsp = VIRTUAL_ADDRESS_SPACE
+		vsp = VIRTUAL_ADDRESS_SPACE(is_kernel)
 				+ (((uint32_t)thread->stack
 						- mem_get_start_addr(process_get_mem_pool(thread->parent)))
 						+ stack_size - 12);
-#else
-		vsp = rsp;
-#endif
 	}
 	else
 	{
@@ -43,6 +39,7 @@ static void thread_setup_stack(thread_t * const thread)
 
 thread_t * thread_create(
 		mem_pool_info_t * const pool,
+		mem_pool_info_t * const user_pool,
 		const fwd_process_t * const parent,
 		const priority_t priority,
 		thread_entry_point * entry_point,
@@ -59,7 +56,7 @@ thread_t * thread_create(
 		thread->priority = priority;
 		thread->entry_point = entry_point;
 		thread->flags = flags;
-		thread->stack = mem_alloc_aligned(pool, stack, MMU_PAGE_SIZE);
+		thread->stack = mem_alloc_aligned(user_pool, stack, MMU_PAGE_SIZE);
 		const uint32_t length = util_strlen(name, MAX_THREAD_NAME_LEN);
 		util_memcpy(thread->name, name, length);
 		thread->name[length] = '\0';

@@ -22,6 +22,8 @@ void arm_disable_mmu(void);
 
 void arm_enable_mmu(void);
 
+void arm_set_domain_access_register(const uint32_t dar);
+
 void arm_set_translation_table_base(tgt_pg_tbl_t * const base);
 
 error_t arm_map_memory(

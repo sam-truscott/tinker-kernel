@@ -23,17 +23,13 @@
  */
 #define MAX_SYSCALL_ARGS 7
 
-#if defined(ARCH_HAS_MMU)
 /**
  * Base memory address of a virtual process
  */
-#define VIRTUAL_ADDRESS_SPACE 0xC0000000u
-#else
-/**
- * Flat memory structure
- */
-#define VIRTUAL_ADDRESS_SPACE 0
-#endif
+#define USER_ADDRESS_SPACE 0xC0000000u
+#define KERNEL_ADDRESS_SPACE 0xA0000000u
+#define VIRTUAL_ADDRESS_SPACE(K) \
+	(K ? KERNEL_ADDRESS_SPACE : USER_ADDRESS_SPACE)
 
 /**
  * Maximum number of stack frames to print on a fatal thread exception

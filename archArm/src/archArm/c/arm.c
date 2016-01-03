@@ -56,13 +56,18 @@ error_t tgt_initialise_process(process_t * const process)
 static void __attribute__((naked)) arm_bootstrap(
 		thread_entry_point * const entry,
 		uint32_t exit_function,
+		const uint32_t sp) TINKER_API_SUFFIX;
+
+static void __attribute__((naked)) arm_bootstrap(
+		thread_entry_point * const entry,
+		uint32_t exit_function,
 		const uint32_t sp)
 {
 	asm volatile("mrs %r7, cpsr");			/* get cpsr */
 	asm volatile("mov r8, #0xFFFFFF20");	/* blat out the mode and enable interrupts */
 	asm volatile("and r7, r7, r8");			/* and cpsr and mode wipe */
 	asm volatile("orr r7, r7, #0x10");		/* set the mode */
-	asm volatile("msr cpsr, %r7");			/* move the mode into cpsr */
+	asm volatile("msr cpsr, r7");			/* move the mode into cpsr */
 
 	asm volatile("mov sp, r2");				/* set the programs stack */
 	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
@@ -118,6 +123,7 @@ void tgt_prepare_context(
         {
         	tgt_pg_tbl_t * const pg_table = process_get_page_table(proc);
 #if defined (TARGET_DEBUGGING)
+        	debug_print("Page table for %s\n", process_get_image(proc));
         	arm_print_page_table(pg_table);
 #endif
         	arm_set_translation_table_base(pg_table);

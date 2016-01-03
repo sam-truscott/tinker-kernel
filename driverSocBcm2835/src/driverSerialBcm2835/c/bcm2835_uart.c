@@ -63,7 +63,8 @@ typedef struct bcm2835_user_data
  * This just loops <delay> times in a way that the compiler
  * wont optimize away.
  */
-static void delay(const uint32_t count) {
+static void delay(const uint32_t count)
+{
     asm volatile(
     		"__delay_%=:"
     		"subs %[count],"
@@ -71,10 +72,15 @@ static void delay(const uint32_t count) {
 	     : : [count]"r"(count) : "cc");
 }
 
+static bool_t early_available;
+
 /*
  * Initialize UART0.
  */
-void early_uart_init() {
+void early_uart_init()
+{
+	early_available = false;
+
     // Disable UART0.
     out_u32((uint32_t*)(UART0_BASE + UART0_CR), 0x00000000);
     delay(200);
@@ -122,20 +128,24 @@ void early_uart_init() {
 
     // Enable UART0, receive & transfer part of UART.
     out_u32((uint32_t*)(UART0_BASE + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
+
+    early_available = true;
 }
 
-static void bcm2835_uart_putc(const uint32_t const base, uint8_t byte) {
-    while (1)
-    {
-        if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 5)))
-        {
-        	break;
-        }
-    }
-    out_u32((uint32_t*)(base + UART0_DR), byte);
+static void bcm2835_uart_putc(const uint32_t const base, uint8_t byte)
+{
+	while (1)
+	{
+		if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 5)))
+		{
+			break;
+		}
+	}
+	out_u32((uint32_t*)(base + UART0_DR), byte);
 }
 
-static uint8_t bcm2835_uart_getc(const uint32_t base) {
+static uint8_t bcm2835_uart_getc(const uint32_t base)
+{
     while(true)
     {
 		if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 4)))
@@ -159,7 +169,10 @@ static error_t bcm2835_uart_isr(
 
 void early_uart_putc(const char c)
 {
-	bcm2835_uart_putc(UART0_BASE, c);
+	if (early_available)
+	{
+		bcm2835_uart_putc(UART0_BASE, c);
+	}
 }
 
 void early_uart_put(const char * c)
@@ -190,6 +203,7 @@ void bcm2835_uart_get_device(
 {
 	if (device)
 	{
+		early_available = false;
 		device->initialise = NULL;
 		device->control = NULL;
 		device->read_buffer = NULL;

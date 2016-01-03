@@ -379,7 +379,8 @@ void sch_set_context_for_next_thread(
 			thread_save_context(current_thread, context);
 		}
 		// load in the state of the new thread
-        tgt_prepare_context(context, scheduler->curr_thread, thread_get_parent(scheduler->curr_thread));
+        // tgt_prepare_context(context, scheduler->curr_thread, thread_get_parent(scheduler->curr_thread));
+		tgt_prepare_context(context, scheduler->curr_thread, thread_get_parent(current_thread));
 	}
 #if defined(SCHEDULER_TRACING)
 	debug_print("Scheduler: Current queue size is %d\n", thread_queue_t_size(scheduler->curr_queue));

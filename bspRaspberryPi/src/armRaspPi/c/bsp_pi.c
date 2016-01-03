@@ -71,10 +71,13 @@ void bsp_setup(
 
 	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
+	arm_set_domain_access_register(0);
 	arm_enable_mmu();
 
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
+#if defined(KERNEL_SHELL)
 	kshell_set_input_device(UART_DEVICE_NAME);
+#endif
 
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(controller, bcm2835_intc);

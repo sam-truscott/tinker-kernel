@@ -93,7 +93,8 @@ static inline uint32_t virtual_to_real(
 		uint32_t address)
 {
 	/* TODO the below code needs fixing */
-	return ((address >= VIRTUAL_ADDRESS_SPACE) ? process_virt_to_real(process, address) : address);
+	return ((address >= VIRTUAL_ADDRESS_SPACE(process_is_kernel(process)))
+			? process_virt_to_real(process, address) : address);
 }
 
 static error_t syscall_tst(tgt_context_t * const context) {
@@ -479,19 +480,18 @@ static error_t syscall_receive_message(
 			tgt_get_syscall_param(context, 3));
 	const error_t ret = obj_pipe_receive_message(pipe, syscall_get_thread_object(process, this_thread),
 			(void**) msg, msg_size, (const bool_t) tgt_get_syscall_param(context, 4));
-#if defined (ARCH_HAS_MMU)
 			// FIXME this shouldn't be here - it should be in the pipe object code
 			process_t * const proc = thread_get_parent(this_thread);
 			const uint32_t pool_start = mem_get_start_addr(
 					process_get_mem_pool(proc));
-			if (!process_is_kernel(proc))
+			bool_t is_kernel = process_is_kernel(proc);
+			if (!is_kernel)
 			{
-				*msg += VIRTUAL_ADDRESS_SPACE;
+				*msg += VIRTUAL_ADDRESS_SPACE(is_kernel);
 				*msg -= pool_start;
-				msg_size += VIRTUAL_ADDRESS_SPACE;
+				msg_size += VIRTUAL_ADDRESS_SPACE(is_kernel);
 				msg_size -= pool_start;
 			}
-#endif
 	return ret;
 }
 

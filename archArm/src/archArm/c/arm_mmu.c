@@ -188,6 +188,7 @@ static l2_tbl_t * arm_get_lvl2_table(
 			if (entry)
 			{
 				util_memset(entry, 0, sizeof(l2_tbl_t));
+				//FIXME: does this not generate a section too
 				table->lvl1_entry[virt_section] = arm_generate_lvl1_course(
 						entry,
 						ECC_OFF,
@@ -447,14 +448,18 @@ void arm_enable_mmu(void)
 static inline void arm_set_translation_control(const uint32_t ctl)
 {
 	(void)ctl;
-	asm volatile("MCR p15, 0, r0, c2, c0, 2"); 	// TTBCR
+	asm volatile("mcr p15, 0, r0, c2, c0, 2"); 	// TTBCR, r0 -> ctl
+}
+
+void arm_set_domain_access_register(const uint32_t dar)
+{
+	(void)dar;
+	asm volatile("mcr p15, 0, r0, c3, c0, 0"); 	// TTBCR, r0 -> dar
 }
 
 void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
 {
 	(void)base;
-	asm volatile("mcr p15, 0, r0, c2, c0, 0");	// TTBR0
-	//asm volatile("mcr p15, 0, r0, c2, c0, 1");	// TTBR1
-	arm_set_translation_control(0);		// TTBR0
-	//arm_set_translation_control(2);	// TTBR1
+	asm volatile("mcr p15, 0, r0, c2, c0, 0");	// TTBR0, r0 -> base
+	arm_set_translation_control(0);
 }

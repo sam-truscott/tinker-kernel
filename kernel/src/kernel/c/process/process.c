@@ -12,6 +12,7 @@
 #include "config.h"
 #include "tgt.h"
 #include "kernel_assert.h"
+#include "board_support.h"
 #include "objects/object_table.h"
 #include "objects/obj_thread.h"
 #include "objects/obj_semaphore.h"
@@ -76,6 +77,7 @@ error_t process_create(
 		const bool_t is_kernel,
 		tinker_meminfo_t * const meminfo,
 		mem_pool_info_t * pool,
+		const mem_section_t * ksection,
 		process_t ** process)
 {
 	process_t * new_proc = (process_t*)mem_alloc(mempool, sizeof(process_t));
@@ -122,17 +124,31 @@ error_t process_create(
 		new_proc->initial_thread = NULL;
 		new_proc->first_section = NULL;
 
+		if (!is_kernel)
+		{
+			while (ksection)
+			{
+				process_add_mem_sec(
+						new_proc,
+						mem_sec_create(
+								new_proc->private_pool,
+								mem_sec_get_real_addr(ksection),
+								mem_sec_get_virt_addr(ksection),
+								mem_sec_get_size(ksection),
+								mem_sec_get_mem_type(ksection),
+								mem_sec_get_priv(ksection),
+								mem_sec_get_access(ksection)));
+				ksection = mem_sec_get_next(ksection);
+			}
+		}
+
 		/* create a section for the private memory pool */
 		process_add_mem_sec(
 						new_proc,
 						mem_sec_create(
 							new_proc->private_pool,
 							mem_get_start_addr(new_proc->private_pool),
-		#if defined (ARCH_HAS_MMU)
-							VIRTUAL_ADDRESS_SPACE,
-		#else
-							mem_get_start_addr(new_proc->private_pool),
-		#endif
+							VIRTUAL_ADDRESS_SPACE(is_kernel),
 							mem_get_alloc_size(new_proc->private_pool),
 							MMU_RANDOM_ACCESS_MEMORY,
 							MMU_KERNEL_ACCESS,
@@ -144,14 +160,10 @@ error_t process_create(
 				mem_sec_create(
 					new_proc->private_pool,
 					mem_get_start_addr(new_proc->memory_pool),
-#if defined (ARCH_HAS_MMU)
-					VIRTUAL_ADDRESS_SPACE,
-#else
-					mem_get_start_addr(new_proc->memory_pool),
-#endif
+					VIRTUAL_ADDRESS_SPACE(is_kernel) + PRIVATE_POOL_SIZE,
 					mem_get_alloc_size(new_proc->memory_pool),
 					MMU_RANDOM_ACCESS_MEMORY,
-					MMU_USER_ACCESS,
+					MMU_KERNEL_ACCESS, // FIXME why did this work?
 					MMU_READ_WRITE));
 
 		/* create a section for code - allocated from the private pool */
@@ -167,16 +179,19 @@ error_t process_create(
 					MMU_READ_ONLY));
 
 		/* create a section for the data - allocated from the private pool */
-		process_add_mem_sec(
-                new_proc,
-                mem_sec_create(
-                    new_proc->private_pool,
-                    meminfo->data_start,
-                    meminfo->data_start,
-                    meminfo->data_size,
-                    MMU_RANDOM_ACCESS_MEMORY,
-                    MMU_USER_ACCESS,
-                    MMU_READ_WRITE));
+		if (meminfo->data_size > 0)
+		{
+			process_add_mem_sec(
+					new_proc,
+					mem_sec_create(
+						new_proc->private_pool,
+						meminfo->data_start,
+						meminfo->data_start,
+						meminfo->data_size,
+						MMU_RANDOM_ACCESS_MEMORY,
+						MMU_USER_ACCESS,
+						MMU_READ_WRITE));
+		}
         extern char * __api;
         extern char * __api_end;
         char * api = (char*)&__api;
@@ -495,20 +510,15 @@ uint32_t process_virt_to_real(
 		const process_t * const process,
 		const uint32_t virt)
 {
-#if defined (ARCH_HAS_MMU)
 	uint32_t real = virt;
 	if (process)
 	{
 		/* FIXME TODO should scan the sections rather than assume */
 		const uint32_t pool_start = mem_get_start_addr(process->memory_pool);
-		real -= VIRTUAL_ADDRESS_SPACE;
+		real -= VIRTUAL_ADDRESS_SPACE(process->kernel_process);
 		real += pool_start;
 	}
 	return real;
-#else
-	(void)process;
-	return virt;
-#endif
 }
 
 error_t process_allocate_vmem(
@@ -528,13 +538,13 @@ error_t process_allocate_vmem(
 	*virt_address = 0;
 	if (process)
 	{
-		uint32_t vmem_start = VIRTUAL_ADDRESS_SPACE;
+		uint32_t vmem_start = VIRTUAL_ADDRESS_SPACE(process->kernel_process);
 		mem_section_t * current = process->first_section;
 		mem_section_t * prev = NULL;
 		while (current)
 		{
 			const uint32_t svt = mem_sec_get_virt_addr(current);
-			if (svt > VIRTUAL_ADDRESS_SPACE && svt > (vmem_start + size))
+			if (svt > VIRTUAL_ADDRESS_SPACE(process->kernel_process) && svt > (vmem_start + size))
 			{
 				// there's room
 				mem_section_t * const new_section =
@@ -552,11 +562,7 @@ error_t process_allocate_vmem(
 					}
 					mem_sec_set_next(new_section, current);
 					result = tgt_map_memory(process, new_section);
-#if defined(ARCH_HAS_MMU)
 					*virt_address = vmem_start;
-#else
-					*virt_address = real_address;
-#endif
 				}
 				break;
 			}
@@ -577,11 +583,7 @@ error_t process_allocate_vmem(
 			mem_section_t * const new_section =
 					mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access);
 			mem_sec_set_next(prev, new_section);
-#if defined(ARCH_HAS_MMU)
 			*virt_address = vmem_start;
-#else
-			*virt_address = real_address;
-#endif
 			result = tgt_map_memory(process, new_section);
 		}
 	}

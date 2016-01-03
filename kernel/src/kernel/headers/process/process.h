@@ -30,6 +30,7 @@ error_t process_create(
 		const bool_t is_kernel,
 		tinker_meminfo_t * const meminfo,
 		mem_pool_info_t * pool,
+		const mem_section_t * ksection,
 		process_t ** process);
 
 uint32_t process_get_pid(const process_t * const process);

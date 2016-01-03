@@ -16,6 +16,7 @@
 #include "objects/obj_process.h"
 #include "objects/obj_thread.h"
 #include "memory/memory_manager.h"
+//#include "memory/mem_section.h"
 #include "console/print_out.h"
 
 #define INVALID_PROC_ID 0
@@ -144,6 +145,7 @@ static inline error_t create_process(
 		const bool_t is_kernel,
 		tinker_meminfo_t * const meminfo,
 		mem_pool_info_t * const new_mem_pool,
+		const mem_section_t * const ksection,
 		process_t ** proc)
 {
 #if defined (PROCESS_DEBUGGING)
@@ -158,6 +160,7 @@ static inline error_t create_process(
 			is_kernel,
 			meminfo,
 			new_mem_pool,
+			ksection,
 			proc);
 }
 
@@ -271,7 +274,16 @@ error_t proc_create_process(
 		}
 		else
 		{
-			ret = create_process(list, parent_pool, proc_id, image, (curr_thread == NULL), meminfo, new_mem_pool, &proc);
+			ret = create_process(
+					list,
+					parent_pool,
+					proc_id,
+					image,
+					(curr_thread == NULL),
+					meminfo,
+					new_mem_pool,
+					process_get_first_section(list->kernel_process),
+					&proc);
 			if (ret == NO_ERROR)
 			{
 				object_t * process_obj = NULL;
@@ -343,6 +355,7 @@ error_t proc_create_thread(
 	/* allocate memory for thread from processes pool */
 	thread = thread_create(
 			process_get_mem_pool(process),
+			process_get_user_mem_pool(process),
 			(const fwd_process_t*)process,
 			priority,
 			entry_point,

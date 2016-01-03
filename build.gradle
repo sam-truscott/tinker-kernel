@@ -24,18 +24,18 @@ allprojects {
 		                "-g3",
 		                "-gdwarf-4",
 		                "-DKERNEL_DEBUGGING",
-		                "-DKERNEL_SHELL",
+		                "-UKERNEL_SHELL",
 		                "-UKERNEL_SHELL_DEBUG",
 		                "-UUNIT_TESTS",
 		                "-UTIMER_DEBUGGING",
 		                "-UINTC_DEBUGGING",
 		                "-UMEMORY_DEBUGGING",
 		                "-UDEBUG_COLLECTIONS",
-		                "-UPROCESS_DEBUGGING",
+		                "-DPROCESS_DEBUGGING",
 		                "-USCHEDULER_DEBUGGING",
 		                "-USCHEDULER_TRACING",
 		                "-USHM_DEBUGGING",
-		                "-UTARGET_DEBUGGING",
+		                "-DTARGET_DEBUGGING",
 		                "-USYSCALL_DEBUGGING",
 		                "-UALARM_DEBUGGING",
 		                "-UREGISTRY_DEBUGGING",
@@ -92,7 +92,6 @@ allprojects {
 	                cCompiler.withArguments { args ->
 	                    args << "-I" + srcDir.getAbsolutePath() + "/../archPowerPc/src/archPowerPc/headers"
 	                    args << "-mcpu=powerpc"
-	                    args << "-DARCH_HAS_MMU"
 	                    args << "-Wno-maybe-uninitialized"
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
@@ -115,7 +114,6 @@ allprojects {
 	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
 	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm5"
 	                    args << "-marm"
-	                    args << "-DARCH_HAS_MMU"
                         args << "-D__arm__"
 						args << "-march=armv5"
 	                    args << "-fpic"
@@ -139,7 +137,6 @@ allprojects {
 	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
 	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm5"
 	                    args << "-marm"
-	                    args << "-DARCH_HAS_MMU"
                         args << "-D__arm__"
 	                    args << "-mfpu=vfp"
 	                    args << "-mfloat-abi=hard"
@@ -168,7 +165,6 @@ allprojects {
 	                cCompiler.withArguments { args ->
 	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
 	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm7"
-	                    args << "-DARCH_HAS_MMU"
                         args << "-D__arm__"
 						args << "-march=armv7-a"
 	                    args << "-fpic"
@@ -191,7 +187,6 @@ allprojects {
 	                cCompiler.withArguments { args ->
 	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
 	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm7"
-	                    args << "-DARCH_HAS_MMU"
                         args << "-D__arm__"
 	                    args << "-mfpu=vfp"
 	                    args << "-mfloat-abi=hard"

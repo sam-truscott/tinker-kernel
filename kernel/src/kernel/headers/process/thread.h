@@ -20,6 +20,7 @@ typedef struct fwd_process_t fwd_process_t;
 
 thread_t * thread_create(
 		mem_pool_info_t * const pool,
+		mem_pool_info_t * const user_pool,
 		const fwd_process_t * const parent,
 		const priority_t priority,
 		thread_entry_point * entry_point,

@@ -103,8 +103,8 @@ void load_elf(proc_list_t * const list, const void * const data)
 				{
 						.text_start = ((uint32_t)data) + addr.p_offset,
 						.text_size = addr.p_memsz,
-						.stack_size = 1024,
-						.heap_size = 1024,
+						.stack_size = 4096,
+						.heap_size = 4096,
 						.data_start = 0,
 						.data_size = 0
 				};
