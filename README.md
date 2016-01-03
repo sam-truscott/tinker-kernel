@@ -142,7 +142,7 @@ Starting QEMU for the Raspberry Pi build
 	# Start a listening netcat port to listen to the UART
 	nc -L -p 5555 -vv
 	# Start the emulator
-	qemu-system-arm -m 512M -kernel build\binaries\armRaspPiExecutable\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:5555 -S
+	qemu-system-arm -m 512M -kernel bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:5555 -S
 
 	# Start a debugger
 	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi.exe

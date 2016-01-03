@@ -23,7 +23,7 @@ allprojects {
 		            cCompiler.args "-O0", 
 		                "-g3",
 		                "-gdwarf-4",
-		                "-UKERNEL_DEBUGGING",
+		                "-DKERNEL_DEBUGGING",
 		                "-DKERNEL_SHELL",
 		                "-UKERNEL_SHELL_DEBUG",
 		                "-UUNIT_TESTS",

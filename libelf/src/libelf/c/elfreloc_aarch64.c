@@ -15,7 +15,7 @@
 
 #include "elfload.h"
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(__arm__)
 
 #define R_AARCH64_NONE     0
 #define R_AARCH64_RELATIVE 1027

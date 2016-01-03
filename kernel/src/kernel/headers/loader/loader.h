@@ -10,6 +10,6 @@
 #ifndef LOADER_H_
 #define LOADER_H_
 
-void load_elf(void * const data);
+void load_elf(const void * const data);
 
 #endif /* LOADER_H_ */
