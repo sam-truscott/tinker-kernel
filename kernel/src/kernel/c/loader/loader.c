@@ -98,7 +98,6 @@ void load_elf(proc_list_t * const list, const void * const data)
 					debug_print("PT_LOAD: %d: Readable\n", ctr);
 				}
 #endif
-				// TODO segment
 				process_t * proc = NULL;
 				tinker_meminfo_t memory =
 				{
