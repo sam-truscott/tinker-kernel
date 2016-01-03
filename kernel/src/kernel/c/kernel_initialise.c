@@ -40,6 +40,11 @@ static scheduler_t * scheduler = NULL;
 
 static time_manager_t * time_manager = NULL;
 
+proc_list_t * kernel_get_proc_list(void)
+{
+	return proc_list;
+}
+
 void kernel_initialise(void)
 {
 	const uint32_t memory_start = bsp_get_usable_memory_start();

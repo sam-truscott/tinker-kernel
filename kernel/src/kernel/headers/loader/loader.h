@@ -10,6 +10,9 @@
 #ifndef LOADER_H_
 #define LOADER_H_
 
-void load_elf(const void * const data);
+
+#include "process/process_list.h"
+
+void load_elf(proc_list_t * const list, const void * const data);
 
 #endif /* LOADER_H_ */

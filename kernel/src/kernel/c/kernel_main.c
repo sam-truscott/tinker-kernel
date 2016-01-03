@@ -77,7 +77,7 @@ void kernel_main(void)
 			NULL);
 #endif /* KERNEL_SHELL */
 
-	load_elf(elf_get_example());
+	load_elf(kernel_get_proc_list(), elf_get_example());
 
 #if defined (KERNEL_DEBUGGING)
 	debug_print("System: Entering User mode\n");

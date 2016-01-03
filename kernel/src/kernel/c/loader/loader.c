@@ -11,7 +11,10 @@
 #include "elfload.h"
 #include "utils/util_memcpy.h"
 #include "utils/util_memset.h"
+#include "process/process.h"
+#if defined(ELF_LOAD_DEBUGGING)
 #include "console/print_out.h"
+#endif
 
 static bool fpread(el_ctx *ctx, void *dest, size_t nb, size_t offset)
 {
@@ -31,7 +34,7 @@ static void *alloccb(
     return (void*) virt;
 }
 
-void load_elf(const void * const data)
+void load_elf(proc_list_t * const list, const void * const data)
 {
 	el_ctx ctx;
 	el_status status;
@@ -41,15 +44,19 @@ void load_elf(const void * const data)
 	status = el_init(&ctx);
 	if (EL_OK != status)
 	{
+#if defined(ELF_LOAD_DEBUGGING)
 		debug_print("Failed to init ELF context: %d\n", status);
+#endif
 		return;
 	}
 
-	//ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) block;
+	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) data;
 	status = el_load(&ctx, alloccb);
 	if (EL_OK != status)
 	{
+#if defined(ELF_LOAD_DEBUGGING)
 		debug_print("Failed to load ELF: %d\n", status);
+#endif
 		return;
 	}
 
@@ -68,6 +75,7 @@ void load_elf(const void * const data)
 			else
 			{
 				ctr++;
+#if defined(ELF_LOAD_DEBUGGING)
 				debug_print("PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
 						ctr,
 						addr.p_type,
@@ -89,12 +97,34 @@ void load_elf(const void * const data)
 				{
 					debug_print("PT_LOAD: %d: Readable\n", ctr);
 				}
+#endif
 				// TODO segment
+				process_t * proc = NULL;
+				tinker_meminfo_t memory =
+				{
+						.text_start = ((uint32_t)data) + addr.p_offset,
+						.text_size = addr.p_memsz,
+						.stack_size = 1024,
+						.heap_size = 1024,
+						.data_start = 0,
+						.data_size = 0
+				};
+				proc_create_process(
+						list,
+						"x",
+						"main",
+						(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
+						128,
+						&memory,
+						0,
+						&proc);
 			}
 		}
 		else
 		{
+#if defined(ELF_LOAD_DEBUGGING)
 			debug_print("Failed to find next section: %d\n", status);
+#endif
 			break;
 		}
 	}
