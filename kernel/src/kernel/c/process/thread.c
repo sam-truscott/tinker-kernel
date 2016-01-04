@@ -26,7 +26,7 @@ static void thread_setup_stack(thread_t * const thread)
 	{
 		vsp = VIRTUAL_ADDRESS_SPACE(is_kernel)
 				+ (((uint32_t)thread->stack
-						- mem_get_start_addr(process_get_mem_pool(thread->parent)))
+						- mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
 						+ stack_size - 12);
 	}
 	else
