@@ -289,9 +289,10 @@ void thread_exit(thread_t * const thread)
 	if (thread)
 	{
 		mem_pool_info_t * const pool = process_get_mem_pool(thread->parent);
+		mem_pool_info_t * const user_pool = process_get_user_mem_pool(thread->parent);
 
 		// stack
-		mem_free(pool, thread->stack);
+		mem_free(user_pool, thread->stack);
 		thread->stack = NULL;
 		// contact
 		tgt_destroy_context(pool, thread->context);

@@ -764,21 +764,6 @@ void syscall_handle_system_call(
 			break;
 	}
 
-	/* This will over-ride the result of a system-call
-	 * if the exception occurs just after the system call has been made. */
-	if (api == SYSCALL_LOAD_THREAD
-			|| api == SYSCALL_EXIT_THREAD)
-	{
-#if defined(SYSCALL_DEBUGGING)
-		debug_print("Syscall: Initial Kernel mode call to start scheduler\n");
-#endif
-		bsp_enable_schedule_timer();
-	}
-	else
-	{
-		tgt_set_syscall_return(context, ret);
-	}
-
 	/* If the thread has been un-scheduled we need to switch process */
 	thread_state_t state;
 	if (api == SYSCALL_EXIT_THREAD)
@@ -799,6 +784,21 @@ void syscall_handle_system_call(
 	{
 		/* save the existing data - i.e. the return & run the scheduler */
 		sch_set_context_for_next_thread(handler->scheduler, context, state);
+	}
+
+	/* This will over-ride the result of a system-call
+	 * if the exception occurs just after the system call has been made. */
+	if (api == SYSCALL_LOAD_THREAD
+			|| api == SYSCALL_EXIT_THREAD)
+	{
+#if defined(SYSCALL_DEBUGGING)
+		debug_print("Syscall: Initial Kernel mode call to start scheduler\n");
+#endif
+		bsp_enable_schedule_timer();
+	}
+	else
+	{
+		tgt_set_syscall_return(context, ret);
 	}
 #if defined(SYSCALL_DEBUGGING)
 	debug_print("Syscall: API %d RET %d\n", api, ret);

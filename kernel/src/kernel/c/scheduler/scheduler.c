@@ -198,6 +198,14 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 #endif
 }
 
+void sch_notify_terminated(scheduler_t * const scheduler, thread_t * const t)
+{
+	if (scheduler->curr_thread == t)
+	{
+		scheduler->curr_thread = NULL;
+	}
+}
+
 void sch_notify_pause_thread(scheduler_t * const scheduler, thread_t * const t)
 {
 	sch_notify_exit_thread(scheduler, t);
@@ -360,16 +368,8 @@ void sch_set_context_for_next_thread(
 	}
 
 	// the thread changed so save the state of the previous thread
-#if defined(SCHEDULER_DEBUGGING)
-	debug_print("Scheduler: Current Thread is %s, new Thread is %s\n",
-			current_thread == NULL ? "NULL" : thread_get_name(current_thread),
-			scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
-#endif
 	if ((current_thread != scheduler->curr_thread) || scheduler->eval_new_thread)
 	{
-#if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: Switching to %s\n", scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
-#endif
 		if (thread_state == THREAD_RUNNING)
 		{
 			thread_set_state(current_thread, THREAD_READY);
@@ -379,8 +379,19 @@ void sch_set_context_for_next_thread(
 			thread_save_context(current_thread, context);
 		}
 		// load in the state of the new thread
-		tgt_prepare_context(context, scheduler->curr_thread, thread_get_parent(current_thread));
+		tgt_prepare_context(
+				context,
+				scheduler->curr_thread,
+				/* FIXME if thread has been deleted the process will be gone
+				 * and potenatially the process is dead too if all threads have gone */
+				thread_get_parent(current_thread));
 	}
+#if defined(SCHEDULER_DEBUGGING)
+	debug_print("Scheduler: Current Thread is %s, new Thread is %s\n",
+			current_thread == NULL ? "NULL" : thread_get_name(current_thread),
+			scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
+	debug_print("Scheduler: Switching to %s\n", scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
+#endif
 #if defined(SCHEDULER_TRACING)
 	debug_print("Scheduler: Current queue size is %d\n", thread_queue_t_size(scheduler->curr_queue));
 #endif

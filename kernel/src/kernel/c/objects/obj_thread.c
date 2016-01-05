@@ -137,6 +137,7 @@ error_t obj_exit_thread(object_thread_t * const o)
 			 * notify the scheduler so it can do something else*/
 			thread_set_state(t, THREAD_TERMINATED);
 			sch_notify_exit_thread(o->scheduler, t);
+			sch_notify_terminated(o->scheduler, t);
 
 			/* free up the stack space used by the thread*/
 			thread_exit(t);

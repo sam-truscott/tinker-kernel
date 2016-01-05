@@ -19,6 +19,7 @@ void sch_set_kernel_idle_thread(scheduler_t * const sch, thread_t * const idle_t
 
 void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t);
 void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t);
+void sch_notify_terminated(scheduler_t * const scheduler, thread_t * const t);
 void sch_notify_pause_thread(scheduler_t * const scheduler, thread_t * const t);
 void sch_notify_resume_thread(scheduler_t * const scheduler, thread_t * const  t);
 void sch_notify_change_priority(
