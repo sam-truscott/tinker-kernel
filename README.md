@@ -174,8 +174,7 @@ Nothing special here.
 ## Objects (the registry)
 The register stores objects by name so they can be looked up by different processes.
 
-Hello World
-===========
+#Hello World
 
 I've started to work on ELF loading for binaries. The following is an example process that can be loaded into the kernel.
 
@@ -184,3 +183,19 @@ I've started to work on ELF loading for binaries. The following is an example pr
 We can check the layout of the process with objdump.
 
     arm-eabi-objdump -x elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\release\elfLoaderTest.exe
+
+# Third Party Software
+
+A list of third party software under their associated licenses.
+
+## ISC License
+
+* libelf, https://github.com/gdboot/elfload
+
+Used to parse ELF files when loading them as new processes
+
+## Public Domain
+
+* dlmalloc, http://g.oswego.edu/dl/html/malloc.html
+
+Use of mspaces as the underlying memory pool implementations
