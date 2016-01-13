@@ -12,6 +12,7 @@
 #include "utils/util_memcpy.h"
 #include "utils/util_memset.h"
 #include "process/process.h"
+#include "memory/mem_pool.h"
 #if defined(ELF_LOAD_DEBUGGING)
 #include "console/print_out.h"
 #endif
@@ -34,7 +35,10 @@ static void *alloccb(
     return (void*) virt;
 }
 
-void load_elf(proc_list_t * const list, const void * const data)
+void load_elf(
+		mem_pool_info_t * const pool,
+		proc_list_t * const list,
+		const void * const data)
 {
 	el_ctx ctx;
 	el_status status;
@@ -62,6 +66,8 @@ void load_elf(proc_list_t * const list, const void * const data)
 
 	Elf_Phdr addr;
 	unsigned ctr = 0;
+	tinker_mempart_t * first_part = NULL;
+	tinker_mempart_t * current_part = first_part;
 	while (EL_OK == status)
 	{
 		util_memset(&addr, 0, sizeof(Elf_Phdr));
@@ -98,25 +104,45 @@ void load_elf(proc_list_t * const list, const void * const data)
 					debug_print("PT_LOAD: %d: Readable\n", ctr);
 				}
 #endif
-				process_t * proc = NULL;
-				tinker_meminfo_t memory =
+				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(pool, sizeof(tinker_mempart_t));
+				if (new_part)
 				{
-						.text_start = ((uint32_t)data) + addr.p_offset,
-						.text_size = addr.p_memsz,
-						.stack_size = 4096,
-						.heap_size = 4096,
-						.data_start = 0,
-						.data_size = 0
-				};
-				proc_create_process(
-						list,
-						"x",
-						"main",
-						(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
-						128,
-						&memory,
-						0,
-						&proc);
+					if (current_part)
+					{
+						current_part->next = new_part;
+					}
+					current_part = new_part;
+					util_memset(current_part, 0, sizeof(tinker_mempart_t));
+					current_part->real = addr.p_paddr;
+					current_part->virt = addr.p_vaddr;
+					current_part->size = addr.p_memsz;
+					current_part->mem_type = MEM_RANDOM_ACCESS_MEMORY;
+					current_part->priv = MEM_USER_ACCESS;
+					// TODO add exec
+					/*
+					if (addr.p_flags & PF_X)
+					{
+						current_part->access = MEM_READ_WRITE;
+					}
+					*/
+					if (addr.p_flags & PF_W)
+					{
+						current_part->access = MEM_READ_WRITE;
+					}
+					else if (addr.p_flags & PF_R)
+					{
+						current_part->access = MEM_READ_ONLY;
+					}
+					else
+					{
+						current_part->access = MEM_NO_ACCESS;
+					}
+					current_part->next = NULL;
+					if (first_part == NULL)
+					{
+						first_part = current_part;
+					}
+				}
 			}
 		}
 		else
@@ -126,5 +152,26 @@ void load_elf(proc_list_t * const list, const void * const data)
 #endif
 			break;
 		}
+	}
+	if (first_part != NULL)
+	{
+		process_t * proc = NULL;
+		tinker_meminfo_t memory =
+		{
+				//.text_start = ((uint32_t)data) + addr.p_offset,
+				//.text_size = addr.p_memsz,
+				.stack_size = 4096,
+				.heap_size = 4096,
+				.first_part = first_part
+		};
+		proc_create_process(
+				list,
+				"x",
+				"main",
+				(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
+				128,
+				&memory,
+				0,
+				&proc);
 	}
 }

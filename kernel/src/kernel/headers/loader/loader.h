@@ -13,6 +13,9 @@
 
 #include "process/process_list.h"
 
-void load_elf(proc_list_t * const list, const void * const data);
+void load_elf(
+		mem_pool_info_t * const pool,
+		proc_list_t * const list,
+		const void * const data);
 
 #endif /* LOADER_H_ */
