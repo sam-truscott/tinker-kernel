@@ -105,14 +105,31 @@ void kernel_initialise(void)
 	char * text_epos = (char*)&__text_end;
 	char * data_pos = 0;
 	char * data_end = (char*)&__data_end;
+	tinker_mempart_t data =
+	{
+		.real = (uint32_t)data_pos,
+		.virt = (uint32_t)data_pos,
+		.size = (uint32_t)(data_end - data_pos),
+		.mem_type = MEM_RANDOM_ACCESS_MEMORY,
+		.priv = MEM_KERNEL_ACCESS,
+		.access = MEM_READ_WRITE,
+		.next = NULL
+	};
+	tinker_mempart_t code =
+	{
+		.real = (uint32_t)text_pos,
+		.virt = (uint32_t)text_pos,
+		.size = (uint32_t)(text_epos - text_pos),
+		.mem_type = MEM_RANDOM_ACCESS_MEMORY,
+		.priv = MEM_KERNEL_ACCESS,
+		.access = MEM_READ_ONLY,
+		.next = &data
+	};
 	tinker_meminfo_t meminfo =
 	{
 		.heap_size = KERNEL_HEAP,
 		.stack_size = KERNEL_IDLE_STACK,
-		.text_start = (uint32_t)text_pos,
-		.text_size = (uint32_t)(text_epos - text_pos),
-		.data_start = (uint32_t)data_pos,
-		.data_size = (uint32_t)(data_end - data_pos)
+		.first_part = &code
 	};
 	debug_print("Kernel: Process list %x\n", proc_list);
 	proc_create_process(

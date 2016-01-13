@@ -29,6 +29,14 @@ typedef enum
 	MEM_ALL_ACCESS		= 3
 } tinker_privilege_t;
 
+/* needs to match mmu_access_t */
+typedef enum
+{
+	MEM_NO_ACCESS	= 0,
+	MEM_READ_ONLY	= 1,
+	MEM_READ_WRITE	= 2
+} tinker_access_t;
+
 /**
  * The entry point for a new thread
  */
@@ -44,13 +52,21 @@ typedef object_number_t tinker_process_t;
  */
 typedef object_number_t tinker_thread_t;
 
+typedef struct tinker_mempart
+{
+	uint32_t real;
+	uint32_t virt;
+	uint32_t size;
+	tinker_memory_t mem_type;
+	tinker_privilege_t priv;
+	tinker_access_t access;
+	struct tinker_mempart * next;
+} tinker_mempart_t;
+
 typedef struct tinker_meminfo {
 	uint32_t heap_size;
 	uint32_t stack_size;
-	uint32_t text_start;
-	uint32_t text_size;
-	uint32_t data_start;
-	uint32_t data_size;
+	tinker_mempart_t * first_part;
 } tinker_meminfo_t;
 
 error_t tinker_create_process(

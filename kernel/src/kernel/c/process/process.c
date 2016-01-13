@@ -179,32 +179,22 @@ error_t process_create(
 					MMU_KERNEL_ACCESS, // FIXME why did this work?
 					MMU_READ_WRITE));
 
-		/* create a section for code - allocated from the private pool */
-		process_add_mem_sec(
-				new_proc,
-				mem_sec_create(
-					new_proc->private_pool,
-				    meminfo->text_start,
-					meminfo->text_start,
-					meminfo->text_size,
-					MMU_RANDOM_ACCESS_MEMORY,
-					MMU_USER_ACCESS,
-					MMU_READ_ONLY));
-
-		/* create a section for the data - allocated from the private pool */
-		if (meminfo->data_size > 0)
+		tinker_mempart_t * part = meminfo->first_part;
+		while (part)
 		{
 			process_add_mem_sec(
 					new_proc,
 					mem_sec_create(
 						new_proc->private_pool,
-						meminfo->data_start,
-						meminfo->data_start,
-						meminfo->data_size,
-						MMU_RANDOM_ACCESS_MEMORY,
-						MMU_USER_ACCESS,
-						MMU_READ_WRITE));
+						part->real,
+						part->virt,
+						part->size,
+						part->mem_type,
+						part->priv,
+						part->access));
+			part = part->next;
 		}
+
         extern char * __api;
         extern char * __api_end;
         char * api = (char*)&__api;
