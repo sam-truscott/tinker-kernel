@@ -173,5 +173,11 @@ void load_elf(
 				&memory,
 				0,
 				&proc);
+		current_part = first_part;
+		while (current_part)
+		{
+			mem_free(pool, current_part);
+			current_part = current_part->next;
+		}
 	}
 }
