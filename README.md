@@ -119,8 +119,8 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Kernel: Review TODO/FIXMEs and add them here
-* Support: Create newlib port
 * Support: Create bootstrap for kernel + services
+* Support: Create newlib port
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
@@ -173,7 +173,7 @@ Nothing special here.
 ## Objects (the registry)
 The register stores objects by name so they can be looked up by different processes.
 
-#Hello World
+# Hello World
 
 I've started to work on ELF loading for binaries. The following is an example process that can be loaded into the kernel.
 
@@ -182,6 +182,8 @@ I've started to work on ELF loading for binaries. The following is an example pr
 We can check the layout of the process with objdump.
 
     arm-eabi-objdump -x elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\release\elfLoaderTest.exe
+    
+To load the elf it needs to be loaded either in kernel_main or via a syscall from another process (such as an init process).
 
 # Third Party Software
 
