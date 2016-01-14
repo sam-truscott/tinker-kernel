@@ -118,12 +118,6 @@ Issues / TODO
 
 These are the things I need to address in a rough order:
 
-* Kernel: Add mechanism to load elfs
- * Basics done
- * Need to remove text/data from meminfo data structure
- * Replace with memory sections
- * Objectify the loader
- * Remove the proc list from kernel initialise code
 * Kernel: Review TODO/FIXMEs and add them here
 * Support: Create newlib port
 * Support: Create bootstrap for kernel + services

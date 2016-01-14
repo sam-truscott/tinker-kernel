@@ -33,6 +33,7 @@ typedef struct syscall_handler_t
 	scheduler_t * scheduler;
 	time_manager_t * time_manager;
 	alarm_manager_t * alarm_manager;
+	loader_t * loader;
 } syscall_handler_t;
 
 static inline object_number_t syscall_get_thread_oid(const thread_t * const thread)
@@ -74,7 +75,8 @@ syscall_handler_t * create_handler(
 		registry_t * const reg,
 		scheduler_t * const scheduler,
 		time_manager_t * const tm,
-		alarm_manager_t * const am)
+		alarm_manager_t * const am,
+		loader_t * const loader)
 {
 	syscall_handler_t * const sys = mem_alloc(pool, sizeof(syscall_handler_t));
 	if (sys)
@@ -84,6 +86,7 @@ syscall_handler_t * create_handler(
 		sys->scheduler = scheduler;
 		sys->time_manager = tm;
 		sys->alarm_manager = am;
+		sys->loader = loader;
 	}
 	return sys;
 }

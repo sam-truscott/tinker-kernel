@@ -18,8 +18,6 @@
 #include "process/process_list.h"
 #include "scheduler/scheduler.h"
 #include "unit_tests.h"
-#include "elf_example.h"
-#include "loader/loader.h"
 
 void kernel_main(void)
 {
@@ -76,11 +74,6 @@ void kernel_main(void)
 			NULL,
 			NULL);
 #endif /* KERNEL_SHELL */
-
-	load_elf(
-			mem_get_default_pool(),
-			kernel_get_proc_list(),
-			elf_get_example());
 
 #if defined (KERNEL_DEBUGGING)
 	debug_print("System: Entering User mode\n");

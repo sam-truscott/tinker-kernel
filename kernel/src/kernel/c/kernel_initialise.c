@@ -23,6 +23,8 @@
 #include "scheduler/scheduler.h"
 #include "shell/kshell.h"
 #include "tgt.h"
+#include "loader/loader.h"
+#include "elf_example.h"
 
 static process_t * kernel_process = NULL;
 
@@ -40,10 +42,7 @@ static scheduler_t * scheduler = NULL;
 
 static time_manager_t * time_manager = NULL;
 
-proc_list_t * kernel_get_proc_list(void)
-{
-	return proc_list;
-}
+static loader_t * loader = NULL;
 
 void kernel_initialise(void)
 {
@@ -82,6 +81,9 @@ void kernel_initialise(void)
 	debug_print("Process: Process list at %x\n", proc_list);
 	kernel_device_set_process_list(proc_list);
 
+	debug_print("Loader: Initialising Loader...\n");
+	loader = loader_create(pool, proc_list);
+
 	debug_print("Syscall: Initialising...\n");
 	syscall_handler = create_handler(
 			pool,
@@ -89,7 +91,8 @@ void kernel_initialise(void)
 			registry,
 			scheduler,
 			time_manager,
-			alarm_manager);
+			alarm_manager,
+			loader);
 	debug_print("Syscall: Syscall Handler at %x\n", syscall_handler);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
@@ -173,6 +176,10 @@ void kernel_initialise(void)
 	debug_print("BSP: Setting up the Board...\n");
 	bsp_setup(interrupt_controller, time_manager, alarm_manager);
 	debug_print("BSP: Setup Complete\n");
+
+	load_elf(
+			loader,
+			elf_get_example());
 }
 
 process_t * kernel_get_process(void)

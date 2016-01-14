@@ -13,6 +13,7 @@
 #include "memory/memory_manager.h"
 #include "process/process_list.h"
 #include "objects/registry.h"
+#include "loader/loader.h"
 
 typedef struct syscall_handler_t syscall_handler_t;
 
@@ -22,7 +23,8 @@ syscall_handler_t * create_handler(
 		registry_t * const reg,
 		scheduler_t * const scheduler,
 		time_manager_t * const tm,
-		alarm_manager_t * const am);
+		alarm_manager_t * const am,
+		loader_t * const loader);
 
 void syscall_handle_system_call(
 		syscall_handler_t * const handler,

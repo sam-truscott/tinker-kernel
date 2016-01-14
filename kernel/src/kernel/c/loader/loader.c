@@ -17,6 +17,12 @@
 #include "console/print_out.h"
 #endif
 
+typedef struct loader_t
+{
+	mem_pool_info_t * pool;
+	proc_list_t * list;
+} loader_internal_t;
+
 static bool fpread(el_ctx *ctx, void *dest, size_t nb, size_t offset)
 {
 	util_memcpy(dest, ((uint8_t*)ctx->user_param) + offset, nb);
@@ -35,9 +41,22 @@ static void *alloccb(
     return (void*) virt;
 }
 
-void load_elf(
+loader_t * loader_create(
 		mem_pool_info_t * const pool,
-		proc_list_t * const list,
+		proc_list_t * const list)
+{
+	loader_t * load = (loader_t*)mem_alloc(pool, sizeof(loader_t));
+	if (load)
+	{
+		util_memset(load, 0, sizeof(loader_t));
+		load->pool = pool;
+		load->list = list;
+	}
+	return load;
+}
+
+void load_elf(
+		loader_t * const loader,
 		const void * const data)
 {
 	el_ctx ctx;
@@ -104,7 +123,7 @@ void load_elf(
 					debug_print("PT_LOAD: %d: Readable\n", ctr);
 				}
 #endif
-				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(pool, sizeof(tinker_mempart_t));
+				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(loader->pool, sizeof(tinker_mempart_t));
 				if (new_part)
 				{
 					if (current_part)
@@ -158,14 +177,12 @@ void load_elf(
 		process_t * proc = NULL;
 		tinker_meminfo_t memory =
 		{
-				//.text_start = ((uint32_t)data) + addr.p_offset,
-				//.text_size = addr.p_memsz,
 				.stack_size = 4096,
 				.heap_size = 4096,
 				.first_part = first_part
 		};
 		proc_create_process(
-				list,
+				loader->list,
 				"x",
 				"main",
 				(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
@@ -176,8 +193,9 @@ void load_elf(
 		current_part = first_part;
 		while (current_part)
 		{
-			mem_free(pool, current_part);
-			current_part = current_part->next;
+			tinker_mempart_t * const next = current_part->next;
+			mem_free(loader->pool, current_part);
+			current_part = next;
 		}
 	}
 }
