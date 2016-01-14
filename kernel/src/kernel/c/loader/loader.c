@@ -55,9 +55,12 @@ loader_t * loader_create(
 	return load;
 }
 
-void load_elf(
+error_t load_elf(
 		loader_t * const loader,
-		const void * const data)
+		const void * const data,
+		const char * const image,
+		const priority_t priority,
+		const uint32_t flags)
 {
 	el_ctx ctx;
 	el_status status;
@@ -70,7 +73,7 @@ void load_elf(
 #if defined(ELF_LOAD_DEBUGGING)
 		debug_print("Failed to init ELF context: %d\n", status);
 #endif
-		return;
+		return INVALID_ELF;
 	}
 
 	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) data;
@@ -80,7 +83,7 @@ void load_elf(
 #if defined(ELF_LOAD_DEBUGGING)
 		debug_print("Failed to load ELF: %d\n", status);
 #endif
-		return;
+		return INVALID_ELF;
 	}
 
 	Elf_Phdr addr;
@@ -172,7 +175,8 @@ void load_elf(
 			break;
 		}
 	}
-	if (first_part != NULL)
+	error_t ret = NO_ERROR;
+	if (first_part)
 	{
 		process_t * proc = NULL;
 		tinker_meminfo_t memory =
@@ -181,14 +185,14 @@ void load_elf(
 				.heap_size = 4096,
 				.first_part = first_part
 		};
-		proc_create_process(
+		ret = proc_create_process(
 				loader->list,
-				"x",
+				image,
 				"main",
 				(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
-				128,
+				priority,
 				&memory,
-				0,
+				flags,
 				&proc);
 		current_part = first_part;
 		while (current_part)
@@ -198,4 +202,9 @@ void load_elf(
 			current_part = next;
 		}
 	}
+	else
+	{
+		ret = INVALID_ELF;
+	}
+	return ret;
 }

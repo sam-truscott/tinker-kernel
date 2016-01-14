@@ -19,8 +19,11 @@ loader_t * loader_create(
 		mem_pool_info_t * const pool,
 		proc_list_t * const list);
 
-void load_elf(
+error_t load_elf(
 		loader_t * const loader,
-		const void * const data);
+		const void * const data,
+		const char * const image,
+		const priority_t priority,
+		const uint32_t flags);
 
 #endif /* LOADER_H_ */

@@ -24,7 +24,6 @@
 #include "shell/kshell.h"
 #include "tgt.h"
 #include "loader/loader.h"
-#include "elf_example.h"
 
 static process_t * kernel_process = NULL;
 
@@ -176,10 +175,6 @@ void kernel_initialise(void)
 	debug_print("BSP: Setting up the Board...\n");
 	bsp_setup(interrupt_controller, time_manager, alarm_manager);
 	debug_print("BSP: Setup Complete\n");
-
-	load_elf(
-			loader,
-			elf_get_example());
 }
 
 process_t * kernel_get_process(void)

@@ -646,6 +646,20 @@ static error_t syscall_load_thread(
 	return NO_ERROR;
 }
 
+static error_t syscall_load_elf(
+		syscall_handler_t* const handler,
+		tgt_context_t * const context,
+		thread_t* const this_thread)
+{
+	process_t* const process = thread_get_parent(this_thread);
+	return load_elf(
+		handler->loader,
+		(void*) virtual_to_real(process, tgt_get_syscall_param(context, 1)),
+		(const char*) virtual_to_real(process, tgt_get_syscall_param(context, 2)),
+		tgt_get_syscall_param(context, 3),
+		tgt_get_syscall_param(context, 4));
+}
+
 void syscall_handle_system_call(
 		syscall_handler_t * const handler,
 		tgt_context_t * const context)
@@ -761,7 +775,9 @@ void syscall_handle_system_call(
 			/* uses the current thread from the scheduler */
 			ret = syscall_load_thread(context, this_thread);
 			break;
-
+		case SYSCALL_LOAD_ELF:
+			ret = syscall_load_elf(handler, context, this_thread);
+			break;
 		default:
 			ret = ERROR_UNKNOWN_SYSCALL;
 			break;
