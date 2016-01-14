@@ -108,4 +108,10 @@ error_t tinker_map_mempry(
 
 void * tinker_sbrk(void * memory, uint32_t size);
 
+error_t tinker_load_elf(
+		void * elf_data,
+		char * const image,
+		uint8_t priority,
+		uint32_t flags);
+
 #endif /* TINKER_API_PROCESS_H_ */

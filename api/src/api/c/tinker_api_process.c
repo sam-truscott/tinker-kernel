@@ -113,3 +113,12 @@ void * tinker_sbrk(void * memory, uint32_t size)
 	TINKER_API_CALL_2(SYSCALL_SBRK, (uint32_t)memory_addr, size);
 	return *memory_addr;
 }
+
+error_t tinker_load_elf(
+		void * elf_data,
+		char * const image,
+		uint8_t priority,
+		uint32_t flags)
+{
+	return TINKER_API_CALL_4(SYSCALL_LOAD_ELF, (uint32_t)elf_data, (uint32_t)image, priority, flags);
+}
