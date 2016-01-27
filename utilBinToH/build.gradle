@@ -1,0 +1,9 @@
+apply plugin: 'c'
+
+model {
+    components {
+        utilBinToH(NativeExecutableSpec) {
+            //targetPlatform "windows_x86"
+        }
+    }
+}
