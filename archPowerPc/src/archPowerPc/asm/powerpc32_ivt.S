@@ -189,7 +189,6 @@ ivt_restore_fpr:
     sync
 
     /* store the stack pointer away and switch to the ivt stack */
-    /* FIXME bug? LI falls over which could be because SRs are wrong */
     stw     %sp,    (__ivtse - IVT_FRAME_SIZE)(%r0)
     li      %sp,    __ivtse@l - IVT_FRAME_SIZE
 

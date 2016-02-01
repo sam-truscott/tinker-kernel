@@ -477,24 +477,28 @@ static error_t syscall_receive_message(
 	object_table_t* const table = process_get_object_table(process);
 	object_pipe_t* const pipe = obj_cast_pipe(
 			obj_get_object(table, (object_number_t) tgt_get_syscall_param(context, 1)));
-	uint8_t** msg = (uint8_t**) virtual_to_real(process,
-			tgt_get_syscall_param(context, 2));
-	uint32_t** msg_size = (uint32_t**) virtual_to_real(process,
-			tgt_get_syscall_param(context, 3));
-	const error_t ret = obj_pipe_receive_message(pipe, syscall_get_thread_object(process, this_thread),
-			(void**) msg, msg_size, (const bool_t) tgt_get_syscall_param(context, 4));
-			// FIXME this shouldn't be here - it should be in the pipe object code
-			process_t * const proc = thread_get_parent(this_thread);
-			const uint32_t pool_start = mem_get_start_addr(
-					process_get_mem_pool(proc));
-			bool_t is_kernel = process_is_kernel(proc);
-			if (!is_kernel)
-			{
-				*msg += VIRTUAL_ADDRESS_SPACE(is_kernel);
-				*msg -= pool_start;
-				msg_size += VIRTUAL_ADDRESS_SPACE(is_kernel);
-				msg_size -= pool_start;
-			}
+	uint8_t** msg = (uint8_t**) virtual_to_real(process, tgt_get_syscall_param(context, 2));
+	uint32_t** msg_size = (uint32_t**) virtual_to_real(process, tgt_get_syscall_param(context, 3));
+
+	const error_t ret = obj_pipe_receive_message(
+			pipe,
+			syscall_get_thread_object(process, this_thread),
+			(void**) msg,
+			msg_size,
+			(const bool_t) tgt_get_syscall_param(context, 4));
+
+	// FIXME this shouldn't be here - it should be in the pipe object code
+	process_t * const proc = thread_get_parent(this_thread);
+	const uint32_t pool_start = mem_get_start_addr(
+			process_get_mem_pool(proc));
+	bool_t is_kernel = process_is_kernel(proc);
+	if (!is_kernel)
+	{
+		*msg += VIRTUAL_ADDRESS_SPACE(is_kernel);
+		*msg -= pool_start;
+		msg_size += VIRTUAL_ADDRESS_SPACE(is_kernel);
+		msg_size -= pool_start;
+	}
 	return ret;
 }
 

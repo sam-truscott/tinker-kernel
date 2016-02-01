@@ -79,17 +79,17 @@ static void insert_lower_priority_queue_to_stack(
 			const uint32_t queue_size = thread_queue_t_size(stack_queue);
 			if (queue_size)
 			{
-				thread_t * firstThreadInQueue = NULL;
-				const bool_t ok = thread_queue_t_front(stack_queue, &firstThreadInQueue);
+				thread_t * first_thread_in_queue = NULL;
+				const bool_t ok = thread_queue_t_front(stack_queue, &first_thread_in_queue);
 				if (ok)
 				{
-					const priority_t stack_thread_priority = thread_get_priority(firstThreadInQueue);
-					if ( stack_thread_priority == thread_priority )
+					const priority_t stack_thread_priority = thread_get_priority(first_thread_in_queue);
+					if (stack_thread_priority == thread_priority)
 					{
 						/* it's already on the stack */
 						found = true;
 					}
-					else if ( stack_thread_priority < thread_priority)
+					else if (stack_thread_priority < thread_priority)
 					{
 						insert_index = stack_index + 1;
 					}
@@ -103,7 +103,7 @@ static void insert_lower_priority_queue_to_stack(
 	 * we need to insert the queue into the stack to ensure
 	 * that at some point it'll be scheduled
 	 */
-	if ( !found && insert_index >= 0 )
+	if (!found && insert_index >= 0)
 	{
 		if (!queue_stack_t_insert(&scheduler->queue_stack, insert_index, queue))
 		{

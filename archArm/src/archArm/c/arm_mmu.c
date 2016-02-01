@@ -188,7 +188,6 @@ static l2_tbl_t * arm_get_lvl2_table(
 			if (entry)
 			{
 				util_memset(entry, 0, sizeof(l2_tbl_t));
-				//FIXME: does this not generate a section too
 				table->lvl1_entry[virt_section] = arm_generate_lvl1_course(
 						entry,
 						ECC_OFF,

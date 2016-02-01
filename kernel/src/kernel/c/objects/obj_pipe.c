@@ -668,6 +668,7 @@ error_t obj_pipe_receive_message(
 				{
 					if (block)
 					{
+						// TODO fix here
 						*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
 						*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
@@ -686,6 +687,7 @@ error_t obj_pipe_receive_message(
 #if defined(PIPE_DEBUGGING)
 					debug_print("PipeR: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
 #endif
+					// TODO and here
 					*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
 					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 				}

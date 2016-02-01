@@ -71,7 +71,7 @@ static void opic_enable(
 						(OPIC_ISU_BASE
 								+ (INTC_SRC_N_DEST_REGISTER
 										+ (cause * ISU_BLOCK_SIZE)))),
-										0xFFFFFFFF); //FIXME TODO Find out why 1 doesn't work
+										0xFFFFFFFF); //TODO Find out why 1 doesn't work
 	}
 }
 
