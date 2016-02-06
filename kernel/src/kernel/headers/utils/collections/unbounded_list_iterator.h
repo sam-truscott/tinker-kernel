@@ -37,6 +37,10 @@
 	\
 	PREFIX bool_t ITERATOR_T##_next(ITERATOR_T * it, ITEM_T * item); \
 	\
+	PREFIX bool_t ITERATOR_T##_prev(ITERATOR_T * it, ITEM_T * item); \
+	\
+	PREFIX bool_t ITERATOR_T##_set(ITERATOR_T * it, uint32_t index); \
+	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it); \
 	\
 
@@ -109,6 +113,22 @@
 		\
 		return ok; \
 	} \
+	PREFIX bool_t ITERATOR_T##_set(ITERATOR_T * it, uint32_t index) \
+	{ \
+		bool_t ok = false; \
+		\
+		if (it) \
+		{ \
+			ok = true; \
+			for (uint32_t i = 0 ; i < index && ok ; i++) \
+			{ \
+				it->current = it->current->next; \
+				ok = it->current != NULL; \
+			} \
+		} \
+		\
+		return ok; \
+	} \
 	/*
 	 * Get the next element from the list
 	 */ \
@@ -133,6 +153,30 @@
 		 \
 		 return ok; \
 	} \
+	/*
+	 * Get the previous element from the list
+	 */ \
+	PREFIX bool_t ITERATOR_T##_prev(ITERATOR_T * it, ITEM_T * item) \
+	{ \
+		 bool_t ok = false; \
+		 \
+		 if (it && item) \
+		 { \
+			util_memset(item, 0, sizeof(ITEM_T)); \
+			\
+			 if (it->current) \
+			 { \
+				 if (it->current->prev) \
+				 { \
+					 util_memcpy(item, &(it->current->prev->item), sizeof(ITEM_T)); \
+					 it->current = it->current->prev; \
+					 ok = true; \
+				 } \
+			 } \
+		 } \
+		 \
+		 return ok; \
+	} \
 	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it) \
 	{ \
@@ -146,6 +190,8 @@
 	{ \
 		ITERATOR_T * item = ITERATOR_T##_create(NULL); \
 		ITERATOR_T##_next(item, NULL); \
+		ITERATOR_T##_prev(item, NULL); \
+		ITERATOR_T##_set(item, 0); \
 		ITERATOR_T##_reset(item); \
 		ITERATOR_T##_delete(item); \
 	} \
