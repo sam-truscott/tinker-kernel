@@ -13,6 +13,7 @@
 #include "config.h"
 #include "utils/collections/unbounded_queue.h"
 #include "utils/collections/stack.h"
+#include "utils/collections/unbounded_list_iterator.h"
 #include "process/thread.h"
 
 UNBOUNDED_QUEUE_TYPE(thread_queue_t)
@@ -40,16 +41,23 @@ STACK_SPEC_INITIALISE(static, queue_stack_t, thread_queue_t*)
 STACK_SPEC_PUSH(static, queue_stack_t, thread_queue_t*)
 STACK_SPEC_POP(static, queue_stack_t, thread_queue_t*)
 STACK_SPEC_SIZE(static, queue_stack_t)
-STACK_SPEC_GET(static, queue_stack_t, thread_queue_t*)
+//STACK_SPEC_GET(static, queue_stack_t, thread_queue_t*)
 STACK_SPEC_FRONT(static, queue_stack_t, thread_queue_t*)
 STACK_SPEC_INSERT(static, queue_stack_t, thread_queue_t*)
+STACK_SPEC_LIST(static, queue_stack_t)
 STACK_BODY_INITIALISE(static, queue_stack_t, thread_queue_t*)
 STACK_BODY_PUSH(static, queue_stack_t, thread_queue_t*)
 STACK_BODY_SIZE(static, queue_stack_t)
-STACK_BODY_GET(static, queue_stack_t, thread_queue_t*)
+//STACK_BODY_GET(static, queue_stack_t, thread_queue_t*)
 STACK_BODY_POP(static, queue_stack_t, thread_queue_t*)
 STACK_BODY_FRONT(static, queue_stack_t, thread_queue_t*)
 STACK_BODY_INSERT(static, queue_stack_t, thread_queue_t*)
+STACK_BODY_LIST(static, queue_stack_t)
+
+UNBOUNDED_LIST_ITERATOR_TYPE(queue_stack_it_t)
+UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(queue_stack_it_t, queue_stack_t_list_t, thread_queue_t*)
+UNBOUNDED_LIST_ITERATOR_SPEC(static, queue_stack_it_t, queue_stack_t_list_t, thread_queue_t*)
+UNBOUNDED_LIST_ITERATOR_BODY(static, queue_stack_it_t, queue_stack_t_list_t, thread_queue_t*)
 
 typedef struct scheduler_t
 {

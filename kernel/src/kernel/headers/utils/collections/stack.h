@@ -32,29 +32,46 @@
 #define STACK_SPEC_INITIALISE(PREFIX, STACK_T, ITEM_T) \
 	PREFIX void STACK_T##_initialise(STACK_T * const stack, mem_pool_info_t * const pool); \
 		UNBOUNDED_LIST_SPEC_INITIALISE(PREFIX, STACK_T##_list_t, ITEM_T)
+
 #define STACK_SPEC_CREATE(PREFIX, STACK_T, ITEM_T) \
 	PREFIX STACK_T * STACK_T##_create(mem_pool_info_t * const pool); \
 		UNBOUNDED_LIST_SPEC_CREATE(PREFIX, STACK_T##_list_t, ITEM_T)
+
 #define STACK_SPEC_DELETE(PREFIX, STACK_T, ITEM_T) \
 	PREFIX void STACK_T##_delete(STACK_T * const stack); \
 		UNBOUNDED_LIST_SPEC_DELETE(PREFIX, STACK_T##_list_t, ITEM_T)
+
 #define STACK_SPEC_PUSH(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_push(STACK_T * const stack, ITEM_T item); \
 		UNBOUNDED_LIST_SPEC_ADD(PREFIX, STACK_T##_list_t, ITEM_T)
+
 #define STACK_SPEC_POP(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_pop(STACK_T * const stack, ITEM_T * const item); \
 		UNBOUNDED_LIST_SPEC_GET_TAIL(PREFIX, STACK_T##_list_t, ITEM_T) \
 		UNBOUNDED_LIST_SPEC_REMOVE_TAIL(PREFIX, STACK_T##_list_t)
+
 #define STACK_SPEC_FRONT(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_front(const STACK_T * const stack, ITEM_T * const item);
+
 #define STACK_SPEC_SIZE(PREFIX, STACK_T) \
 	PREFIX uint32_t STACK_T##_size(const STACK_T * const stack); \
 		UNBOUNDED_LIST_SPEC_SIZE(PREFIX, STACK_T##_list_t)
+
 #define STACK_SPEC_GET(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_get(const STACK_T * const stack, const uint32_t index, ITEM_T * const item);
+
 #define STACK_SPEC_INSERT(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_insert(STACK_T * const stack, const uint32_t index, ITEM_T item); \
 		UNBOUNDED_LIST_SPEC_INSERT(PREFIX, STACK_T##_list_t, ITEM_T)
+
+#define STACK_SPEC_LIST(PREFIX, STACK_T) \
+	PREFIX STACK_T##_list_t * STACK_T##_list(STACK_T * const stack);
+
+#define STACK_BODY_LIST(PREFIX, STACK_T) \
+	PREFIX STACK_T##_list_t * STACK_T##_list(STACK_T * const stack) \
+	{ \
+		return stack->list; \
+	} \
 
 #define STACK_BODY_INITIALISE(PREFIX, STACK_T, ITEM_T) \
 	\
@@ -68,6 +85,7 @@
 			stack->list = STACK_T##_list_t_create(pool); \
 		} \
 	}
+
 #define STACK_BODY_CREATE(PREFIX, STACK_T, ITEM_T) \
 	\
 	STACK_BODY_INITIALISE(PREFIX, STACK_T, ITEM_T) \
@@ -82,6 +100,7 @@
 		} \
 		return stack; \
 	}
+
 #define STACK_BODY_DELETE(PREFIX, STACK_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_BODY_DELETE(PREFIX, STACK_T##_list_t, ITEM_T) \
@@ -102,6 +121,7 @@
 			} \
 		} \
 	}
+
 #define STACK_BODY_PUSH(PREFIX, STACK_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_BODY_ADD(PREFIX, STACK_T##_list_t, ITEM_T) \
@@ -115,6 +135,7 @@
 		} \
 		return ok; \
 	}
+
 #define STACK_BODY_INSERT(PREFIX, STACK_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_BODY_INSERT(PREFIX, STACK_T##_list_t, ITEM_T) \
@@ -128,6 +149,7 @@
 		} \
 		return ok; \
 	}
+
 #define STACK_BODY_POP(PREFIX, STACK_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_BODY_REMOVE_TAIL(PREFIX, STACK_T##_list_t) \
@@ -147,6 +169,7 @@
 		\
 		return ok; \
 	}
+
 #define STACK_BODY_FRONT(PREFIX, STACK_T, ITEM_T) \
 	PREFIX bool_t STACK_T##_front(const STACK_T * const stack, ITEM_T * const item) \
 	{ \
@@ -159,6 +182,7 @@
 		\
 		return ok; \
 	}
+
 #define STACK_BODY_GET(PREFIX, STACK_T, ITEM_T) \
 	\
 	UNBOUNDED_LIST_BODY_GET(PREFIX, STACK_T##_list_t, ITEM_T) \
@@ -174,6 +198,7 @@
 		\
 		return ok; \
 	}
+
 #define STACK_BODY_SIZE(PREFIX, STACK_T) \
 	\
 	UNBOUNDED_LIST_BODY_SIZE(PREFIX, STACK_T##_list_t) \

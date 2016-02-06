@@ -61,6 +61,9 @@ static void insert_lower_priority_queue_to_stack(
 	int32_t stack_index = (int32_t)(stack_size - 1);
 	bool_t found = false;
 	int32_t insert_index = -1;
+	queue_stack_t_list_t * const list = queue_stack_t_list(&scheduler->queue_stack);
+	queue_stack_it_t stack_it;
+	queue_stack_it_t_initialise(&stack_it, list);
 
 	/*
 	 * the stack queue uses the end of the queue (size) as the highest priority
@@ -74,14 +77,14 @@ static void insert_lower_priority_queue_to_stack(
 	 */
 	while (stack_index >= 0 && !found && insert_index == -1)
 	{
-		if (queue_stack_t_get(&scheduler->queue_stack, stack_index, &stack_queue))
+		queue_stack_it_t_get(&stack_it, &stack_queue);
+		while (stack_queue)
 		{
 			const uint32_t queue_size = thread_queue_t_size(stack_queue);
 			if (queue_size)
 			{
 				thread_t * first_thread_in_queue = NULL;
-				const bool_t ok = thread_queue_t_front(stack_queue, &first_thread_in_queue);
-				if (ok)
+				if (thread_queue_t_front(stack_queue, &first_thread_in_queue))
 				{
 					const priority_t stack_thread_priority = thread_get_priority(first_thread_in_queue);
 					if (stack_thread_priority == thread_priority)
@@ -95,6 +98,7 @@ static void insert_lower_priority_queue_to_stack(
 					}
 				}
 			}
+			queue_stack_it_t_next(&stack_it, &stack_queue);
 		}
 		stack_index--;
 	}
