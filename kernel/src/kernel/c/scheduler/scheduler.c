@@ -74,6 +74,8 @@ static void insert_lower_priority_queue_to_stack(
 	 *
 	 * FIXME: This is a crap linear search.
 	 *
+	 * Fix and use a binary search using double linked list via iterator fwd/back functions
+	 *
 	 */
 	while (stack_index >= 0 && !found && insert_index == -1)
 	{

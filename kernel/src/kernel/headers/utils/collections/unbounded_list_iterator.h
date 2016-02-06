@@ -39,7 +39,9 @@
 	\
 	PREFIX bool_t ITERATOR_T##_prev(ITERATOR_T * it, ITEM_T * item); \
 	\
-	PREFIX bool_t ITERATOR_T##_set(ITERATOR_T * it, uint32_t index); \
+	PREFIX bool_t ITERATOR_T##_fwd(ITERATOR_T * it, uint32_t count); \
+	\
+	PREFIX bool_t ITERATOR_T##_back(ITERATOR_T * it, uint32_t count); \
 	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it); \
 	\
@@ -113,16 +115,32 @@
 		\
 		return ok; \
 	} \
-	PREFIX bool_t ITERATOR_T##_set(ITERATOR_T * it, uint32_t index) \
+	PREFIX bool_t ITERATOR_T##_fwd(ITERATOR_T * it, uint32_t count) \
 	{ \
 		bool_t ok = false; \
 		\
 		if (it) \
 		{ \
 			ok = true; \
-			for (uint32_t i = 0 ; i < index && ok ; i++) \
+			for (uint32_t i = 0 ; i < count && ok ; i++) \
 			{ \
 				it->current = it->current->next; \
+				ok = it->current != NULL; \
+			} \
+		} \
+		\
+		return ok; \
+	} \
+	PREFIX bool_t ITERATOR_T##_back(ITERATOR_T * it, uint32_t count) \
+	{ \
+		bool_t ok = false; \
+		\
+		if (it) \
+		{ \
+			ok = true; \
+			for (uint32_t i = 0 ; i < count && ok ; i++) \
+			{ \
+				it->current = it->current->prev; \
 				ok = it->current != NULL; \
 			} \
 		} \
@@ -191,7 +209,8 @@
 		ITERATOR_T * item = ITERATOR_T##_create(NULL); \
 		ITERATOR_T##_next(item, NULL); \
 		ITERATOR_T##_prev(item, NULL); \
-		ITERATOR_T##_set(item, 0); \
+		ITERATOR_T##_fwd(item, 0); \
+		ITERATOR_T##_back(item, 0); \
 		ITERATOR_T##_reset(item); \
 		ITERATOR_T##_delete(item); \
 	} \
