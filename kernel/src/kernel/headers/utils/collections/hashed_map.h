@@ -275,23 +275,47 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 				map->buckets[index] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t)); \
 				bucket = map->buckets[index]; \
 				util_memset(bucket, 0, sizeof(HASH_MAP_T##_bucket_t)); \
-			} else { \
+			} \
+			else \
+			{ \
 				bucket = map->buckets[index]; \
 			} \
 			if (bucket) \
 			{ \
-				for (uint32_t i = 0 ; i < BUCKET_SIZE && !put_ok ; i++) \
+				int32_t used_bucket_index = -1; \
+				int32_t unused_bucket_index = -1; \
+				for (uint32_t i = 0 ; i < BUCKET_SIZE && used_bucket_index == -1 ; i++) \
 				{ \
-					if (!bucket->entries[i]) \
+					if (bucket->entries[i]) \
 					{ \
-						HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, i); \
-						bucket->entries[i] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
-						util_memset(bucket->entries[i], 0, sizeof(HASH_MAP_T##_entry_t)); \
-						HASH_MAP_T##_copy_key(bucket->entries[i], key); \
-						bucket->entries[i]->value = value; \
-						put_ok = true; \
-						map->size++; \
+						if (map->key_equal(bucket->entries[i]->key,key)) \
+						{ \
+							used_bucket_index = i; \
+						} \
 					} \
+					else \
+					{ \
+						unused_bucket_index = i; \
+					} \
+				} \
+				int32_t bucket_index; \
+				if (used_bucket_index != -1) \
+				{ \
+					bucket_index = used_bucket_index; \
+				} \
+				else \
+				{ \
+					bucket_index = unused_bucket_index; \
+				} \
+				if (bucket_index != -1) \
+				{ \
+					HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, bucket_index); \
+					bucket->entries[bucket_index] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t)); \
+					util_memset(bucket->entries[bucket_index], 0, sizeof(HASH_MAP_T##_entry_t)); \
+					HASH_MAP_T##_copy_key(bucket->entries[bucket_index], key); \
+					bucket->entries[bucket_index]->value = value; \
+					put_ok = true; \
+					map->size++; \
 				} \
 			} \
 		} \
