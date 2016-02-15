@@ -57,10 +57,6 @@ static void insert_lower_priority_queue_to_stack(
 	 * to the queue stack so when the new high priority task finishes the
 	 *  new lower priority task will be executed */
 	thread_queue_t * stack_queue = NULL;
-	const uint32_t stack_size = queue_stack_t_size(&scheduler->queue_stack);
-	int32_t stack_index = (int32_t)(stack_size - 1);
-	bool_t found = false;
-	int32_t insert_index = -1;
 	queue_stack_t_list_t * const list = queue_stack_t_list(&scheduler->queue_stack);
 	queue_stack_it_t stack_it;
 	queue_stack_it_t_initialise(&stack_it, list);
@@ -72,50 +68,50 @@ static void insert_lower_priority_queue_to_stack(
 	 * --> the below code works out where to install the priority queue into
 	 * --> the stack which is priority based
 	 *
-	 * FIXME: This is a crap linear search.
+	 * FIXME: This is a poor linear search
+	 * TODO: Binary search?
 	 *
 	 * Fix and use a binary search using double linked list via iterator fwd/back functions
 	 *
 	 */
-	while (stack_index >= 0 && !found && insert_index == -1)
+	queue_stack_it_t_get(&stack_it, &stack_queue);
+	while (stack_queue)
 	{
-		queue_stack_it_t_get(&stack_it, &stack_queue);
-		while (stack_queue)
+		const uint32_t queue_size = thread_queue_t_size(stack_queue);
+		if (queue_size)
 		{
-			const uint32_t queue_size = thread_queue_t_size(stack_queue);
-			if (queue_size)
+			thread_t * first_thread_in_queue = NULL;
+			if (thread_queue_t_front(stack_queue, &first_thread_in_queue))
 			{
-				thread_t * first_thread_in_queue = NULL;
-				if (thread_queue_t_front(stack_queue, &first_thread_in_queue))
+				const priority_t stack_thread_priority = thread_get_priority(first_thread_in_queue);
+				if (stack_thread_priority == thread_priority)
 				{
-					const priority_t stack_thread_priority = thread_get_priority(first_thread_in_queue);
-					if (stack_thread_priority == thread_priority)
+					/* it's already on the stack */
+					break;
+				}
+				else if (stack_thread_priority < thread_priority)
+				{
+					/*
+					 * we need to insert the queue into the stack to ensure
+					 * that at some point it'll be scheduled
+					 */
+					// TODO insert via the iterator? - avoids a second loop
+					if (queue_stack_t_insert(
+							&scheduler->queue_stack,
+							queue_stack_it_t_where(&stack_it),
+							queue))
 					{
-						/* it's already on the stack */
-						found = true;
+						break;
 					}
-					else if (stack_thread_priority < thread_priority)
+					else
 					{
-						insert_index = stack_index + 1;
+						/* failed to add it to the scheduler, panic */
+						kernel_panic();
 					}
 				}
 			}
-			queue_stack_it_t_next(&stack_it, &stack_queue);
 		}
-		stack_index--;
-	}
-
-	/*
-	 * we need to insert the queue into the stack to ensure
-	 * that at some point it'll be scheduled
-	 */
-	if (!found && insert_index >= 0)
-	{
-		if (!queue_stack_t_insert(&scheduler->queue_stack, insert_index, queue))
-		{
-			/* failed to add it to the scheduler, panic */
-			kernel_panic();
-		}
+		queue_stack_it_t_next(&stack_it, &stack_queue);
 	}
 }
 
@@ -150,7 +146,7 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 		/*
 		 * a thread of lower or equal priority - inside it into the stack
 		 */
-		else if ( thread_priority < scheduler->curr_priority )
+		else if (thread_priority < scheduler->curr_priority)
 		{
 			insert_lower_priority_queue_to_stack(scheduler, thread_priority, queue);
 		}

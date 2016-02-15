@@ -23,6 +23,7 @@
 	{ \
 		const LIST_T * list; \
 		LIST_T##_element_t * current; \
+		uint32_t pos; \
 	} ITERATOR_T##internal ; \
 
 #define UNBOUNDED_LIST_ITERATOR_SPEC(PREFIX, ITERATOR_T, LIST_T, ITEM_T) \
@@ -45,6 +46,8 @@
 	\
 	PREFIX void ITERATOR_T##_reset(ITERATOR_T * it); \
 	\
+	PREFIX uint32_t ITERATOR_T##_where(ITERATOR_T * it); \
+	\
 
 #define UNBOUNDED_LIST_ITERATOR_BODY(PREFIX, ITERATOR_T, LIST_T, ITEM_T) \
 	\
@@ -56,6 +59,7 @@
 		 if (it && list) \
 		 { \
 			 it->list = list; \
+			 it->pos = 0; \
 			 if (list->size > 0) \
 			 { \
 				 it->current = list->head; \
@@ -125,6 +129,7 @@
 			for (uint32_t i = 0 ; i < count && ok ; i++) \
 			{ \
 				it->current = it->current->next; \
+				it->pos++; \
 				ok = it->current != NULL; \
 			} \
 		} \
@@ -141,6 +146,7 @@
 			for (uint32_t i = 0 ; i < count && ok ; i++) \
 			{ \
 				it->current = it->current->prev; \
+				it->pos--; \
 				ok = it->current != NULL; \
 			} \
 		} \
@@ -164,6 +170,7 @@
 				 { \
 					 util_memcpy(item, &(it->current->next->item), sizeof(ITEM_T)); \
 					 it->current = it->current->next; \
+					 it->pos++; \
 					 ok = true; \
 				 } \
 			 } \
@@ -188,6 +195,7 @@
 				 { \
 					 util_memcpy(item, &(it->current->prev->item), sizeof(ITEM_T)); \
 					 it->current = it->current->prev; \
+					 it->pos--; \
 					 ok = true; \
 				 } \
 			 } \
@@ -201,7 +209,12 @@
 		if (it) \
 		{ \
 			it->current = it->list->head; \
+			it->pos = 0; \
 		} \
+	} \
+	PREFIX uint32_t ITERATOR_T##_where(ITERATOR_T * it) \
+	{ \
+		return it->pos; \
 	} \
 	\
 	extern inline void ITERATOR_T##_test(void) \
@@ -213,6 +226,7 @@
 		ITERATOR_T##_back(item, 0); \
 		ITERATOR_T##_reset(item); \
 		ITERATOR_T##_delete(item); \
+		ITERATOR_T##_where(item); \
 	} \
 	\
 
