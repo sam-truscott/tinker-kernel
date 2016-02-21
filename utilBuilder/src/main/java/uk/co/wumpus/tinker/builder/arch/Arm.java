@@ -31,11 +31,11 @@ public class Arm implements Arch {
 				LOG.debug(ByteToHex.bytesToHex(MOVE_OFFSET_TO_PC));
 				LOG.debug(ByteToHex.bytesToHex(IntToByte.intToByte(offset)));
 			}
-			payload.write(GET_PC, 0, 4);
-			payload.write(LOAD_OFFSET, 4, 4);
-			payload.write(ADD_OFFSET_TO_PC, 8, 4);
-			payload.write(MOVE_OFFSET_TO_PC, 12, 4);
-			payload.write(IntToByte.intToByte(offset), 16, 4);
+			payload.write(GET_PC, 0);
+			payload.write(LOAD_OFFSET, 4);
+			payload.write(ADD_OFFSET_TO_PC, 8);
+			payload.write(MOVE_OFFSET_TO_PC, 12);
+			payload.write(IntToByte.intToByte(offset), 16);
 		} catch (Exception e) {
 			throw new ArchException("Failed to write bootstrap to payload", e);
 		}

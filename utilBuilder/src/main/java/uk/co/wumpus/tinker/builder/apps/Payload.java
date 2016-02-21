@@ -1,10 +1,8 @@
 package uk.co.wumpus.tinker.builder.apps;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,8 +18,7 @@ public class Payload {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Payload.class);
 	private static final byte[] HEADER = new byte[256];
-	private final ByteArrayOutputStream writer;
-	private final OutputStream fileWriter;
+	private final RandomAccessFile fileWriter;
 	private final Arch arch;
 	private final Application kernel;
 	private final List<Application> apps = new LinkedList<>();
@@ -38,8 +35,7 @@ public class Payload {
 		this.arch = arch;
 		this.kernel = kernel;
 		try {
-			this.writer = new ByteArrayOutputStream();
-			this.fileWriter = new FileOutputStream(payload);
+			this.fileWriter = new RandomAccessFile(payload, "rw");
 		} catch (Exception e) {
 			throw new ApplicationException("Failed to open the payload file for writing", e);
 		}
@@ -54,15 +50,21 @@ public class Payload {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("Writing {}", ByteToHex.bytesToHex(b));
 		}
-		this.writer.write(b);
+		this.fileWriter.write(b);
 	}
 	
-	public void write(final byte[] b, final int off, final int len) throws IOException {
-		LOG.info("Writing {} bytes to buffer at {} with length {}", b.length, off, len);
+	public void write(final byte[] b, final int off) throws IOException {
+		LOG.info("Writing {} bytes to buffer at {}", b.length, off);
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("Writing {}", ByteToHex.bytesToHex(b));
 		}
-		this.writer.write(b, off, len);
+		final long pos = this.fileWriter.getFilePointer();
+		try {
+			this.fileWriter.seek(off);
+			this.fileWriter.write(b);
+		} finally {
+			this.fileWriter.seek(pos);
+		}
 	}
 	
 	public void writeToDisk() throws IOException, ApplicationException, ArchException {
@@ -77,18 +79,9 @@ public class Payload {
 		LOG.info("Final offset is {}", offset);
 		this.kernel.copyTo(this);
 		this.arch.writeBootstrap(this, offset);
-		this.writer.writeTo(this.fileWriter);
 	}
 	
 	public void close() {
-		try {
-			if (this.writer != null) {
-				this.writer.close();
-			}
-		} catch (Exception e) {
-			LOG.error("Failed to close the writing buffer", e);
-		}
-		
 		try {
 			if (this.fileWriter != null) {
 				this.fileWriter.close();
