@@ -1,5 +1,6 @@
 package uk.co.wumpus.tinker.builder.apps;
 
+@SuppressWarnings("serial")
 public class ApplicationException extends Exception {
 
 	public ApplicationException(final String msg) {
