@@ -21,14 +21,13 @@ public class Binary implements Application {
 		return this.binary.toString();
 	}
 
-	public int copyTo(final Payload payload) throws ApplicationException {
+	public void copyTo(final Payload payload) throws ApplicationException {
 		LOG.info("Copying binary {} to payload", this.binary);
 		FileInputStream fis = null;
-		int len = 0;
 		try {
 			fis = new FileInputStream(this.binary);
 			final byte[] data = new byte[fis.available()];
-			len = fis.read(data);
+			final int len = fis.read(data);
 			LOG.info("Read {} bytes from {}", len, this.binary);
 			if (-1 == len) {
 				LOG.error("Failed to read data from binary");
@@ -46,7 +45,6 @@ public class Binary implements Application {
 				}
 			}
 		}
-		return len;
 	}
 	
 	public void validate() throws ApplicationException {

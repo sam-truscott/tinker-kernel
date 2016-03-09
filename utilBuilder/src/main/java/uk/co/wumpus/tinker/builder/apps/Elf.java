@@ -7,8 +7,8 @@ public class Elf implements Application {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(Elf.class);
 	
-	public int copyTo(final Payload payload) throws ApplicationException {
-		return 0;
+	public void copyTo(final Payload payload) throws ApplicationException {
+		return;
 	}
 	
 	public void validate() throws ApplicationException {

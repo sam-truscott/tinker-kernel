@@ -17,9 +17,8 @@ import uk.co.wumpus.tinker.builder.util.ByteToHex;
 public class Payload {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Payload.class);
-	private static final byte[] HEADER = new byte[256];
+	private static final byte[] HEADER = new byte[128];
 	private final RandomAccessFile fileWriter;
-	private final Arch arch;
 	private final Application kernel;
 	private final List<Application> apps = new LinkedList<>();
 	
@@ -29,10 +28,8 @@ public class Payload {
 	
 	public Payload(
 			final File payload,
-			final Arch arch,
 			final Application kernel) throws ApplicationException {
 		LOG.info("Creating payload at {}", payload);
-		this.arch = arch;
 		this.kernel = kernel;
 		try {
 			this.fileWriter = new RandomAccessFile(payload, "rw");
@@ -67,18 +64,13 @@ public class Payload {
 		}
 	}
 	
-	public void writeToDisk() throws IOException, ApplicationException, ArchException {
+	public void writeToDisk() throws IOException, ApplicationException {
 		LOG.info("Writing buffer to disk");
-		this.write(HEADER);
-		int offset = HEADER.length;
-		LOG.info("Offset is {}", offset);
-		for (final Application app : this.apps) {
-			offset += app.copyTo(this);
-			LOG.info("Offset is {}", offset);
-		}
-		LOG.info("Final offset is {}", offset);
 		this.kernel.copyTo(this);
-		this.arch.writeBootstrap(this, offset);
+		for (final Application app : this.apps) {
+			app.copyTo(this);
+		}
+		this.write(HEADER);
 	}
 	
 	public void close() {
