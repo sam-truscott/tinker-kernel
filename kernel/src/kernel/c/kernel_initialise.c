@@ -27,24 +27,18 @@
 
 static process_t * kernel_process = NULL;
 
-static thread_t * kernel_idle_thread = NULL;
-
-static proc_list_t * proc_list = NULL;
-
-static syscall_handler_t * syscall_handler = NULL;
-
-static interrupt_controller_t * interrupt_controller = NULL;
-
 static registry_t * registry = NULL;
-
-static scheduler_t * scheduler = NULL;
-
-static time_manager_t * time_manager = NULL;
-
-static loader_t * loader = NULL;
 
 void kernel_initialise(void)
 {
+	thread_t * kernel_idle_thread = NULL;
+	proc_list_t * proc_list = NULL;
+	syscall_handler_t * syscall_handler = NULL;
+	interrupt_controller_t * interrupt_controller = NULL;
+	scheduler_t * scheduler = NULL;
+	time_manager_t * time_manager = NULL;
+	loader_t * loader = NULL;
+
 	const uint32_t memory_start = bsp_get_usable_memory_start();
 	const uint32_t memory_end = bsp_get_usable_memory_end();
 

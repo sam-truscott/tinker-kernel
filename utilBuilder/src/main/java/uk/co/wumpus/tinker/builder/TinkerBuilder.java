@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.wumpus.tinker.builder.apps.Binary;
+import uk.co.wumpus.tinker.builder.apps.Elf;
 import uk.co.wumpus.tinker.builder.apps.Payload;
 
 public class TinkerBuilder {
@@ -28,7 +29,7 @@ public class TinkerBuilder {
 		argList.remove(0);
 		argList.remove(0);
 		for (final String elf : argList) {
-			payload.addApplication(new Binary(new File(elf)));
+			payload.addApplication(new Elf(new File(elf)));
 		}
 		try {
 			payload.writeToDisk();
