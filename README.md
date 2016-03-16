@@ -130,7 +130,18 @@ Then we can use it to create our final binary:
 
     # Execute from inside the utilBuilder directory
     gradlew packageJar 
-    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img c:\dev\git\tinker\bspRaspberryPi\build\exe\armRaspPi\debug\kernel.img
+    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe
+    
+We can additionally use the test 'hello world' program
+
+    # Execute from inside the tinker directory
+    gradlew debugPiBinary
+    gradlew elfLoaderTestTinkerArm4SoftDebugExecutable
+    
+    # Now lets build the image
+    cd utilBuilder
+    gradlew packageJar
+    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe ..\elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\debug\elfLoaderTest.exe 
    
 This will generate a 'kernel.img' file in the current directory with the Raspberry Pi kernel and no userland ELFs.
 

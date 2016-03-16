@@ -1,6 +1,9 @@
 package uk.co.wumpus.tinker.builder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +23,13 @@ public class TinkerBuilder {
 		}
 		final Binary kernel = new Binary(new File(args[1]));
 		LOG.info("Using kernel file {}", kernel);
-		final Payload payload = new Payload(new File(args[0]), kernel);		
+		final Payload payload = new Payload(new File(args[0]), kernel);
+		final List<String> argList = new ArrayList<>(Arrays.asList(args));
+		argList.remove(0);
+		argList.remove(0);
+		for (final String elf : argList) {
+			payload.addApplication(new Binary(new File(elf)));
+		}
 		try {
 			payload.writeToDisk();
 		} finally {
