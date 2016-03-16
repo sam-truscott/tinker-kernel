@@ -10,8 +10,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.co.wumpus.tinker.builder.arch.Arch;
-import uk.co.wumpus.tinker.builder.arch.ArchException;
 import uk.co.wumpus.tinker.builder.util.ByteToHex;
 
 public class Payload {
@@ -66,8 +64,10 @@ public class Payload {
 	
 	public void writeToDisk() throws IOException, ApplicationException {
 		LOG.info("Writing buffer to disk");
+		this.kernel.validate();
 		this.kernel.copyTo(this);
 		for (final Application app : this.apps) {
+			app.validate();
 			app.copyTo(this);
 		}
 		this.write(HEADER);

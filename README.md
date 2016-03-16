@@ -113,6 +113,27 @@ The kernel Board Support Package (BSP) should only have drivers for timers and a
 The root Interrupt Handler should be part of the kernel, other ones should really be installed as
 user processes/servers that listen to the pipe.
 
+Packaging Builds
+================
+
+The utilBuilder program can be used to package the kernel and user-land services and programs.
+
+Firstly, utilBuilder must be built
+
+    # Windows
+    gradlew packageJar
+
+    # Linux
+    ./gradlew packageJar
+    
+Then we can use it to create our final binary:
+
+    # Execute from inside the utilBuilder directory
+    gradlew packageJar 
+    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img c:\dev\git\tinker\bspRaspberryPi\build\exe\armRaspPi\debug\kernel.img
+   
+This will generate a 'kernel.img' file in the current directory with the Raspberry Pi kernel and no userland ELFs.
+
 Issues / TODO
 =============
 
