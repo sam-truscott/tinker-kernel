@@ -64,13 +64,14 @@ void bsp_initialise(void)
 void bsp_setup(
 		interrupt_controller_t * const controller,
 		time_manager_t * const tm,
-		alarm_manager_t * const am)
+		alarm_manager_t * const am,
+		process_t * const kernel_process)
 {
 	interrupt_controller = controller;
 	time_manager = tm;
 
 	arm_invalidate_all_tlbs();
-	arm_set_translation_table_base(process_get_page_table(kernel_get_process()));
+	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_set_domain_access_register(0);
 	arm_enable_mmu();
 
@@ -94,7 +95,7 @@ void bsp_setup(
 	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
 
 #if defined(TARGET_DEBUGGING)
-	arm_print_page_table(process_get_page_table(kernel_get_process()));
+	arm_print_page_table(process_get_page_table(kernel_process));
 #endif
 
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);

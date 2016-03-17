@@ -25,20 +25,8 @@
 #include "tgt.h"
 #include "loader/loader.h"
 
-static process_t * kernel_process = NULL;
-
-static registry_t * registry = NULL;
-
 void kernel_initialise(void)
 {
-	thread_t * kernel_idle_thread = NULL;
-	proc_list_t * proc_list = NULL;
-	syscall_handler_t * syscall_handler = NULL;
-	interrupt_controller_t * interrupt_controller = NULL;
-	scheduler_t * scheduler = NULL;
-	time_manager_t * time_manager = NULL;
-	loader_t * loader = NULL;
-
 	const uint32_t memory_start = bsp_get_usable_memory_start();
 	const uint32_t memory_end = bsp_get_usable_memory_end();
 
@@ -57,28 +45,27 @@ void kernel_initialise(void)
 	mem_pool_info_t * const pool = mem_get_default_pool();
 
 	debug_print("Time: Initialising services...\n");
-	time_manager = time_initialise(pool);
+	time_manager_t * const time_manager = time_initialise(pool);
 	alarm_manager_t * const alarm_manager = alarm_initialse(pool, time_manager);
 	debug_print("Time: Time Manager at %x, Alarm Manager at %x\n", time_manager, alarm_manager);
 
 	debug_print("Registry: Initialising the Registry...\n");
-	registry = registry_create(pool);
+	registry_t * const registry = registry_create(pool);
 	debug_print("Registry: Registry at %x\n", registry);
 
 	debug_print("Scheduler: Initialising Scheduler...\n");
-	scheduler = sch_create_scheduler(pool);
+	scheduler_t * const scheduler = sch_create_scheduler(pool);
 	debug_print("Scheduler: Scheduler at %x\n", scheduler);
 
 	debug_print("Process: Initialising Management...\n");
-	proc_list = proc_create(pool, scheduler, alarm_manager);
+	proc_list_t * const proc_list = proc_create(pool, scheduler, alarm_manager);
 	debug_print("Process: Process list at %x\n", proc_list);
-	kernel_device_set_process_list(proc_list);
 
 	debug_print("Loader: Initialising Loader...\n");
-	loader = loader_create(pool, proc_list);
+	loader_t * const loader = loader_create(pool, proc_list);
 
 	debug_print("Syscall: Initialising...\n");
-	syscall_handler = create_handler(
+	syscall_handler_t * const syscall_handler = create_handler(
 			pool,
 			proc_list,
 			registry,
@@ -89,7 +76,7 @@ void kernel_initialise(void)
 	debug_print("Syscall: Syscall Handler at %x\n", syscall_handler);
 
 	debug_print("Intc: Initialising Interrupt Controller...\n");
-	interrupt_controller = int_create(pool, syscall_handler, scheduler);
+	interrupt_controller_t * const interrupt_controller = int_create(pool, syscall_handler, scheduler);
 	debug_print("Intc: Initialising Interrupt Controller at %x\n", interrupt_controller);
 
 	debug_print("Kernel: Initialising Kernel Process...\n");
@@ -128,6 +115,7 @@ void kernel_initialise(void)
 		.first_part = &code
 	};
 	debug_print("Kernel: Process list %x\n", proc_list);
+	process_t * kernel_process = NULL;
 	proc_create_process(
 			proc_list,
 			"kernel",
@@ -138,8 +126,10 @@ void kernel_initialise(void)
 			THREAD_FLAG_NONE,
 			&kernel_process);
 
+	kernel_device_init(kernel_process, registry, proc_list);
+
 	proc_set_kernel_process(proc_list, kernel_process);
-	kernel_idle_thread = process_get_main_thread(kernel_process);
+	thread_t * const kernel_idle_thread = process_get_main_thread(kernel_process);
 	sch_set_kernel_idle_thread(scheduler, kernel_idle_thread);
 
 	kernel_assert("Kernel Process not created",kernel_process != NULL);
@@ -160,23 +150,28 @@ void kernel_initialise(void)
 			MMU_RANDOM_ACCESS_MEMORY,
 			MMU_KERNEL_ACCESS,
 			MMU_READ_WRITE);
-	tgt_map_memory(kernel_get_process(), kernel_ram_sec);
+	tgt_map_memory(kernel_process, kernel_ram_sec);
 
 	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);
 	sch_set_current_thread(scheduler, kernel_idle_thread);
 
 	/* Get the BSP to configure itself */
 	debug_print("BSP: Setting up the Board...\n");
-	bsp_setup(interrupt_controller, time_manager, alarm_manager);
+	bsp_setup(interrupt_controller, time_manager, alarm_manager, kernel_process);
 	debug_print("BSP: Setup Complete\n");
-}
 
-process_t * kernel_get_process(void)
-{
-	return kernel_process;
-}
-
-registry_t * kernel_get_registry(void)
-{
-	return registry;
+#if defined (KERNEL_SHELL)
+#if defined (KERNEL_DEBUGGING)
+	debug_print("System: Creating kshell\n");
+#endif
+	proc_create_thread(
+			kernel_process,
+			"kernel_shell",
+			kshell_start,
+			1,
+			0x400,
+			0,
+			NULL,
+			NULL);
+#endif /* KERNEL_SHELL */
 }

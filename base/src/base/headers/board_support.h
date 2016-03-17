@@ -26,7 +26,8 @@ void bsp_initialise(void) BOOT_CODE;
 void bsp_setup(
 		interrupt_controller_t * const controller,
 		time_manager_t * const tm,
-		alarm_manager_t * const am);
+		alarm_manager_t * const am,
+		process_t * const kernel_process);
 
 /**
  * Call from the kernel to tell the BSP to activate the

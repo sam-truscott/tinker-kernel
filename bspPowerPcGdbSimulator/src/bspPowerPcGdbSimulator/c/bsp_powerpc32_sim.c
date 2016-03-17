@@ -188,7 +188,7 @@ void bsp_setup(void)
 	ppc_setup_timebase_details(&sim_clock, 64);
 	time_set_system_clock(ppc_get_ppc_timebase_clock());
 
-	opic_tmr_get_timer(kernel_get_process(), &opic_timer);
+	opic_tmr_get_timer(mem_get_default_pool(), &opic_timer);
 	alarm_set_timer(&opic_timer);
 
 	// route UART -> OPIC -> CPU

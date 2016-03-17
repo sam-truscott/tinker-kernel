@@ -10,13 +10,19 @@
 
 #include "devices/kernel_device.h"
 #include "process/process.h"
-#include "kernel_initialise.h"
 
 static proc_list_t * proc_list = NULL;
+static process_t * kernel_process = NULL;
+static registry_t * registry = NULL;
 
-void kernel_device_set_process_list(proc_list_t * const list)
+void kernel_device_init(
+		process_t * const kproc,
+		registry_t * const reg,
+		proc_list_t * const list)
 {
 	proc_list = list;
+	kernel_process = kproc;
+	registry = reg;
 }
 
 error_t kernel_device_map_memory
@@ -25,9 +31,8 @@ error_t kernel_device_map_memory
 	 const mmu_memory_t type,
 	 uint32_t * const virt)
 {
-	process_t * const kernel_proc = proc_get_kernel_process(proc_list);
 	const error_t result = process_allocate_vmem(
-			kernel_proc,
+			kernel_process,
 			addr,
 			size,
 			type,
@@ -42,7 +47,7 @@ error_t kernel_device_map_memory
 		{
 			while (proc)
 			{
-				if (proc != kernel_proc)
+				if (proc != kernel_process)
 				{
 					process_allocate_vmem(
 							proc,
@@ -74,15 +79,15 @@ object_pipe_t * kernel_isr_get_pipe(
 	object_pipe_t * other_pipe = NULL;
 	object_number_t other_pipe_no = INVALID_OBJECT_ID;
 	if (NO_ERROR == obj_create_pipe(
-			kernel_get_registry(),
-			kernel_get_process(),
+			registry,
+			kernel_process,
 			&other_pipe_no,
 			name,
 			PIPE_SEND,
 			4,
 			256))
 	{
-		const object_table_t * const table = process_get_object_table(kernel_get_process());
+		const object_table_t * const table = process_get_object_table(kernel_process);
 		object_t * const other_obj = obj_get_object(table, other_pipe_no);
 		if (other_obj)
 		{

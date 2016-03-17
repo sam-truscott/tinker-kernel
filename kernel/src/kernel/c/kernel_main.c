@@ -60,21 +60,6 @@ void kernel_main(void)
 	run_unit_tests();
 #endif
 
-#if defined (KERNEL_SHELL)
-#if defined (KERNEL_DEBUGGING)
-	debug_print("System: Creating kshell\n");
-#endif
-	proc_create_thread(
-			kernel_get_process(),
-			"kernel_shell",
-			kshell_start,
-			1,
-			0x400,
-			0,
-			NULL,
-			NULL);
-#endif /* KERNEL_SHELL */
-
 #if defined (KERNEL_DEBUGGING)
 	debug_print("System: Entering User mode\n");
 #endif

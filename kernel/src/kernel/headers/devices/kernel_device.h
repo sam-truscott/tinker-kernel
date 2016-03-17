@@ -63,7 +63,10 @@ typedef struct kernel_device
 } kernel_device_t;
 
 // TODO remove this and use an object
-void kernel_device_set_process_list(proc_list_t * const list);
+void kernel_device_init(
+		process_t * const kproc,
+		registry_t * const reg,
+		proc_list_t * const list);
 
 error_t kernel_device_map_memory
 	(const uint32_t addr,
