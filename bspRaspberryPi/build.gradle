@@ -61,10 +61,6 @@ model {
 		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.debug)
 		  }
 		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi/debug/armRaspPi*', 'build/exe/armRaspPi/debug/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
 		}
 		
 		releasePiBinary(Exec) {
@@ -72,10 +68,6 @@ model {
 		    it.buildable && it.component.name.equals("armRaspPi") && it.buildType.equals(buildTypes.release)
 		  }
 		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi/release/armRaspPi*', 'build/exe/armRaspPi/release/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
 		}
 		
 		debugPi2Binary(Exec) {
@@ -83,10 +75,6 @@ model {
 		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.debug)
 		  }
 		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi2/debug/armRaspPi2*', 'build/exe/armRaspPi2/debug/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
 		}
 		
 		releasePi2Binary(Exec) {
@@ -94,10 +82,6 @@ model {
 		    it.buildable && it.component.name.equals("armRaspPi2") && it.buildType.equals(buildTypes.release)
 		  }
 		  commandLine 'arm-eabi-objcopy', '-O', 'binary', 'build/exe/armRaspPi2/release/armRaspPi2*', 'build/exe/armRaspPi2/release/kernel.img'
-		  standardOutput = new ByteArrayOutputStream()
-		  ext.output = {
-		    return standardOutput.toString()
-		  }
 		}
     }
 }
