@@ -108,9 +108,10 @@ SECTIONS{
         __euser = ALIGN(0x1000);
     }>RAM
     
-    .dynsym ALIGN (0x1000) : { *(.dynsym) }>RAM
-    .dynstr ALIGN (0x1000) : { *(.dynstr) }>RAM
-    .hash   ALIGN (0x1000) : { *(.hash)   }>RAM
+    .apps (NOLOAD) : {
+        apps = .;
+        . += 1 * 1024 * 1024;
+    } > RAM
     
     .memory_pool ALIGN (0x1000) (NOLOAD) : {
     	end = .;

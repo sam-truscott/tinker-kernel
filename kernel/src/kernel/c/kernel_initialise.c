@@ -174,4 +174,14 @@ void kernel_initialise(void)
 			NULL,
 			NULL);
 #endif /* KERNEL_SHELL */
+
+	extern uint32_t apps;
+	uint32_t app_start = (uint32_t)&apps;
+	debug_print("Starting at %x\n", app_start);
+	load_elf(
+			loader,
+			(void*)app_start,
+			"app",
+			128,
+			0);
 }
