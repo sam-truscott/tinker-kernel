@@ -163,7 +163,7 @@ void kernel_initialise(void)
 #if defined (KERNEL_SHELL)
 #if defined (KERNEL_DEBUGGING)
 	debug_print("System: Creating kshell\n");
-#endif
+#endif /* KERNEL_DEBUGGING */
 	proc_create_thread(
 			kernel_process,
 			"kernel_shell",
@@ -177,11 +177,25 @@ void kernel_initialise(void)
 
 	extern uint32_t apps;
 	uint32_t app_start = (uint32_t)&apps;
+//#if defined(ELF_LOAD_DEBUGGING)
 	debug_print("Starting at %x\n", app_start);
-	load_elf(
-			loader,
-			(void*)app_start,
-			"app",
-			128,
-			0);
+//#endif /* ELF_LOAD_DEBUGGING */
+	uint32_t sz = *(uint32_t*)app_start;
+	app_start += 4;
+	while (sz)
+	{
+		debug_print("Addr = %8x, Size = %x\n", app_start, sz);
+		error_t elf_error = load_elf(
+				loader,
+				(void*)app_start,
+				"app",
+				128,
+				0);
+		debug_print("ELF load result %d\n", elf_error);
+		app_start += sz;
+		debug_print("Reading size from %8x\n", app_start);
+		sz = *(uint32_t*)app_start;
+		debug_print("Size = %x\n", sz);
+		app_start += 4;
+	}
 }
