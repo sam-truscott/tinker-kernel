@@ -82,4 +82,8 @@ public class Payload {
 			LOG.error("Failed to close the file writing buffer", e);
 		}
 	}
+	
+	public long length() throws IOException {
+		return this.fileWriter.length();
+	}
 }

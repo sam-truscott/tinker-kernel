@@ -16,6 +16,11 @@ public class Elf extends Binary {
 	@Override
 	public void copyTo(Payload payload) throws ApplicationException {
 		try {
+			// align to a word boundary
+			while (payload.length() % 4 != 0)
+			{
+				payload.write(new byte[] {0});
+			}
 			payload.write(intToByteArrayLittleEndian(getData().length));
 		} catch (Exception e) {
 			throw new ApplicationException("Failed to write ELF length to payload", e);
