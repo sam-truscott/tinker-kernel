@@ -5,12 +5,16 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.co.wumpus.tinker.builder.util.Endian;
+
 public class Elf extends Binary {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Elf.class);
+	private final Endian endianness;
 	
-	public Elf(File elfFile) throws ApplicationException {
+	public Elf(final File elfFile, final Endian endianness) throws ApplicationException {
 		super(elfFile);
+		this.endianness = endianness;
 	}
 	
 	@Override
@@ -21,11 +25,22 @@ public class Elf extends Binary {
 			{
 				payload.write(new byte[] {0});
 			}
-			payload.write(intToByteArrayLittleEndian(getData().length));
+			payload.write(intToByteArray(getData().length, endianness));
 		} catch (Exception e) {
 			throw new ApplicationException("Failed to write ELF length to payload", e);
 		}
 		super.copyTo(payload);
+	}
+	
+	private static final byte[] intToByteArray(final int value, final Endian e) {
+		switch (e) {
+		case BIG:
+			return intToByteArrayBigEndian(value);
+		case SMALL:
+			return intToByteArrayLittleEndian(value);
+		default:
+			throw new IllegalArgumentException("Unsupported endianness");
+		}
 	}
 	
 	private static final byte[] intToByteArrayBigEndian(int value) {
