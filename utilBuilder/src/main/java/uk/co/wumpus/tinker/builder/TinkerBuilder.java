@@ -12,6 +12,7 @@ import uk.co.wumpus.tinker.builder.apps.Binary;
 import uk.co.wumpus.tinker.builder.apps.Elf;
 import uk.co.wumpus.tinker.builder.apps.Payload;
 import uk.co.wumpus.tinker.builder.util.Endian;
+import uk.co.wumpus.tinker.builder.util.Objcopy;
 
 public class TinkerBuilder {
 
@@ -19,15 +20,32 @@ public class TinkerBuilder {
 	
 	public static void main(final String... args) throws Exception {
 		LOG.info("TinkerBuilder");
-		if (args.length < 3) {
-			LOG.error("Need to specify output, endianness (big or small) and kernel image as a minimum");
+		if (args.length < 4) {
+			LOG.error("Need to specify output, arch (e.g. arm-eabi-), endianness (big or small) and kernel image as a minimum");
 			return;
 		}
-		final Binary kernel = new Binary(new File(args[1]));
-		LOG.info("Using kernel file {}", kernel);
-		final Payload payload = new Payload(new File(args[0]), kernel);
+
 		Endian endianness = Endian.fromString(args[2]);
+		final File kernelElf = new File(args[3]);
+		final File kernelBinary = File.createTempFile("tinker_kernel-", ".img");
+		kernelBinary.deleteOnExit();
+		LOG.info("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
+		final Objcopy converter = new Objcopy(args[1], kernelElf, kernelBinary);
+		if (!converter.execute()) {
+			LOG.error("Failed to convert the kernel from ELF to a binary, aborting.");
+			return;
+		}
+		
+		final File outputFile = new File(args[0]);
+		if (outputFile.exists()) {
+			if (!outputFile.delete()) {
+				LOG.error("Failed to delete the existing package image, aborting.");
+				return;
+			}
+		}
+		final Payload payload = new Payload(outputFile, new Binary(kernelBinary));
 		final List<String> argList = new ArrayList<>(Arrays.asList(args));
+		argList.remove(0);
 		argList.remove(0);
 		argList.remove(0);
 		argList.remove(0);

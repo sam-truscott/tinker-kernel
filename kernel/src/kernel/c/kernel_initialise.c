@@ -195,6 +195,8 @@ void kernel_initialise(void)
 				0);
 #if defined(ELF_LOAD_DEBUGGING)
 		debug_print("ELF load result %d\n", elf_error);
+#else
+		(void)elf_error;
 #endif /* ELF_LOAD_DEBUGGING */
 		app_start += sz;
 #if defined(ELF_LOAD_DEBUGGING)

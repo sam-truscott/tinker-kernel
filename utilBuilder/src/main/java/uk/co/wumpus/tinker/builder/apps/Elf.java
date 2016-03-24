@@ -21,6 +21,7 @@ public class Elf extends Binary {
 	public void copyTo(Payload payload) throws ApplicationException {
 		try {
 			// align to a word boundary
+			LOG.info("Current length is {}", payload.length());
 			while (payload.length() % 4 != 0)
 			{
 				payload.write(new byte[] {0});
