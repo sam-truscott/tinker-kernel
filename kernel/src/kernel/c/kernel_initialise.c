@@ -25,19 +25,22 @@
 #include "tgt.h"
 #include "loader/loader.h"
 
-static void load_processes(loader_t* const loader)
+static void load_processes(const uint32_t end_of_bin, loader_t* const loader)
 {
-	extern uint32_t apps;
-	uint32_t app_start = (uint32_t) & apps;
-#if defined(ELF_LOAD_DEBUGGING)
-	debug_print("Starting at %x\n", app_start);
-#endif /* ELF_LOAD_DEBUGGING */
+	uint32_t app_start = end_of_bin;
 	uint32_t sz = *(uint32_t*) app_start;
+#if defined(ELF_LOAD_DEBUGGING)
+	debug_print("Size of %x is %x bytes\n", app_start, sz);
+#endif /* ELF_LOAD_DEBUGGING */
 	app_start += sizeof(uint32_t);
 	while (sz)
 	{
-		error_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
-		(void) elf_error;
+		const error_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
+#if defined(ELF_LOAD_DEBUGGING)
+		debug_print("Loading of process: %d\n", elf_error);
+#else
+		(void)elf_error;
+#endif /* ELF_LOAD_DEBUGGING */
 		app_start += sz;
 		// need to align to a word boundry
 		while ((app_start % sizeof(uint32_t)) != 0)
@@ -45,13 +48,35 @@ static void load_processes(loader_t* const loader)
 			app_start++;
 		}
 		sz = *(uint32_t*) app_start;
+#if defined(ELF_LOAD_DEBUGGING)
+		debug_print("Size of %x is %x bytes\n", app_start, sz);
+#endif /* ELF_LOAD_DEBUGGING */
 		app_start += sizeof(uint32_t);
 	}
 }
 
+static uint32_t calculate_start_of_pool(const uint32_t end_of_bin)
+{
+	uint32_t app_start = end_of_bin;
+	uint32_t sz = *(uint32_t*) app_start;
+	app_start += sizeof(uint32_t);
+	while (sz)
+	{
+		app_start += sz;
+		while ((app_start % sizeof(uint32_t)) != 0)
+		{
+			app_start++;
+		}
+		sz = *(uint32_t*) app_start;
+		app_start += sizeof(uint32_t);
+	}
+	return app_start;
+}
+
 void kernel_initialise(void)
 {
-	const uint32_t memory_start = bsp_get_usable_memory_start();
+	const uint32_t end_of_bin = bsp_get_usable_memory_start();
+	const uint32_t memory_start = calculate_start_of_pool(end_of_bin);
 	const uint32_t memory_end = bsp_get_usable_memory_end();
 
 	debug_print("Memory: Initialising Pool, start %X, end %x\n",
@@ -199,5 +224,5 @@ void kernel_initialise(void)
 			NULL);
 #endif /* KERNEL_SHELL */
 
-	load_processes(loader);
+	load_processes(end_of_bin, loader);
 }

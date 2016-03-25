@@ -108,11 +108,6 @@ SECTIONS{
         __euser = ALIGN(0x1000);
     }>RAM
     
-    .apps (NOLOAD) : {
-        apps = .;
-        . += 1 * 1024 * 1024;
-    } > RAM
-    
     .memory_pool ALIGN (0x1000) (NOLOAD) : {
     	end = .;
     }>RAM
