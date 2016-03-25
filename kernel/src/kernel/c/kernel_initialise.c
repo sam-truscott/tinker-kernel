@@ -25,6 +25,30 @@
 #include "tgt.h"
 #include "loader/loader.h"
 
+static void load_processes(loader_t* const loader)
+{
+	extern uint32_t apps;
+	uint32_t app_start = (uint32_t) & apps;
+#if defined(ELF_LOAD_DEBUGGING)
+	debug_print("Starting at %x\n", app_start);
+#endif /* ELF_LOAD_DEBUGGING */
+	uint32_t sz = *(uint32_t*) app_start;
+	app_start += sizeof(uint32_t);
+	while (sz)
+	{
+		error_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
+		(void) elf_error;
+		app_start += sz;
+		// need to align to a word boundry
+		while ((app_start % sizeof(uint32_t)) != 0)
+		{
+			app_start++;
+		}
+		sz = *(uint32_t*) app_start;
+		app_start += sizeof(uint32_t);
+	}
+}
+
 void kernel_initialise(void)
 {
 	const uint32_t memory_start = bsp_get_usable_memory_start();
@@ -175,42 +199,5 @@ void kernel_initialise(void)
 			NULL);
 #endif /* KERNEL_SHELL */
 
-	extern uint32_t apps;
-	uint32_t app_start = (uint32_t)&apps;
-#if defined(ELF_LOAD_DEBUGGING)
-	debug_print("Starting at %x\n", app_start);
-#endif /* ELF_LOAD_DEBUGGING */
-	uint32_t sz = *(uint32_t*)app_start;
-	app_start += 4;
-	while (sz)
-	{
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Addr = %8x, Size = %x\n", app_start, sz);
-#endif /* ELF_LOAD_DEBUGGING */
-		error_t elf_error = load_elf(
-				loader,
-				(void*)app_start,
-				"app",
-				128,
-				0);
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("ELF load result %d\n", elf_error);
-#else
-		(void)elf_error;
-#endif /* ELF_LOAD_DEBUGGING */
-		app_start += sz;
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Reading size from %8x\n", app_start);
-#endif /* ELF_LOAD_DEBUGGING */
-		// need to align to a word boundry
-		while ((app_start % 4) != 0)
-		{
-			app_start++;
-		}
-		sz = *(uint32_t*)app_start;
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Size = %x\n", sz);
-#endif /* ELF_LOAD_DEBUGGING */
-		app_start += 4;
-	}
+	load_processes(loader);
 }
