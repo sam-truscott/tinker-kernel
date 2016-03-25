@@ -5,13 +5,31 @@ public final class IntToByte {
 	private IntToByte() {
 		/* hidden */
 	}
+
+	public static final byte[] intToByteArrayBigEndian(int value) {
+	    return new byte[] {
+	            (byte)(value >>> 24),
+	            (byte)(value >>> 16),
+	            (byte)(value >>> 8),
+	            (byte)value};
+	}
+	    
+	public static final byte[] intToByteArrayLittleEndian(int value) {
+	    return new byte[] {
+	            (byte)(value),
+	            (byte)(value >>> 8),
+	            (byte)(value >>> 16),
+	            (byte)(value >>> 24)};
+	}
 	
-	public static byte[] intToByte(final int i) {
-		byte[] b = new byte[4];
-		b[0] = (byte) ((i & 0xFF000000) >> 24);
-		b[1] = (byte) ((i & 0xFF0000) >> 16);
-		b[2] = (byte) ((i & 0xFF00) >> 8);
-		b[3] = (byte) ((i & 0xFF));
-		return b;
+	public static final byte[] intToByteArray(final int value, final Endian e) {
+		switch (e) {
+		case BIG:
+			return intToByteArrayBigEndian(value);
+		case SMALL:
+			return intToByteArrayLittleEndian(value);
+		default:
+			throw new IllegalArgumentException("Unsupported endianness");
+		}
 	}
 }

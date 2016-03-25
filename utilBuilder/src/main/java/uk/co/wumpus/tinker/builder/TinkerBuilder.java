@@ -30,7 +30,8 @@ public class TinkerBuilder {
 		final File kernelBinary = File.createTempFile("tinker_kernel-", ".img");
 		kernelBinary.deleteOnExit();
 		LOG.info("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
-		final Objcopy converter = new Objcopy(args[1], kernelElf, kernelBinary);
+		final String archPrefix = args[1];
+		final Objcopy converter = new Objcopy(archPrefix, kernelElf, kernelBinary);
 		if (!converter.execute()) {
 			LOG.error("Failed to convert the kernel from ELF to a binary, aborting.");
 			return;
@@ -50,7 +51,7 @@ public class TinkerBuilder {
 		argList.remove(0);
 		argList.remove(0);
 		for (final String elf : argList) {
-			payload.addApplication(new Elf(new File(elf), endianness));
+			payload.addApplication(new Elf(new File(elf), endianness, archPrefix));
 		}
 		try {
 			payload.writeToDisk();

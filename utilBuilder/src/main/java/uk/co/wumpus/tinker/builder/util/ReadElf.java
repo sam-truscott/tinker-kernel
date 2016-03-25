@@ -6,30 +6,25 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Objcopy {
+public class ReadElf {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Objcopy.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ReadElf.class);
 	private final String commandLine;
 	private final File inputFile;
-	private final File outputFile;
 	
-	public Objcopy(
+	public ReadElf(
 			final String archPrefix,
-			final File in,
-			final File out) {
-		this.commandLine = archPrefix + "-objcopy";
+			final File in) {
+		this.commandLine = archPrefix + "-readelf";
 		this.inputFile = in;
-		this.outputFile = out;
 	}
 	
 	public boolean execute() throws IOException, InterruptedException {
 		LOG.info("Starting process {}", this.commandLine);
 		Process proc = new ProcessBuilder(
 				this.commandLine,
-				"-O",
-				"binary",
-				this.inputFile.getAbsoluteFile().toString(),
-				this.outputFile.getAbsoluteFile().toString())
+				"-h",
+				this.inputFile.getAbsoluteFile().toString())
 				.start();
 		LOG.info("Started {}", this.commandLine);
 		final int returnCode = proc.waitFor();

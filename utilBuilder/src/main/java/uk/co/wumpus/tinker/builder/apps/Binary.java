@@ -28,6 +28,10 @@ public class Binary implements Application {
 		return this.data;
 	}
 	
+	protected File getFile() {
+		return this.binary;
+	}
+	
 	private static byte[] read(final File binary) throws ApplicationException {
 		FileInputStream fis = null;
 		try {

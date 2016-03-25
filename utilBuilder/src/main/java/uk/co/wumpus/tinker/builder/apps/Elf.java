@@ -1,20 +1,28 @@
 package uk.co.wumpus.tinker.builder.apps;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.wumpus.tinker.builder.util.Endian;
+import uk.co.wumpus.tinker.builder.util.IntToByte;
+import uk.co.wumpus.tinker.builder.util.ReadElf;
 
 public class Elf extends Binary {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Elf.class);
 	private final Endian endianness;
+	private final String archPrefix;
 	
-	public Elf(final File elfFile, final Endian endianness) throws ApplicationException {
+	public Elf(
+			final File elfFile, 
+			final Endian endianness,
+			final String archPrefix) throws ApplicationException {
 		super(elfFile);
 		this.endianness = endianness;
+		this.archPrefix = archPrefix;
 	}
 	
 	@Override
@@ -27,44 +35,23 @@ public class Elf extends Binary {
 				LOG.info("Writing an alignment byte");
 				payload.write(new byte[] {0});
 			}
-			payload.write(intToByteArray(getData().length, endianness));
+			payload.write(IntToByte.intToByteArray(getData().length, endianness));
 		} catch (Exception e) {
 			throw new ApplicationException("Failed to write ELF length to payload", e);
 		}
 		super.copyTo(payload);
 	}
-	
-	private static final byte[] intToByteArray(final int value, final Endian e) {
-		switch (e) {
-		case BIG:
-			return intToByteArrayBigEndian(value);
-		case SMALL:
-			return intToByteArrayLittleEndian(value);
-		default:
-			throw new IllegalArgumentException("Unsupported endianness");
-		}
-	}
-	
-	private static final byte[] intToByteArrayBigEndian(int value) {
-	    return new byte[] {
-	            (byte)(value >>> 24),
-	            (byte)(value >>> 16),
-	            (byte)(value >>> 8),
-	            (byte)value};
-	}
-	    
-    private static final byte[] intToByteArrayLittleEndian(int value) {
-	    return new byte[] {
-	            (byte)(value),
-	            (byte)(value >>> 8),
-	            (byte)(value >>> 16),
-	            (byte)(value >>> 24)};
-	}
-
 
 	public void validate() throws ApplicationException {
 		LOG.info("Validating ELF");
-		// TODO - get/write ELF parser and validate
+		ReadElf e = new ReadElf(this.archPrefix, super.getFile());
+		try {
+			if (!e.execute()) {
+				throw new ApplicationException("This doesn't seem like a valid ELF file");
+			}
+		} catch (InterruptedException | IOException e2) {
+			throw new ApplicationException("Validation task threw an exception", e2);
+		}
 		LOG.info("Validation complete");
 	}
 }
