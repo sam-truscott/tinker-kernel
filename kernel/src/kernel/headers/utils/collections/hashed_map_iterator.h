@@ -166,7 +166,7 @@
 		} \
 	} \
 	\
-	extern inline void ITERATOR_T##_test(void) \
+	static inline void ITERATOR_T##_test(void) \
 	{ \
 		ITERATOR_T * item = ITERATOR_T##_create(NULL); \
 		ITERATOR_T##_next(item, NULL); \

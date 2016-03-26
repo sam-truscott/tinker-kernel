@@ -44,6 +44,7 @@ allprojects {
 		                "-UIDLE_DEBUGGING",
 		                "-ULOCK_DEBUGGING",
 		                "-ULOCK_TRACING",
+		                "-DUNIT_TESTS",
 		                "-UIN_DEBUGGING",
 		                "-UELF_LOAD_DEBUGGING"
 		        } else if (buildType == buildTypes.release) {

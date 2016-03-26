@@ -17,6 +17,7 @@
 #include "shell/kshell.h"
 #include "process/process_list.h"
 #include "scheduler/scheduler.h"
+#include "unit_tests.h"
 
 void kernel_main(void)
 {
@@ -59,6 +60,10 @@ void kernel_main(void)
 #if defined(KERNEL_INIT)
 	debug_print("System: Syscall OK\n");
 #endif /* KERNEL_INIT */
+
+#if defined(UNIT_TESTS)
+	run_unit_tests();
+#endif
 
 #if defined (KERNEL_INIT)
 	debug_print("System: Entering User mode\n");
