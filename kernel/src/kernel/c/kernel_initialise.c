@@ -78,6 +78,9 @@ void kernel_initialise(void)
 	const uint32_t end_of_bin = bsp_get_usable_memory_start();
 	const uint32_t memory_start = calculate_start_of_pool(end_of_bin);
 	const uint32_t memory_end = bsp_get_usable_memory_end();
+	const uint32_t size_of_apps = memory_start - end_of_bin;
+
+	debug_print("Apps start at %x, size of %x\n", end_of_bin, size_of_apps);
 
 	debug_print("Memory: Initialising Pool, start %X, end %x\n",
 			memory_start,
