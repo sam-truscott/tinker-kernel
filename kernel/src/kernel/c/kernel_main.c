@@ -17,7 +17,6 @@
 #include "shell/kshell.h"
 #include "process/process_list.h"
 #include "scheduler/scheduler.h"
-#include "unit_tests.h"
 
 void kernel_main(void)
 {
@@ -30,19 +29,24 @@ void kernel_main(void)
 	/*
 	 * Initialise the kernel into a known state;
 	 */
+#if defined(KERNEL_INIT)
 	debug_print("Kernel: Initialising...\n");
+#endif /* KERNEL_INIT */
 	kernel_initialise();
+#if defined(KERNEL_INIT)
 	debug_print("Kernel: Initialised OK.\n");
+#endif /* KERNEL_INIT */
 
 	/*
 	 * Start up message(s)
 	 */
+#if defined(KERNEL_INIT)
 	debug_print("System: Up - Kernel Version: %s\n", KERNEL_VERSION);
+#endif /* KERNEL_INIT */
 
-	// TODO move to unit tests
-#if defined(SYSCALL_DEBUGGING)
+#if defined(KERNEL_INIT)
 	debug_print("System: Testing Syscall...\n");
-#endif
+#endif /* KERNEL_INIT */
 	TINKER_API_CALL_7(
 			SYSCALL_TEST,
 			SYSCALL_TEST_1,
@@ -52,20 +56,16 @@ void kernel_main(void)
 			SYSCALL_TEST_5,
 			SYSCALL_TEST_6,
 			SYSCALL_TEST_7);
-#if defined(SYSCALL_DEBUGGING)
+#if defined(KERNEL_INIT)
 	debug_print("System: Syscall OK\n");
-#endif
+#endif /* KERNEL_INIT */
 
-#if defined(UNIT_TESTS)
-	run_unit_tests();
-#endif
-
-#if defined (KERNEL_DEBUGGING)
+#if defined (KERNEL_INIT)
 	debug_print("System: Entering User mode\n");
-#endif
+#endif /* KERNEL_INIT */
 	tgt_enter_usermode();
-#if defined (KERNEL_DEBUGGING)
+#if defined (KERNEL_INIT)
 	debug_print("System: Loading thread\n");
-#endif
+#endif /* KERNEL_INIT */
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }

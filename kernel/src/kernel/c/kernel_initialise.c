@@ -11,7 +11,9 @@
 #include "board_support.h"
 #include "kernel_assert.h"
 #include "kernel_idle.h"
+#if defined(KERNEL_INIT)
 #include "console/print_out.h"
+#endif /* KERNEL_INIT */
 #include "interrupts/interrupt_manager.h"
 #include "memory/memory_manager.h"
 #include "process/process_list.h"
@@ -78,13 +80,15 @@ void kernel_initialise(void)
 	const uint32_t end_of_bin = bsp_get_usable_memory_start();
 	const uint32_t memory_start = calculate_start_of_pool(end_of_bin);
 	const uint32_t memory_end = bsp_get_usable_memory_end();
-	const uint32_t size_of_apps = memory_start - end_of_bin;
 
+#if defined(KERNEL_INIT)
+	const uint32_t size_of_apps = memory_start - end_of_bin;
 	debug_print("Apps start at %x, size of %x\n", end_of_bin, size_of_apps);
 
 	debug_print("Memory: Initialising Pool, start %X, end %x\n",
 			memory_start,
 			memory_end);
+#endif /* KERNEL_INIT */
 
 	kernel_assert("Memory End > 0", memory_end > 0);
 	kernel_assert("Memory Size > 0", memory_end > memory_start);
@@ -96,27 +100,47 @@ void kernel_initialise(void)
 
 	mem_pool_info_t * const pool = mem_get_default_pool();
 
+#if defined(KERNEL_INIT)
 	debug_print("Time: Initialising services...\n");
+#endif /* KERNEL_INIT */
 	time_manager_t * const time_manager = time_initialise(pool);
 	alarm_manager_t * const alarm_manager = alarm_initialse(pool, time_manager);
+#if defined(KERNEL_INIT)
 	debug_print("Time: Time Manager at %x, Alarm Manager at %x\n", time_manager, alarm_manager);
+#endif /* KERNEL_INIT */
 
+#if defined(KERNEL_INIT)
 	debug_print("Registry: Initialising the Registry...\n");
+#endif /* KERNEL_INIT */
 	registry_t * const registry = registry_create(pool);
+#if defined(KERNEL_INIT)
 	debug_print("Registry: Registry at %x\n", registry);
+#endif /* KERNEL_INIT */
 
+#if defined(KERNEL_INIT)
 	debug_print("Scheduler: Initialising Scheduler...\n");
+#endif /* KERNEL_INIT */
 	scheduler_t * const scheduler = sch_create_scheduler(pool);
+#if defined(KERNEL_INIT)
 	debug_print("Scheduler: Scheduler at %x\n", scheduler);
+#endif /* KERNEL_INIT */
 
+#if defined(KERNEL_INIT)
 	debug_print("Process: Initialising Management...\n");
+#endif /* KERNEL_INIT */
 	proc_list_t * const proc_list = proc_create(pool, scheduler, alarm_manager);
+#if defined(KERNEL_INIT)
 	debug_print("Process: Process list at %x\n", proc_list);
+#endif /* KERNEL_INIT */
 
+#if defined(KERNEL_INIT)
 	debug_print("Loader: Initialising Loader...\n");
+#endif /* KERNEL_INIT */
 	loader_t * const loader = loader_create(pool, proc_list);
 
+#if defined(KERNEL_INIT)
 	debug_print("Syscall: Initialising...\n");
+#endif /* KERNEL_INIT */
 	syscall_handler_t * const syscall_handler = create_handler(
 			pool,
 			proc_list,
@@ -125,13 +149,21 @@ void kernel_initialise(void)
 			time_manager,
 			alarm_manager,
 			loader);
+#if defined(KERNEL_INIT)
 	debug_print("Syscall: Syscall Handler at %x\n", syscall_handler);
+#endif /* KERNEL_INIT */
 
+#if defined(KERNEL_INIT)
 	debug_print("Intc: Initialising Interrupt Controller...\n");
+#endif /* KERNEL_INIT */
 	interrupt_controller_t * const interrupt_controller = int_create(pool, syscall_handler, scheduler);
+#if defined(KERNEL_INIT)
 	debug_print("Intc: Initialising Interrupt Controller at %x\n", interrupt_controller);
+#endif /* KERNEL_INIT */
 
+#if defined(KERNEL_INIT)
 	debug_print("Kernel: Initialising Kernel Process...\n");
+#endif /* KERNEL_INIT */
 
 	extern char * __text;
 	extern char * __text_end;
@@ -166,7 +198,10 @@ void kernel_initialise(void)
 		.stack_size = KERNEL_IDLE_STACK,
 		.first_part = &code
 	};
+
+#if defined(KERNEL_INIT)
 	debug_print("Kernel: Process list %x\n", proc_list);
+#endif /* KERNEL_INIT */
 	process_t * kernel_process = NULL;
 	proc_create_process(
 			proc_list,
@@ -196,7 +231,7 @@ void kernel_initialise(void)
 	// Map the RAM into Kernel space
 	mem_section_t * const kernel_ram_sec = mem_sec_create(
 			mem_get_default_pool(),
-			4096,
+			MMU_PAGE_SIZE,
 			0,
 			bsp_get_usable_memory_end(),
 			MMU_RANDOM_ACCESS_MEMORY,
@@ -208,14 +243,18 @@ void kernel_initialise(void)
 	sch_set_current_thread(scheduler, kernel_idle_thread);
 
 	/* Get the BSP to configure itself */
+#if defined(KERNEL_INIT)
 	debug_print("BSP: Setting up the Board...\n");
+#endif /* KERNEL_INIT */
 	bsp_setup(interrupt_controller, time_manager, alarm_manager, kernel_process);
+#if defined(KERNEL_INIT)
 	debug_print("BSP: Setup Complete\n");
+#endif /* KERNEL_INIT */
 
 #if defined (KERNEL_SHELL)
-#if defined (KERNEL_DEBUGGING)
+#if defined (KERNEL_INIT)
 	debug_print("System: Creating kshell\n");
-#endif /* KERNEL_DEBUGGING */
+#endif /* KERNEL_INIT */
 	proc_create_thread(
 			kernel_process,
 			"kernel_shell",
