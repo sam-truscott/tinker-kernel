@@ -38,11 +38,9 @@ public class TinkerBuilder {
 		}
 		
 		final File outputFile = new File(args[0]);
-		if (outputFile.exists()) {
-			if (!outputFile.delete()) {
-				LOG.error("Failed to delete the existing package image, aborting.");
-				return;
-			}
+		if (outputFile.exists() && !outputFile.delete()) {
+			LOG.error("Failed to delete the existing package image, aborting.");
+			return;
 		}
 		final Payload payload = new Payload(outputFile, new Binary(kernelBinary));
 		final List<String> argList = new ArrayList<>(Arrays.asList(args));

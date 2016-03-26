@@ -2,6 +2,7 @@ package uk.co.wumpus.tinker.builder.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 public final class StreamUtils {
 
@@ -13,6 +14,6 @@ public final class StreamUtils {
 		byte[] stdIn = new byte[s.available()];
 		s.read(stdIn);
 		//TODO check output of read
-		return new String(stdIn);
+		return new String(stdIn, Charset.defaultCharset());
 	}
 }

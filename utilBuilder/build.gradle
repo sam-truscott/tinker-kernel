@@ -1,4 +1,6 @@
 apply plugin: 'java'
+apply plugin: 'pmd'
+apply plugin: 'findbugs'
 
 version = '1.0.0'
 sourceCompatibility = 1.8
@@ -25,4 +27,15 @@ task packageJar(type: Jar) {
     baseName = project.name + '-bin'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+ }
+ 
+findbugs {
+    sourceSets = [sourceSets.main]
 }

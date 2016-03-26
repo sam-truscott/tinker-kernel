@@ -30,7 +30,7 @@ public class Elf extends Binary {
 		try {
 			// align to a word boundary
 			LOG.info("Current length is {}", payload.length());
-			while ((payload.length() % 4) != 0)
+			while (payload.length() % 4 != 0)
 			{
 				LOG.info("Writing an alignment byte");
 				payload.write(new byte[] {0});
