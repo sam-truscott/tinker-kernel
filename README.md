@@ -150,6 +150,7 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Kernel: Review TODO/FIXMEs and add them here
+* Kernel: Re-write the debugging code to avoid the use of macros (ifdef etc)
 * Support: Create newlib port
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
