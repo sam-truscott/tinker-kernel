@@ -150,7 +150,6 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Kernel: Review TODO/FIXMEs and add them here
-* Support: Create bootstrap for kernel + services
 * Support: Create newlib port
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
