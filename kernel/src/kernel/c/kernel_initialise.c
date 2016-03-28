@@ -78,7 +78,11 @@ static uint32_t calculate_start_of_pool(const uint32_t end_of_bin)
 void kernel_initialise(void)
 {
 	const uint32_t end_of_bin = bsp_get_usable_memory_start();
-	const uint32_t memory_start = calculate_start_of_pool(end_of_bin);
+	uint32_t memory_start = calculate_start_of_pool(end_of_bin);
+	while (memory_start % MMU_PAGE_SIZE != 0)
+	{
+		memory_start++;
+	}
 	const uint32_t memory_end = bsp_get_usable_memory_end();
 
 #if defined(KERNEL_INIT)

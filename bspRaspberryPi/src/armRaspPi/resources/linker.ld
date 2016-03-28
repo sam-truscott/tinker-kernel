@@ -97,18 +97,8 @@ SECTIONS{
         __text_end = .;
     }>RAM
     
-    .utext ALIGN (0x1000) :
-    {
-        __utext = .;
-        *(.utext)
-        . = ALIGN(0x1000);
-        _euser_text = .;
-        __udata = .;
-        *(.udata)
-        __euser = ALIGN(0x1000);
-    }>RAM
-    
+    end = .;
     .memory_pool ALIGN (0x1000) (NOLOAD) : {
-    	end = .;
+    	end_aligned = .;
     }>RAM
 }

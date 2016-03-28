@@ -20,11 +20,11 @@ allprojects {
 		            "-DBUILDING_KERNEL"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {
-		            cCompiler.args "-O0", 
+		            cCompiler.args "-Og", 
 		                "-g3",
 		                "-gdwarf-4",
 		                "-DKERNEL_DEBUGGING",
-		                "-UKERNEL_INIT",
+		                "-DKERNEL_INIT",
 		                "-DKERNEL_SHELL",
 		                "-UKERNEL_SHELL_DEBUG",
 		                "-UTIMER_DEBUGGING",
