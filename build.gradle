@@ -42,8 +42,6 @@ allprojects {
 		                "-UPIPE_DEBUGGING",
 		                "-UPIPE_TRACING",
 		                "-UIDLE_DEBUGGING",
-		                "-ULOCK_DEBUGGING",
-		                "-ULOCK_TRACING",
 		                "-UUNIT_TESTS",
 		                "-UIN_DEBUGGING",
 		                "-UELF_LOAD_DEBUGGING"
