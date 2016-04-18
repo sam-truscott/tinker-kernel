@@ -127,7 +127,7 @@ void kshell_start(void)
 	kshell->ksh_input_pointer = 0;
 	bool_t running = true;
 
-	print_out("KSHELL\n");
+	print_out("Tinker Shell: Starting...\n");
 	print_out("Commands: procs, tasks, objects, mem\n");
 
 	tinker_pipe_t pipe;
@@ -144,6 +144,7 @@ void kshell_start(void)
 		return;
 	}
 
+	print_out("Tinker Shell: Ready\n");
 	while (running)
 	{
 		char * received = NULL;
@@ -165,7 +166,7 @@ void kshell_start(void)
 				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
 			}
 			uint16_t p = 0;
-			while(p != (*bytesReceived))
+			while (p != (*bytesReceived))
 			{
 				kshell->ksh_input_buffer[kshell->ksh_input_pointer++] = received[p++];
 			}
@@ -185,6 +186,7 @@ void kshell_start(void)
 						kshell_execute_command(kshell->ksh_input_buffer);
 						kshell->ksh_input_pointer = 0;
 						util_memset(kshell->ksh_input_buffer, 0, MAX_LINE_INPUT);
+						print_out("> ");
 					}
 				}
 			}
