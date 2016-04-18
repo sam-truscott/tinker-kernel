@@ -380,12 +380,12 @@ void arm_unmap_memory(
 
 void arm_print_page_table(tgt_pg_tbl_t * const table)
 {
-	debug_print("Print page table\n");
+	printp_out("Print page table\n");
 	for (uint16_t section = 0 ; section < NUM_L1_ENTRIES ; section++)
 	{
 		if ((table->lvl1_entry[section] & 1) == 1)
 		{
-			debug_print("%d: Course table\n", section);
+			printp_out("%d: Course table\n", section);
 			l2_tbl_t * const lvl2 = arm_get_lvl2_table(
 					section * ARM_MMU_SECTION_SIZE,
 					false,
@@ -395,11 +395,11 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 			{
 				if ((lvl2->l2_tbl[page] & 1) == 1)
 				{
-					debug_print("64K entry\n");
+					printp_out("64K entry\n");
 				}
 				else if ((lvl2->l2_tbl[page] & 2) == 2)
 				{
-					debug_print("%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
+					printp_out("%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
 							(section * ARM_MMU_SECTION_SIZE) + (page * MMU_PAGE_SIZE),
 							lvl2->l2_tbl[page] & 0xFFFFF000,
 							(lvl2->l2_tbl[page] & 0x4) >> 2,
@@ -411,7 +411,7 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 		}
 		else if ((table->lvl1_entry[section] & 2) == 2)
 		{
-			debug_print("%d: Section entry\n", section);
+			printp_out("%d: Section entry\n", section);
 		}
 	}
 }

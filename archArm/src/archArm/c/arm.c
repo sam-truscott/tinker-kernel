@@ -20,13 +20,9 @@
 
 void tgt_initialise(void)
 {
-#if defined (TARGET_DEBUGGING)
-	debug_print("Target: Disable MMU\n");
-#endif
+	debug_prints(TARGET, "Target: Disable MMU\n");
 	arm_disable_mmu();
-#if defined (TARGET_DEBUGGING)
-	debug_print("Target: Invalidate TLBs\n");
-#endif
+	debug_prints(TARGET, "Target: Invalidate TLBs\n");
 	arm_invalidate_all_tlbs();
 }
 
@@ -101,12 +97,11 @@ void tgt_initialise_context(
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
         arm_context->apsr = PSR_MODE_USER;
-#if defined(TARGET_DEBUGGING)
-        debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
-        debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
-        debug_print("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
-        debug_print("ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
-#endif
+
+        debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
+        debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
+        debug_print(TARGET, "ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
+        debug_print(TARGET, "ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
     }
 }
 
@@ -122,10 +117,8 @@ void tgt_prepare_context(
         if (current_process != proc)
         {
         	tgt_pg_tbl_t * const pg_table = process_get_page_table(proc);
-#if defined (TARGET_DEBUGGING)
-        	debug_print("Page table for %s\n", process_get_image(proc));
+        	debug_print(TARGET, "Page table for %s\n", process_get_image(proc));
         	arm_print_page_table(pg_table);
-#endif
         	arm_set_translation_table_base(pg_table);
         	arm_invalidate_all_tlbs();
         }
@@ -207,15 +200,11 @@ void tgt_disable_external_interrupts(void)
 
 void tgt_enter_usermode(void)
 {
-#if defined(TARGET_DEBUGGING)
-	debug_print("Kernel: Entering user mode\n");
-	debug_print("Kernel: CPSR %x\n", arm_get_cpsr());
-#endif
+	debug_prints(TARGET, "Kernel: Entering user mode\n");
+	debug_print(TARGET, "Kernel: CPSR %x\n", arm_get_cpsr());
 	arm_enable_irq();
-#if defined(TARGET_DEBUGGING)
-	debug_print("Kernel: CPSR %x\n", arm_get_cpsr());
-	debug_print("Kernel: User mode entered\n");
-#endif
+	debug_print(TARGET, "Kernel: CPSR %x\n", arm_get_cpsr());
+	debug_prints(TARGET, "Kernel: User mode entered\n");
 }
 
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)

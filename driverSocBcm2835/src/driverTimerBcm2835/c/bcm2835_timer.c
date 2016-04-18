@@ -35,10 +35,8 @@ static void bcm2835_timer_setup(
 		timer_callback * const call_back,
 		void * const param)
 {
-#if defined(TIMER_DEBUGGING)
-	debug_print("BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
+	debug_print(TIMER, "BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
 			usr_data, timeout->seconds, timeout->nanoseconds, call_back);
-#endif
 	if (usr_data)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
@@ -61,15 +59,13 @@ static void bcm2835_timer_setup(
 			{
 				const uint32_t new_control = (1 << data->instance);
 				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), new_control);
-#if defined(TIMER_DEBUGGING)
-				debug_print("BCM2835: Clearing status for instance %d, base %x, offset %x, control %x -> %x\n",
+				debug_print(TIMER, "BCM2835: Clearing status for instance %d, base %x, offset %x, control %x -> %x\n",
 						data->instance, data->base, CONTROL_OFFSET, old_control, new_control);
-#endif
 			}
 			const uint32_t timeAsUs = tinker_timer_get_microseconds(timeout);
 #if defined(TIMER_DEBUGGING)
 			const uint64_t current = *(uint64_t*)((uint8_t*)data->base + (CLOCK_OFFSET*2));
-			debug_print("BCM2835: Setting up timer for instance %d, base %x, offset %x, value %d, current %d\n",
+			debug_print(TIMER, "BCM2835: Setting up timer for instance %d, base %x, offset %x, value %d, current %d\n",
 					data->instance,
 					data->base,
 					offset,
@@ -106,10 +102,8 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 				{
 					// clear the bit in control
 					out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), (1 << data->instance));
-#if defined(TIMER_DEBUGGING)
-					debug_print("BCM2835: Cancelling status for instance %d, base %x, offset %x, control %x -> %x\n",
+					debug_print(TIMER, "BCM2835: Cancelling status for instance %d, base %x, offset %x, control %x -> %x\n",
 							data->instance, data->base, CONTROL_OFFSET, control, (1 << data->instance));
-#endif
 				}
 			}
 			else
@@ -124,21 +118,15 @@ static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t pa
 {
 	error_t result;
 	bcm2835_timer_cancel(param);
-#if defined(TIMER_DEBUGGING)
-	debug_print("BCM2835: ISR for timer\n");
-#endif
+	debug_prints(TIMER, "BCM2835: ISR for timer\n");
 	if (param)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)param;
 		if (data->callback)
 		{
-#if defined(TIMER_DEBUGGING)
-			debug_print("BCM2835: Calling back to %x\n", data->callback);
-#endif
+			debug_print(TIMER, "BCM2835: Calling back to %x\n", data->callback);
 			data->callback(context, data->param);
-#if defined(TIMER_DEBUGGING)
-			debug_print("BCM2835: Called back\n");
-#endif
+			debug_prints(TIMER, "BCM2835: Called back\n");
 			result = NO_ERROR;
 		}
 		else

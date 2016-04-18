@@ -80,8 +80,9 @@ void error_print(const char * const msg, ...)
 	__builtin_va_end(list);
 }
 
-void debug_print(const char * const msg, ...)
+void debug_print1(const debug_subsystem_t subsys, const char * const msg, ...)
 {
+	(void)subsys;
 #if defined(KERNEL_DEBUGGING)
 	const char * ptr = msg;
 
