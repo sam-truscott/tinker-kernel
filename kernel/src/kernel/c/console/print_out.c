@@ -80,7 +80,12 @@ void error_print(const char * const msg, ...)
 	__builtin_va_end(list);
 }
 
-void debug_print1(const bool log, const char * const msg, ...)
+void debug_print1(
+		const bool log,
+		const char * const file,
+		const uint32_t line,
+		const char * const msg,
+		...)
 {
 #if defined(KERNEL_DEBUGGING)
 	if (log)
@@ -88,6 +93,9 @@ void debug_print1(const bool log, const char * const msg, ...)
 		const char * ptr = msg;
 
 		print_time();
+		print_out("F:");
+		print_out(file);
+		printp_out(" L:%d ", line);
 
 		__builtin_va_list list;
 		__builtin_va_start(list, msg);
@@ -109,6 +117,8 @@ void debug_print1(const bool log, const char * const msg, ...)
 #else
 	(void)log;
 	(void)msg;
+	(void)file;
+	(void)line;
 #endif
 }
 

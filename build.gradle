@@ -40,7 +40,8 @@ allprojects {
 		            "-std=gnu11",
 		            "-DBUILDING_KERNEL",
 		            "-DKERNEL_DEBUGGING",
-                    "-DDEBUG_VALUE=0x20000"
+                    //"-DDEBUG_VALUE=0x20000"
+                    "-DDEBUG_VALUE=0xFFFFFFFF"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {
 		            cCompiler.args "-Og", 
