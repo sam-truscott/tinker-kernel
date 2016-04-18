@@ -93,9 +93,19 @@ void debug_print1(
 		const char * ptr = msg;
 
 		print_time();
-		print_out("F:");
-		print_out(file);
-		printp_out(" L:%d ", line);
+		const char * file_ptr = file;
+		const char * print_file_ptr = file_ptr;
+		while (*file_ptr)
+		{
+			if (*file_ptr == '\\')
+			{
+				print_file_ptr = file_ptr+1;
+			}
+			file_ptr++;
+		}
+		printp_out("%8d:", line);
+		print_out(print_file_ptr);
+		print_out("->");
 
 		__builtin_va_list list;
 		__builtin_va_start(list, msg);
