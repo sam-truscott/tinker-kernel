@@ -29,12 +29,12 @@ static void load_processes(const uint32_t end_of_bin, loader_t* const loader)
 {
 	uint32_t app_start = end_of_bin;
 	uint32_t sz = *(uint32_t*) app_start;
-	debug_print(ELF_LOADER, "Size of %x is %x bytes\n", app_start, sz);
+	debug_print(ELF_LOADER, "Loader: Size of %x is %x bytes\n", app_start, sz);
 	app_start += sizeof(uint32_t);
 	while (sz)
 	{
 		const error_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
-		debug_print(ELF_LOADER, "Loading of process: %d\n", elf_error);
+		debug_print(ELF_LOADER, "Loader: Loading of process: %d\n", elf_error);
 		app_start += sz;
 		// need to align to a word boundry
 		while ((app_start % sizeof(uint32_t)) != 0)
@@ -42,7 +42,7 @@ static void load_processes(const uint32_t end_of_bin, loader_t* const loader)
 			app_start++;
 		}
 		sz = *(uint32_t*) app_start;
-		debug_print(ELF_LOADER, "Size of %x is %x bytes\n", app_start, sz);
+		debug_print(ELF_LOADER, "Loader: Size of %x is %x bytes\n", app_start, sz);
 		app_start += sizeof(uint32_t);
 	}
 }
@@ -75,7 +75,7 @@ void kernel_initialise(void)
 	}
 	const uint32_t memory_end = bsp_get_usable_memory_end();
 
-	debug_print(INITIALISATION, "Apps start at %x, size of %x\n", end_of_bin, memory_start - end_of_bin);
+	debug_print(INITIALISATION, "Loader: Apps start at %x, size of %x\n", end_of_bin, memory_start - end_of_bin);
 
 	debug_print(INITIALISATION, "Memory: Initialising Pool, start %X, end %x\n",
 			memory_start,

@@ -19,8 +19,7 @@ REGISTRY            0x00002000
 PIPE                0x00004000
 PIPE_TRACE          0x00008000
 IDLE                0x00010000
-IN                  0x00020000
-ELF_LOADER          0x00040000
+ELF_LOADER          0x00020000
 */
 
 allprojects {
@@ -41,7 +40,7 @@ allprojects {
 		            "-std=gnu11",
 		            "-DBUILDING_KERNEL",
 		            "-DKERNEL_DEBUGGING",
-                    "-DDEBUG_VALUE=0x60003"
+                    "-DDEBUG_VALUE=0x20000"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {
 		            cCompiler.args "-Og", 

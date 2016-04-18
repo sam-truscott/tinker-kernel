@@ -68,7 +68,7 @@ error_t load_elf(
 	status = el_init(&ctx);
 	if (EL_OK != status)
 	{
-		debug_print(ELF_LOADER, "Failed to init ELF context: %d\n", status);
+		debug_print(ELF_LOADER, "Loader: Failed to init ELF context: %d\n", status);
 		return INVALID_ELF;
 	}
 
@@ -76,7 +76,7 @@ error_t load_elf(
 	status = el_load(&ctx, alloccb);
 	if (EL_OK != status)
 	{
-		debug_print(ELF_LOADER, "Failed to load ELF: %d\n", status);
+		debug_print(ELF_LOADER, "Loader: Failed to load ELF: %d\n", status);
 		return INVALID_ELF;
 	}
 
@@ -99,7 +99,7 @@ error_t load_elf(
 				ctr++;
 				if (is_debug_enabled(ELF_LOADER))
 				{
-					debug_print(ELF_LOADER, "PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
+					debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
 							ctr,
 							addr.p_type,
 							addr.p_offset,
@@ -110,15 +110,15 @@ error_t load_elf(
 							addr.p_flags);
 					if (addr.p_flags & PF_X)
 					{
-						debug_print(ELF_LOADER, "PT_LOAD: %d: Executable\n", ctr);
+						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Executable\n", ctr);
 					}
 					if (addr.p_flags & PF_W)
 					{
-						debug_print(ELF_LOADER, "PT_LOAD: %d: Writable\n", ctr);
+						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Writable\n", ctr);
 					}
 					if (addr.p_flags & PF_R)
 					{
-						debug_print(ELF_LOADER, "PT_LOAD: %d: Readable\n", ctr);
+						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Readable\n", ctr);
 					}
 				}
 				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(loader->pool, sizeof(tinker_mempart_t));
@@ -164,7 +164,7 @@ error_t load_elf(
 		}
 		else
 		{
-			debug_print(ELF_LOADER, "Failed to find next section: %d\n", status);
+			debug_print(ELF_LOADER, "Loader: Failed to find next section: %d\n", status);
 			break;
 		}
 	}
