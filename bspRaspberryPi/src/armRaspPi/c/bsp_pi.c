@@ -41,23 +41,26 @@ static time_manager_t * time_manager = NULL;
 void bsp_initialise(void)
 {
 	early_uart_init();
-#if defined (TARGET_DEBUGGING)
-	early_uart_put("BSP\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		early_uart_put("BSP\n");
+	}
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
 
-#if defined (TARGET_DEBUGGING)
-	early_uart_put("Target init done\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		early_uart_put("Target init done\n");
+	}
 
 	/* Initialise the Interrupt Vector Table */
 	ivt_initialise();
 
-#if defined (TARGET_DEBUGGING)
-	early_uart_put("Vector init done\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		early_uart_put("Vector init done\n");
+	}
 }
 
 void bsp_setup(
@@ -93,9 +96,10 @@ void bsp_setup(
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
 	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
 
-#if defined(TARGET_DEBUGGING)
-	arm_print_page_table(process_get_page_table(kernel_process));
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		arm_print_page_table(process_get_page_table(kernel_process));
+	}
 
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
@@ -153,27 +157,29 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 static void bsp_scheduler_timeout(tgt_context_t * const context, void * const param)
 {
 	(void)param; // UNUSED
-#if defined(TARGET_DEBUGGING)
-	debug_print(TARGET, "BSP: ----------------------\n");
-	debug_print(TARGET, "BSP: Scheduler timeout\n");
-	debug_print(TARGET, "BSP: Mode %d\n", arm_get_psr_mode());
-	debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
-	debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
-	debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-	debug_print(TARGET, "BSP: sp %x lr %x\n", context->sp, context->lr);
-	debug_print(TARGET, "BSP: ----------------------\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: Scheduler timeout\n");
+		debug_print(TARGET, "BSP: Mode %d\n", arm_get_psr_mode());
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x\n", context->sp, context->lr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
 	int_context_switch_interrupt(interrupt_controller, context);
-#if defined(TARGET_DEBUGGING)
-	debug_print(TARGET, "BSP: ----------------------\n");
-	debug_print(TARGET, "BSP: Scheduler timeout done\n");
-	debug_print(TARGET, "BSP: Mode %d\n", arm_get_psr_mode());
-	debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
-	debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
-	debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-	debug_print(TARGET, "BSP: sp %x lr %x\n", context->sp, context->lr);
-	debug_print(TARGET, "BSP: ----------------------\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: Scheduler timeout done\n");
+		debug_print(TARGET, "BSP: Mode %d\n", arm_get_psr_mode());
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x\n", context->sp, context->lr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
 }
 
 void bsp_enable_schedule_timer(void)

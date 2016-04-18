@@ -123,15 +123,11 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 		thread_queue_t * const queue = &(scheduler->priority_queues[thread_priority]);
 		if (!thread_queue_t_contains(queue, t))
 		{
-#if defined(SCHEDULER_TRACING)
-			debug_print("Push thread %s onto priority queue %d\n", thread_get_name(t), thread_priority);
-#endif
+			debug_print(SCHEDULING_TRACE, "Push thread %s onto priority queue %d\n", thread_get_name(t), thread_priority);
 			thread_queue_t_push(queue, t);
 		}
 
-#if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: New thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
-#endif
+		debug_print(SCHEDULING, "Scheduler: New thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 
 		/*
 		 * a new thread that's higher than the current priority
@@ -151,9 +147,7 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 			insert_lower_priority_queue_to_stack(scheduler, thread_priority, queue);
 		}
 	}
-#if defined(SCHEDULER_DEBUGGING)
-	debug_print("Scheduler: New priority, now (%d)\n", scheduler->curr_priority);
-#endif
+	debug_print(SCHEDULING, "Scheduler: New priority, now (%d)\n", scheduler->curr_priority);
 }
 
 void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
@@ -164,9 +158,7 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 		thread_queue_t * const queue = &(scheduler->priority_queues[thread_priority]);
 		const bool_t removed = thread_queue_t_remove(queue, t);
 
-#if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
-#endif
+		debug_print(SCHEDULING, "Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 		if (removed)
 		{
 			scheduler->eval_new_thread = true;
@@ -195,9 +187,7 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 			}
 		}
 	}
-#if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: Exit priority, now (%d)\n", scheduler->curr_priority);
-#endif
+	debug_print(SCHEDULING, "Scheduler: Exit priority, now (%d)\n", scheduler->curr_priority);
 }
 
 void sch_notify_terminated(scheduler_t * const scheduler, thread_t * const t)
@@ -227,9 +217,7 @@ void sch_notify_change_priority(
 	{
 		const priority_t thread_priority = thread_get_priority(t);
 
-#if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: Change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
-#endif
+		debug_print(SCHEDULING, "Scheduler: Change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 
 		/* remove it from the old list */
 		thread_queue_t * queue = &(scheduler->priority_queues[original_priority]);
@@ -280,9 +268,7 @@ void sch_notify_change_priority(
 			}
 		}
 	}
-#if defined(SCHEDULER_DEBUGGING)
-		debug_print("Scheduler: Change priority, now (%d)\n", scheduler->curr_priority);
-#endif
+	debug_print(SCHEDULING, "Scheduler: Change priority, now (%d)\n", scheduler->curr_priority);
 }
 
 void sch_terminate_current_thread(
@@ -388,15 +374,14 @@ void sch_set_context_for_next_thread(
 				 * and potenatially the process is dead too if all threads have gone */
 				thread_get_parent(current_thread));
 	}
-#if defined(SCHEDULER_DEBUGGING)
-	debug_print("Scheduler: Current Thread is %s, new Thread is %s\n",
-			current_thread == NULL ? "NULL" : thread_get_name(current_thread),
-			scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
-	debug_print("Scheduler: Switching to %s\n", scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
-#endif
-#if defined(SCHEDULER_TRACING)
-	debug_print("Scheduler: Current queue size is %d\n", thread_queue_t_size(scheduler->curr_queue));
-#endif
+	if (is_debug_enabled(SCHEDULING))
+	{
+		debug_print(SCHEDULING, "Scheduler: Current Thread is %s, new Thread is %s\n",
+				current_thread == NULL ? "NULL" : thread_get_name(current_thread),
+				scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
+		debug_print(SCHEDULING, "Scheduler: Switching to %s\n", scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
+		debug_print(SCHEDULING_TRACE, "Scheduler: Current queue size is %d\n", thread_queue_t_size(scheduler->curr_queue));
+	}
 	if (thread_queue_t_size(scheduler->curr_queue) > 1)
 	{
 		bsp_enable_schedule_timer();

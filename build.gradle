@@ -1,6 +1,28 @@
 apply plugin: 'assembler'
 apply plugin: 'c'
 
+/*
+INITIALISATION      0x00000001
+SHELL               0x00000002
+TIMER               0x00000004
+INTC                0x00000008
+MEMORY              0x00000010
+COLLECTIONS         0x00000020
+PROCESS             0x00000040
+SCHEDULING          0x00000080
+SCHEDULING_TRACE    0x00000100
+SHM                 0x00000200
+TARGET              0x00000400
+SYSCALL             0x00000800
+ALARM               0x00001000
+REGISTRY            0x00002000
+PIPE                0x00004000
+PIPE_TRACE          0x00008000
+IDLE                0x00010000
+IN                  0x00020000
+ELF_LOADER          0x00040000
+*/
+
 allprojects {
 	model {
 	    buildTypes {
@@ -17,34 +39,16 @@ allprojects {
 		            "-c",
 		            "-fmessage-length=0",
 		            "-std=gnu11",
-		            "-DBUILDING_KERNEL"
+		            "-DBUILDING_KERNEL",
+		            "-DKERNEL_DEBUGGING",
+                    "-DDEBUG_VALUE=0x60003"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {
 		            cCompiler.args "-Og", 
 		                "-g3",
 		                "-gdwarf-4",
-		                "-DKERNEL_DEBUGGING",
-		                "-DKERNEL_INIT",
-		                "-DKERNEL_SHELL",
-		                "-UKERNEL_SHELL_DEBUG",
-		                "-UTIMER_DEBUGGING",
-		                "-UINTC_DEBUGGING",
-		                "-UMEMORY_DEBUGGING",
-		                "-UDEBUG_COLLECTIONS",
-		                "-UPROCESS_DEBUGGING",
-		                "-USCHEDULER_DEBUGGING",
-		                "-USCHEDULER_TRACING",
-		                "-USHM_DEBUGGING",
-		                "-UTARGET_DEBUGGING",
-		                "-USYSCALL_DEBUGGING",
-		                "-UALARM_DEBUGGING",
-		                "-UREGISTRY_DEBUGGING",
-		                "-UPIPE_DEBUGGING",
-		                "-UPIPE_TRACING",
-		                "-UIDLE_DEBUGGING",
-		                "-UUNIT_TESTS",
-		                "-UIN_DEBUGGING",
-		                "-UELF_LOAD_DEBUGGING"
+		                "-DKERNEL_SHELL"
+		                "-UUNIT_TESTS"
 		        } else if (buildType == buildTypes.release) {
 		            cCompiler.args "-Ofast",
 		                "-g0",

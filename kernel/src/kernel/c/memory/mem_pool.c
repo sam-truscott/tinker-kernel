@@ -33,9 +33,7 @@ bool_t 	mem_init_memory_pool(
 {
 	mem_pool_info_t * pool_info = NULL;
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: creating new pool at 0x%x for %d bytes\n", base_addr, pool_size);
-#endif
+	debug_print(MEMORY, "mem: creating new pool at 0x%x for %d bytes\n", base_addr, pool_size);
 
 	/*
 	 * put the first info block after the heap at the beginning
@@ -51,9 +49,7 @@ bool_t 	mem_init_memory_pool(
 		*pool = pool_info;
 	}
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: new pool is at %x\n", pool_info);
-#endif
+	debug_print(MEMORY, "mem: new pool is at %x\n", pool_info);
 
 	return true;
 }
@@ -65,9 +61,7 @@ bool_t	mem_init_process_memory(
 {
 	bool_t ret = false;
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: initalising process pool %x size %x\n", pool, size);
-#endif
+	debug_print(MEMORY, "mem: initalising process pool %x size %x\n", pool, size);
 
 	/* allocate that from RAM */
 	const uint32_t proc_memory_pool = (uint32_t)mem_alloc_aligned(
@@ -75,9 +69,7 @@ bool_t	mem_init_process_memory(
 			size,
 			MMU_PAGE_SIZE);
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: initalised process pool %x size %x result %x\n", pool, size, proc_memory_pool);
-#endif
+	debug_print(MEMORY, "mem: initalised process pool %x size %x result %x\n", pool, size, proc_memory_pool);
 
 	if (proc_memory_pool != 0)
 	{
@@ -109,9 +101,7 @@ void *  mem_realloc(
 {
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
 	void * const new_base = mspace_realloc(pool->space, mem, size);
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: base at 0x%x, size 0x%x, now 0x%x\n", mem, size, new_base);
-#endif
+	debug_print(MEMORY, "mem: base at 0x%x, size 0x%x, now 0x%x\n", mem, size, new_base);
 	return new_base;
 }
 
@@ -122,16 +112,12 @@ void* mem_alloc_aligned(
 {
 	void* new_base = NULL;
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: looking for %d bytes in pool 0x%x\n", size, pool);
-#endif
+	debug_print(MEMORY, "mem: looking for %d bytes in pool 0x%x\n", size, pool);
 
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
 	new_base = mspace_memalign(pool->space, alignment, size);
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: base at 0x%x, size 0x%x\n", new_base, size);
-#endif
+	debug_print(MEMORY, "mem: base at 0x%x, size 0x%x\n", new_base, size);
 
 	return new_base;
 }
@@ -140,9 +126,7 @@ void mem_free(
 		mem_pool_info_t * const pool,
 		const void * const base)
 {
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: free pool 0x%x, base 0x%x\n", pool, base);
-#endif
+	debug_print(MEMORY, "mem: free pool 0x%x, base 0x%x\n", pool, base);
 	mspace_free(pool->space, (void*)base);
 }
 

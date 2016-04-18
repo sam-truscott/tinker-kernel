@@ -80,32 +80,35 @@ void error_print(const char * const msg, ...)
 	__builtin_va_end(list);
 }
 
-void debug_print1(const debug_subsystem_t subsys, const char * const msg, ...)
+void debug_print1(const bool log, const char * const msg, ...)
 {
-	(void)subsys;
 #if defined(KERNEL_DEBUGGING)
-	const char * ptr = msg;
-
-	print_time();
-
-	__builtin_va_list list;
-	__builtin_va_start(list, msg);
-	while(*ptr)
+	if (log)
 	{
-		if(*ptr == '%')
+		const char * ptr = msg;
+
+		print_time();
+
+		__builtin_va_list list;
+		__builtin_va_start(list, msg);
+		while(*ptr)
 		{
-			print_out_process(&ptr, &list);
+			if(*ptr == '%')
+			{
+				print_out_process(&ptr, &list);
+				ptr++;
+			}
+			else
+			{
+				print_out_print_char(*ptr);
+			}
 			ptr++;
 		}
-		else
-		{
-			print_out_print_char(*ptr);
-		}
-		ptr++;
+		__builtin_va_end(list);
 	}
-	__builtin_va_end(list);
 #else
-	if (msg) {}
+	(void)log;
+	(void)msg;
 #endif
 }
 

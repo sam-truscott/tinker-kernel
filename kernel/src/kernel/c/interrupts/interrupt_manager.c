@@ -55,20 +55,16 @@ error_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_cont
 	{
 		intc->is_external = true;
 		const thread_t * const current_thread = sch_get_current_thread(intc->scheduler);
-#if defined(INTC_DEBUGGING)
-		debug_print("INTC: Thread before external vector: %s\n", thread_get_name(current_thread));
-#endif
+		debug_print(INTC, "INTC: Thread before external vector: %s\n", thread_get_name(current_thread));
 		const error_t intc_result = intc_handle(intc->interrupt_manager_root, context);
-	#if defined(INTC_DEBUGGING)
-		debug_print("INTC: Switching thread due to external interrupt\n");
-	#endif
+		debug_prints(INTC, "INTC: Switching thread due to external interrupt\n");
 		sch_set_context_for_next_thread(
 				intc->scheduler, context,
 				thread_get_state(current_thread));
-	#if defined(INTC_DEBUGGING)
-		const thread_t * const new_thread = sch_get_current_thread(intc->scheduler);
-		debug_print("INTC: Thread after external vector: %s\n", thread_get_name(new_thread));
-	#endif
+		if (is_debug_enabled(INTC))
+		{
+			debug_print(INTC, "INTC: Thread after external vector: %s\n", thread_get_name(sch_get_current_thread(intc->scheduler)));
+		}
 		intc->is_external = false;
 		return intc_result;
 	}

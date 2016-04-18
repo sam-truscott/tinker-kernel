@@ -90,16 +90,17 @@ error_t alarm_set_alarm(
 		uint32_t * const alarm_id)
 {
 	error_t ret = NO_ERROR;
-#if defined(ALARM_DEBUGGING)
-	if (timeout)
+	if (is_debug_enabled(ALARM))
 	{
-		debug_print("Alarms: Setting up a new alarm for %d.%d\n", timeout->seconds, timeout->nanoseconds);
+		if (timeout)
+		{
+			debug_print(ALARM, "Alarms: Setting up a new alarm for %d.%d\n", timeout->seconds, timeout->nanoseconds);
+		}
+		else
+		{
+			debug_prints(ALARM, "Alarms: Setting up a new alarm for NULL\n");
+		}
 	}
-	else
-	{
-		debug_print("Alarms: Setting up a new alarm for NULL\n");
-	}
-#endif
 	if (am && timeout)
 	{
 	    tinker_time_t now = TINKER_ZERO_TIME;
@@ -138,9 +139,7 @@ error_t alarm_set_alarm(
 					alarm_calculate_next_alarm(am, new_alarm);
 					if (alarm_id)
 					{
-#if defined(ALARM_DEBUGGING)
-						debug_print("Alarms: New alarm id is %d\n", new_alarm_id);
-#endif
+						debug_print(ALARM, "Alarms: New alarm id is %d\n", new_alarm_id);
 						*alarm_id = new_alarm_id;
 					}
 					if (am->next_alarm)
@@ -180,48 +179,34 @@ error_t alarm_unset_alarm(
 		const uint32_t alarm_id)
 {
 	error_t ret = NO_ERROR;
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Unset alarm id %d\n", alarm_id);
-#endif
+	debug_print(ALARM, "Alarms: Unset alarm id %d\n", alarm_id);
 	alarm_t * alarm = NULL;
 	const bool_t got = alarm_list_t_get(am->alarm_list, alarm_id, &alarm);
 	if (got && alarm)
 	{
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Removing %d\n", alarm_id);
-#endif
+		debug_print(ALARM, "Alarms: Removing %d\n", alarm_id);
 		alarm_list_t_remove_item(am->alarm_list, alarm);
 		if (alarm == am->next_alarm)
 		{
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Disabling the alarm timer\n");
-#endif
+			debug_prints(ALARM, "Alarms: Disabling the alarm timer\n");
 			alarm_disable_timer(am);
 			am->next_alarm = NULL;
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Calculating next timer\n");
-#endif
+			debug_prints(ALARM, "Alarms: Calculating next timer\n");
 			alarm_calculate_next_alarm(am, NULL);
 			if (am->next_alarm)
 			{
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Re-enabling the timer\n");
-#endif
+				debug_prints(ALARM, "Alarms: Re-enabling the timer\n");
 				alarm_enable_timer(am);
 			}
 		}
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Deleting timer\n");
-#endif
+		debug_prints(ALARM, "Alarms: Deleting timer\n");
 		alarm_delete(alarm);
 	}
 	else
 	{
 		ret = ALARM_ID_UNKNOWN;
 	}
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Removing %d result %d\n", alarm_id, ret);
-#endif
+	debug_print(ALARM, "Alarms: Removing %d result %d\n", alarm_id, ret);
 	return ret;
 }
 
@@ -258,9 +243,7 @@ static void alarm_handle_timer_timeout(tgt_context_t * const context, void * con
 	alarm_manager_t * const am = (alarm_manager_t*)param;
 	if (am && am->next_alarm)
 	{
-#if defined(ALARM_DEBUGGING)
-		debug_print("Alarms: An alarm needs to fire\n");
-#endif
+		debug_prints(ALARM, "Alarms: An alarm needs to fire\n");
 		alarm_fire_callback(am);
 		alarm_calculate_next_alarm(am, NULL);
 	}
@@ -325,9 +308,7 @@ const tinker_time_t* alarm_get_time(const alarm_t * const alarm)
 
 void alarm_fire_callback(alarm_manager_t * const am)
 {
-#if defined(ALARM_DEBUGGING)
-	debug_print("Alarms: Alarm Id %d calling %x\n", am->next_alarm->id, am->next_alarm->call_back);
-#endif
+	debug_print(ALARM, "Alarms: Alarm Id %d calling %x\n", am->next_alarm->id, am->next_alarm->call_back);
 	am->next_alarm->call_back(am, am->next_alarm->id, am->next_alarm->usr_data);
 }
 

@@ -71,16 +71,10 @@ static inline mem_pool_info_t * get_parent_pool(
 	mem_pool_info_t * parent_pool;
 	if (curr_thread == NULL)
 	{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Create process from default pool\n");
-#endif
+		debug_prints(PROCESS, "Process: Create process from default pool\n");
 		parent_pool = mem_get_default_pool();
 	} else {
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Create process for %s from parent\n", image);
-#else
-		(void)image;
-#endif
+		debug_print(PROCESS, "Process: Create process for %s from parent\n", image);
 		// if the parent is the kernel, use the default pool instead
 		// of the kernel's
 		const process_t * const parent = thread_get_parent(curr_thread);
@@ -119,15 +113,12 @@ static inline bool_t initialise_mem_pool(
 		tinker_meminfo_t * const meminfo,
 		mem_pool_info_t ** new_mem_pool)
 {
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
+		debug_print(PROCESS,
+				"Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
 				image,
 				meminfo->heap_size,
 				meminfo->stack_size,
 				parent_pool);
-#else
-		(void)image;
-#endif
 	return mem_init_process_memory(
 			parent_pool,
 			new_mem_pool,
@@ -148,9 +139,7 @@ static inline error_t create_process(
 		const mem_section_t * const ksection,
 		process_t ** proc)
 {
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Building process: %s\n", image);
-#endif
+	debug_print(PROCESS, "Process: Building process: %s\n", image);
 	return process_create(
 			list->scheduler,
 			list->alarm_manager,
@@ -170,11 +159,7 @@ static inline error_t create_process_object(
 		process_t * const proc,
 		object_t * process_obj)
 {
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Building process object: %s\n", image);
-#else
-		(void)image;
-#endif
+	debug_print(PROCESS, "Process: Building process object: %s\n", image);
 	error_t ret = obj_create_process(
 			list,
 			process_get_mem_pool(proc),
@@ -196,11 +181,7 @@ static inline error_t create_thread_object(
 		const uint32_t flags,
 		object_t ** thread_obj)
 {
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Building process entry thread: %s\n", image);
-#else
-		(void)image;
-#endif
+	debug_print(PROCESS, "Process: Building process entry thread: %s\n", image);
 	return proc_create_thread(
 			proc,
 			initial_task_name,
@@ -218,15 +199,9 @@ static inline bool_t add_process_to_list(
 		process_t * const proc)
 {
 
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Adding process to process list: %s\n", image);
-#else
-		(void)image;
-#endif
+	debug_print(PROCESS, "Process: Adding process to process list: %s\n", image);
 	bool_t ok = (process_list_t_add(list->process_list, proc));
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Add process to process list: %s = %d\n", image, ok);
-#endif
+	debug_print(PROCESS, "Process: Add process to process list: %s = %d\n", image, ok);
 	return ok;
 }
 
@@ -242,11 +217,9 @@ error_t proc_create_process(
 {
 	error_t ret = NO_ERROR;
 	process_t * proc = NULL;
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Create process with image %s, entry %x, priority %d, meminfo %x, flags %x\n",
+	debug_print(PROCESS, "Process: Create process with image %s, entry %x, priority %d, meminfo %x, flags %x\n",
 			image, entry_point, priority, meminfo, flags);
-	debug_print("Process: Create process with heap %x stack %x\n", meminfo->heap_size, meminfo->stack_size);
-#endif
+	debug_print(PROCESS, "Process: Create process with heap %x stack %x\n", meminfo->heap_size, meminfo->stack_size);
 
 	if (process)
 	{
@@ -366,21 +339,15 @@ error_t proc_create_thread(
 	/* initialise the thread */
 	if (thread)
 	{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Created thread %s on process %s, entry %x OK\n", name, process_get_image(process), entry_point);
-#endif
+		debug_print(PROCESS, "Process: Created thread %s on process %s, entry %x OK\n", name, process_get_image(process), entry_point);
 		/* add the thread to the process list */
 		object_number_t objno = INVALID_OBJECT_ID;
 		if (process_add_thread(process, thread, &objno))
 		{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Added thread %s to process %s OK\n", name, process_get_image(process));
-#endif
+		debug_print(PROCESS, "Process: Added thread %s to process %s OK\n", name, process_get_image(process));
 			if (thread_get_state(thread) != THREAD_READY)
 			{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Thread %s is NOT ready\n", name);
-#endif
+				debug_print(PROCESS, "Process: Thread %s is NOT ready\n", name);
 				ret = OUT_OF_MEMORY;
 			}
 		}

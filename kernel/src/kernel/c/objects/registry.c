@@ -78,9 +78,7 @@ registry_t * registry_create(mem_pool_info_t * const pool)
 	registry_t * reg = mem_alloc(pool, sizeof(registry_t));
 	if (reg)
 	{
-#if defined(REGISTRY_DEBUGGING)
-		debug_print("Registry: Initialising...\n");
-#endif
+		debug_prints(REGISTRY, "Registry: Initialising...\n");
 		reg->registry = registry_map_t_create(
 				hash_basic_string,
 				hash_equal_string,
@@ -103,9 +101,7 @@ error_t regsitery_add(
 		const object_number_t number)
 {
 	error_t ret = NO_ERROR;
-#if defined(REGISTRY_DEBUGGING)
-	debug_print("Registry: Adding entry %s with object %d from process %x\n", name, number, process);
-#endif
+	debug_print(REGISTRY, "Registry: Adding entry %s with object %d from process %x\n", name, number, process);
 	if (reg)
 	{
 		registry_key_t key;
@@ -166,9 +162,7 @@ error_t registry_get(
 		process_t ** process,
 		object_number_t * objno)
 {
-#if defined(REGISTRY_DEBUGGING)
-	debug_print("Registry: Getting entry %s\n", name);
-#endif
+	debug_print(REGISTRY, "Registry: Getting entry %s\n", name);
 	error_t ret = NO_ERROR;
 	if (reg)
 	{
@@ -196,9 +190,7 @@ error_t registry_get(
 		{
 			ret = OBJECT_NOT_IN_REGISTRY;
 		}
-	#if defined(REGISTRY_DEBUGGING)
-		debug_print("Registry: Get entry %s, ret %d, objno %d\n", name, ret, *objno);
-	#endif
+		debug_print(REGISTRY, "Registry: Get entry %s, ret %d, objno %d\n", name, ret, *objno);
 	}
 	else
 	{
@@ -212,9 +204,7 @@ void registry_wait_for(
 		object_thread_t * const thread,
 		const char * const name)
 {
-#if defined(REGISTRY_DEBUGGING)
-	debug_print("Registry: Thread %s is waiting for %s\n", thread_get_name(obj_get_thread(thread)), name);
-#endif
+	debug_print(REGISTRY, "Registry: Thread %s is waiting for %s\n", thread_get_name(obj_get_thread(thread)), name);
 	obj_set_thread_waiting(thread, NULL);
 
 	if (reg)
@@ -248,9 +238,7 @@ error_t registry_remove(
 		registry_t * const reg,
 		const char * const name)
 {
-#if defined(REGISTRY_DEBUGGING)
-	debug_print("Registry: Removing entry %s\n", name);
-#endif
+	debug_print(REGISTRY, "Registry: Removing entry %s\n", name);
 	error_t ret = NO_ERROR;
 
 	if (reg)

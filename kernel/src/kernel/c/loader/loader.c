@@ -13,9 +13,7 @@
 #include "utils/util_memset.h"
 #include "process/process.h"
 #include "memory/mem_pool.h"
-#if defined(ELF_LOAD_DEBUGGING)
 #include "console/print_out.h"
-#endif
 
 typedef struct loader_t
 {
@@ -70,9 +68,7 @@ error_t load_elf(
 	status = el_init(&ctx);
 	if (EL_OK != status)
 	{
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Failed to init ELF context: %d\n", status);
-#endif
+		debug_print(ELF_LOADER, "Failed to init ELF context: %d\n", status);
 		return INVALID_ELF;
 	}
 
@@ -80,9 +76,7 @@ error_t load_elf(
 	status = el_load(&ctx, alloccb);
 	if (EL_OK != status)
 	{
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Failed to load ELF: %d\n", status);
-#endif
+		debug_print(ELF_LOADER, "Failed to load ELF: %d\n", status);
 		return INVALID_ELF;
 	}
 
@@ -103,29 +97,30 @@ error_t load_elf(
 			else
 			{
 				ctr++;
-#if defined(ELF_LOAD_DEBUGGING)
-				debug_print("PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
-						ctr,
-						addr.p_type,
-						addr.p_offset,
-						addr.p_vaddr,
-						addr.p_paddr,
-						addr.p_memsz,
-						addr.p_align,
-						addr.p_flags);
-				if (addr.p_flags & PF_X)
+				if (is_debug_enabled(ELF_LOADER))
 				{
-					debug_print("PT_LOAD: %d: Executable\n", ctr);
+					debug_print(ELF_LOADER, "PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
+							ctr,
+							addr.p_type,
+							addr.p_offset,
+							addr.p_vaddr,
+							addr.p_paddr,
+							addr.p_memsz,
+							addr.p_align,
+							addr.p_flags);
+					if (addr.p_flags & PF_X)
+					{
+						debug_print(ELF_LOADER, "PT_LOAD: %d: Executable\n", ctr);
+					}
+					if (addr.p_flags & PF_W)
+					{
+						debug_print(ELF_LOADER, "PT_LOAD: %d: Writable\n", ctr);
+					}
+					if (addr.p_flags & PF_R)
+					{
+						debug_print(ELF_LOADER, "PT_LOAD: %d: Readable\n", ctr);
+					}
 				}
-				if (addr.p_flags & PF_W)
-				{
-					debug_print("PT_LOAD: %d: Writable\n", ctr);
-				}
-				if (addr.p_flags & PF_R)
-				{
-					debug_print("PT_LOAD: %d: Readable\n", ctr);
-				}
-#endif
 				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(loader->pool, sizeof(tinker_mempart_t));
 				if (new_part)
 				{
@@ -169,9 +164,7 @@ error_t load_elf(
 		}
 		else
 		{
-#if defined(ELF_LOAD_DEBUGGING)
-			debug_print("Failed to find next section: %d\n", status);
-#endif
+			debug_print(ELF_LOADER, "Failed to find next section: %d\n", status);
 			break;
 		}
 	}

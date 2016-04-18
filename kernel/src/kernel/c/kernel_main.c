@@ -30,24 +30,16 @@ void kernel_main(void)
 	/*
 	 * Initialise the kernel into a known state;
 	 */
-#if defined(KERNEL_INIT)
-	debug_print("Kernel: Initialising...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Kernel: Initialising...\n");
 	kernel_initialise();
-#if defined(KERNEL_INIT)
-	debug_print("Kernel: Initialised OK.\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Kernel: Initialised OK.\n");
 
 	/*
 	 * Start up message(s)
 	 */
-#if defined(KERNEL_INIT)
-	debug_print("System: Up - Kernel Version: %s\n", KERNEL_VERSION);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "System: Up - Kernel Version: %s\n", KERNEL_VERSION);
 
-#if defined(KERNEL_INIT)
-	debug_print("System: Testing Syscall...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "System: Testing Syscall...\n");
 	TINKER_API_CALL_7(
 			SYSCALL_TEST,
 			SYSCALL_TEST_1,
@@ -57,20 +49,14 @@ void kernel_main(void)
 			SYSCALL_TEST_5,
 			SYSCALL_TEST_6,
 			SYSCALL_TEST_7);
-#if defined(KERNEL_INIT)
-	debug_print("System: Syscall OK\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "System: Syscall OK\n");
 
 #if defined(UNIT_TESTS)
 	run_unit_tests();
 #endif
 
-#if defined (KERNEL_INIT)
-	debug_print("System: Entering User mode\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "System: Entering User mode\n");
 	tgt_enter_usermode();
-#if defined (KERNEL_INIT)
-	debug_print("System: Loading thread\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "System: Loading thread\n");
 	TINKER_API_CALL_0(SYSCALL_LOAD_THREAD);
 }

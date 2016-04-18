@@ -124,10 +124,7 @@ error_t obj_exit_thread(object_thread_t * const o)
 	{
 		thread_t * const t = o->thread;
 
-#if defined(PROCESS_DEBUGGING)
-		const uint32_t pid = process_get_pid(thread_get_parent(t));
-		debug_print("Objects: proc %d thread %d (%s) is exiting\n", pid, o->tid, thread_get_name(o->thread));
-#endif
+		debug_print(PROCESS, "Objects: proc %d thread %d (%s) is exiting\n", process_get_pid(thread_get_parent(t)), o->tid, thread_get_name(o->thread));
 
 		const thread_state_t state = thread_get_state(t);
 		if (state != THREAD_TERMINATED
@@ -186,9 +183,7 @@ error_t obj_set_thread_waiting(
 	if (o)
 	{
 		const thread_state_t state = thread_get_state(o->thread);
-#if defined(PROCESS_DEBUGGING)
-		debug_print("Process: State of %s is %x\n", thread_get_name(o->thread), state);
-#endif
+		debug_print(PROCESS, "Process: State of %s is %x\n", thread_get_name(o->thread), state);
 		if (state == THREAD_RUNNING
 				|| state == THREAD_READY
 				|| state == THREAD_PAUSED

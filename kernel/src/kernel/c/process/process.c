@@ -98,18 +98,12 @@ error_t process_create(
 						(uint32_t)mem_alloc(new_proc->parent_pool, PRIVATE_POOL_SIZE),
 						PRIVATE_POOL_SIZE,
 						&new_proc->private_pool));
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Private pool allocated space is %d before page table\n", mem_get_allocd_size(new_proc->private_pool));
-#endif
+		debug_print(PROCESS, "Private pool allocated space is %d before page table\n", mem_get_allocd_size(new_proc->private_pool));
 		new_proc->page_table = tgt_initialise_page_table(new_proc->private_pool);
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Private pool allocated space is %d after page table\n", mem_get_allocd_size(new_proc->private_pool));
-#endif
+		debug_print(PROCESS, "Private pool allocated space is %d after page table\n", mem_get_allocd_size(new_proc->private_pool));
 		kernel_assert("new process's pool wasn't created from private pool", new_proc->page_table != NULL);
 
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Allocating memory for page table: %s\n", name);
-#endif
+		debug_print(PROCESS, "Process: Allocating memory for page table: %s\n", name);
 		new_proc->threads = thread_map_t_create(
 		        hash_basic_integer,
 		        hash_equal_integer,
@@ -212,9 +206,7 @@ error_t process_create(
                     MMU_USER_ACCESS,
                     MMU_READ_ONLY));
 
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Calling target initialisation for processs: %s\n", name);
-#endif
+		debug_print(PROCESS, "Process: Calling target initialisation for processs: %s\n", name);
 		ret = tgt_initialise_process(new_proc);
 		if (ret == NO_ERROR && process)
 		{

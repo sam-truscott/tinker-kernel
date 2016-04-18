@@ -148,13 +148,15 @@ void kshell_start(void)
 	{
 		char * received = NULL;
 		uint32_t * bytesReceived = NULL;
-#if defined(KERNEL_SHELL_DEBUG)
-		print_out("KSHELL Rx\n");
-#endif
+		if (is_debug_enabled(SHELL))
+		{
+			print_out("KSHELL Rx\n");
+		}
 		error_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
-#if defined(KERNEL_SHELL_DEBUG)
-		printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
-#endif
+		if (is_debug_enabled(SHELL))
+		{
+			printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
+		}
 		if (read_status == NO_ERROR)
 		{
 			error_t ack = tinker_received_message(pipe);

@@ -10,10 +10,7 @@
 #include "tgt_types.h"
 #include "tgt.h"
 
-// TODO keep or remove
-//#if defined(IDLE_DEBUGGING)
 #pragma GCC optimize ("-Og") // easier to debug release build
-//#endif
 
 void kernel_idle(void)
 {

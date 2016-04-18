@@ -77,9 +77,10 @@ void bsp_initialise(void)
 
 	uart16550_get_device(UART_1_BASE_ADDRESS, &rs232_port_1);
 
-#if defined(TARGET_DEBUGGING)
-	rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		rs232_port_1.write_buffer(UART_1_BASE_ADDRESS,0, "UART 16550 Port 1 Up\n\0", 21);
+	}
 
 	/* IBAT0 Setup for RAM */
 	ppc32_set_ibat0l(

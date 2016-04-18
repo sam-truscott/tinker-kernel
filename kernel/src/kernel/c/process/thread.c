@@ -60,9 +60,7 @@ thread_t * thread_create(
 		const uint32_t length = util_strlen(name, MAX_THREAD_NAME_LEN);
 		util_memcpy(thread->name, name, length);
 		thread->name[length] = '\0';
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
-#endif
+		debug_print(PROCESS, "Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
 		if (thread->stack)
 		{
 			thread->stack_size = stack;
@@ -255,9 +253,7 @@ const object_t * thread_get_waiting_on(
 	const object_t * waiting_on = NULL;
 	if (thread)
 	{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Thread %s Waiting on %x\n", thread->name, thread->waiting_on);
-#endif
+		debug_print(PROCESS, "Process: Thread %s Waiting on %x\n", thread->name, thread->waiting_on);
 		waiting_on = thread->waiting_on;
 	}
 	return waiting_on;
@@ -268,9 +264,7 @@ void thread_set_waiting_on(
 		const object_t * const object)
 {
 	kernel_assert("thread is null", thread != NULL);
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Thread %s Waiting on %x\n", thread->name, object);
-#endif
+	debug_print(PROCESS, "Process: Thread %s Waiting on %x\n", thread->name, object);
 	thread->waiting_on = object;
 }
 

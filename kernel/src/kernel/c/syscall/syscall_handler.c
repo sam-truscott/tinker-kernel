@@ -672,9 +672,10 @@ void syscall_handle_system_call(
 	error_t ret = UNKNOWN_ERROR;
 	thread_t * const this_thread = sch_get_current_thread(handler->scheduler);
 
-#if defined(SYSCALL_DEBUGGING)
-	debug_print("Syscall: API %d from %s\n", api, thread_get_name(this_thread));
-#endif
+	if (is_debug_enabled(SYSCALL))
+	{
+		debug_print(SYSCALL, "Syscall: API %d from %s\n", api, thread_get_name(this_thread));
+	}
 
 	/*
 	 * This could use a jump table but I think in this
@@ -814,16 +815,12 @@ void syscall_handle_system_call(
 	if (api == SYSCALL_LOAD_THREAD
 			|| api == SYSCALL_EXIT_THREAD)
 	{
-#if defined(SYSCALL_DEBUGGING)
-		debug_print("Syscall: Initial Kernel mode call to start scheduler\n");
-#endif
+		debug_prints(SYSCALL, "Syscall: Initial Kernel mode call to start scheduler\n");
 		bsp_enable_schedule_timer();
 	}
 	else
 	{
 		tgt_set_syscall_return(context, ret);
 	}
-#if defined(SYSCALL_DEBUGGING)
-	debug_print("Syscall: API %d RET %d\n", api, ret);
-#endif
+	debug_print(SYSCALL, "Syscall: API %d RET %d\n", api, ret);
 }

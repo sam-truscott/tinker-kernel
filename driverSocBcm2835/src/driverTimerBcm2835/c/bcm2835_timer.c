@@ -63,7 +63,6 @@ static void bcm2835_timer_setup(
 						data->instance, data->base, CONTROL_OFFSET, old_control, new_control);
 			}
 			const uint32_t timeAsUs = tinker_timer_get_microseconds(timeout);
-#if defined(TIMER_DEBUGGING)
 			const uint64_t current = *(uint64_t*)((uint8_t*)data->base + (CLOCK_OFFSET*2));
 			debug_print(TIMER, "BCM2835: Setting up timer for instance %d, base %x, offset %x, value %d, current %d\n",
 					data->instance,
@@ -71,7 +70,6 @@ static void bcm2835_timer_setup(
 					offset,
 					timeAsUs,
 					(current | 0xFFFFFFFF));
-#endif
 			out_u32((uint32_t*)(((uint8_t*)data->base) + offset), timeAsUs);
 		}
 	}
