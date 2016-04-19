@@ -1,0 +1,69 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+task downloadNewlib(type: Downloader) {
+    sourceUrl = 'ftp://sourceware.org/pub/newlib/newlib-2.4.0.tar.gz'
+    target = file('newlib-2.4.0.tar.gz')
+}
+
+task untarNewlib (type: Copy) {
+    from tarTree(resources.gzip('newlib-2.4.0.tar.gz'))
+    into getProjectDir().getAbsolutePath()  + "//src"
+}
+
+untarNewlib.dependsOn downloadNewlib
+
+task setupNewlibArm (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'arm-eabi'
+}
+
+setupNewlibArm.dependsOn untarNewlib
+
+task configureNewlibArm (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
+  commandLine 'bash', 
+    getProjectDir().getAbsolutePath() + "//src//newlib-2.4.0/configure",
+    '--target=arm-eabi',
+    '--enable-newlib-io-long-long',
+    '--disable-newlib-fvwrite-in-streamio',
+    '--disable-newlib-wide-orient',
+    '--disable-multilib'
+}
+
+configureNewlibArm.dependsOn setupNewlibArm
+
+task makeNewlibArm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
+    commandLine 'bash',
+        'make',
+        '-j4'
+}
+
+makeNewlibArm.dependsOn configureNewlibArm
+
+class Downloader extends DefaultTask {
+    @Input
+    String sourceUrl
+
+    @OutputFile
+    File target
+
+    @TaskAction
+    void download() {
+        ant.get(src: sourceUrl, dest: target)
+    }
+}
+
+class BuildSetup extends DefaultTask {
+    @Input
+    String root
+    @Input
+    String target
+
+    @TaskAction
+    void setup() {
+        File path = new File(root + "//build-" + target)
+        path.mkdirs();
+    }
+}
