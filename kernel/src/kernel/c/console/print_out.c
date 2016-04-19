@@ -81,14 +81,14 @@ void error_print(const char * const msg, ...)
 }
 
 void debug_print1(
-		const bool log,
+		const debug_subsystem_t subsys,
 		const char * const file,
 		const uint32_t line,
 		const char * const msg,
 		...)
 {
 #if defined(KERNEL_DEBUGGING)
-	if (log)
+	if (is_debug_enabled(subsys))
 	{
 		const char * ptr = msg;
 
@@ -125,7 +125,7 @@ void debug_print1(
 		__builtin_va_end(list);
 	}
 #else
-	(void)log;
+	(void)subsys;
 	(void)msg;
 	(void)file;
 	(void)line;

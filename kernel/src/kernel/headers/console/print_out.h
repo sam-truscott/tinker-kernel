@@ -40,11 +40,11 @@ void print_time(void);
 void error_print(const char * const msg, ...);
 
 #define is_debug_enabled(s)(DEBUG_VALUE & s)
-#define debug_print(subsys, msg, ...) debug_print1(is_debug_enabled(subsys), __FILE__, __LINE__, msg, __VA_ARGS__)
+#define debug_print(subsys, msg, ...) debug_print1(subsys, __FILE__, __LINE__, msg, __VA_ARGS__)
 #define debug_prints(subsys, msg) debug_print(subsys, msg, NULL)
 
 void debug_print1(
-		const bool log,
+		const debug_subsystem_t subsys,
 		const char * const file,
 		const uint32_t line,
 		const char * const msg,
