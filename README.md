@@ -83,7 +83,7 @@ You'll need a gcc available on the PATH for this to build.
 Toolchains
 ==========
 
-For ARM I'm using 5.2.0 for PowerPC I'm using 4.9.0.
+For ARM I'm using 5.3.0 for PowerPC I'm using 4.9.0.
 
 Loading
 =======
@@ -150,7 +150,6 @@ Issues / TODO
 These are the things I need to address in a rough order:
 
 * Kernel: Review TODO/FIXMEs and add them here
-* Kernel: Re-write the debugging code to avoid the use of macros (ifdef etc)
 * Support: Create newlib port
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
