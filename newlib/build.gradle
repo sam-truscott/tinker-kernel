@@ -29,7 +29,8 @@ task configureNewlibArm (type:Exec) {
     lcmd = 'bash'
   }
   commandLine lcmd,
-    "-c \"rm -rf *; ../src/newlib-2.4.0/configure --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib\""
+    '-c',
+    "rm -rf *; ../src/newlib-2.4.0/configure --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib"
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
