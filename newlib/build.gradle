@@ -30,14 +30,26 @@ task configureNewlibArm (type:Exec) {
   }
   commandLine lcmd,
     '-c',
-    'rm -rf *; ../src/newlib-2.4.0/configure --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib'
+    '../src/newlib-2.4.0/configure',
+    '--target=arm-eabi',
+    '--enable-newlib-io-long-long',
+    '--disable-newlib-fvwrite-in-streamio',
+    '--disable-newlib-wide-orient',
+    '--disable-multilib'
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
 
 task makeNewlibArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
-    commandLine 'bash',
+    String lcmd
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+        lcmd = 'c:\\dev\\msys32\\usr\\bin\\bash'
+    } else {
+        lcmd = 'bash'
+    }
+    commandLine lcmd,
+        '-c',
         'make',
         '-j4'
 }
