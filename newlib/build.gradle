@@ -22,13 +22,16 @@ setupNewlibArm.dependsOn untarNewlib
 
 task configureNewlibArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
-  commandLine 'bash', 
-    getProjectDir().getAbsolutePath() + "//src//newlib-2.4.0/configure",
-    '--target=arm-eabi',
-    '--enable-newlib-io-long-long',
-    '--disable-newlib-fvwrite-in-streamio',
-    '--disable-newlib-wide-orient',
-    '--disable-multilib'
+  String lcmd
+  if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    lcmd = 'c:\\dev\\msys32\\usr\\bin\\bash'
+  } else {
+    lcmd = 'bash'
+  }
+  commandLine "cd " + getProjectDir().getAbsolutePath() + "//build-arm-eabi",
+    " && ", 
+    lcmd,
+    "-c \"rm -rf *; ../src/newlib-2.4.0/configure --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib\""
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
@@ -63,7 +66,7 @@ class BuildSetup extends DefaultTask {
 
     @TaskAction
     void setup() {
-        File path = new File(root + "//build-" + target)
+        java.io.File path = new File(root + "//build-" + target)
         path.mkdirs();
     }
 }
