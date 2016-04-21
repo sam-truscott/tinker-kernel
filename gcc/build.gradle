@@ -1,0 +1,74 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+task downloadGcc(type: Downloader) {
+    sourceUrl = 'ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.gz'
+    target = file('gcc-5.3.0.tar.gz')
+}
+
+task untarGcc (type: Copy) {
+    from tarTree(resources.gzip('gcc-5.3.0.tar.gz'))
+    into getProjectDir().getAbsolutePath()  + "//src"
+}
+
+untarGcc.dependsOn downloadGcc
+
+task setupGccStage1 (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'arm-eabi-stage1'
+}
+
+setupGccStage1.dependsOn untarGcc
+
+task configureGccStage1Arm (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;../src/gcc-5.3.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c'
+}
+
+configureGccStage1Arm.dependsOn setupGccStage1
+
+task makeGccStage1Arm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
+    commandLine 'bash',
+        '-c',
+        'make'
+}
+
+makeGccStage1Arm.dependsOn configureGccStage1Arm
+
+task makeInstallGccStage1Arm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
+    commandLine 'bash',
+        '-c',
+        'make install'
+}
+
+makeInstallGccStage1Arm.dependsOn makeGccStage1Arm
+
+class Downloader extends DefaultTask {
+    @Input
+    String sourceUrl
+
+    @OutputFile
+    File target
+
+    @TaskAction
+    void download() {
+        ant.get(src: sourceUrl, dest: target)
+    }
+}
+
+class BuildSetup extends DefaultTask {
+    @Input
+    String root
+    @Input
+    String target
+
+    @TaskAction
+    void setup() {
+        java.io.File path = new File(root + "//build-" + target)
+        path.mkdirs();
+    }
+}

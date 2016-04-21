@@ -10,4 +10,7 @@ binutils/*.tar.*
 newlib/src
 newlib/build*
 newlib/*.tar.*
+gcc/src
+gcc/build*
+gcc/*.tar.*
 arm-eabi
