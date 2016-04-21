@@ -7,3 +7,4 @@ utilBuilder/*.img
 newlib/src
 newlib/build*
 newlib/*.tar.*
+arm-eabi

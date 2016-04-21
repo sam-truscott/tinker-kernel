@@ -24,7 +24,7 @@ task configureNewlibArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
   commandLine 'bash',
     '-c',
-    '../src/newlib-2.4.0/configure --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib'
+    'rm -rf *;../src/newlib-2.4.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib'
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
@@ -37,6 +37,15 @@ task makeNewlibArm (type:Exec) {
 }
 
 makeNewlibArm.dependsOn configureNewlibArm
+
+task makeInstallNewlibArm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
+    commandLine 'bash',
+        '-c',
+        'make install'
+}
+
+makeInstallNewlibArm.dependsOn makeNewlibArm
 
 class Downloader extends DefaultTask {
     @Input
