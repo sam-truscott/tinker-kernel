@@ -88,6 +88,10 @@ For ARM I'm using 5.3.0 for PowerPC I'm using 4.9.0.
 Building the toolchain
 -
 
+I've added gradle tasks to build a stage-3 gcc compiler with support for C.
+
+You'll need the following (and possibly more) dependencies
+
 * gcc
 * make
 * diffutils
@@ -95,7 +99,17 @@ Building the toolchain
 * gmp-devel
 * mpc-devel
 * mpfr-devel
+* isl-devel
 * tar
+
+Then execute:
+
+    gradlew makeInstallBintutilsArm
+    gradlew makeInstallGccStage1Arm
+    gradlew makeInstallNewlibArm
+    gradlew makeInstallGccStage3Arm
+
+You should then have a toolchain in 'arm-eabi'.
 
 Loading
 =======
