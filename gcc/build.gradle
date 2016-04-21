@@ -34,7 +34,8 @@ task makeGccStage1Arm (type:Exec) {
     commandLine 'bash',
         '-c',
         'make',
-        'all-gcc'
+        'all-gcc',
+        '-j4'
 }
 
 makeGccStage1Arm.dependsOn configureGccStage1Arm
