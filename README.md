@@ -85,6 +85,18 @@ Toolchains
 
 For ARM I'm using 5.3.0 for PowerPC I'm using 4.9.0.
 
+Building the toolchain
+-
+
+* gcc
+* make
+* diffutils
+* texinfo
+* gmp-devel
+* mpc-devel
+* mpfr-devel
+* tar
+
 Loading
 =======
 
