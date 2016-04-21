@@ -4,6 +4,9 @@
 **/.project
 **/.cproject
 utilBuilder/*.img
+binutils/src
+binutils/build*
+binutils/*.tar.*
 newlib/src
 newlib/build*
 newlib/*.tar.*
