@@ -101,13 +101,12 @@ You'll need the following (and possibly more) dependencies
 * mpfr-devel
 * isl-devel
 * tar
+* libiconv
+* libiconv-devel
 
 Then execute:
 
-    gradlew makeInstallBintutilsArm
-    gradlew makeInstallGccStage1Arm
-    gradlew makeInstallNewlibArm
-    gradlew makeInstallGccStage3Arm
+    gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm
 
 You should then have a toolchain in 'arm-eabi'.
 
