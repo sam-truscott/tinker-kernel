@@ -24,7 +24,7 @@ task configureGccStage1Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-5.3.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib'
+    'rm -rf *;../src/gcc-5.3.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage1Arm.dependsOn setupGccStage1
@@ -46,6 +46,40 @@ task makeInstallGccStage1Arm (type:Exec) {
 }
 
 makeInstallGccStage1Arm.dependsOn makeGccStage1Arm
+
+task setupGccStage3 (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'arm-eabi-stage3'
+}
+
+setupGccStage3.dependsOn untarGcc
+
+task configureGccStage3Arm (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;../src/gcc-5.3.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+}
+
+configureGccStage3Arm.dependsOn setupGccStage3
+
+task makeGccStage3Arm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
+    commandLine 'bash',
+        '-c',
+        'make all -j4'
+}
+
+makeGccStage3Arm.dependsOn configureGccStage3Arm
+
+task makeInstallGccStage3Arm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
+    commandLine 'bash',
+        '-c',
+        'make install-gcc'
+}
+
+makeInstallGccStage3Arm.dependsOn makeGccStage3Arm
 
 class Downloader extends DefaultTask {
     @Input
