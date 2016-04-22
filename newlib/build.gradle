@@ -24,7 +24,7 @@ task configureNewlibArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/newlib-2.4.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --disable-multilib'
+    'rm -rf *;../src/newlib-2.4.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib'
 }
 
 configureNewlibArm.dependsOn setupNewlibArm

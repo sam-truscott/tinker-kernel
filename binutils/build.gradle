@@ -24,7 +24,7 @@ task configureBinutilsArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/binutils-2.26/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-interwork'
+    'rm -rf *;../src/binutils-2.26/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-interwork'
 }
 
 configureBinutilsArm.dependsOn setupBinutilsArm
