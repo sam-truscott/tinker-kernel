@@ -67,7 +67,7 @@ task makeGccStage3Arm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
     commandLine 'bash',
         '-c',
-        'make all -j4'
+        'make all'
 }
 
 makeGccStage3Arm.dependsOn configureGccStage3Arm

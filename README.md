@@ -103,6 +103,9 @@ You'll need the following (and possibly more) dependencies
 * tar
 * libiconv
 * libiconv-devel
+* flex
+* m4
+* bison
 
 Then execute:
 
