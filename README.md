@@ -182,6 +182,9 @@ These are the things I need to address in a rough order:
 * Kernel: Review TODO/FIXMEs and add them here
 * Support: Create newlib port
     * Need to write newlib/libc/sys/arm BSP for tinker kernel
+    * Enable C++ support
+    * Enable Ada support?
+    * Enable Fortran support
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
