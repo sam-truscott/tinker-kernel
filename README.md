@@ -83,6 +83,8 @@ You'll need a gcc available on the PATH for this to build.
 Toolchains
 ==========
 
+A standard stage 1 gcc compiler will work (i.e. C compiler without libc support, with libgcc) for building the kernel itself.
+
 For ARM I'm using 5.3.0 for PowerPC I'm using 4.9.0.
 
 Building the toolchain
@@ -188,11 +190,6 @@ These are the things I need to address in a rough order:
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
-
-Toolchain
-=========
-
-A standard stage 1 gcc compiler will work (i.e. C compiler without libc support).
 
 Helpful Commands
 ================
