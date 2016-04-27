@@ -1,0 +1,75 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+task downloadGdb(type: Downloader) {
+    sourceUrl = 'http://ftp.gnu.org/gnu/gdb/gdb-7.11.tar.gz'
+    target = file('gdb-7.11.tar.gz')
+}
+
+task untarGdb (type: Copy) {
+    from tarTree(resources.gzip('gdb-7.11.tar.gz'))
+    into getProjectDir().getAbsolutePath()  + "//src"
+}
+
+untarGdb.dependsOn downloadGdb
+
+task setupGdbArm (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'arm-eabi'
+}
+
+setupGdbArm.dependsOn untarGdb
+
+task configureGdbArm (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;\
+    ../src/gdb-7.11/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --enable-sim --enable-gdbserver'
+}
+
+configureGdbArm.dependsOn setupGdbArm
+
+task makeGdbArm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
+    commandLine 'bash',
+        '-c',
+        'make -j4'
+}
+
+makeGdbArm.dependsOn configureGdbArm
+
+task makeInstallGdbArm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
+    commandLine 'bash',
+        '-c',
+        'make install'
+}
+
+makeInstallGdbArm.dependsOn makeGdbArm
+
+class Downloader extends DefaultTask {
+    @Input
+    String sourceUrl
+
+    @OutputFile
+    File target
+
+    @TaskAction
+    void download() {
+        ant.get(src: sourceUrl, dest: target)
+    }
+}
+
+class BuildSetup extends DefaultTask {
+    @Input
+    String root
+    @Input
+    String target
+
+    @TaskAction
+    void setup() {
+        java.io.File path = new File(root + "//build-" + target)
+        path.mkdirs();
+    }
+}

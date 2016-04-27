@@ -108,12 +108,13 @@ You'll need the following (and possibly more) dependencies
 * flex
 * m4
 * bison
+* expat
 
 Then execute:
 
     # Linux (or MSYS2 under Windows)
     PATH=$PATH:./arm-eabi
-    ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm
+    ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm makeInstallGdbArm
 
 You should then have a toolchain in 'arm-eabi'.
 

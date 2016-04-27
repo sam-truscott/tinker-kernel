@@ -11,6 +11,9 @@ newlib/src
 newlib/build*
 newlib/*.tar.*
 gcc/src
-gcc/build*
+gcc/build-*
 gcc/*.tar.*
+gdb/src
+gdb/build*
+gdb/*.tar.*
 arm-eabi
