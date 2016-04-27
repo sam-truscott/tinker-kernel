@@ -25,7 +25,7 @@ task configureGdbArm (type:Exec) {
   commandLine 'bash',
     '-c',
     'rm -rf *;\
-    ../src/gdb-7.11/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --enable-sim --enable-gdbserver'
+    ../src/gdb-7.11/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --enable-sim'
 }
 
 configureGdbArm.dependsOn setupGdbArm
