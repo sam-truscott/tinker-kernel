@@ -2,12 +2,12 @@ apply plugin: 'assembler'
 apply plugin: 'c'
 
 task downloadGcc(type: Downloader) {
-    sourceUrl = 'ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-5.3.0/gcc-5.3.0.tar.gz'
-    target = file('gcc-5.3.0.tar.gz')
+    sourceUrl = 'ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-6.1.0/gcc-6.1.0.tar.gz'
+    target = file('gcc-6.1.0.tar.gz')
 }
 
 task untarGcc (type: Copy) {
-    from tarTree(resources.gzip('gcc-5.3.0.tar.gz'))
+    from tarTree(resources.gzip('gcc-6.1.0.tar.gz'))
     into getProjectDir().getAbsolutePath()  + "//src"
 }
 
@@ -24,7 +24,7 @@ task configureGccStage1Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-5.3.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-6.1.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage1Arm.dependsOn setupGccStage1
@@ -58,7 +58,7 @@ task configureGccStage3Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-5.3.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-6.1.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage3Arm.dependsOn setupGccStage3
