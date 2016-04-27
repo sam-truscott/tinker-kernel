@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "swi.h"
+#include "tinker_api.h"
 
 /* Forward prototypes.  */
 int     _system     _PARAMS ((const char *));
