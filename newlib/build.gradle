@@ -26,6 +26,8 @@ task configureNewlibArm (type:Exec) {
     '-c',
     'rm -rf *;\
     cp -R ../src/newlib/newlib ../src/newlib-2.4.0;\
+    cp ../../api/src/api/headers/* ../src/newlib-2.4.0/newlib/libc/sys/arm;\
+    cp ../../api/src/api/c/* ../src/newlib-2.4.0/newlib/libc/sys/arm;\
     ../src/newlib-2.4.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib'
 }
 
