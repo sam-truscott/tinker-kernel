@@ -76,9 +76,6 @@
 	.fnstart
 #endif
 
-	/* Need to set up standard file handles.  */
-	bl	FUNCTION (initialise_monitor_handles)
-
 #ifdef __USES_INITFINI__
 	/* Some arm/elf targets use the .init and .fini sections
 	   to create constructors and destructors, and for these

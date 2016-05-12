@@ -68,10 +68,6 @@ extern void   _EXFUN(__sinit,(struct _reent *));
 /* Adjust our internal handles to stay away from std* handles.  */
 #define FILE_HANDLE_OFFSET (0x20)
 
-static int monitor_stdin;
-static int monitor_stdout;
-static int monitor_stderr;
-
 /* Struct used to keep track of the file position, just so we
    can implement fseek(fh,x,SEEK_CUR).  */
 typedef struct
@@ -108,51 +104,6 @@ remap_handle (int fh)
     return monitor_stderr;
 
   return fh - FILE_HANDLE_OFFSET;
-}
-
-void
-initialise_monitor_handles (void)
-{
-  int i;
-  
-#ifdef ARM_RDI_MONITOR
-  int volatile block[3];
-  
-  block[0] = (int) ":tt";
-  block[2] = 3;     /* length of filename */
-  block[1] = 0;     /* mode "r" */
-  monitor_stdin = do_AngelSWI (AngelSWI_Reason_Open, (void *) block);
-
-  block[0] = (int) ":tt";
-  block[2] = 3;     /* length of filename */
-  block[1] = 4;     /* mode "w" */
-  monitor_stdout = monitor_stderr = do_AngelSWI (AngelSWI_Reason_Open, (void *) block);
-#else
-  int fh;
-  const char * name;
-
-  name = ":tt";
-  asm ("mov r0,%2; mov r1, #0; swi %a1; mov %0, r0"
-       : "=r"(fh)
-       : "i" (SWI_Open),"r"(name)
-       : "r0","r1");
-  monitor_stdin = fh;
-
-  name = ":tt";
-  asm ("mov r0,%2; mov r1, #4; swi %a1; mov %0, r0"
-       : "=r"(fh)
-       : "i" (SWI_Open),"r"(name)
-       : "r0","r1");
-  monitor_stdout = monitor_stderr = fh;
-#endif
-
-  for (i = 0; i < MAX_OPEN_FILES; i ++)
-    openfiles[i].handle = -1;
-
-  openfiles[0].handle = monitor_stdin;
-  openfiles[0].pos = 0;
-  openfiles[1].handle = monitor_stdout;
-  openfiles[1].pos = 0;
 }
 
 static int
@@ -419,19 +370,7 @@ int
 _kill (int pid, int sig)
 {
   (void)pid; (void)sig;
-#ifdef ARM_RDI_MONITOR
-  /* Note: The pid argument is thrown away.  */
-  switch (sig) {
-	  case SIGABRT:
-		  return do_AngelSWI (AngelSWI_Reason_ReportException,
-				  (void *) ADP_Stopped_RunTimeError);
-	  default:
-		  return do_AngelSWI (AngelSWI_Reason_ReportException,
-				  (void *) ADP_Stopped_ApplicationExit);
-  }
-#else
   asm ("swi %a0" :: "i" (SWI_Exit));
-#endif
 }
 
 void
@@ -522,25 +461,20 @@ _link (void)
 int
 _unlink (const char *path)
 {
-#ifdef ARM_RDI_MONITOR
-  int block[2];
-  block[0] = path;
-  block[1] = strlen(path);
-  return wrap (do_AngelSWI (AngelSWI_Reason_Remove, block)) ? -1 : 0;
-#else  
   return -1;
-#endif
 }
 
 void
 _raise (void)
 {
+	// TODO
   return;
 }
 
 int
 _gettimeofday (struct timeval * tp, void * tzvp)
 {
+	// TODO
   struct timezone *tzp = tzvp;
   if (tp)
     {
@@ -572,20 +506,6 @@ clock_t
 _times (struct tms * tp)
 {
   clock_t timeval;
-
-#ifdef ARM_RDI_MONITOR
-  timeval = do_AngelSWI (AngelSWI_Reason_Clock,NULL);
-#else
-  asm ("swi %a1; mov %0, r0" : "=r" (timeval): "i" (SWI_Clock) : "r0");
-#endif
-
-  if (tp)
-    {
-      tp->tms_utime  = timeval;	/* user time */
-      tp->tms_stime  = 0;	/* system time */
-      tp->tms_cutime = 0;	/* user time, children */
-      tp->tms_cstime = 0;	/* system time, children */
-    }
   
   return timeval;
 };
@@ -594,60 +514,23 @@ _times (struct tms * tp)
 int
 _isatty (int fd)
 {
-#ifdef ARM_RDI_MONITOR
-  int fh = remap_handle (fd);
-  return wrap (do_AngelSWI (AngelSWI_Reason_IsTTY, &fh));
-#else
   return (fd <= 2) ? 1 : 0;  /* one of stdin, stdout, stderr */
-#endif
 }
 
 int
 _system (const char *s)
 {
-#ifdef ARM_RDI_MONITOR
-  int block[2];
-  int e;
-
-  /* Hmmm.  The ARM debug interface specification doesn't say whether
-     SYS_SYSTEM does the right thing with a null argument, or assign any
-     meaning to its return value.  Try to do something reasonable....  */
-  if (!s)
-    return 1;  /* maybe there is a shell available? we can hope. :-P */
-  block[0] = s;
-  block[1] = strlen (s);
-  e = wrap (do_AngelSWI (AngelSWI_Reason_System, block));
-  if ((e >= 0) && (e < 256))
-    {
-      /* We have to convert e, an exit status to the encoded status of
-         the command.  To avoid hard coding the exit status, we simply
-	 loop until we find the right position.  */
-      int exit_code;
-
-      for (exit_code = e; e && WEXITSTATUS (e) != exit_code; e <<= 1)
-	continue;
-    }
-  return e;
-#else
   if (s == NULL)
+  {
     return 0;
+  }
   errno = ENOSYS;
   return -1;
-#endif
 }
 
 int
 _rename (const char * oldpath, const char * newpath)
 {
-#ifdef ARM_RDI_MONITOR
-  int block[4];
-  block[0] = oldpath;
-  block[1] = strlen(oldpath);
-  block[2] = newpath;
-  block[3] = strlen(newpath);
-  return wrap (do_AngelSWI (AngelSWI_Reason_Rename, block)) ? -1 : 0;
-#else  
   errno = ENOSYS;
   return -1;
-#endif
 }
