@@ -95,11 +95,13 @@ I've added gradle tasks to build a stage-3 gcc compiler with support for C.
 You'll need the following (and possibly more) dependencies
 
 * gcc
+* g++ (aka gcc-g++)
 * make
+* automake
 * diffutils
 * texinfo
 * gmp-devel
-* mpc-devel
+* mpc-devel (aka libmpc-devel)
 * mpfr-devel
 * isl-devel
 * tar
@@ -113,7 +115,7 @@ You'll need the following (and possibly more) dependencies
 Then execute:
 
     # Linux (or MSYS2 under Windows)
-    PATH=$PATH:./arm-eabi
+    PATH=$PATH:/home/sam/git/tinker-kernel/arm-eabi/bin
     ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm makeInstallGdbArm
 
 You should then have a toolchain in 'arm-eabi'.

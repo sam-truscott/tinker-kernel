@@ -24,7 +24,7 @@ task configureGccStage1Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-6.1.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-6.1.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage1Arm.dependsOn setupGccStage1
@@ -58,7 +58,7 @@ task configureGccStage3Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-6.1.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c,c++ --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-6.1.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c,c++ --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage3Arm.dependsOn setupGccStage3

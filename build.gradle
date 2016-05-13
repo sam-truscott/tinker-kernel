@@ -114,8 +114,8 @@ allprojects {
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
 	                cCompiler.withArguments { args ->
-	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
-	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm5"
+	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
+	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
 	                    args << "-marm"
                         args << "-D__arm__"
 						args << "-march=armv5"
@@ -137,8 +137,8 @@ allprojects {
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
 	                cCompiler.withArguments { args ->
-	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
-	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm5"
+	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
+	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
 	                    args << "-marm"
                         args << "-D__arm__"
 	                    args << "-mfpu=vfp"
@@ -166,8 +166,8 @@ allprojects {
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
 	                cCompiler.withArguments { args ->
-	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
-	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm7"
+	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
+	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm7"
                         args << "-D__arm__"
 						args << "-march=armv7-a"
 	                    args << "-fpic"
@@ -188,8 +188,8 @@ allprojects {
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
 	                cCompiler.withArguments { args ->
-	                	args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers"
-	                    args << "-I" + srcDir.getAbsolutePath() + "/../archArm/src/archArm/headers/arm7"
+	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
+	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm7"
                         args << "-D__arm__"
 	                    args << "-mfpu=vfp"
 	                    args << "-mfloat-abi=hard"

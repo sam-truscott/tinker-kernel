@@ -10,6 +10,7 @@ model {
 	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
+                targetPlatform "linux_x86-64"
 	    	sources {
 			    c {
 		            lib project: ':base', library: 'base', linkage: 'static'
@@ -25,6 +26,7 @@ model {
 	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
+                targetPlatform "linux_x86-64"
 	    	sources {
 			    c {
 		            lib project: ':base', library: 'base', linkage: 'static'
