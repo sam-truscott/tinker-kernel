@@ -48,6 +48,13 @@ task makeInstallGdbArm (type:Exec) {
 
 makeInstallGdbArm.dependsOn makeGdbArm
 
+task cleanGdb(type:Exec) {
+	commandLine 'bash',
+		'-c',
+		'rm -rf build-arm-eabi;\
+		 rm -rf src'
+}
+
 class Downloader extends DefaultTask {
     @Input
     String sourceUrl

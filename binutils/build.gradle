@@ -47,6 +47,13 @@ task makeInstallBintutilsArm (type:Exec) {
 
 makeInstallBintutilsArm.dependsOn makeBinutilsArm
 
+task cleanBinUtils(type:Exec) {
+	commandLine 'bash',
+		'-c',
+		'rm -rf build-arm-eabi;\
+		 rm -rf src'
+}
+
 class Downloader extends DefaultTask {
     @Input
     String sourceUrl

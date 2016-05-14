@@ -55,10 +55,11 @@ task makeInstallNewlibArm (type:Exec) {
 
 makeInstallNewlibArm.dependsOn makeNewlibArm
 
-task cleanNewLibArm(type:Exec) {
+task cleanNewLib(type:Exec) {
 	commandLine 'bash',
 		'-c',
-		'rm -rf build-arm-eabi'
+		'rm -rf build-arm-eabi;\
+		 rm -rf src'
 }
 
 class Downloader extends DefaultTask {
