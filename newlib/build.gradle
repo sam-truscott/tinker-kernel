@@ -59,7 +59,7 @@ task cleanNewLib(type:Exec) {
 	commandLine 'bash',
 		'-c',
 		'rm -rf build-arm-eabi;\
-		 rm -rf src'
+		 rm -rf src//newlib-*'
 }
 
 class Downloader extends DefaultTask {
