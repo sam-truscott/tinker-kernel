@@ -52,29 +52,6 @@ static int	get_errno	_PARAMS ((void));
 /* Register name faking - works in collusion with the linker.  */
 register char * stack_ptr asm ("sp");
 
-
-/* following is copied from libc/stdio/local.h to check std streams */
-extern void   _EXFUN(__sinit,(struct _reent *));
-#define CHECK_INIT(ptr) \
-  do						\
-    {						\
-      if ((ptr) && !(ptr)->__sdidinit)		\
-	__sinit (ptr);				\
-    }						\
-  while (0)
-
-/* Adjust our internal handles to stay away from std* handles.  */
-#define FILE_HANDLE_OFFSET (0x20)
-
-/* Struct used to keep track of the file position, just so we
-   can implement fseek(fh,x,SEEK_CUR).  */
-typedef struct
-{
-  int handle;
-  int pos;
-}
-poslog;
-
 static int
 get_errno (void)
 {
@@ -230,34 +207,8 @@ _getpid (int n)
 caddr_t __attribute__((weak))
 _sbrk (int incr)
 {
-  extern char   end asm ("end");	/* Defined by the linker.  */
-  static char * heap_end;
-  char *        prev_heap_end;
-
-  if (heap_end == NULL)
-    heap_end = & end;
-  
-  prev_heap_end = heap_end;
-  
-  if (heap_end + incr > stack_ptr)
-    {
-      /* Some of the libstdc++-v3 tests rely upon detecting
-	 out of memory errors, so do not abort here.  */
-#if 0
-      extern void abort (void);
-
-      _write (1, "_sbrk: Heap and stack collision\n", 32);
-      
-      abort ();
-#else
-      errno = ENOMEM;
-      return (caddr_t) -1;
-#endif
-    }
-  
-  heap_end += incr;
-
-  return (caddr_t) prev_heap_end;
+  static char * heap_end = 0;
+  return (caddr_t) tinker_sbrk(heap_end, incr);
 }
 
 extern void memset (struct stat *, int, unsigned int);
