@@ -183,7 +183,7 @@ int
 _kill (int pid, int sig)
 {
   (void)pid; (void)sig;
-  asm ("swi %a0" :: "i" (SWI_Exit));
+  tinker_exit_thread();
 }
 
 void
