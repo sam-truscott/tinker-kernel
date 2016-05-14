@@ -19,7 +19,7 @@ loader_t * loader_create(
 		mem_pool_info_t * const pool,
 		proc_list_t * const list);
 
-error_t load_elf(
+return_t load_elf(
 		loader_t * const loader,
 		const void * const data,
 		const char * const image,

@@ -71,7 +71,7 @@ object_number_t obj_shm_get_oid
 	return oid;
 }
 
-error_t obj_create_shm(
+return_t obj_create_shm(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -79,7 +79,7 @@ error_t obj_create_shm(
 		const uint32_t size,
 		void ** address)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (process && objectno && address && size && name)
 	{
 		object_shm_t * no = NULL;
@@ -148,7 +148,7 @@ error_t obj_create_shm(
 	return result;
 }
 
-error_t obj_open_shm(
+return_t obj_open_shm(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -156,7 +156,7 @@ error_t obj_open_shm(
 		const uint32_t size,
 		void ** address)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (process && objectno && name && size)
 	{
 		object_shm_t * no = NULL;
@@ -253,10 +253,10 @@ error_t obj_open_shm(
 	return result;
 }
 
-error_t obj_delete_shm(
+return_t obj_delete_shm(
 		object_shm_t * const shm)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (shm)
 	{

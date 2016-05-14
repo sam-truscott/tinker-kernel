@@ -21,7 +21,7 @@ typedef struct process_t process_t;
 HASH_MAP_TYPE_ITERATOR_TYPE(thread_it_t)
 HASH_MAP_TYPE_ITERATOR_SPEC(extern, thread_it_t, thread_t*)
 
-error_t process_create(
+return_t process_create(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
 		mem_pool_info_t * const mempool,
@@ -76,7 +76,7 @@ uint32_t process_virt_to_real(
 		const process_t * const process,
 		const uint32_t virt);
 
-error_t process_allocate_vmem(
+return_t process_allocate_vmem(
 		process_t * const process,
 		const uint32_t real_address,
 		const uint32_t size,

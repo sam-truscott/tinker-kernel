@@ -22,15 +22,15 @@ typedef struct
 
 typedef void(tinker_timer_callback_t)(const void * const usr_data);
 
-error_t tinker_timer_create(
+return_t tinker_timer_create(
 		tinker_timer_t * const timer,
 		const uint8_t priority,
 		const tinker_timeout_time_t * const timeout,
 		tinker_timer_callback_t * const callback,
 		const void * const data) TINKER_API_SUFFIX;
 
-error_t tinker_timer_cancel(tinker_timer_t timer) TINKER_API_SUFFIX;
+return_t tinker_timer_cancel(tinker_timer_t timer) TINKER_API_SUFFIX;
 
-error_t tinker_timer_delete(tinker_timer_t timer) TINKER_API_SUFFIX;
+return_t tinker_timer_delete(tinker_timer_t timer) TINKER_API_SUFFIX;
 
 #endif /* TINKER_API_TIMER_H_ */

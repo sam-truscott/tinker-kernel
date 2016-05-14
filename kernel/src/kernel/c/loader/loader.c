@@ -53,7 +53,7 @@ loader_t * loader_create(
 	return load;
 }
 
-error_t load_elf(
+return_t load_elf(
 		loader_t * const loader,
 		const void * const data,
 		const char * const image,
@@ -168,7 +168,7 @@ error_t load_elf(
 			break;
 		}
 	}
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (first_part)
 	{
 		process_t * proc = NULL;

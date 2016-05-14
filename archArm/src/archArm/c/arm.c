@@ -26,9 +26,9 @@ void tgt_initialise(void)
 	arm_invalidate_all_tlbs();
 }
 
-error_t tgt_initialise_process(process_t * const process)
+return_t tgt_initialise_process(process_t * const process)
 {
-    error_t ok = NO_ERROR;
+    return_t ok = NO_ERROR;
 
     if (!process_is_kernel(process))
     {
@@ -163,11 +163,11 @@ void tgt_set_context_param(
     }
 }
 
-error_t tgt_map_memory(
+return_t tgt_map_memory(
         const process_t * const process,
         const mem_section_t * const section)
 {
-    error_t result = PARAMETERS_INVALID;
+    return_t result = PARAMETERS_INVALID;
     if (process && section)
     {
 		arm_map_memory(

@@ -56,7 +56,7 @@ void tgt_set_syscall_return() {}
 tgt_pg_tbl_t* tgt_initialise_page_table(mem_pool_info_t * const pool) { return mem_alloc(pool, 4); }
 void tgt_map_memory() {}
 void tgt_unmap_memory() {}
-error_t tgt_initialise_process() { return NO_ERROR; }
+return_t tgt_initialise_process() { return NO_ERROR; }
 void tgt_load_context() {}
 void tgt_save_context() {}
 void tgt_initialise_context() {}

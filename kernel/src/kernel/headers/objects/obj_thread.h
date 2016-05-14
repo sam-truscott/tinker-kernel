@@ -18,7 +18,7 @@
 
 typedef struct object_thread_t object_thread_t;
 
-error_t obj_create_thread(
+return_t obj_create_thread(
 		mem_pool_info_t * const pool,
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
@@ -33,10 +33,10 @@ object_thread_t * obj_cast_thread(object_t * const o);
 
 object_number_t obj_thread_get_oid(const object_thread_t * const o);
 
-error_t obj_exit_thread(
+return_t obj_exit_thread(
 		object_thread_t * const o);
 
-error_t obj_set_thread_waiting(
+return_t obj_set_thread_waiting(
 		object_thread_t * const o,
 		const object_t * const waiting_on);
 
@@ -44,33 +44,33 @@ bool_t obj_thread_is_waiting_on(
 		const object_thread_t * const o,
 		const object_t * const waiting_on);
 
-error_t obj_set_thread_ready(
+return_t obj_set_thread_ready(
 		object_thread_t * const o);
 
-error_t obj_get_thread_state(
+return_t obj_get_thread_state(
 		object_thread_t * const o,
 		thread_state_t * const state);
 
-error_t obj_get_thread_priority(
+return_t obj_get_thread_priority(
 		object_thread_t * const o,
 		uint8_t * const priority);
 
 priority_t obj_get_thread_priority_ex(object_thread_t * const o);
 
-error_t obj_set_thread_priority(
+return_t obj_set_thread_priority(
 		object_thread_t * const o,
 		const uint8_t priority);
 
-error_t obj_reset_thread_original_priority(
+return_t obj_reset_thread_original_priority(
 		object_thread_t * const o);
 
-error_t obj_set_thread_original_priority(
+return_t obj_set_thread_original_priority(
 		object_thread_t * const o);
 
 priority_t obj_get_thread_original_priority_ex(object_thread_t * const o);
 
 thread_t * obj_get_thread(const object_thread_t * const o);
 
-error_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const duration);
+return_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const duration);
 
 #endif /* OBJ_THREAD_H_ */

@@ -29,7 +29,7 @@ typedef void (timer_setup)(
 typedef void (timer_cancel)(
 		const timer_param_t const usr_data);
 
-typedef error_t (timer_isr)(tgt_context_t * const context, timer_param_t param);
+typedef return_t (timer_isr)(tgt_context_t * const context, timer_param_t param);
 
 typedef struct
 {
@@ -69,7 +69,7 @@ void alarm_set_timer(alarm_manager_t * const am, timer_t * const timer);
  * @param alarm_id The ID of the alarm incase we have to cancel it
  * @return Errors
  */
-error_t alarm_set_alarm(
+return_t alarm_set_alarm(
 		alarm_manager_t * const am,
 		const tinker_time_t * const timeout,
 		alarm_call_back * const call_back,
@@ -81,7 +81,7 @@ error_t alarm_set_alarm(
  * @param alarm_id The alarm ID to cancel
  * @return Errors
  */
-error_t alarm_unset_alarm(
+return_t alarm_unset_alarm(
 		alarm_manager_t * const am,
 		const uint32_t alarm_id);
 

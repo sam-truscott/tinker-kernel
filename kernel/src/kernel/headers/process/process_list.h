@@ -31,7 +31,7 @@ void proc_set_kernel_process(
 
 process_t * proc_get_kernel_process(proc_list_t * const list);
 
-error_t proc_create_process(
+return_t proc_create_process(
 		proc_list_t * const list,
 		const char * image,
 		const char * initial_task_name,
@@ -41,7 +41,7 @@ error_t proc_create_process(
 		const uint32_t flags,
 		process_t ** process);
 
-error_t proc_create_thread(
+return_t proc_create_thread(
 		process_t * process,
 		const char * const name,
 		thread_entry_point * entry_point,

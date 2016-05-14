@@ -259,7 +259,7 @@ static void arm_map_section(
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY));
 }
 
-static error_t arm_map_page(
+static return_t arm_map_page(
 		const mem_section_t * const section,
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
@@ -297,7 +297,7 @@ static error_t arm_map_page(
 	}
 }
 
-error_t arm_map_memory(
+return_t arm_map_memory(
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section)
@@ -326,7 +326,7 @@ error_t arm_map_memory(
 			}
 			else
 			{
-				const error_t ret = arm_map_page(
+				const return_t ret = arm_map_page(
 						section,
 						pool,
 						table,

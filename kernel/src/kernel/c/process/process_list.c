@@ -128,7 +128,7 @@ static inline bool_t initialise_mem_pool(
 				+ PRIVATE_POOL_SIZE);
 }
 
-static inline error_t create_process(
+static inline return_t create_process(
 		proc_list_t * const list,
 		mem_pool_info_t * const parent_pool,
 		const uint32_t proc_id,
@@ -153,14 +153,14 @@ static inline error_t create_process(
 			proc);
 }
 
-static inline error_t create_process_object(
+static inline return_t create_process_object(
 		const char * const image,
 		proc_list_t * const list,
 		process_t * const proc,
 		object_t * process_obj)
 {
 	debug_print(PROCESS, "Process: Building process object: %s\n", image);
-	error_t ret = obj_create_process(
+	return_t ret = obj_create_process(
 			list,
 			process_get_mem_pool(proc),
 			process_get_object_table(proc),
@@ -171,7 +171,7 @@ static inline error_t create_process_object(
 	return ret;
 }
 
-static inline error_t create_thread_object(
+static inline return_t create_thread_object(
 		const char * const image,
 		process_t * const proc,
 		const char * const initial_task_name,
@@ -205,7 +205,7 @@ static inline bool_t add_process_to_list(
 	return ok;
 }
 
-error_t proc_create_process(
+return_t proc_create_process(
 		proc_list_t * const list,
 		const char * image,
 		const char * initial_task_name,
@@ -215,7 +215,7 @@ error_t proc_create_process(
 		const uint32_t flags,
 		process_t ** process)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	process_t * proc = NULL;
 	debug_print(PROCESS, "Process: Create process with image %s, entry %x, priority %d, meminfo %x, flags %x\n",
 			image, entry_point, priority, meminfo, flags);
@@ -312,7 +312,7 @@ error_t proc_create_process(
 	return ret;
 }
 
-error_t proc_create_thread(
+return_t proc_create_thread(
 		process_t * process,
 		const char * const name,
 		thread_entry_point * entry_point,
@@ -322,7 +322,7 @@ error_t proc_create_thread(
 		object_t ** thread_object,
 		thread_t ** new_thread)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	thread_t * thread = NULL;
 
 	/* allocate memory for thread from processes pool */

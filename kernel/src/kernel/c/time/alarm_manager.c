@@ -82,14 +82,14 @@ void alarm_set_timer(alarm_manager_t * const am, timer_t * const timer)
 	}
 }
 
-error_t alarm_set_alarm(
+return_t alarm_set_alarm(
 		alarm_manager_t * const am,
 		const tinker_time_t * const timeout,
 		alarm_call_back * const call_back,
 		const alarm_user_data_t const usr_data,
 		uint32_t * const alarm_id)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (is_debug_enabled(ALARM))
 	{
 		if (timeout)
@@ -174,11 +174,11 @@ error_t alarm_set_alarm(
  * @param alarm_id The alarm ID to cancel
  * @return Errors
  */
-error_t alarm_unset_alarm(
+return_t alarm_unset_alarm(
 		alarm_manager_t * const am,
 		const uint32_t alarm_id)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	debug_print(ALARM, "Alarms: Unset alarm id %d\n", alarm_id);
 	alarm_t * alarm = NULL;
 	const bool_t got = alarm_list_t_get(am->alarm_list, alarm_id, &alarm);

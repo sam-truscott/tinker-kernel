@@ -130,9 +130,9 @@ void intc_add_timer(intc_t * const intc, const uint32_t cause, const timer_t * c
 	}
 }
 
-error_t intc_handle(const intc_t * const intc, tgt_context_t * const context)
+return_t intc_handle(const intc_t * const intc, tgt_context_t * const context)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (intc)
 	{
 		uint32_t cause = 0;
@@ -197,14 +197,14 @@ error_t intc_handle(const intc_t * const intc, tgt_context_t * const context)
 	return ret;
 }
 
-error_t intc_setup(
+return_t intc_setup(
 		intc_t * const intc,
 		const uint32_t cause,
 		const intc_priority_t priority,
 		const intc_detection_type detection,
 		const intc_active_type edge_type)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (intc)
 	{
 		intc->kernel_intc->setup_cause(
@@ -217,9 +217,9 @@ error_t intc_setup(
 	return ret;
 }
 
-error_t intc_enable(intc_t * const intc, const uint32_t cause)
+return_t intc_enable(intc_t * const intc, const uint32_t cause)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (intc)
 	{
 		intc->kernel_intc->enable_cause(cause, intc->kernel_intc->user_data);
@@ -231,9 +231,9 @@ error_t intc_enable(intc_t * const intc, const uint32_t cause)
 	return ret;
 }
 
-error_t intc_mask(intc_t * const intc, const uint32_t cause)
+return_t intc_mask(intc_t * const intc, const uint32_t cause)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (intc)
 	{
 		intc->kernel_intc->mask_cause(cause, intc->kernel_intc->user_data);

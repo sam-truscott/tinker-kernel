@@ -49,14 +49,14 @@ void int_install_isr(interrupt_controller_t * const intc, const intc_t * const r
 	}
 }
 
-error_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_context_t * const context)
+return_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_context_t * const context)
 {
 	if (intc)
 	{
 		intc->is_external = true;
 		const thread_t * const current_thread = sch_get_current_thread(intc->scheduler);
 		debug_print(INTC, "INTC: Thread before external vector: %s\n", thread_get_name(current_thread));
-		const error_t intc_result = intc_handle(intc->interrupt_manager_root, context);
+		const return_t intc_result = intc_handle(intc->interrupt_manager_root, context);
 		debug_prints(INTC, "INTC: Switching thread due to external interrupt\n");
 		sch_set_context_for_next_thread(
 				intc->scheduler, context,

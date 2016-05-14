@@ -18,35 +18,35 @@
 
 struct kernel_device;
 
-typedef error_t (kernel_device_initialise)(
+typedef return_t (kernel_device_initialise)(
 		struct kernel_device * device_info,
 		void * param,
 		const uint32_t param_size);
 
-typedef error_t (kernel_device_control)(
+typedef return_t (kernel_device_control)(
 		void * usr_data, uint32_t code);
 
-typedef error_t (kernel_device_write_register)(
+typedef return_t (kernel_device_write_register)(
 		const void * const usr_data,
 		const uint32_t id,
 		const uint32_t val);
 
-typedef error_t (kernel_device_read_register)(
+typedef return_t (kernel_device_read_register)(
 		const void * const usr_data, const uint32_t id, uint32_t * const val);
 
-typedef error_t (kernel_device_write_buffer)(
+typedef return_t (kernel_device_write_buffer)(
 		const void * const usr_data,
 		const uint32_t dst,
 		const void * const src,
 		const uint32_t src_size);
 
-typedef error_t (kernel_device_read_buffer)(
+typedef return_t (kernel_device_read_buffer)(
 		const void * const usr_data,
 		const uint32_t src,
 		void * const dst,
 		const uint32_t dst_size);
 
-typedef error_t (kernel_device_isr)(
+typedef return_t (kernel_device_isr)(
 		const void * const usr_data,
 		const uint32_t vector);
 
@@ -68,7 +68,7 @@ void kernel_device_init(
 		registry_t * const reg,
 		proc_list_t * const list);
 
-error_t kernel_device_map_memory
+return_t kernel_device_map_memory
 	(const uint32_t addr,
 	 const uint32_t size,
 	 const mmu_memory_t type,
@@ -80,7 +80,7 @@ void * kernel_device_malloc(
 object_pipe_t * kernel_isr_get_pipe(
 		const char * const name);
 
-error_t kernel_isr_write_pipe(
+return_t kernel_isr_write_pipe(
 		object_pipe_t * const pipe,
 		void * buffer,
 		uint32_t size);

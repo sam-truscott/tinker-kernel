@@ -156,7 +156,7 @@ static uint8_t bcm2835_uart_getc(const uint32_t base)
     return in_u32((uint32_t*)(base + UART0_DR));
 }
 
-static error_t bcm2835_uart_isr(
+static return_t bcm2835_uart_isr(
 		const void * const usr_data,
 		const uint32_t vector)
 {
@@ -186,7 +186,7 @@ void early_uart_put(const char * c)
 	}
 }
 
-static error_t bcm2835_uart_write(
+static return_t bcm2835_uart_write(
 		const void * const usr_data,
 		const uint32_t id,
 		const uint32_t val)

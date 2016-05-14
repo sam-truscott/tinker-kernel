@@ -141,7 +141,7 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	case VECTOR_IRQ:
 	case VECTOR_FIQ:
 	{
-		const error_t handled = int_handle_external_vector(interrupt_controller, context);
+		const return_t handled = int_handle_external_vector(interrupt_controller, context);
 		if (handled != NO_ERROR)
 		{
 			debug_print(TARGET, "BSP: Failed to handle external interrupt, error = %d\n", handled);

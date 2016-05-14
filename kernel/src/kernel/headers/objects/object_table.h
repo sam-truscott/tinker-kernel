@@ -25,16 +25,16 @@ object_table_t * obj_table_create(mem_pool_info_t * const pool);
 
 void obj_table_delete(const object_table_t * const table);
 
-error_t obj_initialse_table(
+return_t obj_initialse_table(
 		object_table_t * const table,
 		mem_pool_info_t * const pool);
 
-error_t obj_add_object(
+return_t obj_add_object(
 		object_table_t * const t,
 		object_t * const obj,
 		object_number_t * const objno);
 
-error_t obj_remove_object(
+return_t obj_remove_object(
 		object_table_t * const t,
 		const object_number_t objno);
 

@@ -11,7 +11,7 @@
 
 #include "tinker_api_kernel_interface.h"
 
-error_t tinker_create_pipe(
+return_t tinker_create_pipe(
 		tinker_pipe_t * pipe,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
@@ -27,14 +27,14 @@ error_t tinker_create_pipe(
 			messages);
 }
 
-error_t tinker_open_pipe(
+return_t tinker_open_pipe(
 		tinker_pipe_t * pipe,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages)
 {
-	error_t result = BLOCKED_RETRY;
+	return_t result = BLOCKED_RETRY;
 	while(result == BLOCKED_RETRY)
 	{
 		result = TINKER_API_CALL_5(
@@ -48,28 +48,28 @@ error_t tinker_open_pipe(
 	return result;
 }
 
-error_t tinker_close_pipe(tinker_pipe_t pipe)
+return_t tinker_close_pipe(tinker_pipe_t pipe)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_CLOSE_PIPE,
 			(uint32_t)pipe);
 }
 
-error_t tinker_delete_pipe(tinker_pipe_t pipe)
+return_t tinker_delete_pipe(tinker_pipe_t pipe)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_DELETE_PIPE,
 			(uint32_t)pipe);
 }
 
-error_t tinker_send_message(
+return_t tinker_send_message(
 		tinker_pipe_t pipe,
 		const tinker_pipe_send_kind_t send_kend,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block)
 {
-	error_t result = UNKNOWN_ERROR;
+	return_t result = UNKNOWN_ERROR;
 	while (result == BLOCKED_RETRY || result == UNKNOWN_ERROR)
 	{
 		result = TINKER_API_CALL_5(
@@ -88,7 +88,7 @@ error_t tinker_send_message(
 	return result;
 }
 
-error_t tinker_receive_message(
+return_t tinker_receive_message(
 		tinker_pipe_t pipe,
 		void ** message,
 		uint32_t ** const message_size,
@@ -102,7 +102,7 @@ error_t tinker_receive_message(
 			block);
 }
 
-error_t tinker_received_message(tinker_pipe_t pipe)
+return_t tinker_received_message(tinker_pipe_t pipe)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_RECEIVED_MESSAGE,

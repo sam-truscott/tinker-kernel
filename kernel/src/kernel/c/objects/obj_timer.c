@@ -86,7 +86,7 @@ static void obj_timer_timeout(
 	}
 }
 
-error_t obj_create_timer(
+return_t obj_create_timer(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
 		process_t * const process,
@@ -97,7 +97,7 @@ error_t obj_create_timer(
 		tinker_timer_callback_t * const callback,
 		const void* parameter)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (process && objectno && (seconds || nanoseconds) && callback)
 	{
 		object_table_t * const table = process_get_object_table(process);
@@ -184,9 +184,9 @@ static void obj_timer_delete_thread(object_timer_t * const timer)
 			oid);
 }
 
-error_t obj_cancel_timer(object_timer_t * const timer)
+return_t obj_cancel_timer(object_timer_t * const timer)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (timer)
 	{
 		if (timer->callback)
@@ -208,9 +208,9 @@ error_t obj_cancel_timer(object_timer_t * const timer)
 	return result;
 }
 
-error_t obj_delete_timer(object_timer_t * const timer)
+return_t obj_delete_timer(object_timer_t * const timer)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (timer)
 	{
 		if (timer->callback)

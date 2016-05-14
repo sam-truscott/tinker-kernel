@@ -67,7 +67,7 @@ static void ivt_install_vector(void * const address, const void * const vector, 
  * @param rw_access Read/Write access
  * @param mem_type The type of memory being mapped
  */
-static error_t ppc_setup_paged_area(
+static return_t ppc_setup_paged_area(
 		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
 		const mem_section_t * const mem_sec);
@@ -222,7 +222,7 @@ void ppc_isr_handler(const uint32_t vector, tgt_context_t * const context)
 	}
 }
 
-static error_t ppc_setup_paged_area(
+static return_t ppc_setup_paged_area(
 		const tgt_pg_tbl_t * const page_tbl,
 		const tgt_mem_t * const segment_info,
 		const mem_section_t * const mem_sec)
@@ -374,9 +374,9 @@ static void ppc_remove_paged_area(
 	}
 }
 
-error_t tgt_initialise_process(process_t * const process)
+return_t tgt_initialise_process(process_t * const process)
 {
-	error_t ok = NO_ERROR;
+	return_t ok = NO_ERROR;
 
 	if (!process_is_kernel(process))
 	{
@@ -406,11 +406,11 @@ error_t tgt_initialise_process(process_t * const process)
 	return ok;
 }
 
-error_t tgt_map_memory(
+return_t tgt_map_memory(
 		const process_t * const process,
 		const mem_section_t * const section)
 {
-	error_t result = PARAMETERS_INVALID;
+	return_t result = PARAMETERS_INVALID;
 	if (process && section)
 	{
 		const tgt_mem_t * const segment_info = process_get_mem_info(process);

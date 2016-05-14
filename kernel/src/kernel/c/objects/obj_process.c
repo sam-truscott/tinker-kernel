@@ -39,7 +39,7 @@ object_process_t * obj_cast_process(object_t * o)
 	return result;
 }
 
-error_t obj_create_process(
+return_t obj_create_process(
 		proc_list_t * const proc_list,
 		mem_pool_info_t * const pool,
 		object_table_t * const table,
@@ -48,7 +48,7 @@ error_t obj_create_process(
 		object_t ** object)
 {
 	object_process_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (object)
 	{
@@ -94,11 +94,11 @@ error_t obj_create_process(
 	return result;
 }
 
-error_t obj_process_thread_exit(
+return_t obj_process_thread_exit(
 		object_process_t * const o,
 		object_thread_t * const thread)
 {
-	error_t ret;
+	return_t ret;
 	kernel_assert("obj_process_thread - check process object exists\n", o != NULL);
 	kernel_assert("obj_process_thread - check thread object exists\n", thread != NULL);
 

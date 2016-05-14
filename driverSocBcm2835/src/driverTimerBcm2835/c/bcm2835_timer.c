@@ -112,9 +112,9 @@ static void bcm2835_timer_cancel(const timer_param_t const usr_data)
 	}
 }
 
-static error_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t param)
+static return_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t param)
 {
-	error_t result;
+	return_t result;
 	bcm2835_timer_cancel(param);
 	debug_prints(TIMER, "BCM2835: ISR for timer\n");
 	if (param)

@@ -98,7 +98,7 @@ object_number_t obj_semaphore_get_oid
 	return oid;
 }
 
-error_t obj_create_semaphore(
+return_t obj_create_semaphore(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -106,7 +106,7 @@ error_t obj_create_semaphore(
 		const uint32_t initial_count)
 {
 	object_sema_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (objectno && process)
 	{
@@ -155,14 +155,14 @@ error_t obj_create_semaphore(
 	return result;
 }
 
-error_t obj_open_semaphore(
+return_t obj_open_semaphore(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * name)
 {
 	object_sema_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (objectno && process)
 	{
@@ -235,10 +235,10 @@ error_t obj_open_semaphore(
 	return result;
 }
 
-error_t object_delete_semaphore(
+return_t object_delete_semaphore(
 		object_sema_t * const semaphore)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (semaphore)
 	{
 		switch (semaphore->sema_type)
@@ -264,11 +264,11 @@ error_t object_delete_semaphore(
 	return result;
 }
 
-error_t obj_get_semaphore(
+return_t obj_get_semaphore(
 		object_thread_t * const thread,
 		object_sema_t * const semaphore)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (thread && semaphore && semaphore->sema_type != unknown_sema_type)
 	{
@@ -357,11 +357,11 @@ error_t obj_get_semaphore(
 	return result;
 }
 
-error_t obj_release_semaphore(
+return_t obj_release_semaphore(
 		object_thread_t * const thread,
 		object_sema_t * const semaphore)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (semaphore && semaphore->sema_type != unknown_sema_type)
 	{

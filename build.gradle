@@ -70,17 +70,41 @@ allprojects {
 	                   args << "-Wno-type-limits"
 	                   args << "-D__i386__"
                        args << "-DUNIT_TESTS"
-	                   args << "-DIS_HOST_UNIT_TEST"
+	               args << "-DIS_HOST_UNIT_TEST"
                        args << "-DSCHEDULER_DEBUGGING"
                        args << "-DKERNEL_DEBUGGING"
                        args << "-DMEMSET"
                        args << "-ftest-coverage"
                        args << "-fprofile-arcs"
-	                   args << "-I" + srcDir.getAbsolutePath() + "/../hostTestDriver/src/hostTestDriver/headers"
+	                   args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
 	               }
 	               linker.withArguments { args ->
 	                   args << "-ftest-coverage"
 	                   args << "-fprofile-arcs"
+	               }
+	           }
+	           target("linux_x86-64") {
+	               File srcDir = new File("src")
+	               cCompiler.withArguments { args ->
+	                   args << "-Wno-maybe-uninitialized"
+	                   args << "-Wno-pointer-to-int-cast"
+	                   args << "-Wno-int-to-pointer-cast"
+	                   args << "-Wno-type-limits"
+	                   args << "-D__i386__"
+		           args << "-fPIC"
+                       args << "-DUNIT_TESTS"
+	               args << "-DIS_HOST_UNIT_TEST"
+                       args << "-DSCHEDULER_DEBUGGING"
+                       args << "-DKERNEL_DEBUGGING"
+                       args << "-DMEMSET"
+                       args << "-ftest-coverage"
+                       args << "-fprofile-arcs"
+	                   args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
+	               }
+	               linker.withArguments { args ->
+	                   args << "-ftest-coverage"
+	                   args << "-fprofile-arcs"
+                           args << "-fPIC"
 	               }
 	           }
 	        }
@@ -93,7 +117,7 @@ allprojects {
 	                linker.executable = "powerpc-eabi-gcc"
 	                staticLibArchiver.executable = "powerpc-eabi-ar"
 	                cCompiler.withArguments { args ->
-	                    args << "-I" + srcDir.getAbsolutePath() + "/../archPowerPc/src/archPowerPc/headers"
+	                    args << "-I" + projectDir + "/../archPowerPc/src/archPowerPc/headers"
 	                    args << "-mcpu=powerpc"
 	                    args << "-Wno-maybe-uninitialized"
 	                    args << "-fpic"

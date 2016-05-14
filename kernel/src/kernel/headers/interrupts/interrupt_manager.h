@@ -23,7 +23,7 @@ interrupt_controller_t * int_create(
 
 void int_install_isr(interrupt_controller_t * const intc, const intc_t * const rintc);
 
-error_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_context_t * const context);
+return_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_context_t * const context);
 
 void int_context_switch_interrupt(
 		interrupt_controller_t * const intc,

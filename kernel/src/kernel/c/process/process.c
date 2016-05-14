@@ -67,7 +67,7 @@ static void process_add_mem_sec(
 	}
 }
 
-error_t process_create(
+return_t process_create(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
 		mem_pool_info_t * const mempool,
@@ -80,7 +80,7 @@ error_t process_create(
 		process_t ** process)
 {
 	process_t * new_proc = (process_t*)mem_alloc(mempool, sizeof(process_t));
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (new_proc)
 	{
 		util_memset(new_proc, 0, sizeof(process_t));
@@ -516,7 +516,7 @@ uint32_t process_virt_to_real(
 	return real;
 }
 
-error_t process_allocate_vmem(
+return_t process_allocate_vmem(
 		process_t * const process,
 		const uint32_t real_address,
 		const uint32_t size,
@@ -525,7 +525,7 @@ error_t process_allocate_vmem(
 		const mmu_access_t access,
 		uint32_t * const virt_address)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	// find a hole in the memory sections that's large enough
 	// and then allocate a memory section there
 	// note: this is just a virtual allocation to avoid

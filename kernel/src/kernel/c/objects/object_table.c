@@ -66,11 +66,11 @@ static bool_t hash_equal_object_number(const object_number_t l, const object_num
 	return (l == r);
 }
 
-error_t obj_initialse_table(
+return_t obj_initialse_table(
 		object_table_t * const table,
 		mem_pool_info_t * const pool)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 
 	/* create the hashmap for the object table */
 	if (table)
@@ -93,13 +93,13 @@ error_t obj_initialse_table(
 	return ret;
 }
 
-error_t obj_add_object(
+return_t obj_add_object(
 		object_table_t * const t,
 		object_t * const obj,
 		object_number_t * const objno)
 {
 	bool_t id_ok = false;
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 
 	if (t && obj)
 	{
@@ -141,11 +141,11 @@ error_t obj_add_object(
 	return ret;
 }
 
-error_t obj_remove_object(
+return_t obj_remove_object(
 		object_table_t * const t,
 		const object_number_t objno)
 {
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 
 	if (t)
 	{

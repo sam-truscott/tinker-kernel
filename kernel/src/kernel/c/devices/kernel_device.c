@@ -25,13 +25,13 @@ void kernel_device_init(
 	registry = reg;
 }
 
-error_t kernel_device_map_memory
+return_t kernel_device_map_memory
 	(const uint32_t addr,
 	 const uint32_t size,
 	 const mmu_memory_t type,
 	 uint32_t * const virt)
 {
-	const error_t result = process_allocate_vmem(
+	const return_t result = process_allocate_vmem(
 			kernel_process,
 			addr,
 			size,
@@ -101,7 +101,7 @@ object_pipe_t * kernel_isr_get_pipe(
 	return pipe;
 }
 
-error_t kernel_isr_write_pipe(
+return_t kernel_isr_write_pipe(
 		object_pipe_t * const pipe,
 		void * buffer,
 		uint32_t size)

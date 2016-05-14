@@ -44,17 +44,17 @@ void intc_add_pipe(intc_t * const intc, const uint32_t cause, const object_pipe_
 
 void intc_add_timer(intc_t * const intc, const uint32_t cause, const timer_t * const timer);
 
-error_t intc_handle(const intc_t * const intc, tgt_context_t * const context);
+return_t intc_handle(const intc_t * const intc, tgt_context_t * const context);
 
-error_t intc_setup(
+return_t intc_setup(
 		intc_t * const intc,
 		const uint32_t cause,
 		const intc_priority_t priority,
 		const intc_detection_type detection,
 		const intc_active_type edge_type);
 
-error_t intc_enable(intc_t * const intc, const uint32_t cause);
+return_t intc_enable(intc_t * const intc, const uint32_t cause);
 
-error_t intc_mask(intc_t * const intc, const uint32_t cause);
+return_t intc_mask(intc_t * const intc, const uint32_t cause);
 
 #endif /* INTC_H_ */

@@ -22,7 +22,7 @@ object_shm_t * obj_cast_shm(object_t * const o);
 object_number_t obj_shm_get_oid
 	(const object_shm_t * const o);
 
-error_t obj_create_shm(
+return_t obj_create_shm(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -30,7 +30,7 @@ error_t obj_create_shm(
 		const uint32_t size,
 		void ** address);
 
-error_t obj_open_shm(
+return_t obj_open_shm(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -38,7 +38,7 @@ error_t obj_open_shm(
 		const uint32_t size,
 		void ** address);
 
-error_t obj_delete_shm(
+return_t obj_delete_shm(
 		object_shm_t * const shm);
 
 #endif /* OBJ_SHARED_MEM_H_ */

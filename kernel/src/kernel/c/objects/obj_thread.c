@@ -34,7 +34,7 @@ typedef struct object_thread_t
 	alarm_manager_t * alarm_manager;
 } object_thread_internal_t;
 
-error_t obj_create_thread(
+return_t obj_create_thread(
 		mem_pool_info_t * const pool,
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
@@ -44,7 +44,7 @@ error_t obj_create_thread(
 		object_number_t * const object_no)
 {
 	object_thread_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if ( table )
 	{
@@ -116,9 +116,9 @@ object_thread_t * obj_cast_thread(object_t * const o)
 	return result;
 }
 
-error_t obj_exit_thread(object_thread_t * const o)
+return_t obj_exit_thread(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -154,11 +154,11 @@ error_t obj_exit_thread(object_thread_t * const o)
 	return result;
 }
 
-error_t obj_get_thread_state(
+return_t obj_get_thread_state(
 		object_thread_t * const o,
 		thread_state_t * const state)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 
 	if (o && state)
@@ -174,11 +174,11 @@ error_t obj_get_thread_state(
 	return result;
 }
 
-error_t obj_set_thread_waiting(
+return_t obj_set_thread_waiting(
 		object_thread_t * const o,
 		const object_t * const waiting_on)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -220,9 +220,9 @@ bool_t obj_thread_is_waiting_on(
 	return is_waiting;
 }
 
-error_t obj_set_thread_ready(object_thread_t * const o)
+return_t obj_set_thread_ready(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -252,11 +252,11 @@ priority_t obj_get_thread_priority_ex(object_thread_t * const o)
 	return p;
 }
 
-error_t obj_get_thread_priority(
+return_t obj_get_thread_priority(
 		object_thread_t * const o,
 		uint8_t * const priority)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -277,11 +277,11 @@ error_t obj_get_thread_priority(
 	return result;
 }
 
-error_t obj_set_thread_priority(
+return_t obj_set_thread_priority(
 		object_thread_t * const o,
 		const uint8_t priority)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -310,9 +310,9 @@ error_t obj_set_thread_priority(
 	return result;
 }
 
-error_t obj_reset_thread_original_priority(object_thread_t * const o)
+return_t obj_reset_thread_original_priority(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -330,9 +330,9 @@ error_t obj_reset_thread_original_priority(object_thread_t * const o)
 	return result;
 }
 
-error_t obj_set_thread_original_priority(object_thread_t * const o)
+return_t obj_set_thread_original_priority(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -380,9 +380,9 @@ static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t *
 	}
 }
 
-error_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const duration)
+return_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const duration)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o && duration)
 	{

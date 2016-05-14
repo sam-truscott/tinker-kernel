@@ -62,6 +62,6 @@ typedef enum error_enum
 	INVALID_ELF,
 	ERROR_UNKNOWN_SYSCALL
 
-} error_t;
+} return_t;
 
 #endif /* TINKER_API_ERRORS_H_ */

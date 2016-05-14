@@ -64,7 +64,7 @@ void test_proc_list(void)
 	tinker_meminfo_t kp_mem_info;
 	kp_mem_info.heap_size = 1024;
 	kp_mem_info.stack_size = 1024;
-	error_t err = proc_create_process(list, "proc", "task", NULL, 2, &kp_mem_info, 0, &proc);
+	return_t err = proc_create_process(list, "proc", "task", NULL, 2, &kp_mem_info, 0, &proc);
 	kernel_assert("should be non null", err == NO_ERROR);
 	kernel_assert("should be non null", proc != NULL);
 	kernel_assert("should be one", process_list_t_size(list->process_list) == 1);

@@ -33,7 +33,7 @@ static void load_processes(const uint32_t end_of_bin, loader_t* const loader)
 	app_start += sizeof(uint32_t);
 	while (sz)
 	{
-		const error_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
+		const return_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
 		debug_print(ELF_LOADER, "Loader: Loading of process: %d\n", elf_error);
 		app_start += sz;
 		// need to align to a word boundry

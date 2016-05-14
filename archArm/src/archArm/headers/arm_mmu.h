@@ -26,7 +26,7 @@ void arm_set_domain_access_register(const uint32_t dar);
 
 void arm_set_translation_table_base(tgt_pg_tbl_t * const base);
 
-error_t arm_map_memory(
+return_t arm_map_memory(
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section);

@@ -131,7 +131,7 @@ void kshell_start(void)
 	print_out("Commands: procs, tasks, objects, mem\n");
 
 	tinker_pipe_t pipe;
-	error_t input_result = tinker_open_pipe(
+	return_t input_result = tinker_open_pipe(
 			&pipe,
 			kshell_dev_name,
 			PIPE_RECEIVE,
@@ -153,14 +153,14 @@ void kshell_start(void)
 		{
 			print_out("KSHELL Rx\n");
 		}
-		error_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
+		return_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
 		if (is_debug_enabled(SHELL))
 		{
 			printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
 		}
 		if (read_status == NO_ERROR)
 		{
-			error_t ack = tinker_received_message(pipe);
+			return_t ack = tinker_received_message(pipe);
 			if (ack != NO_ERROR)
 			{
 				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
