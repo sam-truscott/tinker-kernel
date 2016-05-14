@@ -48,8 +48,6 @@ void    initialise_monitor_handles _PARAMS ((void));
 static int	wrap		_PARAMS ((int));
 static int	error		_PARAMS ((int));
 static int	get_errno	_PARAMS ((void));
-static int	remap_handle	_PARAMS ((int));
-static int 	findslot	_PARAMS ((int));
 
 /* Register name faking - works in collusion with the linker.  */
 register char * stack_ptr asm ("sp");
@@ -76,35 +74,6 @@ typedef struct
   int pos;
 }
 poslog;
-
-#define MAX_OPEN_FILES 20
-static poslog openfiles [MAX_OPEN_FILES];
-
-static int
-findslot (int fh)
-{
-  int i;
-  for (i = 0; i < MAX_OPEN_FILES; i ++)
-    if (openfiles[i].handle == fh)
-      break;
-  return i;
-}
-
-/* Function to convert std(in|out|err) handles to internal versions.  */
-static int
-remap_handle (int fh)
-{
-  CHECK_INIT(_REENT);
-
-  if (fh == STDIN_FILENO)
-    return monitor_stdin;
-  if (fh == STDOUT_FILENO)
-    return monitor_stdout;
-  if (fh == STDERR_FILENO)
-    return monitor_stderr;
-
-  return fh - FILE_HANDLE_OFFSET;
-}
 
 static int
 get_errno (void)
@@ -137,21 +106,7 @@ _swiread (int file,
 	  char * ptr,
 	  int len)
 {
-  int fh = remap_handle (file);
-#ifdef ARM_RDI_MONITOR
-  int block[3];
-  
-  block[0] = fh;
-  block[1] = (int) ptr;
-  block[2] = len;
-  
-  return do_AngelSWI (AngelSWI_Reason_Read, block);
-#else
-  asm ("mov r0, %1; mov r1, %2;mov r2, %3; swi %a0"
-       : /* No outputs */
-       : "i"(SWI_Read), "r"(fh), "r"(ptr), "r"(len)
-       : "r0","r1","r2");
-#endif
+  return error(-1);
 }
 
 int __attribute__((weak))
@@ -159,17 +114,7 @@ _read (int file,
        char * ptr,
        int len)
 {
-  int slot = findslot (remap_handle (file));
-  int x = _swiread (file, ptr, len);
-
-  if (x < 0)
-    return error (-1);
-
-  if (slot != MAX_OPEN_FILES)
-    openfiles [slot].pos += len - x;
-
-  /* x == len is not an error, at least if we want feof() to work.  */
-  return len - x;
+	return error(-1);
 }
 
 int
@@ -177,54 +122,7 @@ _swilseek (int file,
 	   int ptr,
 	   int dir)
 {
-  int res;
-  int fh = remap_handle (file);
-  int slot = findslot (fh);
-#ifdef ARM_RDI_MONITOR
-  int block[2];
-#endif
-
-  if (dir == SEEK_CUR)
-    {
-      if (slot == MAX_OPEN_FILES)
-	return -1;
-      ptr = openfiles[slot].pos + ptr;
-      dir = SEEK_SET;
-    }
-  
-#ifdef ARM_RDI_MONITOR
-  if (dir == SEEK_END)
-    {
-      block[0] = fh;
-      ptr += do_AngelSWI (AngelSWI_Reason_FLen, block);
-    }
-  
-  /* This code only does absolute seeks.  */
-  block[0] = remap_handle (file);
-  block[1] = ptr;
-  res = do_AngelSWI (AngelSWI_Reason_Seek, block);
-#else
-  if (dir == SEEK_END)
-    {
-      asm ("mov r0, %2; swi %a1; mov %0, r0"
-	   : "=r" (res)
-	   : "i" (SWI_Flen), "r" (fh)
-	   : "r0");
-      ptr += res;
-    }
-
-  /* This code only does absolute seeks.  */
-  asm ("mov r0, %2; mov r1, %3; swi %a1; mov %0, r0"
-       : "=r" (res)
-       : "i" (SWI_Seek), "r" (fh), "r" (ptr)
-       : "r0", "r1");
-#endif
-
-  if (slot != MAX_OPEN_FILES && res == 0)
-    openfiles[slot].pos = ptr;
-
-  /* This is expected to return the position in the file.  */
-  return res == 0 ? ptr : -1;
+  return error(-1);
 }
 
 int
@@ -242,21 +140,7 @@ _swiwrite (
 	   char * ptr,
 	   int    len)
 {
-  int fh = remap_handle (file);
-#ifdef ARM_RDI_MONITOR
-  int block[3];
-  
-  block[0] = fh;
-  block[1] = (int) ptr;
-  block[2] = len;
-  
-  return do_AngelSWI (AngelSWI_Reason_Write, block);
-#else
-  asm ("mov r0, %1; mov r1, %2;mov r2, %3; swi %a0"
-       : /* No outputs */
-       : "i"(SWI_Write), "r"(fh), "r"(ptr), "r"(len)
-       : "r0","r1","r2");
-#endif
+	return error(-1);
 }
 
 int __attribute__((weak))
@@ -264,16 +148,7 @@ _write (int    file,
 	char * ptr,
 	int    len)
 {
-  int slot = findslot (remap_handle (file));
-  int x = _swiwrite (file, ptr,len);
-
-  if (x == -1 || x == len)
-    return error (-1);
-  
-  if (slot != MAX_OPEN_FILES)
-    openfiles[slot].pos += len - x;
-  
-  return len - x;
+	return error(-1);
 }
 
 extern int strlen (const char *);
@@ -283,14 +158,6 @@ _swiopen (const char * path,
 	  int          flags)
 {
   int aflags = 0, fh;
-#ifdef ARM_RDI_MONITOR
-  int block[3];
-#endif
-  
-  int i = findslot (-1);
-  
-  if (i == MAX_OPEN_FILES)
-    return -1;
 
   /* The flags are Unix-style, so we need to convert them.  */
 #ifdef O_BINARY
@@ -312,28 +179,7 @@ _swiopen (const char * path,
       aflags &= ~4;     /* Can't ask for w AND a; means just 'a'.  */
       aflags |= 8;
     }
-  
-#ifdef ARM_RDI_MONITOR
-  block[0] = (int) path;
-  block[2] = strlen (path);
-  block[1] = aflags;
-  
-  fh = do_AngelSWI (AngelSWI_Reason_Open, block);
-  
-#else
-  asm ("mov r0,%2; mov r1, %3; swi %a1; mov %0, r0"
-       : "=r"(fh)
-       : "i" (SWI_Open),"r"(path),"r"(aflags)
-       : "r0","r1");
-#endif
-  
-  if (fh >= 0)
-    {
-      openfiles[i].handle = fh;
-      openfiles[i].pos = 0;
-    }
-
-  return fh >= 0 ? fh + FILE_HANDLE_OFFSET : error (fh);
+  return error(-1);
 }
 
 int
@@ -347,17 +193,7 @@ _open (const char * path,
 int
 _swiclose (int file)
 {
-  int myhan = remap_handle (file);
-  int slot = findslot (myhan);
-  
-  if (slot != MAX_OPEN_FILES)
-    openfiles[slot].handle = -1;
-
-#ifdef ARM_RDI_MONITOR
-  return do_AngelSWI (AngelSWI_Reason_Close, & myhan);
-#else
-  asm ("mov r0, %1; swi %a0" :: "i" (SWI_Close),"r"(myhan):"r0");
-#endif
+  return error(-1);
 }
 
 int
