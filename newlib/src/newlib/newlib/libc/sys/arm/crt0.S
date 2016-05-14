@@ -93,17 +93,52 @@
 
 	bl	FUNCTION (exit)		/* Should not return.  */
 
-#if __thumb__ && !defined(PREFER_THUMB)
-	/* Come out of Thumb mode.  This code should be redundant.  */
-	mov	a4, pc
-	bx	a4
+	/* For Thumb, constants must be after the code since only
+	   positive offsets are supported for PC relative addresses.  */
+	.align 0
+.LC0:
+	/* Changes by toralf: Provide alternative "stack" variable whose value
+	   may be defined externally; .Lstack will be used instead of .LC0 if
+	   it points to a non-0 value. Also set up references to "hooks" that
+           may be used by the application to provide additional init code.  */
+#ifdef __pe__
+	.word	0x800000
+#else
+	.word	0x80000			/* Top of RAM on the PIE board.  */
+#endif
 
-	.code 32
-	.global change_back
-change_back:
-	/* Halt the execution.  This code should never be executed.  */
-	/* With no debug monitor, this probably aborts (eventually).
-	   With a Demon debug monitor, this halts cleanly.
-	   With an Angel debug monitor, this will report 'Unknown SWI'.	 */
-	swi	SWI_Exit
+.Lstack:
+	.word	__stack
+.Lhwinit:
+	.word	FUNCTION (hardware_init_hook)
+.Lswinit:
+	.word	FUNCTION (software_init_hook)
+
+	/* Set up defaults for the above variables in the form of weak symbols
+	   - so that application will link correctly, and get value 0 in
+	   runtime (meaning "ignore setting") for the variables, when the user
+	   does not provide the symbols. (The linker uses a weak symbol if,
+	   and only if, a normal version of the same symbol isn't provided
+	   e.g. by a linker script or another object file).  */
+
+	.weak __stack
+	.weak FUNCTION (hardware_init_hook)
+	.weak FUNCTION (software_init_hook)
+#if defined(__ELF__) && !defined(__USING_SJLJ_EXCEPTIONS__)
+	/* Protect against unhandled exceptions.  */
+	.cantunwind
+	.fnend
+#endif
+.LC1:
+	.word	__bss_start__
+.LC2:
+	.word	__bss_end__
+#ifdef __USES_INITFINI__
+.Lfini:
+	.word	FUNCTION(_fini)
+#endif
+
+#ifdef __pe__
+	.section .idata$3
+	.long	0,0,0,0,0,0,0,0
 #endif
