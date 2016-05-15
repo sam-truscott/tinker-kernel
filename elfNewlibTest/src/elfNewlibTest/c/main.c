@@ -9,8 +9,8 @@
 
 #include "stdio.h"
 
-void main(void)
+int main(void)
 {
 	printf("hello world\n");
-	return;
+	return 0;
 }

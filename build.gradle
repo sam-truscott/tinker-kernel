@@ -130,6 +130,14 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            target("tinkerArm") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "arm-eabi-gcc"
+	                cCompiler.executable = "arm-eabi-gcc"
+	                assembler.executable = "arm-eabi-gcc"
+	                linker.executable = "arm-eabi-gcc"
+	                staticLibArchiver.executable = "arm-eabi-ar"
+	            }
 	            target("tinkerArm4Soft") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -236,6 +244,9 @@ allprojects {
 	    }
 	    platforms {
 	        tinkerArm4Soft {
+	            architecture "arm"
+	        }
+	        tinkerArm {
 	            architecture "arm"
 	        }
 	        tinkerArm4HardVfp {
