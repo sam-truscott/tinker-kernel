@@ -15,13 +15,11 @@ Hybrid Kernel written in C and assembly.
 ### PowerPC
 - gdb simulator (aka PSIM)
 
-License
-=======
+# License
 
 MIT - see LICENSE
 
-Overview
-========
+# Overview
 
 I've worked on & off on this hybrid kernel for the last few years to help my understanding in operating systems.
 
@@ -34,8 +32,7 @@ Tinker is:
 He is my hobby. The aim is to keep it simple enough for anyone to understand and therefore also
 be simple enough to port and possibly even verify. I used to try and read the Linux Kernel but got lost. The aim of Tinker is to be easy to read so it's easy to learn what's going on.
 
-Features
-========
+# Features
 
 * Processes & Threads with a priority based pre-emptive scheduler
 * Semaphores
@@ -44,30 +41,20 @@ Features
 * Timers
 * Clock
 
-Building
-========
+# Building
 
 Gradle is used as the build system. It can build debug and release versions of either the parts
 (which are static libraries) or executables
 
-For example, to build an individual target use (in this case a Raspberry Pi kernel.img file):
+For example, to build an individual target use:
 
     # Windows
     gradlew armRaspPiDebugExecutable armRaspPiReleaseExecutable
     
     # Linux
     ./gradlew armRaspPiDebugExecutable armRaspPiReleaseExecutable
-    
-To build everything (all targets, debug and release) use:
-
-	# Windows
-	gradlew clean assemble
 	
-	# Linux
-	./gradlew clean assemble
-	
-Unit Tests
-==========
+# Unit Tests
 
 Unit tests can be enabled at compile time to run at kernel initialisation - this ensures they run on the target
 and with the target compiler as opposed to the host compiler. However, for debugging purposes a host variant is provided.
@@ -80,17 +67,15 @@ and with the target compiler as opposed to the host compiler. However, for debug
 	
 You'll need a gcc available on the PATH for this to build.
 	
-Toolchains
-==========
+# Toolchains
 
-A standard stage 1 gcc compiler will work (i.e. C compiler without libc support, with libgcc) for building the kernel itself.
+GCC is the compiler used by default.
 
-For ARM I'm using 5.3.0 for PowerPC I'm using 4.9.0.
+For ARM I'm using 6.1.0 for PowerPC I'm using 4.9.0.
 
-Building the toolchain
--
+## Building the toolchain
 
-I've added gradle tasks to build a stage-3 gcc compiler with support for C.
+I've added gradle tasks to build a stage-3 gcc compiler with support for C and C++.
 
 You'll need the following (and possibly more) dependencies
 
@@ -120,12 +105,9 @@ Then execute:
 
 You should then have a toolchain in 'arm-eabi'.
 
-Loading
-=======
+# Loading / Packaging
 
-Eventually there'll be a bootstrap that contains the hybrid kernel and the required user-services to startup. 
-The bootstrap will place the kerneland services into memory, load the kernel and then start the user-services
-(much like init).
+The packager will create a binary image with the kernel followed by user-land processes or servers:
 
  bootstrap
   - kernel >\
@@ -137,22 +119,15 @@ The bootstrap will place the kerneland services into memory, load the kernel and
   
 The intention is that the kernel is started by firmware or bootloader like u-boot.
 
-Drivers
-=======
-
-Drivers are written as userland services with MMIO through the MMU.
-
-The kernel Board Support Package (BSP) should only have drivers for timers and a debugging port such as a UART.
-
-The root Interrupt Handler should be part of the kernel, other ones should really be installed as
-user processes/servers that listen to the pipe.
-
-Packaging Builds
-================
+## Packaging Builds
 
 The utilBuilder program can be used to package the kernel and user-land services and programs.
 
+We need to tell it the output file 'kernel.img', the format 'arm-eabi' and endianness 'small' and then a list of all the user-land processes.
+
 Firstly, utilBuilder must be built
+
+	cd utilBuilder
 
     # Windows
     gradlew packageJar
@@ -177,35 +152,53 @@ We can additionally use the test 'hello world' program
     gradlew packageJar
     java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe ..\elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\debug\elfLoaderTest.exe 
    
-This will generate a 'kernel.img' file in the current directory with the Raspberry Pi kernel and no userland ELFs.
+This will generate a 'kernel.img' file in the current directory with the Raspberry Pi kernel and one userland ELF - the hello world.
 
-Issues / TODO
-=============
+# Hello World (no C library)
+
+The following is an example process that can be loaded into the kernel.
+
+    gradlew elfLoaderTestTinkerArm4SoftReleaseExecutable
+    
+We can check the layout of the process with objdump.
+
+    arm-eabi-objdump -x elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\release\elfLoaderTest.exe
+    
+To load the elf it needs to be loaded either in kernel_main or via a syscall from another process (such as an init process).
+
+# Hello World (newlib C library)
+
+As I write newlib support I've also written hello world which uses printf
+
+	gradlew elfNewlibTestDebugExecutable
+	
+This is still work in progress.
+
+# Issues / TODO
 
 These are the things I need to address in a rough order:
 
 * Kernel: Review TODO/FIXMEs and add them here
 * Support: Create newlib port
     * Need to write newlib/libc/sys/arm BSP for tinker kernel
-    * Enable C++ support
     * Enable Ada support?
     * Enable Fortran support
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
 
-Helpful Commands
-================
+# Debugging
 
 Starting QEMU for the Raspberry Pi build
 
 	# Disassemble the Raspberry Pi build so we can look at addresses
 	arm-eabi-objdump -dS build\binaries\armRaspPiExecutable\debug\armRaspPi.exe > dis.txt
-	
-	# Start a listening netcat port to listen to the UART
-	nc -L -p 5555 -vv
-	# Start the emulator
-	qemu-system-arm -m 512M -kernel bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:5555 -S
+
+	# Start the emulator (Windows)
+	qemu-system-arm -m 512M -kernel bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial stdio -S
+
+	# Start the emulator (Linux)
+	qemu-system-arm -m 512M -kernel bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi -serial stdio -S
 
 	# Start a debugger
 	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi.exe
@@ -215,6 +208,17 @@ Starting QEMU for the Raspberry Pi build
 	b kernel_main
 	# Start the kernel
 	continue
+	
+# Building QEMU
+
+	git clone https://github.com/Torlus/qemu.git
+	cd qemu
+
+	# Cut down QEMU for just ARM
+	CFLAGS="-Ofast -g0 -march=native -pipe -fomit-frame-pointer" LDFLAGS="-g0 -Ofast" ./configure --target-list=arm-softmmu --disable-werror --disable-stack-protector --audio-drv-list= --enable-trace-backends=nop --disable-slirp --enable-tcg-interpreter --disable-user --disable-linux-user --enable-pie --disable-vte --disable-sdl --disable-vnc --disable-curses --disable-virtfs --disable-xen --disable-brlapi --disable-curl --enable-fdt --disable-bluez --enable-kvm --disable-rdma --enable-uuid --disable-vde --disable-netmap --enable-linux-aio --disable-cap-ng --enable-attr --disable-vhost-net --disable-spice --disable-rbd --disable-libiscsi --disable-libnfs --disable-smartcard-nss --disable-libusb --disable-usb-redir --disable-lzo --disable-snappy --disable-bzip2 --disable-seccomp --disable-tpm --disable-numa --disable-gtk --disable-docs  --disable-vhdx --disable-vhost-scsi
+	
+	make
+	make install
 
 # Concepts
 Below is a description of the core concepts of the kernel and the rational of any design decisions.
@@ -236,18 +240,13 @@ Nothing special here.
 Nothing special here.
 ## Objects (the registry)
 The register stores objects by name so they can be looked up by different processes.
+## Drivers
+Drivers are written as userland services with MMIO through the MMU.
 
-# Hello World
+The kernel Board Support Package (BSP) should only have drivers for timers and a debugging port such as a UART.
 
-I've started to work on ELF loading for binaries. The following is an example process that can be loaded into the kernel.
-
-    gradlew elfLoaderTestTinkerArm4SoftReleaseExecutable
-    
-We can check the layout of the process with objdump.
-
-    arm-eabi-objdump -x elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\release\elfLoaderTest.exe
-    
-To load the elf it needs to be loaded either in kernel_main or via a syscall from another process (such as an init process).
+The root Interrupt Handler should be part of the kernel, other ones should really be installed as
+user processes/servers that listen to the pipe.
 
 # Third Party Software
 
