@@ -21,7 +21,7 @@ public class TinkerBuilder {
 	public static void main(final String... args) throws Exception {
 		LOG.info("TinkerBuilder");
 		if (args.length < 4) {
-			LOG.error("Need to specify output, arch (e.g. arm-eabi-), endianness (big or small) and kernel image as a minimum");
+			LOG.error("Need to specify output, arch (e.g. arm-eabi), endianness (big or small) and kernel image as a minimum");
 			return;
 		}
 
