@@ -13,6 +13,9 @@ public final class ByteToHex {
 	
 	@Nonnull
 	public static String bytesToHex(@Nullable byte[] bytes) {
+		if (bytes == null) {
+			return "";
+		}
 	    final StringBuilder builder = new StringBuilder();
 	    for (int j = 0; j < bytes.length; j++) {
 	        int v = bytes[j] & 0xFF;

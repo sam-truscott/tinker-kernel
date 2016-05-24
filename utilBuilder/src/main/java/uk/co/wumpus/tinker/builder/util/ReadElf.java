@@ -3,6 +3,8 @@ package uk.co.wumpus.tinker.builder.util;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +15,8 @@ public class ReadElf {
 	private final File inputFile;
 	
 	public ReadElf(
-			final String archPrefix,
-			final File in) {
+			@Nonnull final String archPrefix,
+			@Nonnull final File in) {
 		this.commandLine = archPrefix + "-readelf";
 		this.inputFile = in;
 	}

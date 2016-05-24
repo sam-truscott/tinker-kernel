@@ -6,7 +6,7 @@ public final class IntToByte {
 		/* hidden */
 	}
 
-	public static byte[] intToByteArrayBigEndian(int value) {
+	private static byte[] intToByteArrayBigEndian(int value) {
 	    return new byte[] {
 	            (byte)(value >>> 24),
 	            (byte)(value >>> 16),
@@ -14,7 +14,7 @@ public final class IntToByte {
 	            (byte)value};
 	}
 	    
-	public static byte[] intToByteArrayLittleEndian(int value) {
+	private static byte[] intToByteArrayLittleEndian(int value) {
 	    return new byte[] {
 	            (byte)(value),
 	            (byte)(value >>> 8),
@@ -23,6 +23,9 @@ public final class IntToByte {
 	}
 	
 	public static byte[] intToByteArray(final int value, final Endian e) {
+		if (e == null) {
+			throw new IllegalArgumentException("Endianess is null");
+		}
 		switch (e) {
 		case BIG:
 			return intToByteArrayBigEndian(value);

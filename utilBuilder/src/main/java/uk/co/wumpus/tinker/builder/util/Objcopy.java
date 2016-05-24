@@ -3,6 +3,8 @@ package uk.co.wumpus.tinker.builder.util;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +16,9 @@ public class Objcopy {
 	private final File outputFile;
 	
 	public Objcopy(
-			final String archPrefix,
-			final File in,
-			final File out) {
+			@Nonnull final String archPrefix,
+			@Nonnull final File in,
+			@Nonnull final File out) {
 		this.commandLine = archPrefix + "-objcopy";
 		this.inputFile = in;
 		this.outputFile = out;
