@@ -5,12 +5,8 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+@SuppressWarnings("static-method")
 public class IntToByteTest {
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testConvertNullEndianness() {
-		IntToByte.intToByteArray(0, null);
-	}
 	
 	@Test
 	public void testConvertZero() {

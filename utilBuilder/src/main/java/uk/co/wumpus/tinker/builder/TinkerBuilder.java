@@ -24,13 +24,17 @@ public class TinkerBuilder {
 			LOG.error("Need to specify output, arch (e.g. arm-eabi), endianness (big or small) and kernel image as a minimum");
 			return;
 		}
+		final String archPrefix = args[1];
+		if (archPrefix == null || archPrefix.isEmpty()) {
+			LOG.error("Architecture is empty or missing");
+			return;
+		}
 
-		Endian endianness = Endian.fromString(args[2]);
+		final Endian endianness = Endian.fromString(args[2]);
 		final File kernelElf = new File(args[3]);
 		final File kernelBinary = File.createTempFile("tinker_kernel-", ".img");
 		kernelBinary.deleteOnExit();
 		LOG.info("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
-		final String archPrefix = args[1];
 		final Objcopy converter = new Objcopy(archPrefix, kernelElf, kernelBinary);
 		if (!converter.execute()) {
 			LOG.error("Failed to convert the kernel from ELF to a binary, aborting.");

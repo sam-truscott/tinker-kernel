@@ -1,11 +1,14 @@
 package uk.co.wumpus.tinker.builder.util;
 
+import javax.annotation.Nonnull;
+
 public final class IntToByte {
 
 	private IntToByte() {
 		/* hidden */
 	}
 
+	@Nonnull
 	private static byte[] intToByteArrayBigEndian(int value) {
 	    return new byte[] {
 	            (byte)(value >>> 24),
@@ -13,7 +16,8 @@ public final class IntToByte {
 	            (byte)(value >>> 8),
 	            (byte)value};
 	}
-	    
+
+	@Nonnull
 	private static byte[] intToByteArrayLittleEndian(int value) {
 	    return new byte[] {
 	            (byte)(value),
@@ -22,10 +26,8 @@ public final class IntToByte {
 	            (byte)(value >>> 24)};
 	}
 	
-	public static byte[] intToByteArray(final int value, final Endian e) {
-		if (e == null) {
-			throw new IllegalArgumentException("Endianess is null");
-		}
+	@Nonnull
+	public static byte[] intToByteArray(final int value, @Nonnull final Endian e) {
 		switch (e) {
 		case BIG:
 			return intToByteArrayBigEndian(value);

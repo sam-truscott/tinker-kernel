@@ -2,7 +2,8 @@ package uk.co.wumpus.tinker.builder.apps;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
+
+import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,10 +11,10 @@ import org.slf4j.LoggerFactory;
 public class Binary implements Application {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(Binary.class);
-	private final File binary;
-	private final byte[] data;
+	@Nonnull private final File binary;
+	@Nonnull private final byte[] data;
 	
-	public Binary(final File binaryFile) throws ApplicationException {
+	public Binary(@Nonnull final File binaryFile) throws ApplicationException {
 		LOG.info("Creating binary file for {}", binaryFile);
 		this.binary = binaryFile;
 		this.data = read(this.binary);
@@ -24,15 +25,18 @@ public class Binary implements Application {
 		return this.binary.toString();
 	}
 	
+	@Nonnull
 	protected byte[] getData() {
 		return this.data;
 	}
 	
+	@Nonnull
 	protected File getFile() {
 		return this.binary;
 	}
 	
-	private static byte[] read(final File binary) throws ApplicationException {
+	@Nonnull 
+	private static byte[] read(@Nonnull final File binary) throws ApplicationException {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(binary);
@@ -56,7 +60,8 @@ public class Binary implements Application {
 		}
 	}
 
-	public void copyTo(final Payload payload) throws ApplicationException {
+	@Override
+	public void copyTo(@Nonnull final Payload payload) throws ApplicationException {
 		LOG.info("Copying binary {} to payload", this.binary);
 		try {
 			payload.write(this.data);
@@ -65,7 +70,8 @@ public class Binary implements Application {
 		}
 	}
 	
+	@Override
 	public void validate() throws ApplicationException {
-		
+		/* not yet */
 	}
 }
