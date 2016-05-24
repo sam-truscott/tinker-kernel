@@ -32,7 +32,7 @@ task configureNewlibArm (type:Exec) {
     cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.4.0/newlib/libc/sys/arm;\
     cp ../../archArm/src/archArm/headers/tgt_mem.h ../src/newlib-2.4.0/newlib/libc/sys/arm;\
     cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../src/newlib-2.4.0/newlib/libc/sys/arm;\
-    ../src/newlib-2.4.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib'
+    CFLAGS_FOR_TARGET=\'-Ofast -g0 -fomit-frame-pointer\' ../src/newlib-2.4.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib'
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
@@ -41,7 +41,7 @@ task makeNewlibArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        'make -j4'
+        'CFLAGS_FOR_TARGET=\'-Ofast -g0 -fomit-frame-pointer\' make -j4'
 }
 
 makeNewlibArm.dependsOn configureNewlibArm
