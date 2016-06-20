@@ -57,6 +57,7 @@ typedef enum syscall_function
 	SYSCALL_MMAP,
 	SYSCALL_SBRK,
 	SYSCALL_LOAD_ELF,
+	SYSCALL_GET_PID,
 
 	MAX_SYSCALL
 } syscall_function_t;

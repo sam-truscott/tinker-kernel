@@ -47,25 +47,13 @@ void    initialise_monitor_handles _PARAMS ((void));
 
 static int	wrap		_PARAMS ((int));
 static int	error		_PARAMS ((int));
-static int	get_errno	_PARAMS ((void));
 
 /* Register name faking - works in collusion with the linker.  */
 register char * stack_ptr asm ("sp");
 
 static int
-get_errno (void)
-{
-#ifdef ARM_RDI_MONITOR
-  return do_AngelSWI (AngelSWI_Reason_Errno, NULL);
-#else
-  asm ("swi %a0" :: "i" (SWI_GetErrno));
-#endif
-}
-
-static int
 error (int result)
 {
-  errno = get_errno ();
   return result;
 }
 
@@ -139,23 +127,31 @@ _swiopen (const char * path,
   /* The flags are Unix-style, so we need to convert them.  */
 #ifdef O_BINARY
   if (flags & O_BINARY)
+  {
     aflags |= 1;
+  }
 #endif
 
   if (flags & O_RDWR)
+  {
     aflags |= 2;
+  }
 
   if (flags & O_CREAT)
+  {
     aflags |= 4;
+  }
 
   if (flags & O_TRUNC)
+  {
     aflags |= 4;
+  }
 
   if (flags & O_APPEND)
-    {
-      aflags &= ~4;     /* Can't ask for w AND a; means just 'a'.  */
-      aflags |= 8;
-    }
+  {
+    aflags &= ~4;     /* Can't ask for w AND a; means just 'a'.  */
+    aflags |= 8;
+  }
   return error(-1);
 }
 
@@ -200,8 +196,8 @@ _exit (int status)
 int
 _getpid (int n)
 {
-  return 1;
-  n = n;
+  (void)n;
+  return tinker_get_pid();
 }
 
 caddr_t __attribute__((weak))
@@ -293,7 +289,7 @@ clock_t
 _times (struct tms * tp)
 {
   clock_t timeval;
-  
+  // TODO
   return timeval;
 };
 

@@ -87,7 +87,7 @@ return_t tinker_create_thread(
 
 return_t tinker_get_thread_object(tinker_thread_t * thread) TINKER_API_SUFFIX ;
 
-return_t	tinker_get_thread_priority(
+return_t tinker_get_thread_priority(
 		tinker_thread_t thread,
 		uint8_t * priority) TINKER_API_SUFFIX;
 
@@ -107,6 +107,8 @@ return_t tinker_map_mempry(
 		void ** virtual);
 
 void * tinker_sbrk(void * memory, uint32_t size);
+
+int32_t tinker_get_pid(void);
 
 return_t tinker_load_elf(
 		void * elf_data,

@@ -67,7 +67,7 @@ return_t tinker_get_thread_object(tinker_thread_t * thread)
 			(uint32_t)thread);
 }
 
-return_t	tinker_get_thread_priority(
+return_t tinker_get_thread_priority(
 		tinker_thread_t thread,
 		uint8_t * priority)
 {
@@ -121,4 +121,11 @@ return_t tinker_load_elf(
 		uint32_t flags)
 {
 	return TINKER_API_CALL_4(SYSCALL_LOAD_ELF, (uint32_t)elf_data, (uint32_t)image, priority, flags);
+}
+
+int32_t tinker_get_pid(void)
+{
+	int32_t pid = -1;
+	TINKER_API_CALL_1(SYSCALL_GET_PID, (uint32_t)&pid);
+	return pid;
 }
