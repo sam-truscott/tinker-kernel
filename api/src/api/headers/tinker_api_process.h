@@ -95,7 +95,7 @@ void tinker_thread_wait(void);
 
 return_t tinker_exit_thread(void) TINKER_API_SUFFIX;
 
-void tinker_debug(const char * const str) TINKER_API_SUFFIX;
+void tinker_debug(const char * const str, int len) TINKER_API_SUFFIX;
 
 void tinker_wait_for_interrupt(void) TINKER_API_SUFFIX;
 

@@ -196,7 +196,7 @@ static return_t syscall_debug(
 	if (msg)
 	{
 		print_time();
-		print_out(msg);
+		print_out_len(msg, tgt_get_syscall_param(context, 2));
 	}
 	return NO_ERROR;
 }

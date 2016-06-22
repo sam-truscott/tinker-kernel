@@ -214,6 +214,14 @@ void print_out_print_string(const uint32_t padding, const char * string)
 	}
 }
 
+void print_out_len(const char * const msg, int len)
+{
+	for (uint32_t i = 0 ; i < len ; i++)
+	{
+		print_out_print_char(*msg++);
+	}
+}
+
 void print_out_print_signed(const uint32_t padding, const int32_t i)
 {
 	char number[MAX_INTEGER_LENGTH + 1] = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};

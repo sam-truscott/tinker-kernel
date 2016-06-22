@@ -87,9 +87,9 @@ return_t tinker_exit_thread(void)
 	return TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
 }
 
-void tinker_debug(const char * const str)
+void tinker_debug(const char * const str, int len)
 {
-	TINKER_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
+	TINKER_API_CALL_2(SYSCALL_DEBUG, (uint32_t)str, len);
 }
 
 void tinker_wait_for_interrupt(void)

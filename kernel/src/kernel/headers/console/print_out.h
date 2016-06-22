@@ -54,4 +54,6 @@ void printp_out(const char * const msg, ...);
 
 void print_out(const char * const msg);
 
+void print_out_len(const char * const msg, int len);
+
 #endif /* DEBUG_PRINT_H_ */
