@@ -34,18 +34,12 @@ int     _getpid		_PARAMS ((int));
 int     _kill		_PARAMS ((int, int));
 void    _exit		_PARAMS ((int));
 int     _close		_PARAMS ((int));
-int     _swiclose	_PARAMS ((int));
 int     _open		_PARAMS ((const char *, int, ...));
-int     _swiopen	_PARAMS ((const char *, int));
 int     _write 		_PARAMS ((int, char *, int));
-int     _swiwrite	_PARAMS ((int, char *, int));
 int     _lseek		_PARAMS ((int, int, int));
-int     _swilseek	_PARAMS ((int, int, int));
 int     _read		_PARAMS ((int, char *, int));
-int     _swiread	_PARAMS ((int, char *, int));
 void    initialise_monitor_handles _PARAMS ((void));
 
-static int	wrap		_PARAMS ((int));
 static int	error		_PARAMS ((int));
 
 /* Register name faking - works in collusion with the linker.  */
@@ -57,53 +51,22 @@ error (int result)
   return result;
 }
 
-static int
-wrap (int result)
-{
-  if (result == -1)
-    return error (-1);
-  return result;
-}
-
-/* Returns # chars not! written.  */
-int
-_swiread (int file,
-	  char * ptr,
-	  int len)
-{
-  return error(-1);
-}
-
 int __attribute__((weak))
 _read (int file,
        char * ptr,
        int len)
 {
+	if (file == 0)
+	{
+		return 0;
+	}
 	return error(-1);
-}
-
-int
-_swilseek (int file,
-	   int ptr,
-	   int dir)
-{
-  return error(-1);
 }
 
 int
 _lseek (int file,
 	int ptr,
 	int dir)
-{
-  return wrap (_swilseek (file, ptr, dir));
-}
-
-/* Returns #chars not! written.  */
-int
-_swiwrite (
-	   int    file,
-	   char * ptr,
-	   int    len)
 {
 	return error(-1);
 }
@@ -113,66 +76,31 @@ _write (int    file,
 	char * ptr,
 	int    len)
 {
-	return error(-1);
+	if (file == 1 || file == 2)
+	{
+		// TODO
+		return 0;
+	}
+	else
+	{
+		return error(-1);
+	}
 }
 
 extern int strlen (const char *);
-
-int
-_swiopen (const char * path,
-	  int          flags)
-{
-  int aflags = 0, fh;
-
-  /* The flags are Unix-style, so we need to convert them.  */
-#ifdef O_BINARY
-  if (flags & O_BINARY)
-  {
-    aflags |= 1;
-  }
-#endif
-
-  if (flags & O_RDWR)
-  {
-    aflags |= 2;
-  }
-
-  if (flags & O_CREAT)
-  {
-    aflags |= 4;
-  }
-
-  if (flags & O_TRUNC)
-  {
-    aflags |= 4;
-  }
-
-  if (flags & O_APPEND)
-  {
-    aflags &= ~4;     /* Can't ask for w AND a; means just 'a'.  */
-    aflags |= 8;
-  }
-  return error(-1);
-}
 
 int
 _open (const char * path,
        int          flags,
        ...)
 {
-  return wrap (_swiopen (path, flags));
-}
-
-int
-_swiclose (int file)
-{
-  return error(-1);
+	return error(-1);
 }
 
 int
 _close (int file)
 {
-  return wrap (_swiclose (file));
+	return error(-1);
 }
 
 int
@@ -231,7 +159,7 @@ int _stat (const char *fname, struct stat *st)
   memset (st, 0, sizeof (* st));
   st->st_mode = S_IFREG | S_IREAD;
   st->st_blksize = 1024;
-  _swiclose (file); /* Not interested in the error.  */
+  _close (file); /* Not interested in the error.  */
   return 0;
 }
 
@@ -257,29 +185,20 @@ _raise (void)
 int
 _gettimeofday (struct timeval * tp, void * tzvp)
 {
-	// TODO
+  // TODO
   struct timezone *tzp = tzvp;
   if (tp)
-    {
-    /* Ask the host for the seconds since the Unix epoch.  */
-#ifdef ARM_RDI_MONITOR
-      tp->tv_sec = do_AngelSWI (AngelSWI_Reason_Time,NULL);
-#else
-      {
-        int value;
-        asm ("swi %a1; mov %0, r0" : "=r" (value): "i" (SWI_Time) : "r0");
-        tp->tv_sec = value;
-      }
-#endif
-      tp->tv_usec = 0;
-    }
+  {
+	  tp->tv_sec = 0;
+	  tp->tv_usec = 0;
+  }
 
   /* Return fixed data for the timezone.  */
   if (tzp)
-    {
+  {
       tzp->tz_minuteswest = 0;
       tzp->tz_dsttime = 0;
-    }
+  }
 
   return 0;
 }
