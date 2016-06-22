@@ -9,5 +9,5 @@ _sbrk (incr)
      int incr;
 {
    static char * heap_end = 0;
-   return (caddr_t) tinker_sbrk(heap_end, incr);
+   return (void*) tinker_sbrk(heap_end, incr);
 }

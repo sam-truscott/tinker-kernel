@@ -20,9 +20,6 @@ _DEFUN (_gettimeofday, (ptimeval, ptimezone),
         struct timeval  *ptimeval  _AND
         void *ptimezone)
 {
-  errno = ENOSYS;
-  return -1;
-  struct timezone *tzp = tzvp;
   if (ptimeval)
   {
 	ptimeval->tv_sec = 0;
@@ -30,10 +27,11 @@ _DEFUN (_gettimeofday, (ptimeval, ptimezone),
   }
 
   /* Return fixed data for the timezone.  */
-  if (ptimezone)
+  struct timezone *tzp = ptimezone;
+  if (tzp)
   {
-	ptimezone->tz_minuteswest = 0;
-	ptimezone->tz_dsttime = 0;
+	tzp->tz_minuteswest = 0;
+	tzp->tz_dsttime = 0;
   }
 
   return 0;
