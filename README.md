@@ -96,6 +96,7 @@ You'll need the following (and possibly more) dependencies
 * m4
 * bison
 * expat
+* zlib-devel
 
 Then execute:
 
