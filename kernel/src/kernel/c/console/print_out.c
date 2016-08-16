@@ -216,9 +216,10 @@ void print_out_print_string(const uint32_t padding, const char * string)
 
 void print_out_len(const char * const msg, int len)
 {
-	for (uint32_t i = 0 ; i < len ; i++)
+	const char * m = msg;
+	for (int32_t i = 0 ; i < len ; i++)
 	{
-		print_out_print_char(*msg++);
+		print_out_print_char(*(m++));
 	}
 }
 
