@@ -70,7 +70,7 @@ allprojects {
 	                   args << "-Wno-type-limits"
 	                   args << "-D__i386__"
                        args << "-DUNIT_TESTS"
-	               args << "-DIS_HOST_UNIT_TEST"
+	                   args << "-DIS_HOST_UNIT_TEST"
                        args << "-DSCHEDULER_DEBUGGING"
                        args << "-DKERNEL_DEBUGGING"
                        args << "-DMEMSET"
@@ -91,9 +91,9 @@ allprojects {
 	                   args << "-Wno-int-to-pointer-cast"
 	                   args << "-Wno-type-limits"
 	                   args << "-D__i386__"
-		           args << "-fPIC"
+		               args << "-fPIC"
                        args << "-DUNIT_TESTS"
-	               args << "-DIS_HOST_UNIT_TEST"
+	                   args << "-DIS_HOST_UNIT_TEST"
                        args << "-DSCHEDULER_DEBUGGING"
                        args << "-DKERNEL_DEBUGGING"
                        args << "-DMEMSET"
@@ -104,7 +104,7 @@ allprojects {
 	               linker.withArguments { args ->
 	                   args << "-ftest-coverage"
 	                   args << "-fprofile-arcs"
-                           args << "-fPIC"
+                       args << "-fPIC"
 	               }
 	           }
 	        }

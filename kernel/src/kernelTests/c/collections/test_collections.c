@@ -287,21 +287,23 @@ void test_collections(void)
 	mem_init_memory_pool((uint32_t)test_base, TEST_POOL_SIZE, &test_pool);
 
 	const uint32_t collection_start_size = mem_get_allocd_size(test_pool);
-	debug_print("Start allocated memory %x\n", collection_start_size);
+	debug_print(COLLECTIONS, "Start allocated memory %x\n", collection_start_size);
 	test_list(test_pool);
-	debug_print("Linked List allocated memory %x\n", mem_get_allocd_size(test_pool));
+	debug_print(COLLECTIONS, "Linked List allocated memory %x\n", mem_get_allocd_size(test_pool));
 	test_hashmap(test_pool);
-	debug_print("Hash Map allocated memory %x\n", mem_get_allocd_size(test_pool));
+	debug_print(COLLECTIONS, "Hash Map allocated memory %x\n", mem_get_allocd_size(test_pool));
 	test_stack(test_pool);
-	debug_print("Stack allocated memory %x\n", mem_get_allocd_size(test_pool));
+	debug_print(COLLECTIONS, "Stack allocated memory %x\n", mem_get_allocd_size(test_pool));
 	test_queue(test_pool);
-	debug_print("Queue allocated memory %x\n", mem_get_allocd_size(test_pool));
+	debug_print(COLLECTIONS, "Queue allocated memory %x\n", mem_get_allocd_size(test_pool));
 
 	const uint32_t collection_allocated = mem_get_allocd_size(test_pool);
 	mem_free(pool, test_base);
 	const uint32_t main_allocated = mem_get_allocd_size(pool);
 
-	debug_print("Collection memory still allocated %x, Main allocated was %x now %x\n",
+	debug_print(
+			COLLECTIONS,
+			"Collection memory still allocated %x, Main allocated was %x now %x\n",
 			collection_allocated,
 			allocated,
 			main_allocated);
