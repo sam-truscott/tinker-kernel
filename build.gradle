@@ -107,6 +107,30 @@ allprojects {
                        args << "-fPIC"
 	               }
 	           }
+	           target("linux_arm-v7") {
+	               File srcDir = new File("src")
+                   cCompiler.withArguments { args ->
+                       args << "-Wno-maybe-uninitialized"
+                       args << "-Wno-pointer-to-int-cast"
+                       args << "-Wno-int-to-pointer-cast"
+                       args << "-Wno-type-limits"
+                       args << "-D__arm__"
+                       args << "-fPIC"
+                       args << "-DUNIT_TESTS"
+                       args << "-DIS_HOST_UNIT_TEST"
+                       args << "-DSCHEDULER_DEBUGGING"
+                       args << "-DKERNEL_DEBUGGING"
+                       args << "-DMEMSET"
+                       args << "-ftest-coverage"
+                       args << "-fprofile-arcs"
+                       args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
+                   }
+                   linker.withArguments { args ->
+                       args << "-ftest-coverage"
+                       args << "-fprofile-arcs"
+                       args << "-fPIC"
+                   }
+	           }
 	        }
 	        xgcc(Gcc) {
 	            target("tinkerPpc") {
