@@ -64,7 +64,7 @@ bool_t	mem_init_process_memory(
 	debug_print(MEMORY, "mem: initalising process pool %x size %x\n", pool, size);
 
 	/* allocate that from RAM */
-	const uint32_t proc_memory_pool = (uint32_t)mem_alloc_aligned(
+	const mem_t proc_memory_pool = (mem_t)mem_alloc_aligned(
 			pool,
 			size,
 			MMU_PAGE_SIZE);

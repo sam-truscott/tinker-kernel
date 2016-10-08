@@ -23,7 +23,7 @@ void test_scheduler(void)
 	mem_pool_info_t * pool = NULL;
 	char * pool_mem = (char*)mem_alloc(mem_get_default_pool(), SIZE);
 	mem_init_memory_pool(
-				(uint32_t)pool_mem,
+				(mem_t)pool_mem,
 				SIZE,
 				&pool);
 

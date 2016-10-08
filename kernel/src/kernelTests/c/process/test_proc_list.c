@@ -30,7 +30,7 @@ void test_proc_list(void)
 	char * pool_mem = (char*)mem_alloc(mem_get_default_pool(), SIZE);
 	mem_pool_info_t * pool = NULL;
 	mem_init_memory_pool(
-			(uint32_t)pool_mem,
+			(mem_t)pool_mem,
 			SIZE,
 			&pool);
 
@@ -45,7 +45,7 @@ void test_proc_list(void)
 
 	proc_list_t * const list = proc_create(pool, sch, NULL);
 
-	const uint32_t allocated = mem_get_allocd_size(pool);
+	const mem_t allocated = mem_get_allocd_size(pool);
 
 	kernel_assert("proc list should be non null", list != NULL);
 	kernel_assert("last proc id should be one", list->last_pid == 1);

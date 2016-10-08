@@ -95,7 +95,7 @@ return_t process_create(
 		kernel_assert(
 				"private process pool created ok",
 				mem_init_memory_pool(
-						(uint32_t)mem_alloc(new_proc->parent_pool, PRIVATE_POOL_SIZE),
+						(mem_t)mem_alloc(new_proc->parent_pool, PRIVATE_POOL_SIZE),
 						PRIVATE_POOL_SIZE,
 						&new_proc->private_pool));
 		debug_print(PROCESS, "Private pool allocated space is %d before page table\n", mem_get_allocd_size(new_proc->private_pool));
