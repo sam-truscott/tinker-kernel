@@ -111,6 +111,7 @@ allprojects {
 	               File srcDir = new File("src")
                    cCompiler.withArguments { args ->
                        args << "-Wno-maybe-uninitialized"
+                       args << "-Wno-implicit-function-declaration"
                        args << "-Wno-pointer-to-int-cast"
                        args << "-Wno-int-to-pointer-cast"
                        args << "-Wno-type-limits"
