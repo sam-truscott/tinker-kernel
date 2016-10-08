@@ -130,14 +130,14 @@ void mem_free(
 	mspace_free(pool->space, (void*)base);
 }
 
-uint32_t mem_get_start_addr(const mem_pool_info_t * const pool)
+mem_t mem_get_start_addr(const mem_pool_info_t * const pool)
 {
-	return (uint32_t)(pool);
+	return (mem_t)(pool);
 }
 
-uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool)
+mem_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 {
-	uint32_t size;
+	mem_t size;
 	if (pool)
 	{
 		size = pool->pool_alloc_size;
@@ -149,7 +149,7 @@ uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 	return size;
 }
 
-uint32_t mem_get_allocd_size(const mem_pool_info_t * const pool)
+mem_t mem_get_allocd_size(const mem_pool_info_t * const pool)
 {
 	return mspace_mallinfo(pool->space).uordblks;
 }

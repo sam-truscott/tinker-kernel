@@ -280,13 +280,13 @@ void test_collections(void)
 {
 	mem_pool_info_t * const pool = mem_get_default_pool();
 
-	const uint32_t allocated = mem_get_allocd_size(pool);
+	const mem_t allocated = mem_get_allocd_size(pool);
 
 	void * const test_base = mem_alloc(pool, TEST_POOL_SIZE);
 	mem_pool_info_t * test_pool = NULL;
-	mem_init_memory_pool((uint32_t)test_base, TEST_POOL_SIZE, &test_pool);
+	mem_init_memory_pool((mem_t)test_base, TEST_POOL_SIZE, &test_pool);
 
-	const uint32_t collection_start_size = mem_get_allocd_size(test_pool);
+	const mem_t collection_start_size = mem_get_allocd_size(test_pool);
 	debug_print(COLLECTIONS, "Start allocated memory %x\n", collection_start_size);
 	test_list(test_pool);
 	debug_print(COLLECTIONS, "Linked List allocated memory %x\n", mem_get_allocd_size(test_pool));
@@ -297,9 +297,9 @@ void test_collections(void)
 	test_queue(test_pool);
 	debug_print(COLLECTIONS, "Queue allocated memory %x\n", mem_get_allocd_size(test_pool));
 
-	const uint32_t collection_allocated = mem_get_allocd_size(test_pool);
+	const mem_t collection_allocated = mem_get_allocd_size(test_pool);
 	mem_free(pool, test_base);
-	const uint32_t main_allocated = mem_get_allocd_size(pool);
+	const mem_t main_allocated = mem_get_allocd_size(pool);
 
 	debug_print(
 			COLLECTIONS,

@@ -64,8 +64,8 @@ void	mem_free(
 		mem_pool_info_t * const pool,
 		const void * const base);
 
-uint32_t mem_get_start_addr(const mem_pool_info_t * const pool);
-uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool);
-uint32_t mem_get_allocd_size(const mem_pool_info_t * const pool);
+mem_t mem_get_start_addr(const mem_pool_info_t * const pool);
+mem_t mem_get_alloc_size(const mem_pool_info_t * const pool);
+mem_t mem_get_allocd_size(const mem_pool_info_t * const pool);
 
 #endif /* MEM_POOL_H_ */
