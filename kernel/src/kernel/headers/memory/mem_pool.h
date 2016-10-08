@@ -21,8 +21,8 @@ typedef uint32_t seg_id_t;
  * also returned for information (unless NULL)
  */
 bool_t 	mem_init_memory_pool(
-		const uint32_t base_addr,
-		const uint32_t pool_size,
+		const mem_t base_addr,
+		const mem_t pool_size,
 		mem_pool_info_t ** const pool);
 
 /**
@@ -39,7 +39,7 @@ bool_t	mem_init_process_memory(
  */
 void *	mem_alloc(
 		mem_pool_info_t * const pool,
-		const uint32_t size);
+		const mem_t size);
 
 /**
  * dynamically re-allocate memory from the heap
@@ -47,15 +47,15 @@ void *	mem_alloc(
 void *  mem_realloc(
 		mem_pool_info_t * const pool,
 		void * mem,
-		const uint32_t size);
+		const mem_t size);
 
 /**
  * dynamically allocate memory from the heap
  */
 void *	mem_alloc_aligned(
 		mem_pool_info_t * const pool,
-		const uint32_t size,
-		const uint32_t alignment);
+		const mem_t size,
+		const mem_t alignment);
 
 /**
  * dynamically deallocate memory from the heap

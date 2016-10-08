@@ -23,12 +23,12 @@ typedef struct mem_pool_info_t
 	/* dlmalloc memory space */
 	mspace space;
 	/* total heap in bytes */
-	uint32_t pool_alloc_size;
+	mem_t pool_alloc_size;
 } mem_pool_info_internal_t;
 
 bool_t 	mem_init_memory_pool(
-		const uint32_t base_addr,
-		const uint32_t pool_size,
+		const mem_t base_addr,
+		const mem_t pool_size,
 		mem_pool_info_t ** const pool)
 {
 	mem_pool_info_t * pool_info = NULL;
@@ -89,7 +89,7 @@ bool_t	mem_init_process_memory(
 
 void *	mem_alloc(
 		mem_pool_info_t * const pool,
-		const uint32_t size)
+		const mem_t size)
 {
 	return mem_alloc_aligned(pool, size, 0);
 }
@@ -97,7 +97,7 @@ void *	mem_alloc(
 void *  mem_realloc(
 		mem_pool_info_t * const pool,
 		void * mem,
-		const uint32_t size)
+		const mem_t size)
 {
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
 	void * const new_base = mspace_realloc(pool->space, mem, size);
@@ -107,8 +107,8 @@ void *  mem_realloc(
 
 void* mem_alloc_aligned(
 		mem_pool_info_t * const pool,
-		const uint32_t size,
-		const uint32_t alignment)
+		const mem_t size,
+		const mem_t alignment)
 {
 	void* new_base = NULL;
 

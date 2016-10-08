@@ -38,12 +38,12 @@ void bsp_setup() {}
 
 mem_t bsp_get_usable_memory_start()
 {
-	return (unsigned int)memory;
+	return (mem_t)memory;
 }
 
 mem_t bsp_get_usable_memory_end()
 {
-	return ((unsigned int)memory) + HOST_MEMORY_SIZE;
+	return ((mem_t)memory) + HOST_MEMORY_SIZE;
 }
 
 void bsp_enable_schedule_timer() {}

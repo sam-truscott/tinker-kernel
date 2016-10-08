@@ -23,8 +23,8 @@ mem_pool_info_t * mem_get_default_pool(void)
 }
 
 bool_t mem_initialise(
-		const uint32_t start,
-		const uint32_t end)
+		const mem_t start,
+		const mem_t end)
 {
 	bool_t ret =  mem_init_memory_pool(
 		start,
