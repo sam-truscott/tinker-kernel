@@ -196,10 +196,10 @@ Starting QEMU for the Raspberry Pi build
 	arm-eabi-objdump -dS build\binaries\armRaspPiExecutable\debug\armRaspPi.exe > dis.txt
 
 	# Start the emulator (Windows)
-	qemu-system-arm -m 512M -kernel bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial stdio -S
+	qemu-system-arm -m 512M -kernel bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:12345 -S
 
 	# Start the emulator (Linux)
-	qemu-system-arm -m 512M -kernel bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi -serial stdio -S
+	qemu-system-arm -m 512M -kernel bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:12345 -S
 
 	# Start a debugger
 	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi.exe
