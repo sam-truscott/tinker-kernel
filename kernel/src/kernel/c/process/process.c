@@ -119,12 +119,12 @@ return_t process_create(
 
 		if (!is_kernel)
 		{
-			uint32_t end_of_ram = bsp_get_usable_memory_end();
+			mem_t end_of_ram = bsp_get_usable_memory_end();
 			mem_section_t * const kernel_ram_sec = mem_sec_create(
 					new_proc->private_pool,
 					4096,
 					0,
-					bsp_get_usable_memory_end(),
+					end_of_ram,
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_KERNEL_ACCESS,
 					MMU_READ_WRITE);

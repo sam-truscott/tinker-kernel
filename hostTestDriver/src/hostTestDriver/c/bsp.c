@@ -36,12 +36,12 @@ void bsp_initialise()
 
 void bsp_setup() {}
 
-unsigned int bsp_get_usable_memory_start()
+mem_t bsp_get_usable_memory_start()
 {
 	return (unsigned int)memory;
 }
 
-unsigned int bsp_get_usable_memory_end()
+mem_t bsp_get_usable_memory_end()
 {
 	return ((unsigned int)memory) + HOST_MEMORY_SIZE;
 }

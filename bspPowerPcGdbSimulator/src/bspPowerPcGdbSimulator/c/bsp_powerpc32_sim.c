@@ -218,13 +218,13 @@ static void bsp_external_interrupt(
 	int_handle_external_vector(context);
 }
 
-uint32_t bsp_get_usable_memory_start()
+mem_t bsp_get_usable_memory_start()
 {
 	extern uint32_t end;
 	return (uint32_t)&end;
 }
 
-uint32_t bsp_get_usable_memory_end()
+mem_t bsp_get_usable_memory_end()
 {
 	/* 127 because the last 1MB is the page table */
 	return (127 * 1024 * 1024);

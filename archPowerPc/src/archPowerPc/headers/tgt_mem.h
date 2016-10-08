@@ -38,4 +38,6 @@ typedef struct ppc32_pteg
 
 typedef ppc32_pteg_t* tgt_pg_tbl_t;
 
+typedef uint32_t mem_t;
+
 #endif /* TGT_MEM_H_ */

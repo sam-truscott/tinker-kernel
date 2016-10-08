@@ -195,15 +195,15 @@ void bsp_enable_schedule_timer(void)
 			NULL);
 }
 
-uint32_t bsp_get_usable_memory_start()
+mem_t bsp_get_usable_memory_start()
 {
 	extern uint32_t end;
-	return (uint32_t)&end;
+	return (mem_t)&end;
 }
 
-uint32_t bsp_get_usable_memory_end()
+mem_t bsp_get_usable_memory_end()
 {
-	return (128 * 1024 * 1024);
+	return (mem_t)(128 * 1024 * 1024);
 }
 
 void bsp_write_debug_char(const char c)
