@@ -91,9 +91,9 @@ syscall_handler_t * create_handler(
 	return sys;
 }
 
-static inline uint32_t virtual_to_real(
+static inline mem_t virtual_to_real(
 		process_t * process,
-		uint32_t address)
+		mem_t address)
 {
 	/* TODO the below code needs fixing */
 	return ((address >= VIRTUAL_ADDRESS_SPACE(process_is_kernel(process)))
@@ -147,8 +147,8 @@ static return_t syscall_create_thread(
 }
 
 static return_t syscall_mmap(tgt_context_t* const context, process_t* const process) {
-	uint32_t virtual = 0;
-	const uint32_t real = virtual_to_real(process, tgt_get_syscall_param(context, 1));
+	mem_t virtual = 0;
+	const mem_t real = virtual_to_real(process, tgt_get_syscall_param(context, 1));
 	return_t ret;
 	if (real == 0)
 	{
@@ -158,13 +158,13 @@ static return_t syscall_mmap(tgt_context_t* const context, process_t* const proc
 	{
 		ret = process_allocate_vmem(process,
 				real,
-				(uint32_t) (tgt_get_syscall_param(context, 2)),
+				(mem_t) (tgt_get_syscall_param(context, 2)),
 				(mmu_memory_t) (tgt_get_syscall_param(context, 3)),
 				(mmu_privilege_t) (tgt_get_syscall_param(context, 4)),
 				MMU_READ_WRITE,
 				&virtual);
 	}
-	*((uint32_t*) virtual_to_real(process, tgt_get_syscall_param(context, 5))) = virtual;
+	*((mem_t*) virtual_to_real(process, tgt_get_syscall_param(context, 5))) = virtual;
 	return ret;
 }
 

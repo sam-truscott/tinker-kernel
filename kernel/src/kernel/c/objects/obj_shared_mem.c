@@ -97,11 +97,11 @@ return_t obj_create_shm(
 				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
 				{
-					uint32_t virt_addr;
+					mem_t virt_addr;
 					result =
 							process_allocate_vmem(
 									process,
-									(uint32_t)memory,
+									(mem_t)memory,
 									size,
 									MMU_RANDOM_ACCESS_MEMORY,
 									MMU_USER_ACCESS,
@@ -114,7 +114,7 @@ return_t obj_create_shm(
 						no->pool = pool;
 						no->reg = reg;
 						no->process = process;
-						no->real_addr = (uint32_t)memory;
+						no->real_addr = (mem_t)memory;
 						no->virt_addr = virt_addr;
 						no->client_list = shm_client_list_t_create(pool);
 						no->parent_shm = NULL;
@@ -179,7 +179,7 @@ return_t obj_open_shm(
 					{
 						if (size == other_shm_obj->size)
 						{
-							uint32_t virt_addr;
+							mem_t virt_addr;
 							result = process_allocate_vmem(
 											process,
 											other_shm_obj->real_addr,

@@ -72,18 +72,18 @@ void process_thread_exit(process_t * const process, thread_t * const thread);
 
 void process_exit(process_t * const process);
 
-uint32_t process_virt_to_real(
+mem_t process_virt_to_real(
 		const process_t * const process,
-		const uint32_t virt);
+		const mem_t virt);
 
 return_t process_allocate_vmem(
 		process_t * const process,
-		const uint32_t real_address,
-		const uint32_t size,
+		const mem_t real_address,
+		const mem_t size,
 		const mmu_memory_t type,
 		const mmu_privilege_t priv,
 		const mmu_access_t access,
-		uint32_t * const virt_address);
+		mem_t * const virt_address);
 
 void process_free_vmem(
 		const process_t * const process,

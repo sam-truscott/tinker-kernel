@@ -12,6 +12,6 @@
 #include "tgt_types.h"
 #include "process/process.h"
 
-void print_stack_trace(process_t * const proc, const uint32_t frame_pointer);
+void print_stack_trace(process_t * const proc, const mem_t frame_pointer);
 
 #endif /* DEBUG_STACK_TRACE_H_ */

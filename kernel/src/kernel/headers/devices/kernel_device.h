@@ -69,13 +69,13 @@ void kernel_device_init(
 		proc_list_t * const list);
 
 return_t kernel_device_map_memory
-	(const uint32_t addr,
-	 const uint32_t size,
+	(const mem_t addr,
+	 const mem_t size,
 	 const mmu_memory_t type,
-	 uint32_t * const virt);
+	 mem_t * const virt);
 
 void * kernel_device_malloc(
-		const uint32_t size);
+		const mem_t size);
 
 object_pipe_t * kernel_isr_get_pipe(
 		const char * const name);

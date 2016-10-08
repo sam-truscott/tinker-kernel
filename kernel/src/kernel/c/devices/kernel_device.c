@@ -26,10 +26,10 @@ void kernel_device_init(
 }
 
 return_t kernel_device_map_memory
-	(const uint32_t addr,
-	 const uint32_t size,
+	(const mem_t addr,
+	 const mem_t size,
 	 const mmu_memory_t type,
-	 uint32_t * const virt)
+	 mem_t * const virt)
 {
 	const return_t result = process_allocate_vmem(
 			kernel_process,
@@ -67,7 +67,7 @@ return_t kernel_device_map_memory
 }
 
 void * kernel_device_malloc(
-		const uint32_t size)
+		const mem_t size)
 {
 	return mem_alloc(mem_get_default_pool(), size);
 }

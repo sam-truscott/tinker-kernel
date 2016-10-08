@@ -501,15 +501,15 @@ void process_exit(process_t * const process)
 	mem_free(process->parent_pool, process);
 }
 
-uint32_t process_virt_to_real(
+mem_t process_virt_to_real(
 		const process_t * const process,
-		const uint32_t virt)
+		const mem_t virt)
 {
-	uint32_t real = virt;
+	mem_t real = virt;
 	if (process)
 	{
 		/* FIXME TODO should scan the sections rather than assume */
-		const uint32_t pool_start = mem_get_start_addr(process->memory_pool);
+		const mem_t pool_start = mem_get_start_addr(process->memory_pool);
 		real -= VIRTUAL_ADDRESS_SPACE(process->kernel_process);
 		real += pool_start;
 	}
@@ -518,12 +518,12 @@ uint32_t process_virt_to_real(
 
 return_t process_allocate_vmem(
 		process_t * const process,
-		const uint32_t real_address,
-		const uint32_t size,
+		const mem_t real_address,
+		const mem_t size,
 		const mmu_memory_t type,
 		const mmu_privilege_t priv,
 		const mmu_access_t access,
-		uint32_t * const virt_address)
+		mem_t * const virt_address)
 {
 	return_t result = NO_ERROR;
 	// find a hole in the memory sections that's large enough
@@ -533,12 +533,12 @@ return_t process_allocate_vmem(
 	*virt_address = 0;
 	if (process)
 	{
-		uint32_t vmem_start = VIRTUAL_ADDRESS_SPACE(process->kernel_process);
+		mem_t vmem_start = VIRTUAL_ADDRESS_SPACE(process->kernel_process);
 		mem_section_t * current = process->first_section;
 		mem_section_t * prev = NULL;
 		while (current)
 		{
-			const uint32_t svt = mem_sec_get_virt_addr(current);
+			const mem_t svt = mem_sec_get_virt_addr(current);
 			if (svt > VIRTUAL_ADDRESS_SPACE(process->kernel_process) && svt > (vmem_start + size))
 			{
 				// there's room
