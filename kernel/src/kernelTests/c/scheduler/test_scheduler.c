@@ -56,7 +56,6 @@ void test_scheduler(void)
 	queue_stack_t_front(&sch->queue_stack, &q);
 	kernel_assert("thread should be equal", sch->curr_queue == q);
 
-	// sch_set_context_for_next_thread
 	sch_set_context_for_next_thread(sch, NULL, THREAD_READY);
 
 	thread_t thread;
@@ -80,7 +79,6 @@ void test_scheduler(void)
 	sch_set_context_for_next_thread(sch, NULL, THREAD_READY);
 	kernel_assert("thread should be equal", &thread == sch_get_current_thread(sch));
 
-	// sch_notify_change_priority
 	thread.priority = 2;
 	sch_notify_change_priority(sch, &thread, 1);
 	kernel_assert("thread should be 2", sch->curr_priority == 2);
@@ -101,7 +99,7 @@ void test_scheduler(void)
 	sch_set_context_for_next_thread(sch, NULL, THREAD_READY);
 	kernel_assert("thread should be equal", &idle_thread == sch_get_current_thread(sch));
 
-	// sch_terminate_current_thread
+	// TODO sch_terminate_current_thread
 
 	mem_free(mem_get_default_pool(), pool_mem);
 }
