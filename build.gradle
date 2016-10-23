@@ -92,7 +92,7 @@ allprojects {
 	                   args << "-Wno-int-to-pointer-cast"
 	                   args << "-Wno-type-limits"
 	                   args << "-D__i386__"
-	                   args << "_DUSE_DL_PREFIX"
+	                   args << "-DUSE_DL_PREFIX"
 		               args << "-fPIC"
                        args << "-DUNIT_TESTS"
 	                   args << "-DIS_HOST_UNIT_TEST"
@@ -114,7 +114,7 @@ allprojects {
                    cCompiler.withArguments { args ->
                        args << "-w"
                        args << "-D__arm__"
-                       args << "_DUSE_DL_PREFIX"
+                       args << "-DUSE_DL_PREFIX"
                        args << "-fPIC"
                        args << "-DUNIT_TESTS"
                        args << "-DIS_HOST_UNIT_TEST"
