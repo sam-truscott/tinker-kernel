@@ -38,8 +38,8 @@ typedef struct object_shm_t
 	mem_pool_info_t * pool;
 	registry_t * reg;
 	process_t * process;
-	uint32_t real_addr;
-	uint32_t virt_addr;
+	mem_t real_addr;
+	mem_t virt_addr;
 	uint32_t size;
 	shm_client_list_t * client_list;
 	struct object_shm_t * parent_shm;

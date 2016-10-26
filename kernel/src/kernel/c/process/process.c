@@ -131,7 +131,7 @@ return_t process_create(
 			tgt_map_memory(new_proc, kernel_ram_sec);
 			while (ksection)
 			{
-				uint32_t real = mem_sec_get_real_addr(ksection);
+				mem_t real = mem_sec_get_real_addr(ksection);
 				if (real > end_of_ram)
 				{
 					process_add_mem_sec(
@@ -591,7 +591,7 @@ return_t process_allocate_vmem(
 
 void process_free_vmem(
 		const process_t * const process,
-		const uint32_t virt_address)
+		const mem_t virt_address)
 {
 	if (process)
 	{

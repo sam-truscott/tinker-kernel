@@ -87,7 +87,7 @@ return_t process_allocate_vmem(
 
 void process_free_vmem(
 		const process_t * const process,
-		const uint32_t virt_address);
+		const mem_t virt_address);
 
 thread_it_t * process_iterator(const process_t * const process);
 
