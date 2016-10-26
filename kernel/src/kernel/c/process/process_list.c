@@ -32,6 +32,7 @@ proc_list_t * proc_create(
 	proc_list_t * const list = mem_alloc(pool, sizeof(process_list_t));
 	if (list)
 	{
+		util_memset(list, 0, sizeof(proc_list_t));
 		list->process_list = process_list_t_create(pool);
 		list->scheduler = scheduler;
 		list->alarm_manager = alarm_manager;

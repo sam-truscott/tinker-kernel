@@ -38,6 +38,7 @@ void test_proc_list(void)
 	// TODO mock alarm manager
 	// TODO mock kernel process
 	process_t kproc;
+	util_memset(&kproc, 0, sizeof(kproc));
 	kproc.kernel_process = true;
 	kproc.process_id = 1;
 	kproc.parent_pool = pool;
