@@ -3,6 +3,7 @@
 /.gradle
 **/.project
 **/.cproject
+gcc/tmp
 utilBuilder/*.img
 binutils/src
 binutils/build*

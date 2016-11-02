@@ -81,6 +81,22 @@ task makeInstallGccStage3Arm (type:Exec) {
 
 makeInstallGccStage3Arm.dependsOn makeGccStage3Arm
 
+task weaveApiArm (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath()
+    commandLine 'bash',
+        '-c',
+        'mkdir -p tmp;\
+        cd tmp;\
+        arm-eabi-ar x ../../arm-eabi/arm-eabi//lib/libc.a;\
+        arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/api.lib;\
+        arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/archArm.lib;\
+        arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o *.obj'
+}
+
+// weaveApiArm.dependsOn makeInstallGccStage3Arm
+// weaveApiArm.dependsOn apiTinkerArm4SoftDebugStaticLibrary
+// weaveApiArm.dependsOn archArmTinkerArm4SoftDebugStaticLibrary
+
 task cleanGcc(type:Exec) {
 	commandLine 'bash',
 		'-c',
