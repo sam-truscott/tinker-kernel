@@ -81,7 +81,7 @@ task makeInstallGccStage3Arm (type:Exec) {
 
 makeInstallGccStage3Arm.dependsOn makeGccStage3Arm
 
-task weaveApiArm (type:Exec) {
+task weaveApiArm (type:Exec, dependsOn: [':api:apiTinkerArm4SoftDebugStaticLibrary', ':archArm:archArmTinkerArm4SoftDebugStaticLibrary']) {
     workingDir getProjectDir().getAbsolutePath()
     commandLine 'bash',
         '-c',
@@ -90,12 +90,9 @@ task weaveApiArm (type:Exec) {
         arm-eabi-ar x ../../arm-eabi/arm-eabi//lib/libc.a;\
         arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/api.lib;\
         arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/archArm.lib;\
-        arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o *.obj'
+        arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o *.obj;\
+        rm -rf tmp;'
 }
-
-// weaveApiArm.dependsOn makeInstallGccStage3Arm
-// weaveApiArm.dependsOn apiTinkerArm4SoftDebugStaticLibrary
-// weaveApiArm.dependsOn archArmTinkerArm4SoftDebugStaticLibrary
 
 task cleanGcc(type:Exec) {
 	commandLine 'bash',
