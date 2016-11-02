@@ -83,8 +83,7 @@ makeInstallGccStage3Arm.dependsOn makeGccStage3Arm
 
 task weaveApiArm (type:Exec, dependsOn: [
     ':api:apiTinkerArm4SoftDebugStaticLibrary', 
-    ':archArm:archArmTinkerArm4SoftDebugStaticLibrary',
-    'makeInstallGccStage3Arm']) {
+    ':archArm:archArmTinkerArm4SoftDebugStaticLibrary']) {
     workingDir getProjectDir().getAbsolutePath()
     commandLine 'bash',
         '-c',
