@@ -91,7 +91,7 @@ task weaveApiArm (type:Exec, dependsOn: [
         cd tmp;\
         arm-eabi-ar x ../../arm-eabi/arm-eabi//lib/libc.a;\
         arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/api.lib;\
-        arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/archArm.lib;\
+        arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/archArm.*;\
         arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o *.obj;\
         rm -rf tmp;'
 }
