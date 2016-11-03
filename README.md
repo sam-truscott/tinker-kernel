@@ -102,7 +102,7 @@ Then execute:
 
     # Linux (or MSYS2 under Windows)
     PATH=$PATH:/home/sam/git/tinker-kernel/arm-eabi/bin
-    ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm makeInstallGdbArm
+    ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm weaveApiArm makeInstallGdbArm
 
 You should then have a toolchain in 'arm-eabi'.
 
