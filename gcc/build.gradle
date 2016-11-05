@@ -93,7 +93,11 @@ task weaveApiArm (type:Exec, dependsOn: [
         arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/*;\
         arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/*;\
         arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o*;\
-        rm -rf tmp;'
+        rm -rf tmp;\
+        cp ../../api/src/api/headers/*.h ../../arm-eabi/arm-eabi/include/;\
+        cp ../../base/src/base/headers/*.h ../../arm-eabi/arm-eabi/include/;\
+        cp ../../archArm/src/archArm/headers/tgt_mem.h ../../arm-eabi/arm-eabi/include/;\
+        cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../../arm-eabi/arm-eabi/include/;'
 }
 
 task cleanGcc(type:Exec) {

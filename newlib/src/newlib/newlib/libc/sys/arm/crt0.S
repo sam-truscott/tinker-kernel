@@ -76,19 +76,6 @@
 	.fnstart
 #endif
 
-#ifdef __USES_INITFINI__
-	/* Some arm/elf targets use the .init and .fini sections
-	   to create constructors and destructors, and for these
-	   targets we need to call the _init function and arrange
-	   for _fini to be called at program exit.  */
-	movs	r4, r0
-	movs	r5, r1
-	ldr	r0, .Lfini
-	bl	FUNCTION (atexit)
-	bl	FUNCTION (_init)
-	movs	r0, r4
-	movs	r1, r5
-#endif	
 	bl	FUNCTION (main)
 
 	bl	FUNCTION (exit)		/* Should not return.  */
@@ -133,10 +120,6 @@
 	.word	__bss_start__
 .LC2:
 	.word	__bss_end__
-#ifdef __USES_INITFINI__
-.Lfini:
-	.word	FUNCTION(_fini)
-#endif
 
 #ifdef __pe__
 	.section .idata$3

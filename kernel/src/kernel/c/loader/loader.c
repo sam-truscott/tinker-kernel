@@ -174,6 +174,7 @@ return_t load_elf(
 		process_t * proc = NULL;
 		tinker_meminfo_t memory =
 		{
+				// FIXME 1k stack and heap predefined?
 				.stack_size = 4096,
 				.heap_size = 4096,
 				.first_part = first_part
