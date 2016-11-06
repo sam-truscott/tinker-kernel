@@ -52,6 +52,8 @@ uint32_t tgt_get_frame_pointer(void);
 
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context);
 
+uint32_t tgt_get_pc(const tgt_context_t * const context);
+
 void tgt_load_context(
 		const tgt_context_t * const thread,
 		tgt_context_t * const context);

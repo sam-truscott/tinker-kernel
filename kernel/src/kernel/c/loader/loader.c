@@ -179,6 +179,7 @@ return_t load_elf(
 				.heap_size = 4096,
 				.first_part = first_part
 		};
+		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (uint32_t)data);
 		ret = proc_create_process(
 				loader->list,
 				image,

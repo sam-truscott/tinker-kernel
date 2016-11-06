@@ -217,6 +217,16 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
     return sp;
 }
 
+uint32_t tgt_get_pc(const tgt_context_t * const context)
+{
+	uint32_t pc = 0;
+	if (context)
+	{
+		pc = context->usr_lr;
+	}
+	return pc;
+}
+
 uint32_t tgt_get_frame_pointer(void)
 {
 	uint32_t sp;

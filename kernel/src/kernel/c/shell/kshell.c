@@ -287,8 +287,8 @@ static void kshell_task_list(void)
 		thread_it_t_get(tlist, &t);
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
-		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tName\n");
-		print_out("--------\t----------\t----------\t---\t--------\t-----\t----\n");
+		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tName\tSp\tPc\n");
+		print_out("--------\t----------\t----------\t---\t--------\t-----\t----\t--\t--\n");
 
 		while (t)
 		{
@@ -299,6 +299,9 @@ static void kshell_task_list(void)
 			printp_out("\t%8x", thread_get_entry_point(t));
 			printp_out("\t%s", ksh_thread_states[thread_get_state(t)]);
 			printp_out("\t%s", thread_get_name(t));
+			const tgt_context_t * context = thread_get_context(t);
+			printp_out("\t%8x", tgt_get_context_stack_pointer(context));
+			printp_out("\t%8x", tgt_get_pc(context));
 			print_out("\n");
 
 			if (!thread_it_t_next(tlist, &t))
