@@ -31,22 +31,27 @@ static void process_add_mem_sec(
 {
 	if (process)
 	{
+		debug_print(MEMORY, "Process: Adding new section %8x -> %8x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
 		if (!process->first_section)
 		{
+			debug_prints(MEMORY, "Process: Section is first section\n");
 			process->first_section = section;
 		}
 		else
 		{
+			debug_prints(MEMORY, "Process: Inserting at correct place\n");
 			mem_section_t * s = process->first_section;
 			mem_section_t * p = NULL;
 			bool_t assigned = false;
-			while (s)
+			while (s && !assigned)
 			{
 				if (mem_sec_get_virt_addr(section) < mem_sec_get_virt_addr(s))
 				{
+					debug_print(MEMORY, "Process: Inserting before %8x -> %8x\n", mem_sec_get_virt_addr(s), mem_sec_get_real_addr(s));
 					mem_sec_set_next(section, s);
 					if (p != NULL)
 					{
+						debug_print(MEMORY, "Process: Inserting after %8x -> %8x\n", mem_sec_get_virt_addr(p), mem_sec_get_real_addr(p));
 						mem_sec_set_next(p, section);
 					}
 					if (s == process->first_section)
@@ -61,6 +66,7 @@ static void process_add_mem_sec(
 			}
 			if (!assigned)
 			{
+				debug_print(MEMORY, "Process: Inserting at end %8x -> %8x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
 				mem_sec_set_next(p, section);
 			}
 		}
@@ -206,7 +212,7 @@ return_t process_create(
                     MMU_USER_ACCESS,
                     MMU_READ_ONLY));
 
-		debug_print(PROCESS, "Process: Calling target initialisation for processs: %s\n", name);
+		debug_print(PROCESS, "Process: Calling target initialisation for process: %s\n", name);
 		ret = tgt_initialise_process(new_proc);
 		if (ret == NO_ERROR && process)
 		{
@@ -508,10 +514,36 @@ mem_t process_virt_to_real(
 	mem_t real = virt;
 	if (process)
 	{
-		/* FIXME TODO should scan the sections rather than assume */
-		const mem_t pool_start = mem_get_start_addr(process->memory_pool);
-		real -= VIRTUAL_ADDRESS_SPACE(process->kernel_process);
-		real += pool_start;
+		bool_t found = false;
+		mem_section_t * current = process->first_section;
+		debug_print(PROCESS, "Process: First section at %x\n", current);
+		while (current && !found)
+		{
+			const mem_t vstart = mem_sec_get_virt_addr(current);
+			const mem_t vsize = mem_sec_get_size(current);
+			const mem_t vend = vstart + vsize;
+			debug_print(PROCESS, "Process: Checking for %x between %x and %x\n", virt, vstart, vend);
+			if (virt >= vstart && virt <= vend)
+			{
+				const mem_t offset = virt - vstart;
+				const mem_t vreal = mem_sec_get_real_addr(current);
+				real = vreal + offset;
+				debug_print(PROCESS, "Process: Found %x in v=%x -> r=%x with offset %x (%x)\n", virt, vstart, vreal, offset, real);
+				found = true;
+			}
+			current = mem_sec_get_next(current);
+		}
+		if (!found)
+		{
+			debug_print(PROCESS, "Process: Unable to find a mem section, falling back: %x\n", virt);
+			const mem_t pool_start = mem_get_start_addr(process->memory_pool);
+			const mem_t base = VIRTUAL_ADDRESS_SPACE(process->kernel_process);
+			if (real >= base)
+			{
+				real -= base;
+			}
+			real += pool_start;
+		}
 	}
 	return real;
 }

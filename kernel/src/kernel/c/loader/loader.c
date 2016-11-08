@@ -14,6 +14,7 @@
 #include "process/process.h"
 #include "memory/mem_pool.h"
 #include "console/print_out.h"
+#include "config.h"
 
 typedef struct loader_t
 {
@@ -124,17 +125,18 @@ return_t load_elf(
 				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(loader->pool, sizeof(tinker_mempart_t));
 				if (new_part)
 				{
+					util_memset(new_part, 0, sizeof(tinker_mempart_t));
 					if (current_part)
 					{
 						current_part->next = new_part;
 					}
 					current_part = new_part;
-					util_memset(current_part, 0, sizeof(tinker_mempart_t));
-					current_part->real = addr.p_paddr;
-					current_part->virt = addr.p_vaddr;
+					// FIXME need to use proper virtual base
+					current_part->real = addr.p_paddr + (mem_t)data;
+					current_part->virt = addr.p_vaddr;// + USER_ADDRESS_SPACE;
 					current_part->size = addr.p_memsz;
 					current_part->mem_type = MEM_RANDOM_ACCESS_MEMORY;
-					current_part->priv = MEM_USER_ACCESS;
+					current_part->priv = MEM_ALL_ACCESS;
 					// TODO add exec
 					/*
 					if (addr.p_flags & PF_X)
@@ -179,12 +181,13 @@ return_t load_elf(
 				.heap_size = 4096,
 				.first_part = first_part
 		};
-		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (uint32_t)data);
+		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (mem_t)data);
 		ret = proc_create_process(
 				loader->list,
 				image,
 				"main",
-				(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
+				//(thread_entry_point*)((ctx.ehdr.e_entry) + (mem_t)data),
+				(thread_entry_point*)(ctx.ehdr.e_entry),
 				priority,
 				&memory,
 				flags,

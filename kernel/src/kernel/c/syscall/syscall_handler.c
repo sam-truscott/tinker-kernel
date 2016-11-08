@@ -96,8 +96,17 @@ static inline mem_t virtual_to_real(
 		mem_t address)
 {
 	/* TODO the below code needs fixing */
-	return ((address >= VIRTUAL_ADDRESS_SPACE(process_is_kernel(process)))
-			? process_virt_to_real(process, address) : address);
+	const bool_t is_kernel = process_is_kernel(process);
+	mem_t result;
+	if (is_kernel)
+	{
+		result = ((address >= VIRTUAL_ADDRESS_SPACE(is_kernel)) ? process_virt_to_real(process, address) : address);
+	}
+	else
+	{
+		result = process_virt_to_real(process, address);
+	}
+	return result;
 }
 
 static return_t syscall_tst(tgt_context_t * const context) {
@@ -193,6 +202,10 @@ static return_t syscall_debug(
 		tgt_context_t* const context,
 		thread_t* const this_thread) {
 	const char * const msg = (const char*const )virtual_to_real(thread_get_parent(this_thread), tgt_get_syscall_param(context, 1));
+	if (is_debug_enabled(SYSCALL))
+	{
+		debug_print(SYSCALL, "Syscall: Debug of message at %x from %x\n", msg, tgt_get_syscall_param(context, 1));
+	}
 	if (msg)
 	{
 		print_time();

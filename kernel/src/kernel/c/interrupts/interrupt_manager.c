@@ -99,12 +99,16 @@ void int_fatal_program_error_interrupt(
 	error_print("Fatal Fault: process: %s\t thread: %s\n",
 			process_get_image(thread_get_parent(current)),
 			thread_get_name(current));
+#if defined (PRINT_STACK_ON_ERROR)
+	// FIXME: this is broken due to a second exception being raised
 	print_stack_trace(thread_get_parent(current), tgt_get_context_stack_pointer(context));
+#endif /* PRINT_STACK_ON_ERROR */
 	sch_terminate_current_thread(intc->scheduler, context);
 	sch_set_context_for_next_thread(
 			intc->scheduler,
 			context,
-			thread_get_state(current));
+			THREAD_TERMINATED);
+			//thread_get_state(current));
 }
 
 void int_syscall_request_interrupt(
