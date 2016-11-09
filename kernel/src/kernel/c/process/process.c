@@ -31,7 +31,12 @@ static void process_add_mem_sec(
 {
 	if (process)
 	{
-		debug_print(MEMORY, "Process: Adding new section %8x -> %8x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
+		debug_print(PROCESS, "Process: Adding new section %8x:%8x -> %8x:%8x (%x)\n",
+				mem_sec_get_virt_addr(section),
+				mem_sec_get_virt_addr(section) + mem_sec_get_size(section),
+				mem_sec_get_real_addr(section),
+				mem_sec_get_real_addr(section) + mem_sec_get_size(section),
+				mem_sec_get_size(section));
 		if (!process->first_section)
 		{
 			debug_prints(MEMORY, "Process: Section is first section\n");

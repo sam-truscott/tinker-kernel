@@ -131,9 +131,8 @@ return_t load_elf(
 						current_part->next = new_part;
 					}
 					current_part = new_part;
-					// FIXME need to use proper virtual base
 					current_part->real = addr.p_paddr + (mem_t)data;
-					current_part->virt = addr.p_vaddr;// + USER_ADDRESS_SPACE;
+					current_part->virt = addr.p_vaddr;
 					current_part->size = addr.p_memsz;
 					current_part->mem_type = MEM_RANDOM_ACCESS_MEMORY;
 					current_part->priv = MEM_ALL_ACCESS;
@@ -186,7 +185,6 @@ return_t load_elf(
 				loader->list,
 				image,
 				"main",
-				//(thread_entry_point*)((ctx.ehdr.e_entry) + (mem_t)data),
 				(thread_entry_point*)(ctx.ehdr.e_entry),
 				priority,
 				&memory,
