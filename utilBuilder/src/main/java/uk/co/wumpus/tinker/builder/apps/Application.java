@@ -7,4 +7,6 @@ public interface Application {
 	void copyTo(@Nonnull final Payload payload) throws ApplicationException;
 	
 	void validate() throws ApplicationException;
+	
+	int length();
 }

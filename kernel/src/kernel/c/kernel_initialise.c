@@ -25,25 +25,16 @@
 #include "tgt.h"
 #include "loader/loader.h"
 
-static void load_processes(const uint32_t end_of_bin, loader_t* const loader)
+static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 {
-	uint32_t app_start = end_of_bin;
-	uint32_t sz = *(uint32_t*) app_start;
-	debug_print(ELF_LOADER, "Loader: Size of %x is %x bytes\n", app_start, sz);
-	app_start += sizeof(uint32_t);
-	while (sz)
+	uint32_t* app_start = (uint32_t*)end_of_bin;
+	debug_print(ELF_LOADER, "Loader: Loading app at %8x\n", app_start);
+	while (*app_start)
 	{
 		const return_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
-		debug_print(ELF_LOADER, "Loader: Loading of process: %d\n", elf_error);
-		app_start += sz;
-		// need to align to a word boundry
-		while ((app_start % sizeof(uint32_t)) != 0)
-		{
-			app_start++;
-		}
-		sz = *(uint32_t*) app_start;
-		debug_print(ELF_LOADER, "Loader: Size of %x is %x bytes\n", app_start, sz);
-		app_start += sizeof(uint32_t);
+		debug_print(ELF_LOADER, "Loader: Loading result: %d\n", elf_error);
+		app_start++;
+		debug_print(ELF_LOADER, "Loader: Loading app at %x\n", app_start);
 	}
 }
 

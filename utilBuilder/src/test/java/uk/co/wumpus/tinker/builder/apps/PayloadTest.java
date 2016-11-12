@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import uk.co.wumpus.tinker.builder.util.Endian;
+
 public class PayloadTest {
 
 	@SuppressWarnings({ "static-method", "null" })
@@ -16,7 +18,7 @@ public class PayloadTest {
 		final File image = File.createTempFile("temp-image-", ".tmp");
 		image.deleteOnExit();
 		try {
-			Payload pl = new Payload(image, kernel);
+			Payload pl = new Payload(Endian.SMALL, image, kernel);
 			final Application app1 = Mockito.mock(Application.class);
 			final Application app2 = Mockito.mock(Application.class);
 			pl.addApplication(app1);
@@ -31,10 +33,10 @@ public class PayloadTest {
 			Mockito.verify(kernel).copyTo(Matchers.eq(pl));
 			Mockito.verify(app1).copyTo(Matchers.eq(pl));
 			Mockito.verify(app2).copyTo(Matchers.eq(pl));
-			Assert.assertEquals(130, pl.length());
+			Assert.assertEquals(8320, pl.length());
 			
 			pl.close();
-			Assert.assertEquals(130, image.length());
+			Assert.assertEquals(8320, image.length());
 		} finally {
 			image.delete();
 		}

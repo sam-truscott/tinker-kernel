@@ -29,6 +29,11 @@ public class Binary implements Application {
 	protected byte[] getData() {
 		return this.data;
 	}
+
+	@Override
+	public int length() {
+		return this.data.length;
+	}
 	
 	@Nonnull
 	protected File getFile() {

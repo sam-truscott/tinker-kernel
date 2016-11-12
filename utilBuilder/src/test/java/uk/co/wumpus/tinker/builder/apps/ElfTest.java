@@ -12,7 +12,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.testng.Assert;
 
-import uk.co.wumpus.tinker.builder.util.Endian;
 import uk.co.wumpus.tinker.builder.util.ReadElf;
 
 @RunWith(PowerMockRunner.class)
@@ -36,7 +35,7 @@ public class ElfTest {
 		final File f = File.createTempFile("tmp-file-", ".tmp");
 		f.deleteOnExit();
 		try {
-			Elf b = new Elf(f, Endian.SMALL, "myarch");
+			Elf b = new Elf(f, "myarch");
 			Assert.assertEquals(new byte[]{}, b.getData());
 			Assert.assertEquals(f, b.getFile());
 			b.validate();
@@ -54,7 +53,7 @@ public class ElfTest {
 		final File f = File.createTempFile("tmp-file-", ".tmp");
 		f.deleteOnExit();
 		try {
-			Elf b = new Elf(f, Endian.SMALL, "myarch");
+			Elf b = new Elf(f, "myarch");
 			Mockito.when(proc.waitFor()).thenReturn(1);
 			b.validate();
 		} finally {
