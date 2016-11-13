@@ -40,20 +40,7 @@ static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 
 static mem_t calculate_start_of_pool(const mem_t end_of_bin)
 {
-	mem_t app_start = end_of_bin;
-	uint32_t sz = *(uint32_t*) app_start;
-	app_start += sizeof(uint32_t);
-	while (sz)
-	{
-		app_start += sz;
-		while ((app_start % sizeof(uint32_t)) != 0)
-		{
-			app_start++;
-		}
-		sz = *(uint32_t*) app_start;
-		app_start += sizeof(uint32_t);
-	}
-	return app_start;
+	return end_of_bin + *(mem_t*) end_of_bin;
 }
 
 void kernel_initialise(void)
@@ -66,7 +53,7 @@ void kernel_initialise(void)
 	}
 	const mem_t memory_end = bsp_get_usable_memory_end();
 
-	debug_print(INITIALISATION, "Loader: Apps start at %x, size of %x\n", end_of_bin, memory_start - end_of_bin);
+	debug_print(INITIALISATION, "Loader: Apps start at %x, mem at %x. Size of %x\n", end_of_bin, memory_start, memory_start - end_of_bin);
 
 	debug_print(INITIALISATION, "Memory: Initialising Pool, start %X, end %x\n",
 			memory_start,

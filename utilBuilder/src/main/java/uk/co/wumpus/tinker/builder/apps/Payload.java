@@ -3,6 +3,7 @@ package uk.co.wumpus.tinker.builder.apps;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -66,18 +67,27 @@ public class Payload {
 		int aligned = align(afterLengths);
 		LOG.info("Kernel finishes at {}, lengths to {}, aligning to {}", kernelLength, afterLengths, aligned); 
 		final Map<Application, Integer> offsets = new HashMap<>();
+		final List<Integer> alignedOffsets = new ArrayList<>(this.apps.size());
+		// calculate the aligned offsets of all the apps
 		for (final Application app : this.apps) {
 			app.validate();
 			final int alignedOffset = aligned - kernelLength;
 			LOG.info("Process {} starts at {} ({}/0x{})", app.toString(), aligned, alignedOffset, Integer.toString(alignedOffset, 16));
-			write(IntToByte.intToByteArray(alignedOffset, this.endian));
+			alignedOffsets.add(alignedOffset);
 			offsets.put(app, aligned);
 			aligned += align(aligned + app.length());
+		}
+		// write the length of the whole package
+		write(IntToByte.intToByteArray(aligned - kernelLength, this.endian));
+		// write the lengths of all the apps
+		for (final int offset : alignedOffsets) {
+			write(IntToByte.intToByteArray(offset, this.endian));
 		}
 		// end of apps
 		write(new byte[]{0,0,0,0});
 		
 		LOG.info("Writing apps to payload");
+		// write each app to the package
 		for (final Application app : this.apps) {
 			final int appAligned = offsets.get(app);
 			byte[] fill = new byte[appAligned - length()];
