@@ -68,8 +68,9 @@ public class Payload {
 		final Map<Application, Integer> offsets = new HashMap<>();
 		for (final Application app : this.apps) {
 			app.validate();
-			LOG.info("Process {} starts at {}", app.toString(), aligned);
-			write(IntToByte.intToByteArray(aligned, this.endian));
+			final int alignedOffset = aligned - kernelLength;
+			LOG.info("Process {} starts at {} ({}/0x{})", app.toString(), aligned, alignedOffset, Integer.toString(alignedOffset, 16));
+			write(IntToByte.intToByteArray(alignedOffset, this.endian));
 			offsets.put(app, aligned);
 			aligned += align(aligned + app.length());
 		}

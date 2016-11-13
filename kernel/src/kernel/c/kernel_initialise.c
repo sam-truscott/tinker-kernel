@@ -31,7 +31,7 @@ static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 	debug_print(ELF_LOADER, "Loader: Loading app at %8x\n", app_start);
 	while (*app_start)
 	{
-		const return_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
+		const return_t elf_error = load_elf(loader, (void*) (end_of_bin + app_start), "app", 128, 0);
 		debug_print(ELF_LOADER, "Loader: Loading result: %d\n", elf_error);
 		app_start++;
 		debug_print(ELF_LOADER, "Loader: Loading app at %x\n", app_start);
