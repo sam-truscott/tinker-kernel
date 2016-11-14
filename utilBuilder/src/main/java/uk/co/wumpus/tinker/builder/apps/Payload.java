@@ -51,7 +51,7 @@ public class Payload {
 	}
 	
 	void write(@Nonnull final byte[] b) throws IOException {
-		LOG.info("Writing {} bytes to buffer at {}", b.length, this.length());
+		LOG.debug("Writing {} bytes to buffer at {}", b.length, this.length());
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("Writing {}", ByteToHex.bytesToHex(b));
 		}
