@@ -17,7 +17,10 @@
 #include "shell/kshell.h"
 #include "process/process_list.h"
 #include "scheduler/scheduler.h"
-#include "unit_tests.h"
+
+#if defined(UNIT_TESTS)
+extern void run_unit_tests(void);
+#endif /* UNIT_TESTS */
 
 void kernel_main(void)
 {

@@ -1,4 +1,3 @@
-apply plugin: 'assembler'
 apply plugin: 'c'
 
 model {
