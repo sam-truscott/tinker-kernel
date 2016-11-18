@@ -27,30 +27,28 @@
 
 static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 {
-	uint32_t* app_start = (uint32_t*)end_of_bin;
-	debug_print(ELF_LOADER, "Loader: Loading app at %8x\n", app_start);
+	uint32_t* app_start = (uint32_t*)(end_of_bin + 4);
+	debug_print(ELF_LOADER, "Loader: Loading first app at %8x\n", end_of_bin + (*app_start));
 	while (*app_start)
 	{
-		const return_t elf_error = load_elf(loader, (void*) (end_of_bin + app_start), "app", 128, 0);
+		const return_t elf_error = load_elf(loader, (void*) (end_of_bin + *app_start), "app", 128, 0);
 		debug_print(ELF_LOADER, "Loader: Loading result: %d\n", elf_error);
 		app_start++;
-		debug_print(ELF_LOADER, "Loader: Loading app at %x\n", app_start);
+		debug_print(ELF_LOADER, "Loader: Loading next app at %8x\n", end_of_bin + *app_start);
 	}
 }
 
 static mem_t calculate_start_of_pool(const mem_t end_of_bin)
 {
-	return end_of_bin + *(mem_t*) end_of_bin;
+	const mem_t size = *(mem_t*)end_of_bin;
+	debug_print(INITIALISATION, "Size of payload is 0%8x\n", size);
+	return end_of_bin + size;
 }
 
 void kernel_initialise(void)
 {
 	const mem_t end_of_bin = bsp_get_usable_memory_start();
 	mem_t memory_start = calculate_start_of_pool(end_of_bin);
-	while (memory_start % MMU_PAGE_SIZE != 0)
-	{
-		memory_start++;
-	}
 	const mem_t memory_end = bsp_get_usable_memory_end();
 
 	debug_print(INITIALISATION, "Loader: Apps start at %x, mem at %x. Size of %x\n", end_of_bin, memory_start, memory_start - end_of_bin);

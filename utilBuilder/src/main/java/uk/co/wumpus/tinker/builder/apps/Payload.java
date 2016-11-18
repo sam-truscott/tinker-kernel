@@ -78,7 +78,9 @@ public class Payload {
 			aligned += align(aligned + app.length());
 		}
 		// write the length of the whole package
-		write(IntToByte.intToByteArray(aligned - kernelLength, this.endian));
+		final int endOfApps = aligned - kernelLength;
+		LOG.info("Applications end at offset {}/0x{}", endOfApps, Integer.toString(endOfApps, 16));
+		write(IntToByte.intToByteArray(endOfApps, this.endian));
 		// write the lengths of all the apps
 		for (final int offset : alignedOffsets) {
 			write(IntToByte.intToByteArray(offset, this.endian));
