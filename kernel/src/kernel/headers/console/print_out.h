@@ -30,7 +30,8 @@ typedef enum debug_subsystem
 	PIPE = 1 << 14,
 	PIPE_TRACE = 1 << 15,
 	IDLE = 1 << 16,
-	ELF_LOADER = 1 << 17
+	ELF_LOADER = 1 << 17,
+	PROCESS_TRACE = 1 << 18
 } debug_subsystem_t;
 
 void print_set_time_manager(time_manager_t * const tm);

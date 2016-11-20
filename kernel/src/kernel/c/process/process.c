@@ -52,11 +52,11 @@ static void process_add_mem_sec(
 			{
 				if (mem_sec_get_virt_addr(section) < mem_sec_get_virt_addr(s))
 				{
-					debug_print(MEMORY, "Process: Inserting before %8x -> %8x\n", mem_sec_get_virt_addr(s), mem_sec_get_real_addr(s));
+					debug_print(MEMORY, "Process: Inserting before %x -> %x\n", mem_sec_get_virt_addr(s), mem_sec_get_real_addr(s));
 					mem_sec_set_next(section, s);
 					if (p != NULL)
 					{
-						debug_print(MEMORY, "Process: Inserting after %8x -> %8x\n", mem_sec_get_virt_addr(p), mem_sec_get_real_addr(p));
+						debug_print(MEMORY, "Process: Inserting after %x -> %x\n", mem_sec_get_virt_addr(p), mem_sec_get_real_addr(p));
 						mem_sec_set_next(p, section);
 					}
 					if (s == process->first_section)
@@ -71,9 +71,23 @@ static void process_add_mem_sec(
 			}
 			if (!assigned)
 			{
-				debug_print(MEMORY, "Process: Inserting at end %8x -> %8x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
+				debug_print(MEMORY, "Process: Inserting at end %x -> %x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
 				mem_sec_set_next(p, section);
 			}
+		}
+		if (is_debug_enabled(PROCESS_TRACE))
+		{
+			debug_prints(PROCESS_TRACE, "-------------------------------\n");
+			mem_section_t * s = process->first_section;
+			while (s)
+			{
+				const mem_t sz = mem_sec_get_size(s);
+				const mem_t virt = mem_sec_get_virt_addr(s);
+				const mem_t real = mem_sec_get_real_addr(s);
+				debug_print(PROCESS_TRACE, "%x:%x->%x:%x\n", virt, virt + sz, real, real + sz);
+				s = mem_sec_get_next(s);
+			}
+			debug_prints(PROCESS_TRACE, "-------------------------------\n");
 		}
 	}
 }
@@ -139,10 +153,13 @@ return_t process_create(
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_KERNEL_ACCESS,
 					MMU_READ_WRITE);
+			/* kernel access for the process */
 			tgt_map_memory(new_proc, kernel_ram_sec);
 			while (ksection)
 			{
 				mem_t real = mem_sec_get_real_addr(ksection);
+				// FIXME doesn't take into account app space so will map
+				// other apps
 				if (real > end_of_ram)
 				{
 					process_add_mem_sec(

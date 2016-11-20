@@ -13,7 +13,7 @@
 
 typedef struct mem_section_t
 {
-	mem_section_t *next;
+	mem_section_t   * next;
 	mem_t 			real_address;
 	mem_t			virt_address;
 	mem_t 			size;

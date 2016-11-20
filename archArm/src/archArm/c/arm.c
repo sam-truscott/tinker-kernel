@@ -42,6 +42,7 @@ return_t tgt_initialise_process(process_t * const process)
         {
             /* setup virt -> real mapping for size */
         	tgt_map_memory(process, section);
+        	debug_print(TARGET, "mapping %x to %x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
             section = mem_sec_get_next(section);
         }
     }
@@ -55,9 +56,9 @@ static void __attribute__((naked)) arm_bootstrap(
 		const uint32_t sp) TINKER_API_SUFFIX;
 
 static void __attribute__((naked)) arm_bootstrap(
-		thread_entry_point * const entry,
-		uint32_t exit_function,
-		const uint32_t sp)
+		 /* R0 */ thread_entry_point * const entry,
+		 /* R1 */ uint32_t exit_function,
+		 /* R2 */ const uint32_t sp)
 {
 	asm volatile("mrs %r7, cpsr");			/* get cpsr */
 	asm volatile("mov r8, #0xFFFFFF20");	/* blat out the mode and enable interrupts */

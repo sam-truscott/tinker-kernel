@@ -18,9 +18,9 @@ static void thread_end(void) __attribute__((section(".api")));
 
 static void thread_setup_stack(thread_t * const thread)
 {
-	const uint32_t stack_size = thread->stack_size;
-	const uint32_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
-	uint32_t vsp;
+	const mem_t stack_size = thread->stack_size;
+	const mem_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
+	mem_t vsp;
 	bool_t is_kernel = process_is_kernel(thread->parent);
 	if (!is_kernel)
 	{
@@ -73,7 +73,7 @@ thread_t * thread_create(
 			tgt_initialise_context(
 					thread,
 					&thread->context,
-					(const uint32_t)thread_end);
+					(const mem_t)thread_end);
 		}
 		else
 		{
