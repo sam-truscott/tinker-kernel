@@ -439,7 +439,7 @@ void arm_enable_mmu(void)
 	asm volatile("mcr p15, 0, r0, c3, c0, 0");
 
 	asm volatile("mrc p15, 0, r0, c1, c0, 0");
-	asm volatile("ldr r1, =0x1003");
+	asm volatile("ldr r1, =0x1005");
 	asm volatile("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
 	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }

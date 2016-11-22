@@ -70,12 +70,11 @@ void bsp_initialise(void)
 	}
 
 	debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
-
+	/*
 	{
 		tgt_pg_tbl_t pg_table;
 		util_memset(&pg_table, 0, sizeof(tgt_pg_tbl_t));
 		mem_section_t sec;
-		/*
 		{
 			//
 			mem_sec_initialise(
@@ -115,7 +114,6 @@ void bsp_initialise(void)
 					MMU_READ_WRITE);
 			arm_map_memory(0, &pg_table, &sec);
 		}
-		*/
 		{
 			// map device space for uat
 			mem_sec_initialise(
@@ -142,6 +140,8 @@ void bsp_initialise(void)
 		//arm_enable_mmu();
 		early_uart_put("MMU on\n");
 	}
+
+	*/
 }
 
 void bsp_setup(
@@ -158,12 +158,14 @@ void bsp_setup(
 	arm_set_domain_access_register(0);
 	debug_print(TARGET, "@Before MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
 	arm_enable_mmu();
-	debug_print(TARGET, "@After MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
 
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
+	// FIXME use object
 	kshell_set_input_device(UART_DEVICE_NAME);
 #endif
+
+	debug_print(TARGET, "@After MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
 
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(controller, bcm2835_intc);
