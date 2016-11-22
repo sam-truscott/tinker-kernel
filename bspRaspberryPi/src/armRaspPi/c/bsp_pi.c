@@ -6,6 +6,7 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
+#include "board_support.h"
 #include "ivt.h"
 #include "tgt.h"
 
@@ -27,6 +28,9 @@
 #include "bcm2835_intc.h"
 #include "shell/kshell.h"
 
+#include "memory/mem_section_private.h"
+#include "memory/mem_section.h"
+
 #define UART_DEVICE_NAME "/dev/char/bcm2835_uart"
 
 static timer_t bcm2835_scheduler_timer;
@@ -40,6 +44,9 @@ static time_manager_t * time_manager = NULL;
 
 void bsp_initialise(void)
 {
+	const uint32_t cpsr = arm_get_cpsr();
+	const uint32_t sctrl = arm_get_cp15_c1();
+	tgt_disable_external_interrupts();
 	early_uart_init();
 	if (is_debug_enabled(TARGET))
 	{
@@ -61,6 +68,80 @@ void bsp_initialise(void)
 	{
 		early_uart_put("Vector init done\n");
 	}
+
+	debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
+
+	{
+		tgt_pg_tbl_t pg_table;
+		util_memset(&pg_table, 0, sizeof(tgt_pg_tbl_t));
+		mem_section_t sec;
+		/*
+		{
+			//
+			mem_sec_initialise(
+					&sec,
+					NULL,
+					0,
+					0,
+					(128 * (1024 * 1024)),
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_ALL_ACCESS,
+					MMU_READ_WRITE);
+			arm_map_memory(0, &pg_table, &sec);
+		}
+		{
+			// map the ram for kernel startup
+			mem_sec_initialise(
+					&sec,
+					NULL,
+					0,
+					KERNEL_ADDRESS_SPACE,
+					(128 * (1024 * 1024)),
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_ALL_ACCESS,
+					MMU_READ_WRITE);
+			arm_map_memory(0, &pg_table, &sec);
+		}
+		{
+			// map device space for uat
+			mem_sec_initialise(
+					&sec,
+					NULL,
+					0x20000000,
+					0x20000000,
+					0x00800000,
+					MMU_DEVICE_MEMORY,
+					MMU_ALL_ACCESS,
+					MMU_READ_WRITE);
+			arm_map_memory(0, &pg_table, &sec);
+		}
+		*/
+		{
+			// map device space for uat
+			mem_sec_initialise(
+					&sec,
+					NULL,
+					0,
+					0,
+					0xC0000000,
+					MMU_DEVICE_MEMORY,
+					MMU_ALL_ACCESS,
+					MMU_READ_WRITE);
+			//arm_map_memory(0, &pg_table, &sec);
+		}
+		debug_print(TARGET, "Setting up MMU, sctrl 0x%8x\n", arm_get_cp15_c1());
+		//arm_invalidate_all_tlbs();
+		//arm_set_domain_access_register(0);
+		//arm_set_translation_table_base(&pg_table);
+		//arm_print_page_table(&pg_table);
+		debug_print(TARGET, "About to turn MMU on, sctrl 0x%8x\n", arm_get_cp15_c1());
+		//arm_disable_mmu();
+		debug_print(TARGET, "cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
+		//arm_set_cpsr(0x1fu);
+		debug_print(TARGET, "cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
+		//arm_enable_mmu();
+		early_uart_put("MMU on\n");
+	}
 }
 
 void bsp_setup(
@@ -75,7 +156,9 @@ void bsp_setup(
 	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_set_domain_access_register(0);
+	debug_print(TARGET, "@Before MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
 	arm_enable_mmu();
+	debug_print(TARGET, "@After MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
 
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)

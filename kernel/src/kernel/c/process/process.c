@@ -145,15 +145,18 @@ return_t process_create(
 		if (!is_kernel)
 		{
 			mem_t end_of_ram = bsp_get_usable_memory_end();
+			// FIXME this doesn't look right - should be doing kernel mapping
+			// for the code but into the wrong place
 			mem_section_t * const kernel_ram_sec = mem_sec_create(
 					new_proc->private_pool,
-					4096,
-					0,
-					end_of_ram,
+					4096, 		/* real (exclude first page) */
+					0,    		/* virtual ( #### this will hit the apps #### ) */
+					end_of_ram, /* size */
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_KERNEL_ACCESS,
 					MMU_READ_WRITE);
-			/* kernel access for the process */
+			/* kernel access for the process - mapped but not as a section */
+			// FIXME: memory leak on kernel_ram_sec
 			tgt_map_memory(new_proc, kernel_ram_sec);
 			while (ksection)
 			{

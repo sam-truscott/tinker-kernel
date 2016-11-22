@@ -22,7 +22,7 @@
 #define DEFAULT_TEX 1
 
 #define ARM_MMU_SECTION_SIZE (1 * 1024 * 1024)
-#define ARM_MMU_SECTION_PAGES ((ARM_MMU_SECTION_SIZE / MMU_PAGE_SIZE) - 1)
+#define ARM_MMU_SECTION_PAGES ((ARM_MMU_SECTION_SIZE / MMU_PAGE_SIZE))
 
 
 #define NUM_L2_ENTRIES 256
@@ -209,21 +209,20 @@ static l2_tbl_t * arm_get_lvl2_table(
 	return entry;
 }
 
-static bool_t arm_is_1mb_section(
+static uint32_t arm_1mb_section_count(
 		const uint32_t start,
 		const uint32_t end)
 {
 	// do we start on a 1mb boundary
 	if ((start % ARM_MMU_SECTION_SIZE) != 0)
 	{
-		return false;
+		return 0;
 	}
-	// are we aligned to 1mb
-	if ((end < (start + ARM_MMU_SECTION_SIZE)))
+	if (start == end)
 	{
-		return false;
+		return 0;
 	}
-	return true;
+	return (end-start)/ARM_MMU_SECTION_SIZE;
 }
 
 tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool)
@@ -312,17 +311,23 @@ return_t arm_map_memory(
 		}
 		for (uint32_t page = 0 ; page < pages ; page++)
 		{
-			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
+			uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
 			const uint32_t end = virt + (pages * MMU_PAGE_SIZE);
-			const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
-			if (arm_is_1mb_section(virt, end))
+			uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
+			const uint32_t mb_cnt = arm_1mb_section_count(virt, end);
+			if (mb_cnt)
 			{
-				arm_map_section(
-						section,
-						virt,
-						real,
-						table);
-				page += ARM_MMU_SECTION_PAGES;
+				for (uint32_t sec = 0 ; sec < mb_cnt ; sec++)
+				{
+					arm_map_section(
+							section,
+							virt,
+							real,
+							table);
+					page += ARM_MMU_SECTION_PAGES;
+					real += ARM_MMU_SECTION_SIZE;
+					virt += ARM_MMU_SECTION_SIZE;
+				}
 			}
 			else
 			{
@@ -411,7 +416,11 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 		}
 		else if ((table->lvl1_entry[section] & 2) == 2)
 		{
-			debug_print(TARGET, "%d: Section entry\n", section);
+			debug_print(TARGET, "%d: Section entry (%8x -> %8x 0x%8x)\n",
+					section,
+					section * ARM_MMU_SECTION_SIZE,
+					(table->lvl1_entry[section] & 0xFFF00000u),
+					table->lvl1_entry[section]);
 		}
 	}
 }
@@ -438,10 +447,12 @@ void arm_enable_mmu(void)
 	asm volatile("mov r0, #0x3");
 	asm volatile("mcr p15, 0, r0, c3, c0, 0");
 
+	asm volatile("nop");
 	asm volatile("mrc p15, 0, r0, c1, c0, 0");
-	asm volatile("ldr r1, =0x1003");
+	asm volatile("ldr r1, =0x1005");		// disable alignment (http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0388f/CIHGHGJE.html)
 	asm volatile("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
 	asm volatile("mcr p15, 0, r0, c1, c0, 0");
+	asm volatile("nop");
 }
 
 static inline void arm_set_translation_control(const uint32_t ctl)
@@ -461,4 +472,11 @@ void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
 	(void)base;
 	asm volatile("mcr p15, 0, r0, c2, c0, 0");	// TTBR0, r0 -> base
 	arm_set_translation_control(0);
+}
+
+uint32_t arm_get_cp15_c1(void)
+{
+	uint32_t r;
+	asm volatile("mrc p15, 0, %[ps], c1, c0, 0" : [ps]"=r" (r));
+	return r;
 }

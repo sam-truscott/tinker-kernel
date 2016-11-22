@@ -25,12 +25,6 @@ extern void run_unit_tests(void);
 void kernel_main(void)
 {
 	/*
-	 * The BSP will initialise everything
-	 */
-	bsp_initialise();
-	tgt_disable_external_interrupts();
-
-	/*
 	 * Initialise the kernel into a known state;
 	 */
 	debug_prints(INITIALISATION, "Kernel: Initialising...\n");

@@ -8,30 +8,7 @@
 #ifndef MEM_SECTION_H_
 #define MEM_SECTION_H_
 
-#include "mem_pool.h"
-
-typedef struct mem_section_t mem_section_t;
-
-typedef enum
-{
-	MMU_DEVICE_MEMORY		 	= 0,
-	MMU_RANDOM_ACCESS_MEMORY	= 1
-} mmu_memory_t;
-
-typedef enum
-{
-	MMU_NO_PRIVILEGE 	= 0,
-	MMU_USER_ACCESS		= 1,
-	MMU_KERNEL_ACCESS	= 2,
-	MMU_ALL_ACCESS		= 3
-} mmu_privilege_t;
-
-typedef enum
-{
-	MMU_NO_ACCESS	= 0,
-	MMU_READ_ONLY	= 1,
-	MMU_READ_WRITE	= 2
-} mmu_access_t;
+#include "mem_section_private.h"
 
 mem_section_t * mem_sec_create(
 		mem_pool_info_t * const pool,
@@ -43,7 +20,6 @@ mem_section_t * mem_sec_create(
 		const mmu_access_t mem_access);
 
 void mem_sec_delete(const mem_section_t * const section);
-
 mem_t mem_sec_get_real_addr(const mem_section_t * const ms);
 mem_t mem_sec_get_virt_addr(const mem_section_t * const ms);
 mem_t mem_sec_get_size(const mem_section_t * const ms);
