@@ -218,11 +218,12 @@ static bool_t arm_is_1mb_section(
 	{
 		return false;
 	}
-	// are we aligned to 1mb
+	// is the end more than 1Mb away from the start?
 	if ((end < (start + ARM_MMU_SECTION_SIZE)))
 	{
 		return false;
 	}
+	// size is at least 1mb
 	return true;
 }
 
@@ -432,14 +433,20 @@ void arm_disable_mmu(void)
 	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
 
-void arm_enable_mmu(void)
+void arm_enable_mmu(const bool_t cache)
 {
 	// domain
 	asm volatile("mov r0, #0x3");
 	asm volatile("mcr p15, 0, r0, c3, c0, 0");
-
 	asm volatile("mrc p15, 0, r0, c1, c0, 0");
-	asm volatile("ldr r1, =0x1005");
+	if (cache)
+	{
+		asm volatile("ldr r1, =0x1005");
+	}
+	else
+	{
+		asm volatile("ldr r1, =0x0001");
+	}
 	asm volatile("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
 	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
@@ -459,6 +466,7 @@ void arm_set_domain_access_register(const uint32_t dar)
 void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
 {
 	(void)base;
+	asm volatile("" ::: "memory");
 	asm volatile("mcr p15, 0, r0, c2, c0, 0");	// TTBR0, r0 -> base
 	arm_set_translation_control(0);
 }

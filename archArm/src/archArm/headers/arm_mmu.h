@@ -20,7 +20,7 @@ void arm_invalidate_all_tlbs(void);
 
 void arm_disable_mmu(void);
 
-void arm_enable_mmu(void);
+void arm_enable_mmu(const bool_t cache);
 
 uint32_t arm_get_cp15_c1();
 

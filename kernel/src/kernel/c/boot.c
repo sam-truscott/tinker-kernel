@@ -19,11 +19,9 @@ extern void kernel_boot(void)
 	/*
 	 * Kick off the kernel
 	 */
-	kernel_main();
 	kmainptr * const kmain = (kmainptr*)(((mem_t)kernel_main) + KERNEL_ADDRESS_SPACE);
 	if (kmain)
 	{
 		kmain();
 	}
-	// kernel_main();
 }

@@ -70,26 +70,27 @@ void bsp_initialise(void)
 	}
 
 	debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
-	/*
 	{
-		tgt_pg_tbl_t pg_table;
-		util_memset(&pg_table, 0, sizeof(tgt_pg_tbl_t));
+		tgt_pg_tbl_t * pg_table = (tgt_pg_tbl_t*)0x02000000;
+		util_memset(pg_table, 0, sizeof(tgt_pg_tbl_t));
 		mem_section_t sec;
 		{
 			//
+			debug_prints(TARGET, "RAM\n");
 			mem_sec_initialise(
 					&sec,
 					NULL,
 					0,
 					0,
-					(128 * (1024 * 1024)),
-					MMU_RANDOM_ACCESS_MEMORY,
+					0x08000000,
+					MMU_DEVICE_MEMORY,
 					MMU_ALL_ACCESS,
 					MMU_READ_WRITE);
-			arm_map_memory(0, &pg_table, &sec);
+			arm_map_memory(NULL, pg_table, &sec);
 		}
 		{
 			// map the ram for kernel startup
+			debug_prints(TARGET, "RAM (Virtual)\n");
 			mem_sec_initialise(
 					&sec,
 					NULL,
@@ -99,49 +100,31 @@ void bsp_initialise(void)
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_ALL_ACCESS,
 					MMU_READ_WRITE);
-			arm_map_memory(0, &pg_table, &sec);
+			arm_map_memory(NULL, pg_table, &sec);
 		}
 		{
-			// map device space for uat
+			// map device space for uart
+			debug_prints(TARGET, "RAM (UART)\n");
 			mem_sec_initialise(
 					&sec,
 					NULL,
 					0x20000000,
 					0x20000000,
-					0x00800000,
+					0x00400000,
 					MMU_DEVICE_MEMORY,
 					MMU_ALL_ACCESS,
 					MMU_READ_WRITE);
-			arm_map_memory(0, &pg_table, &sec);
+			arm_map_memory(NULL, pg_table, &sec);
 		}
-		{
-			// map device space for uat
-			mem_sec_initialise(
-					&sec,
-					NULL,
-					0,
-					0,
-					0xC0000000,
-					MMU_DEVICE_MEMORY,
-					MMU_ALL_ACCESS,
-					MMU_READ_WRITE);
-			//arm_map_memory(0, &pg_table, &sec);
-		}
-		debug_print(TARGET, "Setting up MMU, sctrl 0x%8x\n", arm_get_cp15_c1());
-		//arm_invalidate_all_tlbs();
-		//arm_set_domain_access_register(0);
-		//arm_set_translation_table_base(&pg_table);
-		//arm_print_page_table(&pg_table);
-		debug_print(TARGET, "About to turn MMU on, sctrl 0x%8x\n", arm_get_cp15_c1());
-		//arm_disable_mmu();
-		debug_print(TARGET, "cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
-		//arm_set_cpsr(0x1fu);
-		debug_print(TARGET, "cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
-		//arm_enable_mmu();
+		debug_print(TARGET, "Setting MMU On, pgtbl @ 0x%8x, cpsr is 0x%8x, sctrl = 0x%8x\n", pg_table, arm_get_cpsr(), arm_get_cp15_c1());
+		arm_print_page_table(pg_table);
+		arm_set_domain_access_register(0);
+		arm_set_translation_table_base(pg_table);
+		arm_invalidate_all_tlbs();
+		arm_enable_mmu(false);
+		arm_invalidate_all_tlbs();
 		early_uart_put("MMU on\n");
 	}
-
-	*/
 }
 
 void bsp_setup(
@@ -157,8 +140,7 @@ void bsp_setup(
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_set_domain_access_register(0);
 	debug_print(TARGET, "@Before MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
-	arm_enable_mmu();
-
+	arm_enable_mmu(true);
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
 	// FIXME use object
