@@ -26,10 +26,7 @@ bool_t mem_initialise(
 		const mem_t start,
 		const mem_t end)
 {
-	bool_t ret =  mem_init_memory_pool(
-		start,
-		end - start,
-		(&mem_memory_pool));
+	bool_t ret =  mem_init_memory_pool(start, end - start, (&mem_memory_pool));
 
 	return ret;
 }

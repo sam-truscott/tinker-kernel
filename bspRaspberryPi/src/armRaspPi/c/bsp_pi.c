@@ -96,7 +96,7 @@ void bsp_initialise(void)
 					NULL,
 					0,
 					KERNEL_ADDRESS_SPACE,
-					(128 * (1024 * 1024)),
+					0x08000000,
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_ALL_ACCESS,
 					MMU_READ_WRITE);
@@ -270,7 +270,7 @@ mem_t bsp_get_usable_memory_start()
 
 mem_t bsp_get_usable_memory_end()
 {
-	return (mem_t)(128 * 1024 * 1024);
+	return (mem_t)((128 * 1024 * 1024) - 1);
 }
 
 void bsp_write_debug_char(const char c)

@@ -40,10 +40,11 @@ bool_t 	mem_init_memory_pool(
 	 * of the next page. this gives access to the full heap
 	 */
 	pool_info = (mem_pool_info_t*)(base_addr);
-
 	pool_info->pool_alloc_size = pool_size;
+	debug_prints(MEMORY, "mem: creating mspace\n");
 	pool_info->space = create_mspace_with_base(pool_info + sizeof(mem_pool_info_t), pool_size - sizeof(mem_pool_info_t), 0);
 
+	debug_prints(MEMORY, "mem: mspace created\n");
 	if (pool)
 	{
 		*pool = pool_info;

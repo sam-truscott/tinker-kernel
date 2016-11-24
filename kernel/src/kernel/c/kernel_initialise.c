@@ -49,20 +49,22 @@ void kernel_initialise(void)
 {
 	const mem_t end_of_bin = bsp_get_usable_memory_start();
 	mem_t memory_start = calculate_start_of_pool(end_of_bin);
-	const mem_t memory_end = bsp_get_usable_memory_end();
+	const mem_t memory_end = bsp_get_usable_memory_end() - (1 * 1024 * 1024);
 
 	debug_print(INITIALISATION, "Loader: Apps start at %x, mem at %x. Size of %x\n", end_of_bin, memory_start, memory_start - end_of_bin);
 
-	debug_print(INITIALISATION, "Memory: Initialising Pool, start %X, end %x\n",
-			memory_start,
-			memory_end);
+	mem_t aligned_start = memory_start;
+	while ((aligned_start % MMU_PAGE_SIZE) != 0)
+	{
+		aligned_start++;
+	}
+
+	debug_print(INITIALISATION, "Memory: Initialising Pool, start %X (%x), end %x\n", memory_start, aligned_start, memory_end);
 
 	kernel_assert("Memory End > 0", memory_end > 0);
-	kernel_assert("Memory Size > 0", memory_end > memory_start);
+	kernel_assert("Memory Size > 0", memory_end > aligned_start);
 
-	const bool_t mem_init_ok = mem_initialise(
-			memory_start,
-			memory_end);
+	const bool_t mem_init_ok = mem_initialise(aligned_start, memory_end);
 	kernel_assert("Failed to Initialise Memory Manager", mem_init_ok);
 
 	mem_pool_info_t * const pool = mem_get_default_pool();
