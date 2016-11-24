@@ -16,6 +16,7 @@ extern void kernel_boot(void)
 {
 	bsp_initialise();
 
+	kernel_main();
 	/*
 	 * Kick off the kernel
 	 */

@@ -113,7 +113,7 @@ void* mem_alloc_aligned(
 {
 	void* new_base = NULL;
 
-	debug_print(MEMORY, "mem: looking for %d bytes in pool 0x%x\n", size, pool);
+	debug_print(MEMORY, "mem: looking for %d bytes (with alighment 0x%x) in pool 0x%x (sz=%d/used=%d)\n", size, alignment, pool, pool->pool_alloc_size, mem_get_allocd_size(pool));
 
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
 	new_base = mspace_memalign(pool->space, alignment, size);

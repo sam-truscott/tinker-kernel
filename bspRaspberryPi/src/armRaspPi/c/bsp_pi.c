@@ -121,7 +121,7 @@ void bsp_initialise(void)
 		arm_set_domain_access_register(0);
 		arm_set_translation_table_base(pg_table);
 		arm_invalidate_all_tlbs();
-		arm_enable_mmu(false);
+		//arm_enable_mmu(false);
 		arm_invalidate_all_tlbs();
 		early_uart_put("MMU on\n");
 	}

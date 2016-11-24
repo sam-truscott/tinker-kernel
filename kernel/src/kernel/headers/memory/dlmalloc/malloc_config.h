@@ -48,7 +48,7 @@
 #define LACKS_SCHED_H 1
 #define LACKS_TIME_H 1
 
-#define ABORT kernel_panic()
+#define ABORT malloc_abort()
 #define EINVAL PARAMETERS_INVALID
 #define ENOMEM OUT_OF_MEMORY
 #define malloc_getpagesize MMU_PAGE_SIZE
