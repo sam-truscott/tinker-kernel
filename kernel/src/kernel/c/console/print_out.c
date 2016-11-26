@@ -103,8 +103,8 @@ void debug_print1(
 			}
 			file_ptr++;
 		}
-		printp_out("%8d:", line);
 		print_out(print_file_ptr);
+		printp_out("(%d)", line);
 		print_out("->");
 
 		__builtin_va_list list;

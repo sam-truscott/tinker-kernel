@@ -83,7 +83,7 @@ void bsp_initialise(void)
 					0,
 					0,
 					0x08000000,
-					MMU_DEVICE_MEMORY,
+					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_ALL_ACCESS,
 					MMU_READ_WRITE);
 			arm_map_memory(NULL, pg_table, &sec);
@@ -121,7 +121,7 @@ void bsp_initialise(void)
 		arm_set_domain_access_register(0);
 		arm_set_translation_table_base(pg_table);
 		arm_invalidate_all_tlbs();
-		//arm_enable_mmu(false);
+		arm_enable_mmu(false);
 		arm_invalidate_all_tlbs();
 		early_uart_put("MMU on\n");
 	}
@@ -138,9 +138,9 @@ void bsp_setup(
 
 	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
-	arm_set_domain_access_register(0);
-	debug_print(TARGET, "@Before MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
-	arm_enable_mmu(true);
+	//arm_set_domain_access_register(0);
+	//debug_print(TARGET, "@Before MMU cpsr is 0x%8x, sctrl = 0x%8x\n", arm_get_cpsr(), arm_get_cp15_c1());
+	//arm_enable_mmu(true);
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
 	// FIXME use object

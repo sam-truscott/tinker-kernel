@@ -74,7 +74,9 @@ static inline mem_pool_info_t * get_parent_pool(
 	{
 		debug_prints(PROCESS, "Process: Create process from default pool\n");
 		parent_pool = mem_get_default_pool();
-	} else {
+	}
+	else
+	{
 		debug_print(PROCESS, "Process: Create process for %s from parent\n", image);
 		// if the parent is the kernel, use the default pool instead
 		// of the kernel's

@@ -67,7 +67,7 @@ bool_t	mem_init_process_memory(
 	/* allocate that from RAM */
 	const mem_t proc_memory_pool = (mem_t)mem_alloc_aligned(
 			pool,
-			size,
+			size + MMU_PAGE_SIZE,
 			MMU_PAGE_SIZE);
 
 	debug_print(MEMORY, "mem: initalised process pool %x size %x result %x\n", pool, size, proc_memory_pool);
@@ -77,7 +77,7 @@ bool_t	mem_init_process_memory(
 		/* create a table for the given process */
 		ret = mem_init_memory_pool(
 				proc_memory_pool,
-				size,
+				size - MMU_PAGE_SIZE,
 				proc_memory_block);
 	}
 	else
@@ -113,10 +113,20 @@ void* mem_alloc_aligned(
 {
 	void* new_base = NULL;
 
-	debug_print(MEMORY, "mem: looking for %d bytes (with alighment 0x%x) in pool 0x%x (sz=%d/used=%d)\n", size, alignment, pool, pool->pool_alloc_size, mem_get_allocd_size(pool));
+	debug_print(MEMORY, "mem: alloc %d bytes (align 0x%x) in pool 0x%x (t=%X/u=%X/f=%X)\n", size, alignment, pool,
+			mspace_mallinfo(pool->space).usmblks,
+			mspace_mallinfo(pool->space).uordblks,
+			mspace_mallinfo(pool->space).fordblks);
 
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
-	new_base = mspace_memalign(pool->space, alignment, size);
+	if (alignment == 0)
+	{
+		new_base = mspace_malloc(pool->space, size);
+	}
+	else
+	{
+		new_base = mspace_memalign(pool->space, alignment, size);
+	}
 
 	debug_print(MEMORY, "mem: base at 0x%x, size 0x%x\n", new_base, size);
 

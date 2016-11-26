@@ -21,3 +21,10 @@ void malloc_abort(void)
 	error_print("MALLOC ABORT\n");
 	kernel_panic();
 }
+
+void malloc_corruption(void* x)
+{
+	(void)x;
+	error_print("MALLOC CORRUPTION DETECT\n");
+	kernel_panic();
+}

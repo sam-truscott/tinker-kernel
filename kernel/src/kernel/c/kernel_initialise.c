@@ -49,7 +49,7 @@ void kernel_initialise(void)
 {
 	const mem_t end_of_bin = bsp_get_usable_memory_start();
 	mem_t memory_start = calculate_start_of_pool(end_of_bin);
-	const mem_t memory_end = bsp_get_usable_memory_end() - (1 * 1024 * 1024);
+	const mem_t memory_end = bsp_get_usable_memory_end() - (MMU_PAGE_SIZE);
 
 	debug_print(INITIALISATION, "Loader: Apps start at %x, mem at %x. Size of %x\n", end_of_bin, memory_start, memory_start - end_of_bin);
 
