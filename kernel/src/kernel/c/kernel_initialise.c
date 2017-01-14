@@ -115,6 +115,7 @@ void kernel_initialise(void)
 	char * data_end = (char*)&__data_end;
 	tinker_mempart_t data =
 	{
+		/* data */
 		.real = (uint32_t)data_pos,
 		.virt = (uint32_t)data_pos,
 		.size = (uint32_t)(data_end - data_pos),
@@ -125,6 +126,7 @@ void kernel_initialise(void)
 	};
 	tinker_mempart_t code =
 	{
+		/* code */
 		.real = (uint32_t)text_pos,
 		.virt = (uint32_t)text_pos,
 		.size = (uint32_t)(text_epos - text_pos),
@@ -135,6 +137,7 @@ void kernel_initialise(void)
 	};
 	tinker_meminfo_t meminfo =
 	{
+		/* wrapper */
 		.heap_size = KERNEL_HEAP,
 		.stack_size = KERNEL_IDLE_STACK,
 		.first_part = &code
@@ -183,7 +186,11 @@ void kernel_initialise(void)
 
 	/* Get the BSP to configure itself */
 	debug_prints(INITIALISATION, "BSP: Setting up the Board...\n");
-	bsp_setup(interrupt_controller, time_manager, alarm_manager, kernel_process);
+	bsp_setup(
+			interrupt_controller,
+			time_manager,
+			alarm_manager,
+			kernel_process);
 	debug_prints(INITIALISATION, "BSP: Setup Complete\n");
 
 #if defined (KERNEL_SHELL)
