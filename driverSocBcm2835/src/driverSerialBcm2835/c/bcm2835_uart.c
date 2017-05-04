@@ -132,7 +132,7 @@ void early_uart_init()
     early_available = true;
 }
 
-static void bcm2835_uart_putc(const uint32_t const base, uint8_t byte)
+static void bcm2835_uart_putc(const uint32_t base, uint8_t byte)
 {
 	while (1)
 	{

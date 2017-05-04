@@ -30,7 +30,7 @@ typedef struct
 } bcm2835_timer_usr_data_t;
 
 static void bcm2835_timer_setup(
-		const timer_param_t const usr_data,
+		const timer_param_t usr_data,
 		const tinker_time_t * const timeout,
 		timer_callback * const call_back,
 		void * const param)
@@ -75,7 +75,7 @@ static void bcm2835_timer_setup(
 	}
 }
 
-static void bcm2835_timer_cancel(const timer_param_t const usr_data)
+static void bcm2835_timer_cancel(const timer_param_t usr_data)
 {
 	if (usr_data)
 	{

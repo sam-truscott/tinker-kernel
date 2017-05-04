@@ -200,7 +200,7 @@ return_t obj_create_pipe(
 				{
 					result = OUT_OF_MEMORY;
 				}
-				/* no break */
+				// fall through
 			case PIPE_RECEIVE:
 			{
 				if ((message_size % 4) != 0)
@@ -398,7 +398,7 @@ return_t obj_open_pipe(
 					{
 						result = OUT_OF_MEMORY;
 					}
-					/* no break */
+					// fall through
 				case PIPE_RECEIVE:
 				{
 					uint32_t total_size = (message_size * messages);

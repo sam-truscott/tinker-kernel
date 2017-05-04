@@ -86,7 +86,7 @@ return_t alarm_set_alarm(
 		alarm_manager_t * const am,
 		const tinker_time_t * const timeout,
 		alarm_call_back * const call_back,
-		const alarm_user_data_t const usr_data,
+		const alarm_user_data_t usr_data,
 		uint32_t * const alarm_id)
 {
 	return_t ret = NO_ERROR;
