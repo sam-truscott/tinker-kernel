@@ -59,8 +59,12 @@ task cleanNewLib(type:Exec) {
 	commandLine 'bash',
 		'-c',
 		'rm -rf build-arm-eabi;\
-		 rm -rf src//newlib-*'
+		 rm -rf src//newlib-*;\
+         rm -rf *.tar.gz'
 }
+
+cleanNewLib.outputs.upToDateWhen {false}
+clean.finalizedBy(cleanNewLib)
 
 class Downloader extends DefaultTask {
     @Input

@@ -104,8 +104,12 @@ task cleanGcc(type:Exec) {
 	commandLine 'bash',
 		'-c',
 		'rm -rf build-arm-eabi*;\
-		 rm -rf src'
+		 rm -rf src;\
+		 rm -rf *.tar.bz2'
 }
+
+cleanGcc.outputs.upToDateWhen {false}
+clean.finalizedBy(cleanGcc)
 
 class Downloader extends DefaultTask {
     @Input

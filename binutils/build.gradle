@@ -51,8 +51,12 @@ task cleanBinUtils(type:Exec) {
 	commandLine 'bash',
 		'-c',
 		'rm -rf build-arm-eabi;\
-		 rm -rf src'
+		 rm -rf src;\
+		 rm -rf *.tar.gz'
 }
+
+cleanBinUtils.outputs.upToDateWhen {false}
+clean.finalizedBy(cleanBinUtils)
 
 class Downloader extends DefaultTask {
     @Input
