@@ -18,3 +18,4 @@ gdb/src
 gdb/build*
 gdb/*.tar.*
 arm-eabi
+/gradle-app.setting
