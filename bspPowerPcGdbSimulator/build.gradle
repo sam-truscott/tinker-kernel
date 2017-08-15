@@ -7,7 +7,7 @@ model {
            binaries.all {
                 linker.args "-lgcc",
                      "-T",
-                     'src/bspPowerPcGdbSimulator/resources/linker.ld'
+                     projectDir.path + "src/bspPowerPcGdbSimulator/resources/linker.ld"
             }
            sources {
                 c {
