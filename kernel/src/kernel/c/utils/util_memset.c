@@ -11,7 +11,6 @@
 #if defined(MEMSET)
 #include <string.h>
 #else
-#pragma GCC optimize ("-O2") // this code screws up on -O3
 void* memset(void * address, uint32_t value, uint32_t size)
 {
 	uint8_t * addr = (uint8_t*) address;
@@ -25,7 +24,6 @@ void* memset(void * address, uint32_t value, uint32_t size)
 }
 #endif
 
-#pragma GCC optimize ("-O2") // this code screws up on -O3
 void* util_memset(void * address, uint32_t value, uint32_t size)
 {
 	return memset(address, value, size);

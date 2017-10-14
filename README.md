@@ -140,7 +140,12 @@ Then we can use it to create our final binary:
 
     # Execute from inside the utilBuilder directory
     gradlew packageJar 
+    
+    # Windows
     java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe
+    
+    # Linux
+    java -jar build/libs/utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ../bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi.exe
     
 We can additionally use the test 'hello world' program
 

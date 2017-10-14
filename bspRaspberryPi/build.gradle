@@ -29,7 +29,7 @@ model {
 	        binaries.all {
 	            linker.args "-lgcc",
 	                 "-T",
-	                 projectDir.path + "src/armRaspPi/resources/linker.ld"
+	                 projectDir.path + "/src/armRaspPi/resources/linker.ld"
 	        }
 	        sources {
 		        c {
