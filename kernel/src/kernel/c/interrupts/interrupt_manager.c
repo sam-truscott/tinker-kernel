@@ -108,7 +108,6 @@ void int_fatal_program_error_interrupt(
 			intc->scheduler,
 			context,
 			THREAD_TERMINATED);
-			//thread_get_state(current));
 }
 
 void int_syscall_request_interrupt(
