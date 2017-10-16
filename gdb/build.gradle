@@ -2,12 +2,12 @@ apply plugin: 'assembler'
 apply plugin: 'c'
 
 task downloadGdb(type: Downloader) {
-    sourceUrl = 'http://ftp.gnu.org/gnu/gdb/gdb-7.11.tar.gz'
-    target = file('gdb-7.11.tar.gz')
+    sourceUrl = 'https://ftp.gnu.org/gnu/gdb/gdb-7.12.1.tar.gz'
+    target = file('gdb-7.12.1.tar.gz')
 }
 
 task untarGdb (type: Copy) {
-    from tarTree(resources.gzip('gdb-7.11.tar.gz'))
+    from tarTree(resources.gzip('gdb-7.12.1.tar.gz'))
     into getProjectDir().getAbsolutePath()  + "//src"
 }
 
@@ -25,7 +25,7 @@ task configureGdbArm (type:Exec) {
   commandLine 'bash',
     '-c',
     'rm -rf *;\
-    ../src/gdb-7.11/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --enable-sim'
+    ../src/gdb-7.12.1/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --enable-sim'
 }
 
 configureGdbArm.dependsOn setupGdbArm
