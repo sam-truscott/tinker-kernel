@@ -75,7 +75,7 @@ void bsp_initialise(void)
 		util_memset(pg_table, 0, sizeof(tgt_pg_tbl_t));
 		mem_section_t sec;
 		{
-			//
+			// map the ram
 			debug_prints(TARGET, "RAM\n");
 			mem_sec_initialise(
 					&sec,
@@ -120,7 +120,7 @@ void bsp_initialise(void)
 		arm_print_page_table(pg_table);
 		arm_set_domain_access_register(0);
 		arm_set_translation_table_base(pg_table);
-		arm_enable_mmu(false);
+		arm_enable_mmu(true);
 		arm_invalidate_all_tlbs();
 		early_uart_put("MMU on\n");
 	}
@@ -134,6 +134,8 @@ void bsp_setup(
 {
 	interrupt_controller = controller;
 	time_manager = tm;
+
+	arm_set_translation_table_base(process_get_page_table(kernel_process));
 
 	// init uart before setting the page table
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
