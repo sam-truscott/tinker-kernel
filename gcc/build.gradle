@@ -2,13 +2,20 @@ apply plugin: 'assembler'
 apply plugin: 'c'
 
 task downloadGcc(type: Downloader) {
-    sourceUrl = 'ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-7.2.0/gcc-7.2.0.tar.gz'
-    target = file('gcc-7.2.0.tar.bz2')
+    sourceUrl = 'ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-7.3.0/gcc-7.3.0.tar.xz'
+    target = file('gcc-7.3.0.tar.xz')
 }
 
+/*
 task untarGcc (type: Copy) {
-    from tarTree(resources.gzip('gcc-7.2.0.tar.bz2'))
+    from tarTree(resources.gzip('gcc-7.3.0.tar.xz'))
     into getProjectDir().getAbsolutePath()  + "//src"
+}
+*/
+task untarGcc (type:Exec) {
+  commandLine 'bash',
+    '-c',
+    'rm -rf ' + getProjectDir().getAbsolutePath().replace("\\","/") + '/src;mkdir -p ' + getProjectDir().getAbsolutePath().replace("\\","/") + '/src;tar xf gcc-7.3.0.tar.xz -C src'
 }
 
 untarGcc.dependsOn downloadGcc
@@ -24,7 +31,7 @@ task configureGccStage1Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-7.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-7.3.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage1Arm.dependsOn setupGccStage1
@@ -58,7 +65,7 @@ task configureGccStage3Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-7.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c,c++ --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-7.3.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c,c++ --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage3Arm.dependsOn setupGccStage3
