@@ -43,7 +43,7 @@ kernel_start:
 	blo	1b
 
 	ldr	r3, =kernel_boot
-	bl	r3
+	bl	kernel_boot
 
 halt:
 	b	halt
