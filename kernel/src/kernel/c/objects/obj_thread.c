@@ -336,8 +336,7 @@ return_t obj_set_thread_original_priority(object_thread_t * const o)
 
 	if (o)
 	{
-		o->original_priority =
-				thread_get_priority(o->thread);
+		o->original_priority = thread_get_priority(o->thread);
 		o->priority_inheritance = 1;
 	}
 	else
@@ -370,9 +369,13 @@ thread_t * obj_get_thread(const object_thread_t * const o)
 	return t;
 }
 
-static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t * const o)
+static void obj_thread_sleep_callback(
+		alarm_manager_t * const am,
+		const uint32_t alarm_id,
+		void * const usr_data)
 {
-	if (o && o->alarm_id == alarm_id)
+	object_thread_t * o = (object_thread_t*)usr_data;
+	if (am && o && o->alarm_id == alarm_id)
 	{
 		thread_set_state(o->thread, THREAD_READY);
 		sch_notify_resume_thread(o->scheduler, o->thread);
