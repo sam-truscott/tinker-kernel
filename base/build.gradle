@@ -7,6 +7,7 @@ model {
 	    	targetPlatform "tinkerArm4HardVfp"
 	    	targetPlatform "tinkerArm7Soft"
 	    	targetPlatform "tinkerArm7HardVfp"
+            targetPlatform "tinkerArmRaspberryPi"
 	    	targetPlatform "tinkerPpc"
 	    	targetPlatform "windows_x86"
 		    targetPlatform "linux_x86-64"

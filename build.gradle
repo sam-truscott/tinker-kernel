@@ -164,6 +164,35 @@ allprojects {
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
 	            }
+                target("tinkerArmRaspberryPi") {
+                    File srcDir = new File("src")
+                    cppCompiler.executable = "arm-eabi-gcc"
+                    cCompiler.executable = "arm-eabi-gcc"
+                    assembler.executable = "arm-eabi-gcc"
+                    linker.executable = "arm-eabi-gcc"
+                    staticLibArchiver.executable = "arm-eabi-ar"
+                    cCompiler.withArguments { args ->
+                        args << "-I" + projectDir + "/../archArm/src/archArm/headers"
+                        args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
+                        args << "-marm"
+                        args << "-D__arm__"
+                        args << "-march=armv6zk"
+                        args << "-mcpu=arm1176jzf-s"
+                        args << "-mfloat-abi=hard"
+                        args << "-mfpu=vfp"
+                        args << "-fpic"
+                        args << "-fno-builtin"
+                        args << "-ffreestanding"
+                    }
+                    linker.withArguments { args ->
+                        args << "-mfloat-abi=hard"
+                        args << "-march=armv6zk"
+                        args << "-mfpu=vfp"
+                        args << "-nostartfiles"
+                        args << "-nodefaultlibs"
+                        args << "-nostdlib"
+                    }
+                }
 	            target("tinkerArm4Soft") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -176,7 +205,7 @@ allprojects {
 	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
 	                    args << "-marm"
                         args << "-D__arm__"
-						args << "-march=armv6zk"
+						args << "-march=armv5te"
                         args << "-mfloat-abi=soft"
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
@@ -184,7 +213,7 @@ allprojects {
 	                }
 	                linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
-                        args << "-march=armv6zk"
+                        args << "-march=armv5te"
 	                	args << "-nostartfiles"
 			       		args << "-nodefaultlibs"
 			        	args << "-nostdlib"
@@ -204,7 +233,7 @@ allprojects {
                         args << "-D__arm__"
 	                    args << "-mfpu=vfp"
 	                    args << "-mfloat-abi=hard"
-						args << "-march=armv6zk"
+						args << "-march=armv5te"
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
@@ -212,7 +241,7 @@ allprojects {
 	                linker.withArguments { args ->
 	                	args << "-mfpu=vfp"
 	                    args << "-mfloat-abi=hard"
-						args << "-march=armv6zk"
+						args << "-march=armv5te"
 	                    args << "-fpic"
 	                	args << "-nostartfiles"
 			       		args << "-nodefaultlibs"
@@ -288,6 +317,9 @@ allprojects {
 	        }
 	        tinkerArm7HardVfp {
 	            architecture "arm"
+	        }
+	        tinkerArmRaspberryPi {
+	           architecture "arm"
 	        }
 	        tinkerPpc {
 	            architecture "ppc"

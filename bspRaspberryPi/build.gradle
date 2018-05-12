@@ -4,7 +4,7 @@ apply plugin: 'c'
 model {
 	components {
 		armRaspPi(NativeExecutableSpec) {
-	    	targetPlatform "tinkerArm4HardVfp"
+	    	targetPlatform "tinkerArmRaspberryPi"
 	        binaries.all {
 	            linker.args "-lgcc",
 	                 "-T",
