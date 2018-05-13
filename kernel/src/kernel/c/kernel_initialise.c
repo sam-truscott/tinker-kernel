@@ -40,9 +40,18 @@ static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 
 static mem_t calculate_start_of_pool(const mem_t end_of_bin)
 {
+#if defined (DEBUG_KERNEL_ONLY)
+	mem_t aligned_end = end_of_bin;
+	while ((aligned_end % MMU_PAGE_SIZE) != 0)
+	{
+		aligned_end++;
+	}
+	return aligned_end;
+#else
 	const mem_t size = *(mem_t*)end_of_bin;
 	debug_print(INITIALISATION, "Size of payload is 0%8x\n", size);
 	return end_of_bin + size;
+#endif
 }
 
 void kernel_initialise(void)
