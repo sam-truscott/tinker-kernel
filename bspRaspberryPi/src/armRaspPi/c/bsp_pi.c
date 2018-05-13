@@ -283,7 +283,7 @@ mem_t bsp_get_usable_memory_start()
 
 mem_t bsp_get_usable_memory_end()
 {
-	return (mem_t)((128 * 1024 * 1024) - 1);
+	return (mem_t)((32 * 1024 * 1024) - 1);
 }
 
 void bsp_write_debug_char(const char c)

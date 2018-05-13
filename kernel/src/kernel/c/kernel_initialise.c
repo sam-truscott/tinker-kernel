@@ -74,6 +74,9 @@ void kernel_initialise(void)
 	kernel_assert("Memory End > 0", memory_end > 0);
 	kernel_assert("Memory Size > 0", memory_end > aligned_start);
 
+	debug_print(INITIALISATION, "Memory: Zeroing %d bytes\n", (memory_end - aligned_start));
+	util_memset((void*)aligned_start, 0, memory_end - aligned_start);
+
 	const bool_t mem_init_ok = mem_initialise(aligned_start, memory_end);
 	kernel_assert("Failed to Initialise Memory Manager", mem_init_ok);
 
