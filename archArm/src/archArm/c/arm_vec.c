@@ -24,32 +24,29 @@
 	asm volatile("msr cpsr, r2");
 
 #define FIX_STACK_ALIGNMENT \
-	asm volatile("and r1, sp, #4"); \
-	asm volatile("sub sp, sp, r1"); \
 	asm volatile("push {r1}");
 
 #define UNFIX_STACK_ALIGNMENT \
-	asm volatile("pop {r1}"); \
-	asm volatile("add sp, sp, r1");
+	asm volatile("pop {r1}");
 
 #define EXCEPTION_START_COMMON \
 	uint32_t context; \
 	asm volatile("stmfd sp!,{r0-r12,lr}");				/* store all the registers */ \
 	asm volatile("mrs r0, spsr"); 						/* get the spsr */ \
 	asm volatile("push {r0}"); 							/* store the spsr */ \
-	SWITCH_TO_SYSTEM_MODE						/* switch to system mode so we can get r13(sp), r14(lr) */ \
+	SWITCH_TO_SYSTEM_MODE								/* switch to system mode so we can get r13(sp), r14(lr) */ \
 	asm volatile("mov r3, sp");							/* get user stack pointer */ \
 	asm volatile("mov r4, lr");							/* get user link pointer */ \
 	SWITCH_BACK \
 	asm volatile("push {r3, r4}");						/* store sp, lr */ \
 	FIX_STACK_ALIGNMENT \
-	asm volatile("mov %[ps], sp" : [ps]"=r" (context)); 	/* move the sp into context var */ \
+	asm volatile("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */ \
 
 #define EXCEPTION_START_SYSCALL \
 	EXCEPTION_START_COMMON
 
 #define EXCEPTION_START_VECTOR \
-	asm volatile("sub lr, lr, #4"); 						/* update return addr */ \
+	asm volatile("sub lr, lr, #4"); 					/* update return addr */ \
 	EXCEPTION_START_COMMON
 
 #define EXCEPTION_END \
