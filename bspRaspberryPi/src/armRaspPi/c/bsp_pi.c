@@ -70,6 +70,7 @@ void bsp_initialise(void)
 	}
 
 	debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
+	debug_print(TARGET, "SP %8x, FP %8x\n", tgt_get_stack_pointer(), tgt_get_frame_pointer());
 	{
 		tgt_pg_tbl_t * pg_table = (tgt_pg_tbl_t*)0x02000000;
 		util_memset(pg_table, 0, sizeof(tgt_pg_tbl_t));

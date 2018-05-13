@@ -256,6 +256,13 @@ uint32_t tgt_get_frame_pointer(void)
 	return sp;
 }
 
+uint32_t tgt_get_stack_pointer(void)
+{
+	uint32_t sp;
+	asm volatile("mov %[ps], sp" : [ps]"=r" (sp));
+	return sp;
+}
+
 void tgt_load_context(
         const tgt_context_t * const thread,
         tgt_context_t * const context)

@@ -187,7 +187,7 @@ return_t load_elf(
 		{
 				// FIXME 1k stack and heap predefined?
 				.stack_size = 4096,
-				.heap_size = 4096 * 256,
+				.heap_size = 4096 * 4,
 				.first_part = first_part
 		};
 		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (0x%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (mem_t)data);

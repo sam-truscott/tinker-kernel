@@ -184,7 +184,7 @@ static inline return_t create_thread_object(
 		const uint32_t flags,
 		object_t ** thread_obj)
 {
-	debug_print(PROCESS, "Process: Building process entry thread: %s\n", image);
+	debug_print(PROCESS, "Process: Building process entry thread: %s (stack %8x)\n", image, stack_size);
 	return proc_create_thread(
 			proc,
 			initial_task_name,
@@ -329,6 +329,7 @@ return_t proc_create_thread(
 	thread_t * thread = NULL;
 
 	/* allocate memory for thread from processes pool */
+	debug_print(PROCESS, "Process: Creating thread %s stack %8x\n", name, stack);
 	thread = thread_create(
 			process_get_mem_pool(process),
 			process_get_user_mem_pool(process),
@@ -373,6 +374,8 @@ return_t proc_create_thread(
 						objno);
 			}
 		}
+	} else {
+		error_print("Failed to allocate memory of thread %s", name);
 	}
 
 	return ret;

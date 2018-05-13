@@ -10,7 +10,7 @@
 #include "process/thread_private.h"
 #include "config.h"
 #include "tgt.h"
-#include "utils/util_strlen.h"
+#include "utils/util_strcpy.h"
 #include "kernel_assert.h"
 #include "tinker_api_kernel_interface.h"
 
@@ -57,9 +57,7 @@ thread_t * thread_create(
 		thread->entry_point = entry_point;
 		thread->flags = flags;
 		thread->stack = mem_alloc_aligned(user_pool, stack, MMU_PAGE_SIZE);
-		const uint32_t length = util_strlen(name, MAX_THREAD_NAME_LEN);
-		util_memcpy(thread->name, name, length);
-		thread->name[length] = '\0';
+		util_strcpy(thread->name, name, MAX_THREAD_NAME_LEN);
 		debug_print(PROCESS, "Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
 		if (thread->stack)
 		{

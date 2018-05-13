@@ -48,10 +48,16 @@ void tgt_prepare_context(
 		const thread_t * const thread,
         const process_t * const current_process);
 
+// FIXME should be mem_t
 uint32_t tgt_get_frame_pointer(void);
 
+// FIXME should be mem_t
+uint32_t tgt_get_stack_pointer(void);
+
+// FIXME should be mem_t
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context);
 
+// FIXME should be mem_t
 uint32_t tgt_get_pc(const tgt_context_t * const context);
 
 void tgt_load_context(
