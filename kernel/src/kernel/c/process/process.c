@@ -205,7 +205,7 @@ return_t process_create(
 					VIRTUAL_ADDRESS_SPACE(is_kernel) + PRIVATE_POOL_SIZE,
 					mem_get_alloc_size(new_proc->memory_pool),
 					MMU_RANDOM_ACCESS_MEMORY,
-					MMU_ALL_ACCESS,
+					(is_kernel ? MMU_KERNEL_ACCESS : MMU_ALL_ACCESS),
 					MMU_READ_WRITE,
 					"POOL (PUBLIC)"));
 
