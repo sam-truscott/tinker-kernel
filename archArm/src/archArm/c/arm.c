@@ -79,6 +79,7 @@ static void __attribute__((naked)) arm_bootstrap(
 	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
 	asm volatile("mov r0, r5");				/* set arg1 */
 	asm volatile("mov r1, r6");				/* set arg2 */
+	tinker_debug("STARTIING APP\n", 14);
 	entry();
 	((thread_entry_point*)(exit_function))();
 	asm volatile("pop {fp, lr}");
@@ -108,7 +109,7 @@ void tgt_initialise_context(
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
         arm_context->apsr = PSR_MODE_USER;
 
-        if (is_debug_enabled(TARGET))
+        if (1 || is_debug_enabled(TARGET))
         {
 			debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
 			debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
