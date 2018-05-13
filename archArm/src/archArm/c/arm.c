@@ -109,7 +109,7 @@ void tgt_initialise_context(
         arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
         arm_context->apsr = PSR_MODE_USER;
 
-        if (1 || is_debug_enabled(TARGET))
+        if (is_debug_enabled(TARGET))
         {
 			debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
 			debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
