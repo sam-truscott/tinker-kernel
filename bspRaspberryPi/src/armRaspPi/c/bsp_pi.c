@@ -195,11 +195,19 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	tgt_context_t * const context = (tgt_context_t*)contextp;
 	switch(type)
 	{
+	case VECTOR_DATA_ABORT:
+	{
+		register long _r13 __asm__("r13");
+		register long _r14 __asm__("r14");
+		// need to read R13/R14
+		error_print("Data Abort r13=[%x] r14=[%x]\n", _r13, _r14);
+	}
+	// fall-through
 	case VECTOR_RESET:
 	case VECTOR_UNDEFINED:
 	case VECTOR_PRETECH_ABORT:
-	case VECTOR_DATA_ABORT:
 	case VECTOR_RESERVED:
+		error_print("Received error vector %d\n", type);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
 		break;
 	case VECTOR_SYSTEM_CALL:
