@@ -10,7 +10,7 @@ model {
             binaries.all {
                 linker.args "-lgcc",
                      "-T",
-                     projectDir.path + "src/elfLoaderTest/resources/linker.ld"
+                     projectDir.path + "/src/elfLoaderTest/resources/linker.ld"
             }
             sources {
                 c {
