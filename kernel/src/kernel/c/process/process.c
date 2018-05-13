@@ -567,9 +567,9 @@ mem_t process_virt_to_real(
 		}
 		if (!found)
 		{
-			debug_print(PROCESS, "Process: Unable to find a mem section, falling back: %x\n", virt);
 			const mem_t pool_start = mem_get_start_addr(process->memory_pool);
 			const mem_t base = VIRTUAL_ADDRESS_SPACE(process->kernel_process);
+			debug_print(PROCESS, "Process: Unable to find a mem section, falling back: %x. Pool start %x, Base: %x\n", virt, pool_start, base);
 			if (real >= base)
 			{
 				real -= base;
