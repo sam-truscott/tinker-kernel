@@ -11,6 +11,8 @@
 #include "elfload.h"
 #include "utils/util_memcpy.h"
 #include "utils/util_memset.h"
+#include "utils/util_strcpy.h"
+#include "utils/util_strcat.h"
 #include "process/process.h"
 #include "memory/mem_pool.h"
 #include "console/print_out.h"
@@ -98,8 +100,12 @@ return_t load_elf(
 			else
 			{
 				ctr++;
+				char name[33];
+				util_memset(name, 0, 33);
+				util_strcpy(name, "ELF", 32);
 				if (is_debug_enabled(ELF_LOADER))
 				{
+					util_strcat(name, " ", 32);
 					debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
 							ctr,
 							addr.p_type,
@@ -112,14 +118,17 @@ return_t load_elf(
 					if (addr.p_flags & PF_X)
 					{
 						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Executable\n", ctr);
+						util_strcat(name, "X", 32);
 					}
 					if (addr.p_flags & PF_W)
 					{
 						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Writable\n", ctr);
+						util_strcat(name, "W", 32);
 					}
 					if (addr.p_flags & PF_R)
 					{
 						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Readable\n", ctr);
+						util_strcat(name, "R", 32);
 					}
 				}
 				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(loader->pool, sizeof(tinker_mempart_t));
@@ -136,6 +145,7 @@ return_t load_elf(
 					current_part->size = addr.p_memsz;
 					current_part->mem_type = MEM_RANDOM_ACCESS_MEMORY;
 					current_part->priv = MEM_ALL_ACCESS;
+					util_strcpy(current_part->name, name, 32);
 					// TODO add exec
 					/*
 					if (addr.p_flags & PF_X)
@@ -177,7 +187,7 @@ return_t load_elf(
 		{
 				// FIXME 1k stack and heap predefined?
 				.stack_size = 4096,
-				.heap_size = 4096,
+				.heap_size = 4096 * 256,
 				.first_part = first_part
 		};
 		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (0x%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (mem_t)data);

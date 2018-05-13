@@ -106,7 +106,8 @@ return_t obj_create_shm(
 									MMU_RANDOM_ACCESS_MEMORY,
 									MMU_USER_ACCESS,
 									MMU_READ_WRITE,
-									&virt_addr);
+									&virt_addr,
+									"OBJ_SHM");
 					if (result == NO_ERROR)
 					{
 						obj_initialise_object(&no->object, objno, SHARED_MEMORY_OBJ);
@@ -187,7 +188,8 @@ return_t obj_open_shm(
 											MMU_RANDOM_ACCESS_MEMORY,
 											MMU_USER_ACCESS,
 											MMU_READ_WRITE,
-											&virt_addr);
+											&virt_addr,
+											"OBJ_SHM_VIEW");
 							if (result == NO_ERROR)
 							{
 								object_number_t objno;

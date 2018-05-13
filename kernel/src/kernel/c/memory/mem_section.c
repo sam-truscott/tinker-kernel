@@ -10,6 +10,7 @@
 
 #include "kernel_assert.h"
 #include "utils/util_memset.h"
+#include "utils/util_strcpy.h"
 
 mem_section_t * mem_sec_create(
 		mem_pool_info_t * const pool,
@@ -18,10 +19,11 @@ mem_section_t * mem_sec_create(
 		const mem_t size,
 		const mmu_memory_t mem_type,
 		const mmu_privilege_t mem_priv,
-		const mmu_access_t mem_access)
+		const mmu_access_t mem_access,
+		const char * const name)
 {
 	mem_section_t * const ms = mem_alloc(pool, sizeof(mem_section_t));
-	mem_sec_initialise(ms, pool, real_addr, virt_addr, size, mem_type, mem_priv, mem_access);
+	mem_sec_initialise(ms, pool, real_addr, virt_addr, size, mem_type, mem_priv, mem_access, name);
 	return ms;
 }
 
@@ -33,7 +35,8 @@ void mem_sec_initialise(
 		const mem_t size,
 		const mmu_memory_t mem_type,
 		const mmu_privilege_t mem_priv,
-		const mmu_access_t mem_access)
+		const mmu_access_t mem_access,
+		const char * const name)
 {
 	if (ms)
 	{
@@ -45,6 +48,7 @@ void mem_sec_initialise(
 		ms->privilege = mem_priv;
 		ms->access_rights = mem_access;
 		ms->pool = pool;
+		util_strcpy(ms->name, name, 32);
 	}
 }
 
@@ -95,4 +99,9 @@ void mem_sec_set_next(mem_section_t * const ms, const mem_section_t * const next
 	{
 		ms->next = (mem_section_t*)next;
 	}
+}
+
+const char * mem_sec_get_name(const mem_section_t * const ms)
+{
+	return ms->name;
 }

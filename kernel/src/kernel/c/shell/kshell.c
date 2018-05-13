@@ -490,8 +490,8 @@ static void kshell_memory_info(void)
 
 	print_out("\nMemory mappings:\n");
 
-	print_out("Real       Virt       Size       Typ Priv Access\n");
-	print_out("---------- ---------- ---------- --- ---- ------\n");
+	print_out("Real       Virt       Size       Typ Priv Access Name\n");
+	print_out("---------- ---------- ---------- --- ---- ------ ----\n");
 
 	list = proc_list_procs(kshell->proc_list);
 	process_list_it_t_get(list, &proc);
@@ -501,13 +501,14 @@ static void kshell_memory_info(void)
 		const mem_section_t * sec = process_get_first_section(proc);
 		while (sec)
 		{
-			printp_out("0x%8x 0x%8x 0x%8x %s %s %s\n",
+			printp_out("0x%8x 0x%8x 0x%8x %s %s %s     %s\n",
 					mem_sec_get_real_addr(sec),
 					mem_sec_get_virt_addr(sec),
 					mem_sec_get_size(sec),
 					ksh_mem_type[mem_sec_get_mem_type(sec)],
 					ksh_mem_priv[mem_sec_get_priv(sec)],
-					ksh_mem_acc[mem_sec_get_access(sec)]);
+					ksh_mem_acc[mem_sec_get_access(sec)],
+					mem_sec_get_name(sec));
 			sec = mem_sec_get_next(sec);
 		}
 		if (!process_list_it_t_next(list, &proc))

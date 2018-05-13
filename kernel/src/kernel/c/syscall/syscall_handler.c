@@ -171,7 +171,8 @@ static return_t syscall_mmap(tgt_context_t* const context, process_t* const proc
 				(mmu_memory_t) (tgt_get_syscall_param(context, 3)),
 				(mmu_privilege_t) (tgt_get_syscall_param(context, 4)),
 				MMU_READ_WRITE,
-				&virtual);
+				&virtual,
+				"MMAP");
 	}
 	*((mem_t*) virtual_to_real(process, tgt_get_syscall_param(context, 5))) = virtual;
 	return ret;

@@ -38,7 +38,8 @@ return_t kernel_device_map_memory
 			type,
 			MMU_KERNEL_ACCESS,
 			MMU_READ_WRITE,
-			virt);
+			virt,
+			"DEVICE");
 	if (NO_ERROR == result)
 	{
 		process_list_it_t * const procs = proc_list_procs(proc_list);
@@ -56,7 +57,8 @@ return_t kernel_device_map_memory
 							type,
 							MMU_KERNEL_ACCESS,
 							MMU_READ_WRITE,
-							virt);
+							virt,
+							"DEVICE");
 				}
 				process_list_it_t_next(procs, &proc);
 			}

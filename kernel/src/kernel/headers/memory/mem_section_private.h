@@ -35,6 +35,7 @@ typedef struct mem_section_t
 	mmu_memory_t	memory_type;
 	mmu_privilege_t	privilege;
 	mmu_access_t	access_rights;
+	char			name[33];
 	mem_pool_info_t * pool;
 } mem_section_internal_t;
 
@@ -46,6 +47,7 @@ void mem_sec_initialise(
 		const mem_t size,
 		const mmu_memory_t mem_type,
 		const mmu_privilege_t mem_priv,
-		const mmu_access_t mem_access);
+		const mmu_access_t mem_access,
+		const char * const name);
 
 #endif /* MEM_SECTION_PRIVATE_H_ */

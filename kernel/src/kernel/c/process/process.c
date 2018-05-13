@@ -31,12 +31,13 @@ static void process_add_mem_sec(
 {
 	if (process)
 	{
-		debug_print(PROCESS, "Process: Adding new section %8x:%8x -> %8x:%8x (%x)\n",
+		debug_print(PROCESS, "Process: Adding new section V:%8x:%8x -> R:%8x:%8x (%x) [%s]\n",
 				mem_sec_get_virt_addr(section),
 				mem_sec_get_virt_addr(section) + mem_sec_get_size(section),
 				mem_sec_get_real_addr(section),
 				mem_sec_get_real_addr(section) + mem_sec_get_size(section),
-				mem_sec_get_size(section));
+				mem_sec_get_size(section),
+				mem_sec_get_name(section));
 		if (!process->first_section)
 		{
 			debug_prints(MEMORY, "Process: Section is first section\n");
@@ -154,7 +155,8 @@ return_t process_create(
 					end_of_ram, /* size */
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_KERNEL_ACCESS,
-					MMU_READ_WRITE);
+					MMU_READ_WRITE,
+					"RAM");
 			/* kernel access for the process - mapped but not as a section */
 			// FIXME: memory leak on kernel_ram_sec
 			tgt_map_memory(new_proc, kernel_ram_sec);
@@ -174,7 +176,8 @@ return_t process_create(
 									mem_sec_get_size(ksection),
 									mem_sec_get_mem_type(ksection),
 									mem_sec_get_priv(ksection),
-									mem_sec_get_access(ksection)));
+									mem_sec_get_access(ksection),
+									mem_sec_get_name(ksection)));
 				}
 				ksection = mem_sec_get_next(ksection);
 			}
@@ -182,15 +185,16 @@ return_t process_create(
 
 		/* create a section for the private memory pool */
 		process_add_mem_sec(
-						new_proc,
-						mem_sec_create(
-							new_proc->private_pool,
-							mem_get_start_addr(new_proc->private_pool),
-							VIRTUAL_ADDRESS_SPACE(is_kernel),
-							mem_get_alloc_size(new_proc->private_pool),
-							MMU_RANDOM_ACCESS_MEMORY,
-							MMU_KERNEL_ACCESS,
-							MMU_READ_WRITE));
+				new_proc,
+				mem_sec_create(
+					new_proc->private_pool,
+					mem_get_start_addr(new_proc->private_pool),
+					VIRTUAL_ADDRESS_SPACE(is_kernel),
+					mem_get_alloc_size(new_proc->private_pool),
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_KERNEL_ACCESS,
+					MMU_READ_WRITE,
+					"POOL (PRIVATE)"));
 
 		/* create a section for the heap - allocated from the private pool */
 		process_add_mem_sec(
@@ -202,7 +206,8 @@ return_t process_create(
 					mem_get_alloc_size(new_proc->memory_pool),
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_KERNEL_ACCESS, // FIXME why did this work?
-					MMU_READ_WRITE));
+					MMU_READ_WRITE,
+					"POOL (PUBLIC)"));
 
 		tinker_mempart_t * part = meminfo->first_part;
 		while (part)
@@ -216,7 +221,8 @@ return_t process_create(
 						part->size,
 						part->mem_type,
 						part->priv,
-						part->access));
+						part->access,
+						part->name));
 			part = part->next;
 		}
 
@@ -235,7 +241,8 @@ return_t process_create(
                     (const uint32_t)(eapi - api),
                     MMU_RANDOM_ACCESS_MEMORY,
                     MMU_USER_ACCESS,
-                    MMU_READ_ONLY));
+                    MMU_READ_ONLY,
+					"SYSCALL API"));
 
 		debug_print(PROCESS, "Process: Calling target initialisation for process: %s\n", name);
 		ret = tgt_initialise_process(new_proc);
@@ -580,7 +587,8 @@ return_t process_allocate_vmem(
 		const mmu_memory_t type,
 		const mmu_privilege_t priv,
 		const mmu_access_t access,
-		mem_t * const virt_address)
+		mem_t * const virt_address,
+		const char * const name)
 {
 	return_t result = NO_ERROR;
 	// find a hole in the memory sections that's large enough
@@ -600,7 +608,7 @@ return_t process_allocate_vmem(
 			{
 				// there's room
 				mem_section_t * const new_section =
-						mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access);
+						mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access, name);
 				if (new_section)
 				{
 					// insert into list
@@ -633,7 +641,7 @@ return_t process_allocate_vmem(
 		{
 			vmem_start += (vmem_start % MMU_PAGE_SIZE);
 			mem_section_t * const new_section =
-					mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access);
+					mem_sec_create(process->private_pool, real_address, vmem_start, size, type, priv, access, name);
 			mem_sec_set_next(prev, new_section);
 			*virt_address = vmem_start;
 			result = tgt_map_memory(process, new_section);

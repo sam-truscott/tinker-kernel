@@ -60,6 +60,7 @@ typedef struct tinker_mempart
 	tinker_memory_t mem_type;
 	tinker_privilege_t priv;
 	tinker_access_t access;
+	char name[33];
 	struct tinker_mempart * next;
 } tinker_mempart_t;
 

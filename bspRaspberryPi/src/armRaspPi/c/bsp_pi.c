@@ -85,7 +85,8 @@ void bsp_initialise(void)
 					0x08000000,
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_ALL_ACCESS,
-					MMU_READ_WRITE);
+					MMU_READ_WRITE,
+					"RAM");
 			arm_map_memory(NULL, pg_table, &sec);
 		}
 		{
@@ -99,7 +100,8 @@ void bsp_initialise(void)
 					0x08000000,
 					MMU_RANDOM_ACCESS_MEMORY,
 					MMU_ALL_ACCESS,
-					MMU_READ_WRITE);
+					MMU_READ_WRITE,
+					"RAM (VIRTUAL)");
 			arm_map_memory(NULL, pg_table, &sec);
 		}
 		{
@@ -113,7 +115,8 @@ void bsp_initialise(void)
 					0x01000000,
 					MMU_DEVICE_MEMORY,
 					MMU_ALL_ACCESS,
-					MMU_READ_WRITE);
+					MMU_READ_WRITE,
+					"RAM (UART)");
 			arm_map_memory(NULL, pg_table, &sec);
 		}
 		debug_print(TARGET, "Setting MMU On, pgtbl @ 0x%8x, cpsr is 0x%8x, sctrl = 0x%8x\n", pg_table, arm_get_cpsr(), arm_get_cp15_c1());

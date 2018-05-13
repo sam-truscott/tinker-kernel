@@ -18,6 +18,7 @@
 #include "time/time_manager.h"
 #include "time/alarm_manager.h"
 #include "utils/util_memset.h"
+#include "utils/util_strcpy.h"
 #include "objects/registry.h"
 #include "syscall/syscall_handler.h"
 #include "scheduler/scheduler.h"
@@ -133,6 +134,7 @@ void kernel_initialise(void)
 		.access = MEM_READ_WRITE,
 		.next = NULL
 	};
+	util_strcpy(data.name, "KERNEL (DATA)", 32);
 	tinker_mempart_t code =
 	{
 		/* code */
@@ -144,6 +146,7 @@ void kernel_initialise(void)
 		.access = MEM_READ_ONLY,
 		.next = &data
 	};
+	util_strcpy(code.name, "KERNEL (CODE)", 32);
 	tinker_meminfo_t meminfo =
 	{
 		/* wrapper */
@@ -187,7 +190,8 @@ void kernel_initialise(void)
 			bsp_get_usable_memory_end(),
 			MMU_RANDOM_ACCESS_MEMORY,
 			MMU_KERNEL_ACCESS,
-			MMU_READ_WRITE);
+			MMU_READ_WRITE,
+			"RAM (Kernel)");
 	tgt_map_memory(kernel_process, kernel_ram_sec);
 
 	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);

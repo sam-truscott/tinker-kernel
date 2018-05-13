@@ -83,7 +83,8 @@ return_t process_allocate_vmem(
 		const mmu_memory_t type,
 		const mmu_privilege_t priv,
 		const mmu_access_t access,
-		mem_t * const virt_address);
+		mem_t * const virt_address,
+		const char * const name);
 
 void process_free_vmem(
 		const process_t * const process,
