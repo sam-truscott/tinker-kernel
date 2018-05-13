@@ -7,7 +7,6 @@ model {
 	    	targetPlatform "tinkerArm4HardVfp"
 	    	targetPlatform "tinkerArm7Soft"
 	    	targetPlatform "tinkerArm7HardVfp"
-            targetPlatform "tinkerArmRaspberryPi"
 	    	sources {
 		    	c {
 		    		lib project: ':base', library: 'base', linkage: 'static'
@@ -20,7 +19,6 @@ model {
 	    	targetPlatform "tinkerArm4HardVfp"
 	    	targetPlatform "tinkerArm7Soft"
 	    	targetPlatform "tinkerArm7HardVfp"
-            targetPlatform "tinkerArmRaspberryPi"
 	    	sources {
 		    	c {
 		    		lib project: ':base', library: 'base', linkage: 'static'
@@ -33,7 +31,6 @@ model {
 	    	targetPlatform "tinkerArm4HardVfp"
 	    	targetPlatform "tinkerArm7Soft"
 	    	targetPlatform "tinkerArm7HardVfp"
-            targetPlatform "tinkerArmRaspberryPi"
 	    	sources {
 		    	c {
 		    		lib project: ':base', library: 'base', linkage: 'static'
