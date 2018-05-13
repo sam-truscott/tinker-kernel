@@ -150,8 +150,7 @@ Then we can use it to create our final binary:
 We can additionally use the test 'hello world' program
 
     # Execute from inside the tinker directory
-    gradlew armRaspPiDebugExecutable
-    gradlew elfLoaderTestTinkerArm4SoftDebugExecutable
+    gradlew armRaspPiDebugExecutable elfLoaderTestTinkerArm4SoftDebugExecutable
     
     # Now lets build the image
     cd utilBuilder
