@@ -110,13 +110,13 @@ void early_uart_init()
     // Divider = 3000000/(16 * 9600) = 19
     // Fractional part register = 0.
 
-    // 9600
-    //out_u32((uint32_t*)UART0_BASE + UART0_IBRD, 19);
-    //out_u32((uint32_t*)UART0_BASE + UART0_FBRD, 0);
-
     // 115200
-    out_u32((uint32_t*)(UART0_BASE + UART0_IBRD), 1);
-	out_u32((uint32_t*)(UART0_BASE + UART0_FBRD), 40);
+    out_u32((uint32_t*)UART0_BASE + UART0_IBRD, 19);
+    out_u32((uint32_t*)UART0_BASE + UART0_FBRD, 0);
+
+    // 9600
+    //out_u32((uint32_t*)(UART0_BASE + UART0_IBRD), 1);
+	//out_u32((uint32_t*)(UART0_BASE + UART0_FBRD), 40);
 
     // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
     out_u32((uint32_t*)(UART0_BASE + UART0_LCRH), /* (1 << 4) |*/ (1 << 5) | (1 << 6));
