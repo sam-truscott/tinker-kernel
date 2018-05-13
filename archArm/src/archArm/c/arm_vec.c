@@ -42,10 +42,23 @@
 	FIX_STACK_ALIGNMENT \
 	asm volatile("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */ \
 
+#define EXCEPTION_START_ERROR \
+	uint32_t context; \
+	asm volatile("stmfd sp!,{r0-r12,lr}");				/* store all the registers */ \
+	asm volatile("mrs r0, spsr"); 						/* get the spsr */ \
+	asm volatile("push {r0}");							/* switch to system mode so we can get r13(sp), r14(lr) */ \
+	asm volatile("push {r13, r14}");					/* store sp, lr */ \
+	FIX_STACK_ALIGNMENT \
+	asm volatile("mov %[ps], sp" : [ps]"=r" (context)); /* move the sp into context var */ \
+
 #define EXCEPTION_START_SYSCALL \
 	EXCEPTION_START_COMMON
 
 #define EXCEPTION_START_VECTOR \
+	/*asm volatile("sub lr, lr, #4");*/ 					/* update return addr */ \
+	EXCEPTION_START_ERROR
+
+#define EXCEPTION_START_ISR \
 	asm volatile("sub lr, lr, #4"); 					/* update return addr */ \
 	EXCEPTION_START_COMMON
 
@@ -100,14 +113,14 @@ static void __attribute__((naked,used)) arm_vector_reserved()
 
 static void __attribute__((naked,used)) arm_vector_irq()
 {
-	EXCEPTION_START_VECTOR;
+	EXCEPTION_START_ISR;
 	vector_table[VECTOR_IRQ](VECTOR_IRQ, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked,used)) arm_vector_fiq()
 {
-	EXCEPTION_START_VECTOR;
+	EXCEPTION_START_ISR;
 	vector_table[VECTOR_FIQ](VECTOR_FIQ, context);
 	EXCEPTION_END;
 }
