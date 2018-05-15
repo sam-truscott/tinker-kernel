@@ -64,8 +64,7 @@ thread_t * thread_create(
 			thread->stack_size = stack;
 			thread->state = THREAD_READY;
 			/*
-			 * We need to ensure that the context information
-			 * is configured properly
+			 * We need to ensure that the context information is configured properly
 			 */
 			thread_setup_stack(thread);
 			tgt_initialise_context(
