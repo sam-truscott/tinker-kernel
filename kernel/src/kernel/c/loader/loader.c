@@ -159,13 +159,11 @@ return_t load_elf(
 					current_part->priv = MEM_ALL_ACCESS;
 					util_strcpy(current_part->name, name, 32);
 					// TODO add exec
-					/*
 					if (addr.p_flags & PF_X)
 					{
 						current_part->access = MEM_READ_WRITE;
 					}
-					*/
-					if (addr.p_flags & PF_W)
+					else if (addr.p_flags & PF_W)
 					{
 						current_part->access = MEM_READ_WRITE;
 					}
