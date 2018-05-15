@@ -19,15 +19,31 @@ static void thread_end(void) __attribute__((section(".api")));
 static void thread_setup_stack(thread_t * const thread)
 {
 	const mem_t stack_size = thread->stack_size;
-	const mem_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
+	const mem_t rsp = ((uint32_t)thread->stack) + (stack_size - 12);
 	mem_t vsp;
 	bool_t is_kernel = process_is_kernel(thread->parent);
 	if (!is_kernel)
 	{
-		vsp = VIRTUAL_ADDRESS_SPACE(is_kernel)
-				+ (((uint32_t)thread->stack
-						- mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
-						+ stack_size - 12);
+		// TODO need to find the virtual base address of the public pool
+		const mem_section_t * mem = process_get_first_section(thread->parent);
+		while (mem)
+		{
+			if (mem_sec_get_real_addr(mem) == mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
+			{
+				vsp = mem_sec_get_virt_addr(mem)
+						+ (((uint32_t)thread->stack
+								- mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
+								+ (stack_size - 12));
+				debug_print(PROCESS, "Process: Base %8x, Stack: %8x, Pool: %8x, Sz: %8x = [%8x]\n",
+						VIRTUAL_ADDRESS_SPACE(is_kernel),
+						thread->stack,
+						mem_get_start_addr(process_get_user_mem_pool(thread->parent)),
+						stack_size,
+						vsp);
+				break;
+			}
+			mem = mem_sec_get_next(mem);
+		}
 	}
 	else
 	{
@@ -57,6 +73,10 @@ thread_t * thread_create(
 		thread->entry_point = entry_point;
 		thread->flags = flags;
 		thread->stack = mem_alloc_aligned(user_pool, stack, MMU_PAGE_SIZE);
+		if (thread->stack)
+		{
+			util_memset(thread->stack, 0, stack);
+		}
 		util_strcpy(thread->name, name, MAX_THREAD_NAME_LEN);
 		debug_print(PROCESS, "Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
 		if (thread->stack)
@@ -204,6 +224,7 @@ object_number_t thread_get_object_no(
 	return object_number;
 }
 
+// FIXME should be mem_t
 uint32_t thread_get_virt_stack_base(
 		const thread_t * const thread)
 {
