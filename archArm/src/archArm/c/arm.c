@@ -64,7 +64,7 @@ static void __attribute__((naked)) arm_bootstrap(
 		uint32_t exit_function,
 		const uint32_t sp) TINKER_API_SUFFIX;
 
-static void hello_world(void) TINKER_API_SUFFIX;
+static void __attribute__((used)) hello_world(void) TINKER_API_SUFFIX;
 
 static void hello_world(void)
 {
@@ -77,21 +77,33 @@ static void __attribute__((naked)) arm_bootstrap(
 		 /* R1 */ uint32_t exit_function,
 		 /* R2 */ const uint32_t sp)
 {
+	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
+	asm volatile("add fp, sp, #4");
+	asm volatile("sub sp, sp, #32");
+	asm volatile("str r0, [fp, #-16]");
+	asm volatile("str r1, [fp, #-20]");
+	asm volatile("str r2, [fp, #-24]");
+	asm volatile("str r5, [fp, #-28]");
+	asm volatile("str r6, [fp, #-32]");
+
 	asm volatile("mrs %r7, cpsr");			/* get cpsr */
 	asm volatile("mov r8, #0xFFFFFF20");	/* blat out the mode and enable interrupts */
 	asm volatile("and r7, r7, r8");			/* and cpsr and mode wipe */
 	asm volatile("orr r7, r7, #0x10");		/* set the mode */
 	asm volatile("msr cpsr, r7");			/* move the mode into cpsr */
 
-	asm volatile("mov sp, r2");				/* set the programs stack */
-	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
-	asm volatile("mov r0, r5");				/* set arg1 */
-	asm volatile("mov r1, r6");				/* set arg2 */
-	hello_world();
-	entry();
-	((thread_entry_point*)(exit_function))();
+	asm volatile("bl hello_world");
+	asm volatile("ldr r0, [r11, #-28]");
+	asm volatile("ldr r1, [r11, #-32]");
+	asm volatile("ldr r3, [r11, #-16]");
+	asm volatile("ldr r4, [r11, #-20]");
+	asm volatile("blx r3");
+	asm volatile("blx r4");
+	asm volatile("sub sp, r11, #4");
 	asm volatile("pop {fp, lr}");
 	(void)sp;
+	(void)entry;
+	(void)exit_function;
 }
 
 void tgt_initialise_context(
