@@ -202,10 +202,11 @@ static return_t syscall_sbrk(
 static return_t syscall_debug(
 		tgt_context_t* const context,
 		thread_t* const this_thread) {
-	const char * const msg = (const char*const )virtual_to_real(thread_get_parent(this_thread), tgt_get_syscall_param(context, 1));
+	mem_t loc = virtual_to_real(thread_get_parent(this_thread), tgt_get_syscall_param(context, 1));
+	const char * const msg = (const char*const )loc;
 	if (is_debug_enabled(SYSCALL))
 	{
-		debug_print(SYSCALL, "Syscall: Debug of message at %x from %x\n", msg, tgt_get_syscall_param(context, 1));
+		debug_print(SYSCALL, "Syscall: Debug of message at %x from %x [%s]\n", msg, tgt_get_syscall_param(context, 1), msg);
 	}
 	if (msg)
 	{

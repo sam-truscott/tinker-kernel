@@ -22,11 +22,16 @@ typedef struct loader_t
 {
 	mem_pool_info_t * pool;
 	proc_list_t * list;
+	void * current_data;
 } loader_internal_t;
 
+/**
+ * Copy memory from the offset into the data to some virtual location
+ */
 static bool fpread(el_ctx *ctx, void *dest, size_t nb, size_t offset)
 {
-	util_memcpy(dest, ((uint8_t*)ctx->user_param) + offset, nb);
+	debug_print(ELF_LOADER, "Loader: Reading %d bytes to %d with offset %x\n", nb, dest, offset);
+	util_memcpy(dest, ((uint8_t*)((loader_t*)ctx->user_param)->current_data) + offset, nb);
 	return true;
 }
 
@@ -36,9 +41,8 @@ static void *alloccb(
     Elf_Addr virt,
     Elf_Addr size)
 {
-	(void)ctx;
-	(void)phys;
-	(void)size;
+	debug_print(ELF_LOADER, "Loader: alloccb p=%x, v=%x, size=%x\n", phys, virt, size);
+	(void) ctx;
     return (void*) virt;
 }
 
@@ -65,7 +69,8 @@ return_t load_elf(
 {
 	el_ctx ctx;
 	el_status status;
-	ctx.user_param = (void*)data;
+	ctx.user_param = (void*)loader;
+	loader->current_data = (void*)data;
 	ctx.pread = fpread;
 
 	status = el_init(&ctx);
@@ -75,7 +80,13 @@ return_t load_elf(
 		return INVALID_ELF;
 	}
 
-	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) data;
+	void * buffer = mem_alloc_aligned(loader->pool, ctx.memsz, ctx.align);
+	if (!buffer)
+	{
+		return OUT_OF_MEMORY;
+	}
+	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) buffer;
+	debug_print(ELF_LOADER, "Loader: Allocating %d bytes with %x alignment: %x\n", ctx.memsz, ctx.align, buffer);
 	status = el_load(&ctx, alloccb);
 	if (EL_OK != status)
 	{
@@ -115,6 +126,7 @@ return_t load_elf(
 							addr.p_memsz,
 							addr.p_align,
 							addr.p_flags);
+
 					if (addr.p_flags & PF_X)
 					{
 						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Executable\n", ctr);
@@ -140,7 +152,7 @@ return_t load_elf(
 						current_part->next = new_part;
 					}
 					current_part = new_part;
-					current_part->real = addr.p_paddr + (mem_t)data + addr.p_offset;
+					current_part->real = ((mem_t)buffer + addr.p_offset);
 					current_part->virt = addr.p_vaddr;
 					current_part->size = addr.p_memsz;
 					current_part->mem_type = MEM_RANDOM_ACCESS_MEMORY;
@@ -190,7 +202,7 @@ return_t load_elf(
 				.heap_size = 4096 * 4,
 				.first_part = first_part
 		};
-		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (0x%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (mem_t)data);
+		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (0x%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (mem_t)buffer);
 		ret = proc_create_process(
 				loader->list,
 				image,
