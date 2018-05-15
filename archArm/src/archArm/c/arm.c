@@ -64,6 +64,14 @@ static void __attribute__((naked)) arm_bootstrap(
 		uint32_t exit_function,
 		const uint32_t sp) TINKER_API_SUFFIX;
 
+static void hello_world(void) TINKER_API_SUFFIX;
+
+static void hello_world(void)
+{
+	char message[] = "STARTIING APP\n";
+	tinker_debug(message, 14);
+}
+
 static void __attribute__((naked)) arm_bootstrap(
 		 /* R0 */ thread_entry_point * const entry,
 		 /* R1 */ uint32_t exit_function,
@@ -79,7 +87,7 @@ static void __attribute__((naked)) arm_bootstrap(
 	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
 	asm volatile("mov r0, r5");				/* set arg1 */
 	asm volatile("mov r1, r6");				/* set arg2 */
-	tinker_debug("STARTIING APP\n", 14);
+	hello_world();
 	entry();
 	((thread_entry_point*)(exit_function))();
 	asm volatile("pop {fp, lr}");
