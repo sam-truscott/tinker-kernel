@@ -96,9 +96,9 @@ static void __attribute__((naked)) arm_bootstrap(
 	asm volatile("ldr r0, [r11, #-28]");
 	asm volatile("ldr r1, [r11, #-32]");
 	asm volatile("ldr r3, [r11, #-16]");
-	asm volatile("ldr r4, [r11, #-20]");
 	asm volatile("blx r3");
-	asm volatile("blx r4");
+	asm volatile("ldr r3, [r11, #-20]");
+	asm volatile("blx r3");
 	asm volatile("sub sp, r11, #4");
 	asm volatile("pop {fp, lr}");
 	(void)sp;
@@ -121,20 +121,19 @@ void tgt_initialise_context(
             arm_context->gpr[gpr] = 0;
         }
         arm_context->sp = thread_get_virt_stack_base(thread);
-        arm_context->alignment = 0;
 		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
-        arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
-        arm_context->apsr = PSR_MODE_USER;
+        arm_context->lr = arm_context->pc = (uint32_t)arm_bootstrap;
+        arm_context->cpsr = PSR_MODE_USER;
 
         if (is_debug_enabled(TARGET))
         {
-			debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
-			debug_print(TARGET, "ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
-			debug_print(TARGET, "ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
-			debug_print(TARGET, "ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
+			debug_print(TARGET, "ARM: %8x %8x %8x %8x %8x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
+			debug_print(TARGET, "ARM: %8x %8x %8x %8x %8x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
+			debug_print(TARGET, "ARM: %8x %8x %8x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
+			debug_print(TARGET, "ARM: sp %8x lr %8x pc %8x\n", arm_context->sp, arm_context->lr, arm_context->pc);
         }
     }
 }
@@ -265,7 +264,7 @@ uint32_t tgt_get_pc(const tgt_context_t * const context)
 	uint32_t pc = 0;
 	if (context)
 	{
-		pc = context->usr_lr;
+		pc = context->pc;
 	}
 	return pc;
 }

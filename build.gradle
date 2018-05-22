@@ -44,7 +44,7 @@ allprojects {
 		            "-DKERNEL_DEBUGGING",
                     //"-DDEBUG_VALUE=0x0"
                     //"-DDEBUG_VALUE=0x3"
-                    "-DDEBUG_VALUE=0x20843"
+                    "-DDEBUG_VALUE=0x20C43"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
 		        linker.args  "-static", "-fno-lto"
 		        if (buildType == buildTypes.debug) {
@@ -165,6 +165,15 @@ allprojects {
 	                assembler.executable = "arm-eabi-gcc"
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
+	                cCompiler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv5te"
+                        args << "-mfloat-abi=soft"
+	                }
+                    linker.withArguments { args ->
+                        args << "-mfloat-abi=soft"
+                        args << "-march=armv5te"
+                    }
 	            }
 	            target("tinkerArm4Soft") {
 	                File srcDir = new File("src")

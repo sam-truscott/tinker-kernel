@@ -699,7 +699,10 @@ void syscall_handle_system_call(
 
 	if (is_debug_enabled(SYSCALL))
 	{
-		debug_print(SYSCALL, "Syscall: API %d from %s\n", api, thread_get_name(this_thread));
+		debug_print(SYSCALL, "Syscall: API %d from %s sp=0x%8x|usp=0x%8x|upc=0x%8x\n", api, thread_get_name(this_thread),
+				tgt_get_stack_pointer(),
+				tgt_get_context_stack_pointer(context),
+				tgt_get_pc(context));
 	}
 
 	/*
@@ -850,5 +853,11 @@ void syscall_handle_system_call(
 	{
 		tgt_set_syscall_return(context, ret);
 	}
-	debug_print(SYSCALL, "Syscall: API %d RET %d\n", api, ret);
+	if (is_debug_enabled(SYSCALL))
+	{
+		debug_print(SYSCALL, "Syscall: API %d RET %d sp=0x%8x|usp=0x%8x|upc=0x%8x\n", api, ret,
+				tgt_get_stack_pointer(),
+				tgt_get_context_stack_pointer(context),
+				tgt_get_pc(context));
+	}
 }
