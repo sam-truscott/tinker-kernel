@@ -91,21 +91,6 @@ void bsp_initialise(void)
 			arm_map_memory(NULL, pg_table, &sec);
 		}
 		{
-			// map the ram for kernel startup
-			debug_prints(TARGET, "RAM (Virtual)\n");
-			mem_sec_initialise(
-					&sec,
-					NULL,
-					0,
-					KERNEL_ADDRESS_SPACE,
-					0x08000000,
-					MMU_RANDOM_ACCESS_MEMORY,
-					MMU_ALL_ACCESS,
-					MMU_READ_WRITE,
-					"RAM (VIRTUAL)");
-			arm_map_memory(NULL, pg_table, &sec);
-		}
-		{
 			// map device space for uart
 			debug_prints(TARGET, "RAM (UART)\n");
 			mem_sec_initialise(
@@ -139,7 +124,11 @@ void bsp_setup(
 	interrupt_controller = controller;
 	time_manager = tm;
 
+	arm_print_page_table(process_get_page_table(kernel_process));
+
+	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
+	arm_invalidate_all_tlbs();
 
 	// init uart before setting the page table
 	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
@@ -170,8 +159,7 @@ void bsp_setup(
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
 	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
-	arm_set_translation_table_base(process_get_page_table(kernel_process));
-}
+	arm_set_translation_table_base(process_get_page_table(kernel_process));}
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
 
@@ -193,6 +181,18 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	debug_print(TARGET, "BSP: Vector %d\n", type);
 	kernel_assert("interrupt controller not set in bsp\n", interrupt_controller != NULL);
 	tgt_context_t * const context = (tgt_context_t*)contextp;
+
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: VECTOR START\n");
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
+
 	switch(type)
 	{
 	case VECTOR_DATA_ABORT:
@@ -220,13 +220,13 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 		break;
 	case VECTOR_IRQ:
 	case VECTOR_FIQ:
-	{
-		const return_t handled = int_handle_external_vector(interrupt_controller, context);
-		if (handled != NO_ERROR)
 		{
-			debug_print(TARGET, "BSP: Failed to handle external interrupt, error = %d\n", handled);
+			const return_t handled = int_handle_external_vector(interrupt_controller, context);
+			if (handled != NO_ERROR)
+			{
+				debug_print(TARGET, "BSP: Failed to handle external interrupt, error = %d\n", handled);
+			}
 		}
-	}
 		break;
 	default:
 		debug_print(TARGET, "BSP: Unknown interrupt type %d\n", type);
@@ -245,7 +245,7 @@ static void bsp_scheduler_timeout(tgt_context_t * const context, void * const pa
 		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
 		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
 		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-		debug_print(TARGET, "BSP: sp %x lr %x\n", context->sp, context->lr);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
 		debug_prints(TARGET, "BSP: ----------------------\n");
 	}
 	int_context_switch_interrupt(interrupt_controller, context);
@@ -257,7 +257,7 @@ static void bsp_scheduler_timeout(tgt_context_t * const context, void * const pa
 		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
 		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
 		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-		debug_print(TARGET, "BSP: sp %x lr %x\n", context->sp, context->lr);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
 		debug_prints(TARGET, "BSP: ----------------------\n");
 	}
 }
