@@ -258,6 +258,12 @@ static void arm_map_section(
 			arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY));
+	debug_print(TARGET, "MMU: S [%s]: %8x -> %8x: %8x = %8x\n",
+			mem_sec_get_name(section),
+			real,
+			virt,
+			ARM_GET_LVL1_SECTION_INDEX(virt),
+			table->lvl1_entry[ARM_GET_LVL1_SECTION_INDEX(virt)]);
 }
 
 static return_t arm_map_page(
@@ -285,6 +291,7 @@ static return_t arm_map_page(
 					ap_bits[priv],
 					(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 					(mem_type == MMU_RANDOM_ACCESS_MEMORY));
+			debug_print(TARGET, "MMU: P [%s]: %8x -> %8x: %8x = %8x\n", mem_sec_get_name(section), real, virt, lvl2_entry, *lvl2_entry);
 			return NO_ERROR;
 		}
 		else
@@ -314,7 +321,7 @@ return_t arm_map_memory(
 		for (uint32_t page = 0 ; page < pages ; page++)
 		{
 			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
-			const uint32_t end = virt + (pages * MMU_PAGE_SIZE);
+			const uint32_t end = virt + ((pages - page) * MMU_PAGE_SIZE);
 			const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
 			if (arm_is_1mb_section(virt, end))
 			{
