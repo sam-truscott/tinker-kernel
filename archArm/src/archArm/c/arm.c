@@ -47,11 +47,11 @@ return_t tgt_initialise_process(process_t * const process)
         while (section && (ok == NO_ERROR))
         {
             /* setup virt -> real mapping for size */
-        	tgt_map_memory(process, section);
-        	if (is_debug_enabled(TARGET))
-        	{
-        		debug_print(TARGET, "mapping %x to %x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
-        	}
+			tgt_map_memory(process, section);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "Mapping %8x to %8x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
+			}
             section = mem_sec_get_next(section);
         }
     }
@@ -125,7 +125,8 @@ void tgt_initialise_context(
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
-        arm_context->lr = arm_context->pc = (uint32_t)arm_bootstrap;
+        arm_context->pc = (uint32_t)arm_bootstrap;
+        arm_context->lr = 0;
         arm_context->cpsr = PSR_MODE_USER;
 
         if (is_debug_enabled(TARGET))
