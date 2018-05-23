@@ -11,6 +11,10 @@
 #include "console/print_out.h"
 #pragma GCC optimize ("-O0")
 
+/*
+ * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0203j/Cacdfeci.html
+ */
+
 #define SWITCH_TO_SYSTEM_MODE \
 	asm volatile("mrs r0, cpsr"); \
 	asm volatile("mov r2, r0"); \
