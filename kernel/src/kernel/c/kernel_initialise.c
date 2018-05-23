@@ -133,7 +133,7 @@ void kernel_initialise(void)
 		.virt = (uint32_t)data_pos,
 		.size = (uint32_t)(data_end - data_pos),
 		.mem_type = MEM_RANDOM_ACCESS_MEMORY,
-		.priv = MEM_KERNEL_ACCESS,
+		.priv = MEM_ALL_ACCESS,
 		.access = MEM_READ_WRITE,
 		.next = NULL
 	};
@@ -145,7 +145,7 @@ void kernel_initialise(void)
 		.virt = (uint32_t)text_pos,
 		.size = (uint32_t)(text_epos - text_pos),
 		.mem_type = MEM_RANDOM_ACCESS_MEMORY,
-		.priv = MEM_KERNEL_ACCESS,
+		.priv = MEM_ALL_ACCESS,
 		.access = MEM_READ_ONLY,
 		.next = &data
 	};
@@ -188,11 +188,11 @@ void kernel_initialise(void)
 	// Map the RAM into Kernel space
 	mem_section_t * const kernel_ram_sec = mem_sec_create(
 			mem_get_default_pool(),
-			MMU_PAGE_SIZE,
 			0,
-			bsp_get_usable_memory_end(),
+			0,
+			32 * (1024 * 1024),
 			MMU_RANDOM_ACCESS_MEMORY,
-			MMU_KERNEL_ACCESS,
+			MEM_ALL_ACCESS,
 			MMU_READ_WRITE,
 			"RAM (Kernel)");
 	tgt_map_memory(kernel_process, kernel_ram_sec);
@@ -208,6 +208,16 @@ void kernel_initialise(void)
 			alarm_manager,
 			kernel_process);
 	debug_prints(INITIALISATION, "BSP: Setup Complete\n");
+
+	const mem_section_t * b = process_get_first_section(kernel_process);
+	while (b)
+	{
+		if (mem_sec_get_virt_addr(b) == VIRTUAL_ADDRESS_SPACE(true) + PRIVATE_POOL_SIZE)
+		{
+			tgt_map_memory(kernel_process, b);
+		}
+		b = mem_sec_get_next(b);
+	}
 
 #if defined (KERNEL_SHELL)
 	debug_prints(INITIALISATION, "System: Creating kshell\n");
