@@ -145,6 +145,7 @@ void kshell_start(void)
 	}
 
 	print_out("Tinker Shell: Ready\n");
+	kshell_memory_info();
 	while (running)
 	{
 		char * received = NULL;
