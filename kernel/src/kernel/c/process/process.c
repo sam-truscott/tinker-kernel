@@ -143,44 +143,41 @@ return_t process_create(
 		new_proc->initial_thread = NULL;
 		new_proc->first_section = NULL;
 
-		if (!is_kernel)
+		mem_t end_of_ram = bsp_get_usable_memory_end();
+		// FIXME this doesn't look right - should be doing kernel mapping
+		// for the code but into the wrong place
+		mem_section_t * const kernel_ram_sec = mem_sec_create(
+				new_proc->private_pool,
+				4096, 		/* real (exclude first page) */
+				0,    		/* virtual ( #### this will hit the apps #### ) */
+				end_of_ram, /* size */
+				MMU_RANDOM_ACCESS_MEMORY,
+				MMU_KERNEL_ACCESS,
+				MMU_READ_WRITE,
+				"RAM");
+		/* kernel access for the process - mapped but not as a section */
+		// FIXME: memory leak on kernel_ram_sec
+		tgt_map_memory(new_proc, kernel_ram_sec);
+		while (ksection)
 		{
-			mem_t end_of_ram = bsp_get_usable_memory_end();
-			// FIXME this doesn't look right - should be doing kernel mapping
-			// for the code but into the wrong place
-			mem_section_t * const kernel_ram_sec = mem_sec_create(
-					new_proc->private_pool,
-					4096, 		/* real (exclude first page) */
-					0,    		/* virtual ( #### this will hit the apps #### ) */
-					end_of_ram, /* size */
-					MMU_RANDOM_ACCESS_MEMORY,
-					MMU_KERNEL_ACCESS,
-					MMU_READ_WRITE,
-					"RAM");
-			/* kernel access for the process - mapped but not as a section */
-			// FIXME: memory leak on kernel_ram_sec
-			tgt_map_memory(new_proc, kernel_ram_sec);
-			while (ksection)
+			mem_t real = mem_sec_get_real_addr(ksection);
+			// FIXME doesn't take into account app space so will map
+			// other apps
+			if (real > end_of_ram)
 			{
-				mem_t real = mem_sec_get_real_addr(ksection);
-				// FIXME doesn't take into account app space so will map
-				// other apps
-				if (real > end_of_ram)
-				{
-					process_add_mem_sec(
-							new_proc,
-							mem_sec_create(
-									new_proc->private_pool,
-									real,
-									mem_sec_get_virt_addr(ksection),
-									mem_sec_get_size(ksection),
-									mem_sec_get_mem_type(ksection),
-									mem_sec_get_priv(ksection),
-									mem_sec_get_access(ksection),
-									mem_sec_get_name(ksection)));
-				}
-				ksection = mem_sec_get_next(ksection);
+				process_add_mem_sec(
+						new_proc,
+						mem_sec_create(
+								new_proc->private_pool,
+								real,
+								mem_sec_get_virt_addr(ksection),
+								mem_sec_get_size(ksection),
+								mem_sec_get_mem_type(ksection),
+								mem_sec_get_priv(ksection),
+								mem_sec_get_access(ksection),
+								mem_sec_get_name(ksection)));
 			}
+			ksection = mem_sec_get_next(ksection);
 		}
 
 		/* create a section for the private memory pool */
@@ -205,7 +202,7 @@ return_t process_create(
 					VIRTUAL_ADDRESS_SPACE(is_kernel) + PRIVATE_POOL_SIZE,
 					mem_get_alloc_size(new_proc->memory_pool),
 					MMU_RANDOM_ACCESS_MEMORY,
-					(is_kernel ? MMU_KERNEL_ACCESS : MMU_ALL_ACCESS),
+					MMU_ALL_ACCESS,
 					MMU_READ_WRITE,
 					"POOL (PUBLIC)"));
 
@@ -240,7 +237,7 @@ return_t process_create(
                     (const uint32_t)api,
                     (const uint32_t)(eapi - api),
                     MMU_RANDOM_ACCESS_MEMORY,
-                    MMU_USER_ACCESS,
+					MMU_ALL_ACCESS,
                     MMU_READ_ONLY,
 					"SYSCALL API"));
 
