@@ -37,7 +37,7 @@ allprojects {
 		            "-Werror",
 		            "-c",
 		            "-fmessage-length=0",
-		            "-std=gnu11",
+		            "-std=gnu18",
 		            "-fno-lto",
 		            "-DBUILDING_KERNEL",
                     "-DDEBUG_KERNEL_ONLY",
