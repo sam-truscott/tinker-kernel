@@ -183,6 +183,9 @@ This is still work in progress.
 
 These are the things I need to address in a rough order:
 
+* Fix consecuative interrupts problem corrupting state
+* Stdio for Pi is reading one char a time, should read all available data
+
 * Kernel: Review TODO/FIXMEs and add them here
 * Support: Create newlib port
     * Need to write newlib/libc/sys/arm BSP for tinker kernel
