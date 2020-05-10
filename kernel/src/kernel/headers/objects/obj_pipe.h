@@ -55,11 +55,10 @@ return_t obj_pipe_send_message(
 return_t obj_pipe_receive_message(
 		object_pipe_t * const pipe,
 		object_thread_t * const thread,
-		void ** const message,
-		uint32_t ** const message_size,
+		void * const message,
+		uint32_t * const message_size,
+		uint32_t max_size,
 		const bool_t block);
-
-return_t obj_pipe_received_message(object_pipe_t * const pipe);
 
 const char * obj_pipe_get_name(const object_pipe_t * const pipe);
 

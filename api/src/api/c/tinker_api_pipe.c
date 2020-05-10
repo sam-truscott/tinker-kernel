@@ -90,22 +90,17 @@ return_t tinker_send_message(
 
 return_t tinker_receive_message(
 		tinker_pipe_t pipe,
-		void ** message,
-		uint32_t ** const message_size,
+		void * message,
+		uint32_t * const message_size,
+		uint32_t max_size,
 		const bool_t block)
 {
-	return TINKER_API_CALL_4(
+	return TINKER_API_CALL_5(
 			SYSCALL_RECEIVE_MESSAGE,
 			(uint32_t)pipe,
 			(uint32_t)message,
 			(uint32_t)message_size,
+			max_size,
 			block);
-}
-
-return_t tinker_received_message(tinker_pipe_t pipe)
-{
-	return TINKER_API_CALL_1(
-			SYSCALL_RECEIVED_MESSAGE,
-			(uint32_t)pipe);
 }
 

@@ -197,7 +197,7 @@ These are the things I need to address in a rough order:
 Starting QEMU for the Raspberry Pi build
 
 	# Disassemble the Raspberry Pi build so we can look at addresses
-	arm-eabi-objdump -dS build\binaries\armRaspPiExecutable\debug\armRaspPi.exe > dis.txt
+	arm-eabi-objdump -dS bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe > dis.txt
 
 	# Start the emulator (Windows)
 	qemu-system-arm -m 512M -kernel bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:12345 -S

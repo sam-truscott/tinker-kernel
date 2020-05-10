@@ -29,6 +29,13 @@ UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(pipe_list_it_t, pipe_list_t, object_pipe_t
 UNBOUNDED_LIST_ITERATOR_SPEC(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
 UNBOUNDED_LIST_ITERATOR_BODY(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
 
+typedef struct rx_blocked
+{
+	object_thread_t * blocked_owner;
+	void * message;
+	uint32_t * message_size;
+} rx_blocked_t;
+
 typedef struct rx_data
 {
 	uint32_t free_messages;
@@ -36,7 +43,7 @@ typedef struct rx_data
 	uint32_t read_msg_position;
 	uint32_t write_msg_position;
 	uint32_t message_size;
-	object_thread_t * blocked_owner;
+	rx_blocked_t blocked_info;
 	uint8_t * read_msg_ptr;
 	uint8_t * write_msg_ptr;
 	pipe_list_t * senders;
@@ -59,6 +66,8 @@ typedef struct object_pipe_t
 	registry_t * reg;
 	char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 } object_pipe_internal_t;
+
+static return_t obj_pipe_received_message(object_pipe_t * const pipe);
 
 object_pipe_t * obj_cast_pipe(object_t * const o)
 {
@@ -118,13 +127,18 @@ static void pipe_receive_message(
 	receiver->rx_data.free_messages--;
 	debug_print(PIPE_TRACE, "PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
 	debug_print(PIPE_TRACE, "PipeW: Receiver has thread %x blocking on %x\n",
-			(receiver->rx_data.blocked_owner),
+			(receiver->rx_data.blocked_info.blocked_owner),
 			receiver);
-	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
+	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_info.blocked_owner, (object_t*)receiver))
 	{
 		debug_prints(PIPE_TRACE, "PipeW: Blocked owner - resuming them\n");
-		obj_set_thread_ready(receiver->rx_data.blocked_owner);
-		receiver->rx_data.blocked_owner = NULL;
+		obj_set_thread_ready(receiver->rx_data.blocked_info.blocked_owner);
+		receiver->rx_data.blocked_info.blocked_owner = NULL;
+		util_memcpy(receiver->rx_data.blocked_info.message_size, receiver->rx_data.read_msg_ptr, sizeof(uint32_t));
+		util_memcpy(receiver->rx_data.blocked_info.message, receiver->rx_data.read_msg_ptr + sizeof(uint32_t), *receiver->rx_data.blocked_info.message_size);
+		obj_pipe_received_message(receiver);
+		receiver->rx_data.blocked_info.message = NULL;
+		receiver->rx_data.blocked_info.message_size = NULL;
 	}
 }
 
@@ -597,8 +611,9 @@ return_t obj_pipe_send_message(
 return_t obj_pipe_receive_message(
 		object_pipe_t * const pipe,
 		object_thread_t * const thread,
-		void ** const message,
-		uint32_t ** const message_size,
+		void * const message,
+		uint32_t * const message_size,
+		uint32_t max_size,
 		const bool_t block)
 {
 	return_t result = NO_ERROR;
@@ -610,9 +625,6 @@ return_t obj_pipe_receive_message(
 		{
 			if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 			{
-				*message = NULL;
-				*message_size = 0;
-
 				const bool_t messages_in_buffer =
 						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
 				debug_print(PIPE_TRACE,
@@ -620,28 +632,34 @@ return_t obj_pipe_receive_message(
 						messages_in_buffer,
 						pipe->rx_data.free_messages,
 						pipe->rx_data.total_messages);
-				if (!messages_in_buffer)
+				if (messages_in_buffer)
+				{
+					debug_print(PIPE, "PipeR: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
+					util_memcpy(message_size, pipe->rx_data.read_msg_ptr, sizeof(uint32_t));
+					if (*message_size > max_size)
+					{
+						result = PARAMETERS_OUT_OF_RANGE;
+					}
+					else
+					{
+						util_memcpy(message, pipe->rx_data.read_msg_ptr + sizeof(uint32_t), *message_size);
+						obj_pipe_received_message(pipe);
+					}
+				}
+				else
 				{
 					if (block)
 					{
-						// TODO fix here
-						*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
-						*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
 						debug_print(PIPE_TRACE, "PipeR: Thread %x blocking on pipe %x\n", thread, pipe);
-						pipe->rx_data.blocked_owner = thread;
+						pipe->rx_data.blocked_info.blocked_owner = thread;
+						pipe->rx_data.blocked_info.message = message;
+						pipe->rx_data.blocked_info.message_size = message_size;
 					}
 					else
 					{
 						result = PIPE_EMPTY;
 					}
-				}
-				else
-				{
-					debug_print(PIPE, "PipeR: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
-					// TODO and here
-					*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
-					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 				}
 			}
 			else
@@ -661,7 +679,7 @@ return_t obj_pipe_receive_message(
 	return result;
 }
 
-return_t obj_pipe_received_message(object_pipe_t * const pipe)
+static return_t obj_pipe_received_message(object_pipe_t * const pipe)
 {
 	return_t result = NO_ERROR;
 

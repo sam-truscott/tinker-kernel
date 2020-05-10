@@ -232,6 +232,17 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 		debug_print(TARGET, "BSP: Unknown interrupt type %d\n", type);
 		break;
 	}
+
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: VECTOR END\n");
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
 }
 
 static void bsp_scheduler_timeout(tgt_context_t * const context, void * const param)

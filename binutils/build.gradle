@@ -2,12 +2,12 @@ apply plugin: 'assembler'
 apply plugin: 'c'
 
 task downloadBinutils(type: Downloader) {
-    sourceUrl = 'http://ftp.gnu.org/gnu/binutils/binutils-2.32.tar.gz'
-    target = file('binutils-2.32.tar.gz')
+    sourceUrl = 'http://ftp.gnu.org/gnu/binutils/binutils-2.34.tar.gz'
+    target = file('binutils-2.34.tar.gz')
 }
 
 task untarBinutils (type: Copy) {
-    from tarTree(resources.gzip('binutils-2.32.tar.gz'))
+    from tarTree(resources.gzip('binutils-2.34.tar.gz'))
     into getProjectDir().getAbsolutePath()  + "//src"
 }
 
@@ -24,7 +24,7 @@ task configureBinutilsArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/binutils-2.32/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-interwork'
+    'rm -rf *;../src/binutils-2.34/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-interwork'
 }
 
 configureBinutilsArm.dependsOn setupBinutilsArm

@@ -135,7 +135,7 @@ void kshell_start(void)
 			&pipe,
 			kshell_dev_name,
 			PIPE_RECEIVE,
-			4,
+			1,
 			MAX_LINE_INPUT);
 
 	if (input_result != NO_ERROR)
@@ -144,30 +144,28 @@ void kshell_start(void)
 		return;
 	}
 
+	util_memset(kshell->ksh_input_buffer, 0, MAX_LINE_INPUT);
+
 	print_out("Tinker Shell: Ready\n");
 	kshell_memory_info();
 	while (running)
 	{
-		char * received = NULL;
-		uint32_t * bytesReceived = NULL;
+		char received[2];
+		util_memset(received, 0, sizeof(received));
+		uint32_t bytesReceived = 0;
 		if (is_debug_enabled(SHELL))
 		{
 			print_out("KSHELL Rx\n");
 		}
-		return_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
+		return_t read_status = tinker_receive_message(pipe, (void*)received, &bytesReceived, MAX_LINE_INPUT, true);
 		if (is_debug_enabled(SHELL))
 		{
-			printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
+			printp_out("KSHELL status = %d, got %d bytes\n", read_status, bytesReceived);
 		}
 		if (read_status == NO_ERROR)
 		{
-			return_t ack = tinker_received_message(pipe);
-			if (ack != NO_ERROR)
-			{
-				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
-			}
 			uint16_t p = 0;
-			while (p != (*bytesReceived))
+			while (p < bytesReceived)
 			{
 				kshell->ksh_input_buffer[kshell->ksh_input_pointer++] = received[p++];
 			}
@@ -463,6 +461,7 @@ static void kshell_object_table(void)
 
 static void kshell_memory_info(void)
 {
+	print_out("mem:\n\n");
 	process_list_it_t * list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
 	process_list_it_t_get(list, &proc);

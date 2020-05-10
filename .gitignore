@@ -1,8 +1,8 @@
 **/.settings
 **/build
 /.gradle
-**/.project
-**/.cproject
+.project
+.cproject
 gcc/tmp
 utilBuilder/*.img
 binutils/src
@@ -19,3 +19,4 @@ gdb/build*
 gdb/*.tar.*
 arm-eabi
 /gradle-app.setting
+arm-eabi

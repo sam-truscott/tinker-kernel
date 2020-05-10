@@ -57,10 +57,9 @@ return_t tinker_send_message(
 
 return_t tinker_receive_message(
         tinker_pipe_t pipe,
-		void ** message,
-		uint32_t ** const message_size,
+		void * message,
+		uint32_t * const message_size,
+		uint32_t max_size,
 		const bool_t block) TINKER_API_SUFFIX;
-
-return_t tinker_received_message(tinker_pipe_t pipe) TINKER_API_SUFFIX;
 
 #endif /* TINKER_API_PIPE_H_ */

@@ -55,7 +55,10 @@ return_t int_handle_external_vector(interrupt_controller_t * const intc, tgt_con
 	{
 		intc->is_external = true;
 		const thread_t * const current_thread = sch_get_current_thread(intc->scheduler);
-		debug_print(INTC, "INTC: Thread before external vector: %s\n", thread_get_name(current_thread));
+		if (is_debug_enabled(INTC))
+		{
+			debug_print(INTC, "INTC: Thread before external vector: %s\n", thread_get_name(current_thread));
+		}
 		const return_t intc_result = intc_handle(intc->interrupt_manager_root, context);
 		debug_prints(INTC, "INTC: Switching thread due to external interrupt\n");
 		sch_set_context_for_next_thread(
@@ -89,6 +92,24 @@ void int_context_switch_interrupt(
 	}
 }
 
+static inline mem_t virtual_to_real(
+		process_t * process,
+		mem_t address)
+{
+	/* TODO the below code needs fixing */
+	const bool_t is_kernel = process_is_kernel(process);
+	mem_t result;
+	if (is_kernel)
+	{
+		result = ((address >= VIRTUAL_ADDRESS_SPACE(is_kernel)) ? process_virt_to_real(process, address) : address);
+	}
+	else
+	{
+		result = process_virt_to_real(process, address);
+	}
+	return result;
+}
+
 void int_fatal_program_error_interrupt(
 		interrupt_controller_t * const intc,
 		tgt_context_t * const context)
@@ -103,11 +124,14 @@ void int_fatal_program_error_interrupt(
 	// FIXME: this is broken due to a second exception being raised
 	print_stack_trace(thread_get_parent(current), tgt_get_context_stack_pointer(context));
 #endif /* PRINT_STACK_ON_ERROR */
+	mem_t real_pc = virtual_to_real(thread_get_parent(current), tgt_get_pc(context));
+	error_print("Real PC: %x\n", real_pc);
 	sch_terminate_current_thread(intc->scheduler, context);
 	sch_set_context_for_next_thread(
 			intc->scheduler,
 			context,
 			THREAD_TERMINATED);
+
 }
 
 void int_syscall_request_interrupt(
