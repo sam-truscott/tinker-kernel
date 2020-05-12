@@ -372,7 +372,6 @@ void sch_set_context_for_next_thread(
 		}
 		if (thread_state != THREAD_DEAD)
 		{
-			// FIXME not needed if thread hasn't changed, wtf is eval_new_thread
 			thread_save_context(current_thread, context);
 		}
 		// load in the state of the new thread
