@@ -192,6 +192,7 @@ void thread_save_context(
 {
 	if (thread && context)
 	{
+		debug_print(PROCESS, "Process: Saving context %8x for %s\n", context, thread->name);
 		tgt_save_context(thread->context, context);
 	}
 }
