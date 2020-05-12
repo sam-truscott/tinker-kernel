@@ -70,7 +70,11 @@ void bsp_initialise(void)
 	}
 
 	debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
-	debug_print(TARGET, "SP %8x, FP %8x\n", tgt_get_stack_pointer(), tgt_get_frame_pointer());
+	if (is_debug_enabled(TARGET))
+	{
+		debug_print(TARGET, "SP %8x, FP %8x\n", tgt_get_stack_pointer(), tgt_get_frame_pointer());
+	}
+
 	{
 		tgt_pg_tbl_t * pg_table = (tgt_pg_tbl_t*)0x02000000;
 		util_memset(pg_table, 0, sizeof(tgt_pg_tbl_t));
@@ -105,13 +109,19 @@ void bsp_initialise(void)
 					"RAM (UART)");
 			arm_map_memory(NULL, pg_table, &sec);
 		}
-		debug_print(TARGET, "Setting MMU On, pgtbl @ 0x%8x, cpsr is 0x%8x, sctrl = 0x%8x\n", pg_table, arm_get_cpsr(), arm_get_cp15_c1());
+		if (is_debug_enabled(TARGET))
+		{
+			debug_print(TARGET, "Setting MMU On, pgtbl @ 0x%8x, cpsr is 0x%8x, sctrl = 0x%8x\n", pg_table, arm_get_cpsr(), arm_get_cp15_c1());
+		}
 		arm_print_page_table(pg_table);
 		arm_set_domain_access_register(0);
 		arm_set_translation_table_base(pg_table);
 		arm_enable_mmu(true);
 		arm_invalidate_all_tlbs();
-		early_uart_put("MMU on\n");
+		if (is_debug_enabled(TARGET))
+		{
+			early_uart_put("MMU on\n");
+		}
 	}
 }
 
