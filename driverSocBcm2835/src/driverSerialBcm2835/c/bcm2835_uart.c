@@ -1,3 +1,4 @@
+
 /*
  *
  * TINKER Source Code
@@ -160,6 +161,7 @@ static return_t bcm2835_uart_isr(
 		const void * const usr_data,
 		const uint32_t vector)
 {
+	// TODO this is only reading one char at a time
 	(void)vector;
 	bcm2835_user_data_t * const user_data = (bcm2835_user_data_t*)usr_data;
 	char buffer[2] = {0, 0};
