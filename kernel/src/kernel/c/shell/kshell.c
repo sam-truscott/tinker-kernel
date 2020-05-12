@@ -147,7 +147,11 @@ void kshell_start(void)
 	util_memset(kshell->ksh_input_buffer, 0, MAX_LINE_INPUT);
 
 	print_out("Tinker Shell: Ready\n");
+
+	kshell_process_list();
+	kshell_task_list();
 	kshell_memory_info();
+	kshell_object_table();
 	while (running)
 	{
 		char received[2];
@@ -517,5 +521,6 @@ static void kshell_memory_info(void)
 		}
 	}
 	process_list_it_t_delete(list);
+	print_out("Complete\n");
 }
 #endif /* KERNEL_SHELL */
