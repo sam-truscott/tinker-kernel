@@ -78,10 +78,10 @@ static const char ksh_object_types[9][8] =
 
 static const char ksh_pipe_dir[4][13] =
 {
-		"UNKNOWN     \0",
-		"SEND/RECEIVE\0",
-		"SEND        \0",
-		"RECEIVE     \0"
+		"UNKN\0",
+		"BOTH\0",
+		"TX  \0",
+		"RX  \0"
 };
 
 static const char ksh_mem_type[2][4] =
@@ -148,10 +148,10 @@ void kshell_start(void)
 
 	print_out("Tinker Shell: Ready\n");
 
-	kshell_process_list();
-	kshell_task_list();
-	kshell_memory_info();
-	kshell_object_table();
+	// kshell_process_list();
+	// kshell_task_list();
+	// kshell_memory_info();
+	// kshell_object_table();
 	while (running)
 	{
 		char received[2];
@@ -290,8 +290,8 @@ static void kshell_task_list(void)
 		thread_it_t_get(tlist, &t);
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
-		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tPc\tName\n");
-		print_out("--------\t----------\t----------\t---\t--------\t-----\t--\t----\n");
+		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tPc\t\tName\n");
+		print_out("--------\t----------\t----------\t---\t--------\t-----\t--\t\t----\n");
 
 		while (t)
 		{
