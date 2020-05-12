@@ -94,14 +94,14 @@ static void __attribute__((naked,used)) arm_vector_reserved()
 
 static void __attribute__((naked,used)) arm_vector_irq()
 {
-	EXCEPTION_START_COMMON;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_IRQ](VECTOR_IRQ, context);
 	EXCEPTION_END;
 }
 
 static void __attribute__((naked,used)) arm_vector_fiq()
 {
-	EXCEPTION_START_COMMON;
+	EXCEPTION_START_VECTOR;
 	vector_table[VECTOR_FIQ](VECTOR_FIQ, context);
 	EXCEPTION_END;
 }
