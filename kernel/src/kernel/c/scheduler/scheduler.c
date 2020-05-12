@@ -328,6 +328,10 @@ void sch_set_context_for_next_thread(
 	thread_t * const current_thread = scheduler->curr_thread;
 	if (scheduler->curr_queue)
 	{
+		// FIXME do we need to swap thread if we're switching due an external
+		// interrupt? Surely then we continue with the previous thread
+		//
+		// copy the head of the current queue as the current thread
 		thread_queue_t_front(scheduler->curr_queue, &scheduler->curr_thread);
 	}
 
@@ -336,12 +340,14 @@ void sch_set_context_for_next_thread(
 	 * then use it */
 	if (scheduler->curr_thread)
 	{
+		// move the head thread to the tail (round-robin)
 		const bool_t reorder_ok = thread_queue_t_reorder_first(scheduler->curr_queue);
 		kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const thread_state_t state = thread_get_state(scheduler->curr_thread);
 
 		if (state == THREAD_READY || state == THREAD_SYSTEM || state == THREAD_RUNNING)
 		{
+			// FIXME setting it to THREAD_RUNNING if it's already RUNNING?
 			thread_set_state(scheduler->curr_thread, THREAD_RUNNING);
 		}
 		else
@@ -350,6 +356,7 @@ void sch_set_context_for_next_thread(
 		}
 	}
 
+	// if there's no current, default to idle
 	if (scheduler->curr_thread == NULL)
 	{
 		scheduler->curr_thread = scheduler->idle_thread;
@@ -358,12 +365,14 @@ void sch_set_context_for_next_thread(
 	// the thread changed so save the state of the previous thread
 	if ((current_thread != scheduler->curr_thread) || scheduler->eval_new_thread)
 	{
+		scheduler->eval_new_thread = false;
 		if (thread_state == THREAD_RUNNING)
 		{
 			thread_set_state(current_thread, THREAD_READY);
 		}
 		if (thread_state != THREAD_DEAD)
 		{
+			// FIXME not needed if thread hasn't changed, wtf is eval_new_thread
 			thread_save_context(current_thread, context);
 		}
 		// load in the state of the new thread
