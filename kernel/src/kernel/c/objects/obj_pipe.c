@@ -123,12 +123,17 @@ static void pipe_receive_message(
 		receiver->rx_data.write_msg_position++;
 		receiver->rx_data.write_msg_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
 	}
+#if defined (KERNEL_DEBUGGING)
 	const uint32_t old_free = receiver->rx_data.free_messages;
+#endif
 	receiver->rx_data.free_messages--;
-	debug_print(PIPE_TRACE, "PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
-	debug_print(PIPE_TRACE, "PipeW: Receiver has thread %x blocking on %x\n",
+	if (is_debug_enabled(PIPE_TRACE))
+	{
+		debug_print(PIPE_TRACE, "PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
+		debug_print(PIPE_TRACE, "PipeW: Receiver has thread %x blocking on %x\n",
 			(receiver->rx_data.blocked_info.blocked_owner),
 			receiver);
+	}
 	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_info.blocked_owner, (object_t*)receiver))
 	{
 		debug_prints(PIPE_TRACE, "PipeW: Blocked owner - resuming them\n");

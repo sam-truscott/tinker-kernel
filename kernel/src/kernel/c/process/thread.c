@@ -21,7 +21,9 @@ static void thread_setup_stack(thread_t * const thread)
 	const mem_t stack_size = thread->stack_size;
 	const mem_t rsp = ((uint32_t)thread->stack) + (stack_size - 12);
 	mem_t vsp;
+#if defined (KERNEL_DEBUGGING)
 	bool_t is_kernel = process_is_kernel(thread->parent);
+#endif
 	const mem_section_t * mem = process_get_first_section(thread->parent);
 	while (mem)
 	{
@@ -31,12 +33,15 @@ static void thread_setup_stack(thread_t * const thread)
 					+ (((uint32_t)thread->stack
 							- mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
 							+ (stack_size - 12));
-			debug_print(PROCESS, "Process: Base %8x, Stack: %8x, Pool: %8x, Sz: %8x = [%8x]\n",
-					VIRTUAL_ADDRESS_SPACE(is_kernel),
-					thread->stack,
-					mem_get_start_addr(process_get_user_mem_pool(thread->parent)),
-					stack_size,
-					vsp);
+			if (is_debug_enabled(PROCESS))
+			{
+				debug_print(PROCESS, "Process: Base %8x, Stack: %8x, Pool: %8x, Sz: %8x = [%8x]\n",
+						VIRTUAL_ADDRESS_SPACE(is_kernel),
+						thread->stack,
+						mem_get_start_addr(process_get_user_mem_pool(thread->parent)),
+						stack_size,
+						vsp);
+			}
 			break;
 		}
 		mem = mem_sec_get_next(mem);

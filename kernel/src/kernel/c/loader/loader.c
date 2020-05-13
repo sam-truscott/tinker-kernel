@@ -18,6 +18,9 @@
 #include "console/print_out.h"
 #include "config.h"
 
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 typedef struct loader_t
 {
 	mem_pool_info_t * pool;

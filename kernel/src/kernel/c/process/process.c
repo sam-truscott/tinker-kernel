@@ -31,13 +31,16 @@ static void process_add_mem_sec(
 {
 	if (process)
 	{
-		debug_print(PROCESS, "Process: Adding new section V:%8x:%8x -> R:%8x:%8x (%x) [%s]\n",
-				mem_sec_get_virt_addr(section),
-				mem_sec_get_virt_addr(section) + mem_sec_get_size(section),
-				mem_sec_get_real_addr(section),
-				mem_sec_get_real_addr(section) + mem_sec_get_size(section),
-				mem_sec_get_size(section),
-				mem_sec_get_name(section));
+		if (is_debug_enabled(PROCESS))
+		{
+			debug_print(PROCESS, "Process: Adding new section V:%8x:%8x -> R:%8x:%8x (%x) [%s]\n",
+					mem_sec_get_virt_addr(section),
+					mem_sec_get_virt_addr(section) + mem_sec_get_size(section),
+					mem_sec_get_real_addr(section),
+					mem_sec_get_real_addr(section) + mem_sec_get_size(section),
+					mem_sec_get_size(section),
+					mem_sec_get_name(section));
+		}
 		if (!process->first_section)
 		{
 			debug_prints(MEMORY, "Process: Section is first section\n");
@@ -53,11 +56,17 @@ static void process_add_mem_sec(
 			{
 				if (mem_sec_get_virt_addr(section) < mem_sec_get_virt_addr(s))
 				{
-					debug_print(MEMORY, "Process: Inserting before %x -> %x\n", mem_sec_get_virt_addr(s), mem_sec_get_real_addr(s));
+					if (is_debug_enabled(PROCESS))
+					{
+						debug_print(MEMORY, "Process: Inserting before %x -> %x\n", mem_sec_get_virt_addr(s), mem_sec_get_real_addr(s));
+					}
 					mem_sec_set_next(section, s);
 					if (p != NULL)
 					{
-						debug_print(MEMORY, "Process: Inserting after %x -> %x\n", mem_sec_get_virt_addr(p), mem_sec_get_real_addr(p));
+						if (is_debug_enabled(PROCESS))
+						{
+							debug_print(MEMORY, "Process: Inserting after %x -> %x\n", mem_sec_get_virt_addr(p), mem_sec_get_real_addr(p));
+						}
 						mem_sec_set_next(p, section);
 					}
 					if (s == process->first_section)
@@ -72,7 +81,10 @@ static void process_add_mem_sec(
 			}
 			if (!assigned)
 			{
-				debug_print(MEMORY, "Process: Inserting at end %x -> %x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
+				if (is_debug_enabled(PROCESS))
+				{
+					debug_print(MEMORY, "Process: Inserting at end %x -> %x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
+				}
 				mem_sec_set_next(p, section);
 			}
 		}
@@ -82,10 +94,15 @@ static void process_add_mem_sec(
 			mem_section_t * s = process->first_section;
 			while (s)
 			{
-				const mem_t sz = mem_sec_get_size(s);
-				const mem_t virt = mem_sec_get_virt_addr(s);
-				const mem_t real = mem_sec_get_real_addr(s);
-				debug_print(PROCESS_TRACE, "%x:%x->%x:%x\n", virt, virt + sz, real, real + sz);
+#if defined (KERNEL_DEBUGGING)
+				if (is_debug_enabled(PROCESS))
+				{
+					const mem_t sz = mem_sec_get_size(s);
+					const mem_t virt = mem_sec_get_virt_addr(s);
+					const mem_t real = mem_sec_get_real_addr(s);
+					debug_print(PROCESS_TRACE, "%x:%x->%x:%x\n", virt, virt + sz, real, real + sz);
+				}
+#endif
 				s = mem_sec_get_next(s);
 			}
 			debug_prints(PROCESS_TRACE, "-------------------------------\n");
@@ -124,9 +141,15 @@ return_t process_create(
 						(mem_t)mem_alloc(new_proc->parent_pool, PRIVATE_POOL_SIZE),
 						PRIVATE_POOL_SIZE,
 						&new_proc->private_pool));
-		debug_print(PROCESS, "Private pool allocated space is %d before page table\n", mem_get_allocd_size(new_proc->private_pool));
+		if (is_debug_enabled(PROCESS))
+		{
+			debug_print(PROCESS, "Private pool allocated space is %d before page table\n", mem_get_allocd_size(new_proc->private_pool));
+		}
 		new_proc->page_table = tgt_initialise_page_table(new_proc->private_pool);
-		debug_print(PROCESS, "Private pool allocated space is %d after page table\n", mem_get_allocd_size(new_proc->private_pool));
+		if (is_debug_enabled(PROCESS))
+		{
+			debug_print(PROCESS, "Private pool allocated space is %d after page table\n", mem_get_allocd_size(new_proc->private_pool));
+		}
 		kernel_assert("new process's pool wasn't created from private pool", new_proc->page_table != NULL);
 
 		debug_print(PROCESS, "Process: Allocating memory for page table: %s\n", name);

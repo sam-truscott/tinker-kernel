@@ -77,6 +77,7 @@ static inline mem_pool_info_t * get_parent_pool(
 	}
 	else
 	{
+		(void)image;
 		debug_print(PROCESS, "Process: Create process for %s from parent\n", image);
 		// if the parent is the kernel, use the default pool instead
 		// of the kernel's
@@ -116,12 +117,13 @@ static inline bool_t initialise_mem_pool(
 		tinker_meminfo_t * const meminfo,
 		mem_pool_info_t ** new_mem_pool)
 {
-		debug_print(PROCESS,
-				"Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
-				image,
-				meminfo->heap_size,
-				meminfo->stack_size,
-				parent_pool);
+	(void)image;
+	debug_print(PROCESS,
+			"Process: Initialising pool for %s, heap=%x, stack=%x, parent=%x\n",
+			image,
+			meminfo->heap_size,
+			meminfo->stack_size,
+			parent_pool);
 	return mem_init_process_memory(
 			parent_pool,
 			new_mem_pool,
@@ -162,6 +164,7 @@ static inline return_t create_process_object(
 		process_t * const proc,
 		object_t * process_obj)
 {
+	(void)image;
 	debug_print(PROCESS, "Process: Building process object: %s\n", image);
 	return_t ret = obj_create_process(
 			list,
@@ -184,6 +187,7 @@ static inline return_t create_thread_object(
 		const uint32_t flags,
 		object_t ** thread_obj)
 {
+	(void)image;
 	debug_print(PROCESS, "Process: Building process entry thread: %s (stack %8x)\n", image, stack_size);
 	return proc_create_thread(
 			proc,
@@ -201,7 +205,7 @@ static inline bool_t add_process_to_list(
 		proc_list_t * const list,
 		process_t * const proc)
 {
-
+	(void)image;
 	debug_print(PROCESS, "Process: Adding process to process list: %s\n", image);
 	bool_t ok = (process_list_t_add(list->process_list, proc));
 	debug_print(PROCESS, "Process: Add process to process list: %s = %d\n", image, ok);

@@ -40,6 +40,7 @@ void print_time(void);
 
 void error_print(const char * const msg, ...);
 
+#if defined (KERNEL_DEBUGGING)
 #define is_debug_enabled(s)(DEBUG_VALUE & s)
 #define debug_print(subsys, msg, ...) debug_print1(subsys, __FILE__, __LINE__, msg, __VA_ARGS__)
 #define debug_prints(subsys, msg) debug_print(subsys, msg, NULL)
@@ -50,6 +51,11 @@ void debug_print1(
 		const uint32_t line,
 		const char * const msg,
 		...);
+#else
+#define is_debug_enabled(s) false
+#define debug_print(subsys, msg, ...)
+#define debug_prints(subsys, msg)
+#endif
 
 void printp_out(const char * const msg, ...);
 

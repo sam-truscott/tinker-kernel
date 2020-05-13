@@ -33,9 +33,16 @@ static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 	while (*app_start)
 	{
 		const return_t elf_error = load_elf(loader, (void*) (end_of_bin + *app_start), "app", 128, 0);
-		debug_print(ELF_LOADER, "Loader: Loading result: %d\n", elf_error);
+		if (is_debug_enabled(ELF_LOADER))
+		{
+			debug_print(ELF_LOADER, "Loader: Loading result: %d\n", elf_error);
+		}
+		kernel_assert("Failed to load ELF", elf_error == NO_ERROR);
 		app_start++;
-		debug_print(ELF_LOADER, "Loader: Loading next app at %8x\n", end_of_bin + *app_start);
+		if (is_debug_enabled(ELF_LOADER))
+		{
+			debug_print(ELF_LOADER, "Loader: Loading next app at %8x\n", end_of_bin + *app_start);
+		}
 	}
 }
 

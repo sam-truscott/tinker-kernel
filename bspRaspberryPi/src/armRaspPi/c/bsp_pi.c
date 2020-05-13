@@ -44,8 +44,10 @@ static time_manager_t * time_manager = NULL;
 
 void bsp_initialise(void)
 {
+#if defined (KERNEL_DEBUGGING)
 	const uint32_t cpsr = arm_get_cpsr();
 	const uint32_t sctrl = arm_get_cp15_c1();
+#endif
 	tgt_disable_external_interrupts();
 	early_uart_init();
 	if (is_debug_enabled(TARGET))
@@ -69,9 +71,9 @@ void bsp_initialise(void)
 		early_uart_put("Vector init done\n");
 	}
 
-	debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
 	if (is_debug_enabled(TARGET))
 	{
+		debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
 		debug_print(TARGET, "SP %8x, FP %8x\n", tgt_get_stack_pointer(), tgt_get_frame_pointer());
 	}
 
