@@ -183,14 +183,9 @@ This is still work in progress.
 
 These are the things I need to address in a rough order:
 
-* Fix consecuative interrupts problem corrupting state
+* Multicore not supported; hence why works on Pi1 but not Pi2 
 * Stdio for Pi is reading one char a time, should read all available data
-
 * Kernel: Review TODO/FIXMEs and add them here
-* Support: Create newlib port
-    * Need to write newlib/libc/sys/arm BSP for tinker kernel
-    * Enable Ada support?
-    * Enable Fortran support
 * Kernel: Add DMA support for pipes
 * Kernel: Timeouts on pipe (open/read/write)
 * Doc: Doc it with doxygen
