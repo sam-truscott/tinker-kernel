@@ -101,18 +101,38 @@ static bool_t pipe_can_receive(const object_pipe_t * const pipe)
 			&& pipe->rx_data.free_messages > 0);
 }
 
+static uint32_t align(uint32_t a, uint32_t b)
+{
+	uint32_t aligned_size;
+	if (a % b == 0)
+	{
+		aligned_size = a;
+	}
+	else
+	{
+		aligned_size = a + (b - (a % b));
+	}
+	return aligned_size;
+}
+
 static void pipe_receive_message(
 		object_pipe_t * const receiver,
 		const void * message,
 		const uint32_t message_size)
 {
-	debug_print(PIPE, "PipeW: Writing size (%d) to %x and data to %x\n",
-			message_size,
-			receiver->rx_data.write_msg_ptr,
-			receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
+	if (is_debug_enabled(PIPE))
+	{
+		debug_print(PIPE, "PipeW: Writing size (%d) to %x and data to %x\n",
+				message_size,
+				receiver->rx_data.write_msg_ptr,
+				receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
+	}
+	// copy the message size over
 	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
 	*msg_size = message_size;
+	// copy the the payload over (bytes, not 32)
 	util_memcpy(receiver->rx_data.write_msg_ptr+sizeof(uint32_t), message, message_size);
+	// ring buffer; if at the end, return to home
 	if ((receiver->rx_data.write_msg_position + 1) == receiver->rx_data.total_messages)
 	{
 		receiver->rx_data.write_msg_position = 0;
@@ -120,8 +140,12 @@ static void pipe_receive_message(
 	}
 	else
 	{
+		// write the buffer size
 		receiver->rx_data.write_msg_position++;
-		receiver->rx_data.write_msg_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
+		// FIXME this must be word aligned for the MMU - message_size maybe un-aligned
+		uint32_t aligned_size = align(receiver->rx_data.message_size, sizeof(uint32_t));
+		debug_print(PIPE, "Increasing by 4 + aligned size of %d\n", aligned_size);
+		receiver->rx_data.write_msg_ptr += (aligned_size + sizeof(uint32_t));
 	}
 #if defined (KERNEL_DEBUGGING)
 	const uint32_t old_free = receiver->rx_data.free_messages;
@@ -630,8 +654,7 @@ return_t obj_pipe_receive_message(
 		{
 			if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 			{
-				const bool_t messages_in_buffer =
-						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
+				const bool_t messages_in_buffer = pipe->rx_data.free_messages < pipe->rx_data.total_messages;
 				debug_print(PIPE_TRACE,
 						"PipeR: Receiver has free messages? %d. %d free, %d total\n",
 						messages_in_buffer,
@@ -703,7 +726,7 @@ static return_t obj_pipe_received_message(object_pipe_t * const pipe)
 		else
 		{
 			pipe->rx_data.read_msg_position++;
-			pipe->rx_data.read_msg_ptr += (pipe->rx_data.message_size+sizeof(uint32_t));
+			pipe->rx_data.read_msg_ptr += (align(pipe->rx_data.message_size, sizeof(uint32_t)) + sizeof(uint32_t));
 			debug_print(PIPE, "PipeA: Pipe read position moved to %d\n", pipe->rx_data.read_msg_position);
 		}
 
