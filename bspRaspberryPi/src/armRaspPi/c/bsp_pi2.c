@@ -49,7 +49,7 @@ void bsp_initialise(void)
 	const uint32_t sctrl = arm_get_cp15_c1();
 #endif
 	tgt_disable_external_interrupts();
-	early_uart_init();
+	early_uart_init((void*)0x3f000000);
 	if (is_debug_enabled(TARGET))
 	{
 		early_uart_put("BSP\n");
@@ -141,7 +141,7 @@ void bsp_setup(
 	arm_invalidate_all_tlbs();
 
 	// init uart before setting the page table
-	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
+	bcm2835_uart_get_device((void*)0x3f000000, &uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
 	// FIXME use object
 	kshell_set_input_device(UART_DEVICE_NAME);

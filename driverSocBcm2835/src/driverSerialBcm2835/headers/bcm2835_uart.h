@@ -15,13 +15,14 @@
 #include "tgt_types.h"
 #include "devices/kernel_device.h"
 
-void early_uart_init(void);
+void early_uart_init(const uint8_t * const base_address);
 
 void early_uart_putc(const char c);
 
 void early_uart_put(const char * c);
 
 void bcm2835_uart_get_device(
+		const uint8_t * const base_address,
 		kernel_device_t * const device,
 		const char * const name);
 
