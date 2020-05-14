@@ -118,7 +118,7 @@ void bsp_initialise(void)
 		arm_print_page_table(pg_table);
 		arm_set_domain_access_register(0);
 		arm_set_translation_table_base(pg_table);
-		arm_enable_mmu(true);
+		arm_enable_mmu(false);
 		arm_invalidate_all_tlbs();
 		if (is_debug_enabled(TARGET))
 		{
@@ -137,8 +137,6 @@ void bsp_setup(
 	time_manager = tm;
 
 	arm_print_page_table(process_get_page_table(kernel_process));
-
-	arm_invalidate_all_tlbs();
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_invalidate_all_tlbs();
 
@@ -152,10 +150,11 @@ void bsp_setup(
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(controller, bcm2835_intc);
 
-	time_set_system_clock(tm, bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
-
+	// we use 1 & 3 as 0 & 2 are reserved for the GPU
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
+
+	time_set_system_clock(tm, bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
 	alarm_set_timer(am, &bcm2835_system_timer);
 
@@ -171,7 +170,12 @@ void bsp_setup(
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
 	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
-	arm_set_translation_table_base(process_get_page_table(kernel_process));}
+	arm_set_translation_table_base(process_get_page_table(kernel_process));
+	arm_invalidate_all_tlbs();
+
+	printp_out("BSP Initialised\n");
+}
+
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
 
