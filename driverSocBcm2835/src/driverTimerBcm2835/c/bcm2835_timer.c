@@ -35,8 +35,11 @@ static void bcm2835_timer_setup(
 		timer_callback * const call_back,
 		void * const param)
 {
-	debug_print(TIMER, "BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
-			usr_data, timeout->seconds, timeout->nanoseconds, call_back);
+	if (is_debug_enabled(TIMER))
+	{
+		debug_print(TIMER, "BCM2835: Setting up timer with user data %x, timeout s %d.%d, callback %x\n",
+				usr_data, timeout->seconds, timeout->nanoseconds, call_back);
+	}
 	if (usr_data)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)usr_data;
@@ -59,20 +62,23 @@ static void bcm2835_timer_setup(
 			{
 				const uint32_t new_control = (1 << data->instance);
 				out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), new_control);
-				debug_print(TIMER, "BCM2835: Clearing status for instance %d, base %x, offset %x, control %x -> %x\n",
-						data->instance, data->base, CONTROL_OFFSET, old_control, new_control);
+				if (is_debug_enabled(TIMER))
+				{
+					debug_print(TIMER, "BCM2835: Clearing status for instance %d, base %x, offset %x, control %x -> %x\n",
+							data->instance, data->base, CONTROL_OFFSET, old_control, new_control);
+				}
 			}
 			const uint32_t timeAsUs = tinker_timer_get_microseconds(timeout);
 #if defined (KERNEL_DEBUGGING)
 			if (is_debug_enabled(TIMER))
 			{
-				const uint64_t current = *(uint64_t*)((uint8_t*)data->base + (CLOCK_OFFSET*2));
+				const uint32_t current = in_u32((uint32_t *)(((uint8_t*)data->base + CLOCK_OFFSET)));
 				debug_print(TIMER, "BCM2835: Setting up timer for instance %d, base %x, offset %x, value %d, current %d\n",
 						data->instance,
 						data->base,
 						offset,
 						timeAsUs,
-						(current | 0xFFFFFFFF));
+						current);
 			}
 #endif
 			out_u32((uint32_t*)(((uint8_t*)data->base) + offset), timeAsUs);
@@ -105,8 +111,11 @@ static void bcm2835_timer_cancel(const timer_param_t usr_data)
 				{
 					// clear the bit in control
 					out_u32((uint32_t*)(((uint8_t*)data->base + CONTROL_OFFSET)), (1 << data->instance));
-					debug_print(TIMER, "BCM2835: Cancelling status for instance %d, base %x, offset %x, control %x -> %x\n",
-							data->instance, data->base, CONTROL_OFFSET, control, (1 << data->instance));
+					if (is_debug_enabled(TIMER))
+					{
+						debug_print(TIMER, "BCM2835: Cancelling status for instance %d, base %x, offset %x, control %x -> %x\n",
+								data->instance, data->base, CONTROL_OFFSET, control, (1 << data->instance));
+					}
 				}
 			}
 			else
@@ -121,15 +130,24 @@ static return_t bcm2835_timer_isr(tgt_context_t * const context, timer_param_t p
 {
 	return_t result;
 	bcm2835_timer_cancel(param);
-	debug_prints(TIMER, "BCM2835: ISR for timer\n");
+	if (is_debug_enabled(TIMER))
+	{
+		debug_prints(TIMER, "BCM2835: ISR for timer\n");
+	}
 	if (param)
 	{
 		bcm2835_timer_usr_data_t * const data = (bcm2835_timer_usr_data_t*)param;
 		if (data->callback)
 		{
-			debug_print(TIMER, "BCM2835: Calling back to %x\n", data->callback);
+			if (is_debug_enabled(TIMER))
+			{
+				debug_print(TIMER, "BCM2835: Calling back to %x\n", data->callback);
+			}
 			data->callback(context, data->param);
-			debug_prints(TIMER, "BCM2835: Called back\n");
+			if (is_debug_enabled(TIMER))
+			{
+				debug_prints(TIMER, "BCM2835: Called back\n");
+			}
 			result = NO_ERROR;
 		}
 		else
@@ -159,7 +177,9 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 			uint32_t vbase = 0;
 			kernel_device_map_memory((uint32_t)base, 0x1000, MMU_DEVICE_MEMORY, &vbase);
 			((bcm2835_timer_usr_data_t*)timer->usr_data)->base = (void*)vbase;
+			// get the control for the timer
 			const uint32_t control = in_u32((uint32_t*)(((uint8_t*)vbase + CONTROL_OFFSET)));
+			// if the control is set for this instance; write a 1 and wipe/reset it
 			if (control & (1 << instance))
 			{
 				out_u32((uint32_t*)(((uint8_t*)vbase + CONTROL_OFFSET)), (1 << instance));
@@ -175,8 +195,21 @@ void bcm2835_get_timer(mem_pool_info_t * const pool, timer_t * const timer, void
 
 static uint64_t bcm2835_get_time(void * const user_data)
 {
-	volatile uint64_t * const timer = (volatile uint64_t*)((uint8_t*)user_data + CLOCK_OFFSET);
-	return ((*timer) * 1000);
+	//volatile uint64_t * const timer = (volatile uint64_t*)((uint8_t*)user_data + CLOCK_OFFSET);
+	uint32_t timer_upper1 = in_u32((uint32_t *)(((uint8_t*)user_data + CLOCK_OFFSET + CLOCK_OFFSET)));
+	uint32_t timer_lower = in_u32((uint32_t *)(((uint8_t*)user_data + CLOCK_OFFSET)));
+	uint32_t timer_upper2 = in_u32((uint32_t *)(((uint8_t*)user_data + CLOCK_OFFSET + CLOCK_OFFSET)));
+	while (timer_upper1 != timer_upper2)
+	{
+		timer_upper1 = in_u32((uint32_t *)((uint8_t*)user_data + CLOCK_OFFSET + CLOCK_OFFSET));
+		timer_lower = in_u32((uint32_t *)((uint8_t*)user_data + CLOCK_OFFSET));
+		timer_upper2 = in_u32((uint32_t *)((uint8_t*)user_data + CLOCK_OFFSET + CLOCK_OFFSET));
+	}
+	uint64_t timer = timer_upper1;
+	timer = timer << 32;
+	timer += timer_lower;
+	// 1Mhz timer
+	return (timer * 1000);
 }
 
 clock_device_t * bcm2835_get_clock(void * const base_address, mem_pool_info_t * const pool)
