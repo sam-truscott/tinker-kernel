@@ -346,6 +346,7 @@ return_t arm_map_memory(
 				}
 			}
 		}
+		arm_invalidate_all_tlbs();
 	}
 	else
 	{
@@ -379,6 +380,7 @@ void arm_unmap_memory(
 		{
 			// TODO error
 		}
+		arm_invalidate_all_tlbs();
 	}
 	else
 	{
@@ -429,7 +431,9 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 void arm_invalidate_all_tlbs(void)
 {
 	asm volatile("mov r0, #0x0");
-	asm volatile("mcr p15, 0, r0, c8, c7, 0");	// invalidate all tlbs
+	asm volatile("mcr p15, 0, r0, c8, c5, 0");	// invalidate instruction
+	asm volatile("mcr p15, 0, r0, c8, c6, 0");	// invalidate data
+	asm volatile("mcr p15, 0, r0, c8, c7, 0");	// invalidate unified
 }
 
 void arm_disable_mmu(void)
