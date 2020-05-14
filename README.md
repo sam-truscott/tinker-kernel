@@ -183,6 +183,14 @@ This is still work in progress.
 
 These are the things I need to address in a rough order:
 
+## Immediate
+
+* Caching on at startup causes BSP init failures - Device mappings shouldn't be cached
+* Timer not firing - cache disabled? Or WORD alignment issue due to caching again - can't be if caching disabled
+  * Target time is too small, even when increased, didn't fire
+
+## Longer term
+
 * Multicore not supported; hence why works on Pi1 but not Pi2 
 * Stdio for Pi is reading one char a time, should read all available data
 * Kernel: Review TODO/FIXMEs and add them here
