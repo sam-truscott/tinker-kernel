@@ -142,7 +142,6 @@ static void pipe_receive_message(
 	{
 		// write the buffer size
 		receiver->rx_data.write_msg_position++;
-		// FIXME this must be word aligned for the MMU - message_size maybe un-aligned
 		uint32_t aligned_size = align(receiver->rx_data.message_size, sizeof(uint32_t));
 		debug_print(PIPE, "Increasing by 4 + aligned size of %d\n", aligned_size);
 		receiver->rx_data.write_msg_ptr += (aligned_size + sizeof(uint32_t));
