@@ -161,6 +161,7 @@ void bsp_setup(
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
 	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
+	intc_add_device(bcm2835_intc, INTERRUPT_VC_UART, &uart);
 
 	if (is_debug_enabled(TARGET))
 	{
