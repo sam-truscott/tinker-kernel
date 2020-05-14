@@ -21,7 +21,17 @@ model {
 		            lib project: ':archArm', library: 'archArm', linkage: 'static'
 		            lib project: ':api', library: 'api', linkage: 'static'
 		            lib project: ':base', library: 'base', linkage: 'static'
+		            source {
+                        srcDirs "src/armRaspPi/c"
+                        include "**/bsp_pi.c"
+                    }
 		        }
+                asm {
+                    source {
+                        srcDirs "src/armRaspPi/asm"
+                        include "**/boot.S"
+                    }
+                }
 	        }
 	    }
 		armRaspPi2(NativeExecutableSpec) {
@@ -43,13 +53,13 @@ model {
 		            lib project: ':base', library: 'base', linkage: 'static'
 		            source {
 		                srcDirs "src/armRaspPi/c"
-		                include "**/*.c"
+		                include "**/bsp_pi2.c"
 		            }
 		        }
 		        asm {
 		        	source {
 		        		srcDirs "src/armRaspPi/asm"
-		        		include "**/*.S"
+		        		include "**/boot2.S"
 		        	}
 		        }
 	        }
