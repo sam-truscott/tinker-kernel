@@ -41,8 +41,8 @@ allprojects {
 		            "-DBUILDING_KERNEL",
                     "-DDEBUG_KERNEL_ONLY",
 		            "-DKERNEL_DEBUGGING",
-                    //"-DDEBUG_VALUE=0x0"
-                    "-DDEBUG_VALUE=0xF"
+                    "-DDEBUG_VALUE=0x0"
+                    //"-DDEBUG_VALUE=0xF"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {

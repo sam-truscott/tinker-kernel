@@ -39,7 +39,7 @@
 /**
  * Hertz of the scheduler
  */
-#define SCHEDULER_HERTZ 100
+#define SCHEDULER_HERTZ 10
 
 /**
  * The size of the heap for the kernel

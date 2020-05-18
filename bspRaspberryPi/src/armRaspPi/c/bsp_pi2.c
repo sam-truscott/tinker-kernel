@@ -49,7 +49,7 @@ void bsp_initialise(void)
 	const uint32_t sctrl = arm_get_cp15_c1();
 #endif
 	tgt_disable_external_interrupts();
-	early_uart_init((void*)0x3f000000);
+	early_uart_init((void*)0x3f201000);
 	if (is_debug_enabled(TARGET))
 	{
 		early_uart_put("BSP\n");
@@ -141,7 +141,7 @@ void bsp_setup(
 	arm_invalidate_all_tlbs();
 
 	// init uart before setting the page table
-	bcm2835_uart_get_device((void*)0x3f000000, &uart, UART_DEVICE_NAME);
+	bcm2835_uart_get_device((void*)0x3f201000, &uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
 	// FIXME use object
 	kshell_set_input_device(UART_DEVICE_NAME);
@@ -160,7 +160,6 @@ void bsp_setup(
 
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
-	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
 	intc_add_device(bcm2835_intc, INTERRUPT_VC_UART, &uart);
 
 	if (is_debug_enabled(TARGET))
@@ -328,6 +327,5 @@ void bsp_write_debug_char(const char c)
 
 void tgt_wait_for_interrupt(void)
 {
-	asm volatile("MOV r0, #0");
-	asm volatile("MCR p15, 0, r0, c7, c0, 4");
+	asm volatile("wfi");
 }

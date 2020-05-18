@@ -49,11 +49,13 @@ void bsp_initialise(void)
 	const uint32_t sctrl = arm_get_cp15_c1();
 #endif
 	tgt_disable_external_interrupts();
-	early_uart_init((void*)0x20000000);
+	early_uart_init((void*)0x20201000);
 	if (is_debug_enabled(TARGET))
 	{
 		early_uart_put("BSP\n");
 	}
+
+	early_uart_put("BSP\n");
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
@@ -141,7 +143,7 @@ void bsp_setup(
 	arm_invalidate_all_tlbs();
 
 	// init uart before setting the page table
-	bcm2835_uart_get_device((void*)0x20000000, &uart, UART_DEVICE_NAME);
+	bcm2835_uart_get_device((void*)0x20201000, &uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
 	// FIXME use object
 	kshell_set_input_device(UART_DEVICE_NAME);
@@ -160,8 +162,9 @@ void bsp_setup(
 
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
-	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
+	/* add both, bug in qemu build for raspi */
 	intc_add_device(bcm2835_intc, INTERRUPT_VC_UART, &uart);
+	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
 
 	if (is_debug_enabled(TARGET))
 	{
@@ -170,6 +173,8 @@ void bsp_setup(
 
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
+	/* add both, bug in qemu build for raspi */
+	intc_enable(bcm2835_intc, INTERRUPT_UART);
 	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_invalidate_all_tlbs();
