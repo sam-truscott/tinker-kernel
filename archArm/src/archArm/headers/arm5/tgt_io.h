@@ -11,7 +11,8 @@
 
 #include "tgt_types.h"
 
-#pragma GCC optimize ("-O0")
+#pragma GCC push_options
+#pragma GCC optimize ("-Og")
 #define out_(N,T) \
 	static inline void out_##N(T * const addr, T value) \
 	{ \
@@ -40,5 +41,7 @@ in_(u16, uint16_t)
 in_(s16, int16_t)
 in_(u32, uint32_t)
 in_(s32, int32_t)
+
+#pragma GCC pop_options
 
 #endif /* TGT_IO_H_ */
