@@ -41,12 +41,12 @@ allprojects {
 		            "-DBUILDING_KERNEL",
                     "-DDEBUG_KERNEL_ONLY",
 		            "-DKERNEL_DEBUGGING",
-                    "-DDEBUG_VALUE=0x0"
-                    //"-DDEBUG_VALUE=0xF"
+                    //"-DDEBUG_VALUE=0x0"
+                    "-DDEBUG_VALUE=0x00020001"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {
-		            cCompiler.args "-Og", 
+		            cCompiler.args "-O0", 
 		                "-g3",
 		                "-gdwarf-4",
 		                "-DKERNEL_SHELL",
