@@ -20,7 +20,7 @@ static void thread_setup_stack(thread_t * const thread)
 {
 	const mem_t stack_size = thread->stack_size;
 	const mem_t rsp = ((uint32_t)thread->stack) + (stack_size - 12);
-	mem_t vsp;
+	mem_t vsp = 0;
 #if defined (KERNEL_DEBUGGING)
 	bool_t is_kernel = process_is_kernel(thread->parent);
 #endif

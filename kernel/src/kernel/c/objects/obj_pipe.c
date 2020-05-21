@@ -264,17 +264,22 @@ return_t obj_create_pipe(
 						result = OUT_OF_MEMORY;
 					}
 				}
-				debug_print(PIPE_TRACE, "PipeC: Memory at %x\n", memory);
-				if (result == NO_ERROR)
+				else
 				{
-					util_memset(memory, 0, total_size);
-					rx_queue = pipe_list_t_create(pool);
-					if (!rx_queue)
+					total_size = 0;
+				}
+				if (result == NO_ERROR && total_size > 0)
+					debug_print(PIPE_TRACE, "PipeC: Memory at %x\n", memory);
+					if (result == NO_ERROR)
 					{
-						result = OUT_OF_MEMORY;
+						util_memset(memory, 0, total_size);
+						rx_queue = pipe_list_t_create(pool);
+						if (!rx_queue)
+						{
+							result = OUT_OF_MEMORY;
+						}
 					}
 				}
-			}
 				break;
 			case PIPE_SEND:
 				tx_queue = pipe_list_t_create(pool);

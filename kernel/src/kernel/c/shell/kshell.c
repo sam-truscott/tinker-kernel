@@ -164,7 +164,7 @@ void kshell_start(void)
 		return_t read_status = tinker_receive_message(pipe, (void*)received, &bytesReceived, MAX_LINE_INPUT, true);
 		if (is_debug_enabled(SHELL))
 		{
-			printp_out("KSHELL status = %d, got %d bytes\n", read_status, bytesReceived);
+			printp_out("KSHELL status = %d, got %d bytes: %d\n", read_status, bytesReceived, received[0]);
 		}
 		if (read_status == NO_ERROR)
 		{
