@@ -172,8 +172,6 @@ void bsp_setup(
 	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_invalidate_all_tlbs();
-
-	printp_out("BSP Initialised\n");
 }
 
 

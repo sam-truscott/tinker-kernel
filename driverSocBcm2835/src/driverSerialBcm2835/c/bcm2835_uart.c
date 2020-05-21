@@ -58,7 +58,7 @@ typedef struct bcm2835_user_data
  * This just loops <delay> times in a way that the compiler
  * wont optimize away.
  */
-static void delay(const uint32_t count)
+static inline void delay(const uint32_t count)
 {
     asm volatile(
     		"__delay_%=:"
@@ -67,68 +67,8 @@ static void delay(const uint32_t count)
 	     : : [count]"r"(count) : "cc");
 }
 
-static bool_t early_available;
-static uint8_t * early_base;
-
-/*
- * Initialize UART0.
- */
-void early_uart_init(const uint8_t * const base_address)
-{
-	early_available = false;
-	early_base = (uint8_t *)base_address;
-
-    // Disable UART0.
-    out_u32((uint32_t*)(base_address + UART0_CR), 0x00000000);
-    delay(200);
-    // Setup the GPIO pin 14 && 15.
-
-    // Disable pull up/down for all GPIO pins & delay for 150 cycles.
-    out_u32((uint32_t*)(base_address - 0x1000 + GPPUD), 0x00000000);
-    delay(200);
-
-    // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    out_u32((uint32_t*)(base_address - 0x1000 + GPPUDCLK0), (1 << 14) | (1 << 15));
-    delay(200);
-
-    // Write 0 to GPPUDCLK0 to make it take effect.
-    out_u32((uint32_t*)base_address - 0x1000 + GPPUDCLK0, 0x00000000);
-    delay(200);
-
-    // Clear pending interrupts.
-    out_u32((uint32_t*)(base_address + UART0_ICR), 0x7FF);
-
-    // Set integer & fractional part of baud rate.
-    // Divider = UART_CLOCK/(16 * Baud)
-    // Fraction part register = (Fractional part * 64) + 0.5
-    // UART_CLOCK = 3000000; Baud = 115200.
-
-    // Divider = 3000000/(16 * 115200) = 1.627 = ~1.
-    // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
-    // Divider = 3000000/(16 * 9600) = 19
-    // Fractional part register = 0.
-
-    // 115200
-    out_u32((uint32_t*)(base_address + UART0_IBRD), 19);
-    out_u32((uint32_t*)(base_address + UART0_FBRD), 0);
-
-    // 9600
-    //out_u32((uint32_t*)(UART0_BASE + UART0_IBRD), 1);
-	//out_u32((uint32_t*)(UART0_BASE + UART0_FBRD), 40);
-
-    // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
-    out_u32((uint32_t*)(base_address + UART0_LCRH), /* (1 << 4) |*/ (1 << 5) | (1 << 6));
-
-    // Mask all interrupts.
-    out_u32((uint32_t*)(base_address + UART0_IMSC), (1 << 1) | (1 << 4) | /*(1 << 5) |*/
-		    (1 << 6) | (1 << 7) | (1 << 8) |
-		    (1 << 9) | (1 << 10));
-
-    // Enable UART0, receive & transfer part of UART.
-    out_u32((uint32_t*)(base_address + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
-
-    early_available = true;
-}
+static bool_t early_available = false;
+static uint8_t * early_base = NULL;
 
 static void bcm2835_uart_putc(const uint32_t base, uint8_t byte)
 {
@@ -140,6 +80,71 @@ static void bcm2835_uart_putc(const uint32_t base, uint8_t byte)
 		}
 	}
 	out_u32((uint32_t*)(base + UART0_DR), byte);
+}
+
+/*
+ * Initialize UART0.
+ */
+void early_uart_init(const uint8_t * const base_address)
+{
+    // Disable UART0.
+    out_u32((uint32_t*)(base_address + UART0_CR), 0x00000000);
+    // Setup the GPIO pin 14 && 15.
+
+    // Disable pull up/down for all GPIO pins & delay for 150 cycles.
+    uint8_t * const gpio_base = (uint8_t*)(base_address - 0x1000);
+    out_u32((uint32_t*)(gpio_base + GPPUD), 0x00000000);
+    delay(150);
+
+    // Disable pull up/down for pin 14,15 & delay for 150 cycles.
+    out_u32((uint32_t*)(gpio_base + GPPUDCLK0), (1 << 14) | (1 << 15));
+    delay(150);
+
+    // Write 0 to GPPUDCLK0 to make it take effect.
+    out_u32((uint32_t*)(gpio_base + GPPUDCLK0), 0x00000000);
+
+    // Clear pending interrupts.
+    out_u32((uint32_t*)(base_address + UART0_ICR), 0x7FF);
+
+    // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
+	uint32_t new_lcrh = (0 << 4) // disable fifo
+    	    		| (1 << 5) | (1 << 6); // 8bit word length
+	uint32_t lcrh = in_u32((uint32_t*)(base_address + UART0_LCRH));
+
+	if (new_lcrh != lcrh)
+	{
+		out_u32((uint32_t*)(base_address + UART0_LCRH), new_lcrh);
+	}
+
+    // Set integer & fractional part of baud rate.
+    // Divider = UART_CLOCK/(16 * Baud)
+    // Fraction part register = (Fractional part * 64) + 0.5
+    // UART_CLOCK = 3000000; Baud = 115200.
+
+    // Divider = 3000000/(16 * 115200) = 1.627 = ~1.
+    // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
+    // Divider = 3000000/(16 * 9600) = 19
+    // Fractional part register = 0.
+
+    // 9600
+    //out_u32((uint32_t*)(base_address + UART0_IBRD), 19);
+    //out_u32((uint32_t*)(base_address + UART0_FBRD), 0);
+
+    // 115200
+    out_u32((uint32_t*)(base_address + UART0_IBRD), 1);
+	out_u32((uint32_t*)(base_address + UART0_FBRD), 40);
+
+	// set the fifo size to smallest
+	out_u32((uint32_t*)(base_address + UART0_IFLS), 0);
+
+    // Mask *in* the RX interrupt
+    out_u32((uint32_t*)(base_address + UART0_IMSC), (1 << 4));
+
+    // Enable UART0, receive & transfer part of UART.
+    out_u32((uint32_t*)(base_address + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
+
+    early_base = (uint8_t *)base_address;
+	early_available = true;
 }
 
 static uint8_t bcm2835_uart_getc(const uint32_t base)

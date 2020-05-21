@@ -55,8 +55,6 @@ void bsp_initialise(void)
 		early_uart_put("BSP\n");
 	}
 
-	early_uart_put("BSP\n");
-
 	/* Initialise the Target Processor */
 	tgt_initialise();
 
@@ -174,12 +172,10 @@ void bsp_setup(
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
 	/* add both, bug in qemu build for raspi */
-	intc_enable(bcm2835_intc, INTERRUPT_UART);
+	//intc_enable(bcm2835_intc, INTERRUPT_UART);
 	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
 	arm_invalidate_all_tlbs();
-
-	printp_out("BSP Initialised\n");
 }
 
 

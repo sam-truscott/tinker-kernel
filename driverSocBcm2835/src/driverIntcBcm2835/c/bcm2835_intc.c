@@ -262,10 +262,15 @@ static void bcm2835_enable(
 			break;
 		default:
 			kernel_assert("BCM2835 intc enable interrupt for invalid bank", false);
+			offset = -1;
+			bit = -1;
 			break;
 		}
 		const uint32_t enabled = in_u32((uint32_t*)((uint8_t*)user_data + offset));
-		debug_print(INTC, "BCM2835: enabling base %x, offset %x, enabled %x -> %x\n", user_data, offset, enabled, enabled | bit);
+		if (is_debug_enabled(INTC))
+		{
+			debug_print(INTC, "BCM2835: enabling base %x, offset %x, enabled %x -> %x\n", user_data, offset, enabled, enabled | bit);
+		}
 		out_u32((uint32_t*)((uint8_t*)user_data + offset), enabled | bit);
 	}
 }
