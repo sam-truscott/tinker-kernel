@@ -61,6 +61,7 @@ public class Payload implements AutoCloseable {
 	public void writeToDisk() throws IOException, ApplicationException {
 		LOG.debug("Writing buffer to disk");
 		this.kernel.validate();
+		LOG.info("Writing kernel to 0x{}", Integer.toString(length(), 16));
 		this.kernel.copyTo(this);
 		final int kernelLength = this.length();
 		final int afterLengths = kernelLength + (4 * (this.apps.size() + 1));
@@ -89,9 +90,11 @@ public class Payload implements AutoCloseable {
 		write(IntToByte.intToByteArray(endOfApps, this.endian));
 		// write the lengths of all the apps
 		for (final int offset : alignedOffsets) {
+			LOG.info("Writing Offset: {} to 0x{}", offset, Integer.toString(length(), 16));
 			write(IntToByte.intToByteArray(offset, this.endian));
 		}
 		// end of apps
+		LOG.info("Writing EoP to 0x{}", Integer.toString(length(), 16));
 		write(new byte[]{0,0,0,0});
 		
 		LOG.debug("Writing apps to payload");
@@ -101,6 +104,7 @@ public class Payload implements AutoCloseable {
 			byte[] fill = new byte[appAligned - length()];
 			Arrays.fill(fill, (byte)0);
 			write(fill);
+			LOG.info("Writing {} to 0x{}", app, Integer.toString(length(), 16));
 			app.copyTo(this);
 		}
 		this.write(HEADER);
