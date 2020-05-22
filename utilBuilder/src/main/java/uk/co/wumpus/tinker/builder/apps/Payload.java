@@ -19,7 +19,7 @@ import uk.co.wumpus.tinker.builder.util.ByteToHex;
 import uk.co.wumpus.tinker.builder.util.Endian;
 import uk.co.wumpus.tinker.builder.util.IntToByte;
 
-public class Payload {
+public class Payload implements AutoCloseable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Payload.class);
 	@Nonnull private static final byte[] HEADER = new byte[128];
@@ -75,14 +75,17 @@ public class Payload {
 		for (final Application app : this.apps) {
 			app.validate();
 			final int alignedOffset = aligned - kernelLength;
-			LOG.info("Process {} starts at {} ({}/0x{})", app.toString(), Integer.toString(aligned, 16), alignedOffset, Integer.toString(alignedOffset, 16));
+			LOG.info("Process {} starts at 0x{} ({}/0x{})", app.toString(), 
+					Integer.toString(aligned, 16), 
+					alignedOffset,
+					Integer.toString(alignedOffset, 16));
 			alignedOffsets.add(alignedOffset);
 			offsets.put(app, aligned);
 			aligned += align(aligned + app.length());
 		}
 		// write the length of the whole package
 		final int endOfApps = aligned - kernelLength;
-		LOG.info("Applications end at offset {}/0x{}", endOfApps, Integer.toString(endOfApps, 16));
+		LOG.info("Applications end at offset 0x{}", Integer.toString(endOfApps, 16));
 		write(IntToByte.intToByteArray(endOfApps, this.endian));
 		// write the lengths of all the apps
 		for (final int offset : alignedOffsets) {
@@ -109,6 +112,7 @@ public class Payload {
 		return (up >= value) ? up : up + 4096;
 	}
 	
+	@Override
 	public void close() {
 		try {
 			this.fileWriter.close();

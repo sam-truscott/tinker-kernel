@@ -46,20 +46,17 @@ public class TinkerBuilder {
 			LOG.error("Failed to delete the existing package image, aborting.");
 			return;
 		}
-		final Payload payload = new Payload(endianness, outputFile, new Binary(kernelBinary));
-		final List<String> argList = new ArrayList<>(Arrays.asList(args));
-		argList.remove(0);
-		argList.remove(0);
-		argList.remove(0);
-		argList.remove(0);
-		for (final String elf : argList) {
-			payload.addApplication(new Elf(new File(elf), archPrefix));
-		}
-		LOG.debug("Writing payload to disk");
-		try {
+		try (final Payload payload = new Payload(endianness, outputFile, new Binary(kernelBinary))) {
+			final List<String> argList = new ArrayList<>(Arrays.asList(args));
+			argList.remove(0);
+			argList.remove(0);
+			argList.remove(0);
+			argList.remove(0);
+			for (final String elf : argList) {
+				payload.addApplication(new Elf(new File(elf), archPrefix));
+			}
+			LOG.debug("Writing payload to disk");
 			payload.writeToDisk();
-		} finally {
-			payload.close();
 		}
 		LOG.debug("Written");
 	}
