@@ -36,7 +36,7 @@ public class Payload {
 			@Nonnull final Endian endian,
 			@Nonnull final File payload,
 			@Nonnull final Application kernel) throws ApplicationException {
-		LOG.info("Creating payload at {} with endianness {}", payload, endian);
+		LOG.debug("Creating payload at {} with endianness {}", payload, endian);
 		this.endian = endian;
 		this.kernel = kernel;
 		try {
@@ -59,20 +59,23 @@ public class Payload {
 	}
 	
 	public void writeToDisk() throws IOException, ApplicationException {
-		LOG.info("Writing buffer to disk");
+		LOG.debug("Writing buffer to disk");
 		this.kernel.validate();
 		this.kernel.copyTo(this);
 		final int kernelLength = this.length();
 		final int afterLengths = kernelLength + (4 * (this.apps.size() + 1));
 		int aligned = align(afterLengths);
-		LOG.info("Kernel finishes at {}, lengths to {}, aligning to {}", kernelLength, afterLengths, aligned); 
+		LOG.info("Kernel finishes at 0x{}, lengths to 0x{}, aligning to 0x{}", 
+				Integer.toString(kernelLength, 16), 
+				Integer.toString(afterLengths, 16), 
+				Integer.toString(aligned, 16)); 
 		final Map<Application, Integer> offsets = new HashMap<>();
 		final List<Integer> alignedOffsets = new ArrayList<>(this.apps.size());
 		// calculate the aligned offsets of all the apps
 		for (final Application app : this.apps) {
 			app.validate();
 			final int alignedOffset = aligned - kernelLength;
-			LOG.info("Process {} starts at {} ({}/0x{})", app.toString(), aligned, alignedOffset, Integer.toString(alignedOffset, 16));
+			LOG.info("Process {} starts at {} ({}/0x{})", app.toString(), Integer.toString(aligned, 16), alignedOffset, Integer.toString(alignedOffset, 16));
 			alignedOffsets.add(alignedOffset);
 			offsets.put(app, aligned);
 			aligned += align(aligned + app.length());
@@ -88,7 +91,7 @@ public class Payload {
 		// end of apps
 		write(new byte[]{0,0,0,0});
 		
-		LOG.info("Writing apps to payload");
+		LOG.debug("Writing apps to payload");
 		// write each app to the package
 		for (final Application app : this.apps) {
 			final int appAligned = offsets.get(app);

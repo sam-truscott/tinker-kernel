@@ -19,7 +19,7 @@ public class TinkerBuilder {
 	private static final Logger LOG = LoggerFactory.getLogger(TinkerBuilder.class);
 	
 	public static void main(final String... args) throws Exception {
-		LOG.info("TinkerBuilder");
+		LOG.debug("TinkerBuilder");
 		if (args.length < 4) {
 			LOG.error("Need to specify output, arch (e.g. arm-eabi), endianness (big or small) and kernel image as a minimum");
 			return;
@@ -34,7 +34,7 @@ public class TinkerBuilder {
 		final File kernelElf = new File(args[3]);
 		final File kernelBinary = File.createTempFile("tinker_kernel-", ".img");
 		kernelBinary.deleteOnExit();
-		LOG.info("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
+		LOG.debug("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
 		final Objcopy converter = new Objcopy(archPrefix, kernelElf, kernelBinary);
 		if (!converter.execute()) {
 			LOG.error("Failed to convert the kernel from ELF to a binary, aborting.");
@@ -55,12 +55,12 @@ public class TinkerBuilder {
 		for (final String elf : argList) {
 			payload.addApplication(new Elf(new File(elf), archPrefix));
 		}
-		LOG.info("Writing payload to disk");
+		LOG.debug("Writing payload to disk");
 		try {
 			payload.writeToDisk();
 		} finally {
 			payload.close();
 		}
-		LOG.info("Written");
+		LOG.debug("Written");
 	}
 }

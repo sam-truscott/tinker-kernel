@@ -24,7 +24,7 @@ public class Elf extends Binary {
 
 	@Override
 	public void validate() throws ApplicationException {
-		LOG.info("Validating ELF");
+		LOG.debug("Validating ELF");
 		ReadElf e = new ReadElf(this.archPrefix, super.getFile());
 		try {
 			if (!e.execute()) {
@@ -33,6 +33,6 @@ public class Elf extends Binary {
 		} catch (InterruptedException | IOException e2) {
 			throw new ApplicationException("Validation task threw an exception", e2);
 		}
-		LOG.info("Validation complete");
+		LOG.debug("Validation complete");
 	}
 }

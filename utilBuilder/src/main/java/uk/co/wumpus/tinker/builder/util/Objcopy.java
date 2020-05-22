@@ -25,7 +25,7 @@ public class Objcopy {
 	}
 	
 	public boolean execute() throws IOException, InterruptedException {
-		LOG.info("Starting process {}", this.commandLine);
+		LOG.debug("Starting process {}", this.commandLine);
 		Process proc = new ProcessBuilder(
 				this.commandLine,
 				"-O",
@@ -33,11 +33,11 @@ public class Objcopy {
 				this.inputFile.getAbsoluteFile().toString(),
 				this.outputFile.getAbsoluteFile().toString())
 				.start();
-		LOG.info("Started {}", this.commandLine);
+		LOG.debug("Started {}", this.commandLine);
 		final int returnCode = proc.waitFor();
-		LOG.info("{} finished with return code {}", this.commandLine, returnCode);
-		LOG.info("Output [{}]", StreamUtils.getStream(proc.getInputStream()));
-		LOG.info("Error [{}]", StreamUtils.getStream(proc.getErrorStream()));
+		LOG.debug("{} finished with return code {}", this.commandLine, returnCode);
+		LOG.debug("Output [{}]", StreamUtils.getStream(proc.getInputStream()));
+		LOG.debug("Error [{}]", StreamUtils.getStream(proc.getErrorStream()));
 		return returnCode == 0;
 	}
 }

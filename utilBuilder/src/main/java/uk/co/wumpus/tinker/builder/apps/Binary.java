@@ -15,14 +15,14 @@ public class Binary implements Application {
 	@Nonnull private final byte[] data;
 	
 	public Binary(@Nonnull final File binaryFile) throws ApplicationException {
-		LOG.info("Creating binary file for {}", binaryFile);
+		LOG.debug("Creating binary file for {}", binaryFile);
 		this.binary = binaryFile;
 		this.data = read(this.binary);
 	}
 
 	@Override
 	public String toString() {
-		return this.binary.toString();
+		return this.binary.getName().toString();
 	}
 	
 	@Nonnull
@@ -47,7 +47,7 @@ public class Binary implements Application {
 			fis = new FileInputStream(binary);
 			final byte[] data = new byte[fis.available()];
 			final int len = fis.read(data);
-			LOG.info("Read {} bytes from {}", len, binary);
+			LOG.debug("Read {} bytes from {}", len, binary);
 			if (-1 == len) {
 				LOG.error("Failed to read data from binary");
 			}
@@ -67,7 +67,7 @@ public class Binary implements Application {
 
 	@Override
 	public void copyTo(@Nonnull final Payload payload) throws ApplicationException {
-		LOG.info("Copying binary {} to payload", this.binary);
+		LOG.debug("Copying binary {} to payload", this.binary);
 		try {
 			payload.write(this.data);
 		} catch (Exception e) {
