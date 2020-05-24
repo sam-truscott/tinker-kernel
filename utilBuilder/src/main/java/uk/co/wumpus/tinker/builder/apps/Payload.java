@@ -66,7 +66,7 @@ public class Payload implements AutoCloseable {
 		final int kernelLength = this.length();
 		final int afterLengths = kernelLength + (4 * (this.apps.size() + 1));
 		int aligned = align(afterLengths);
-		LOG.info("Kernel finishes at 0x{}, lengths to 0x{}, aligning to 0x{}", 
+		LOG.info("Kernel finishes at 0x{}, offsets to 0x{}, aligning to 0x{}", 
 				Integer.toString(kernelLength, 16), 
 				Integer.toString(afterLengths, 16), 
 				Integer.toString(aligned, 16)); 
@@ -94,7 +94,7 @@ public class Payload implements AutoCloseable {
 			write(IntToByte.intToByteArray(offset, this.endian));
 		}
 		// end of apps
-		LOG.info("Writing EoP to 0x{}", Integer.toString(length(), 16));
+		LOG.info("Writing offset terminator to 0x{}", Integer.toString(length(), 16));
 		write(new byte[]{0,0,0,0});
 		
 		LOG.debug("Writing apps to payload");
