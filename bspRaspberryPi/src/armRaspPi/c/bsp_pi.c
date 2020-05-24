@@ -214,24 +214,34 @@ static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 	switch(type)
 	{
 	case VECTOR_DATA_ABORT:
+		error_print("## ------------------S------------------------- ##\n");
 		error_print("Data Abort sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
 		break;
 	case VECTOR_RESET:
+		error_print("## ------------------S------------------------- ##\n");
 		error_print("Reset sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
 		break;
 	case VECTOR_UNDEFINED:
+		error_print("## ------------------S------------------------- ##\n");
 		error_print("Undefined sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
 		break;
 	case VECTOR_PRETECH_ABORT:
+		error_print("## ------------------S------------------------- ##\n");
 		error_print("Prefetch sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
 		break;
 	case VECTOR_RESERVED:
+		error_print("## ------------------S------------------------- ##\n");
 		error_print("Reserved sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
 		break;
 	case VECTOR_SYSTEM_CALL:
 		int_syscall_request_interrupt(interrupt_controller, context);
