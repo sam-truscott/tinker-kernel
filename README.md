@@ -71,7 +71,7 @@ You'll need a gcc available on the PATH for this to build.
 
 GCC is the compiler used by default.
 
-For ARM I'm using 7.1.0 for PowerPC I'm using 4.9.0.
+For ARM I'm using 9.3.0 for PowerPC I'm using 4.9.0.
 
 ## Building the toolchain
 
