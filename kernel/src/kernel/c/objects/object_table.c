@@ -153,7 +153,7 @@ return_t obj_remove_object(
 		{
 			if(!object_map_t_remove(t->the_map, objno))
 			{
-				ret = UNKNOWN_OBJ;
+				ret = OBJECT_NOT_REMOVED_FROM_REGISTRY;
 			}
 		}
 		else

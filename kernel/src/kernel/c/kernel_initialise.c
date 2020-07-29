@@ -206,7 +206,7 @@ void kernel_initialise(void)
 			0,
 			32 * (1024 * 1024),
 			MMU_RANDOM_ACCESS_MEMORY,
-			MEM_ALL_ACCESS,
+			(mmu_privilege_t)MEM_ALL_ACCESS,
 			MMU_READ_WRITE,
 			"RAM (Kernel)");
 	tgt_map_memory(kernel_process, kernel_ram_sec);

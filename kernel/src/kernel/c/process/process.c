@@ -239,9 +239,9 @@ return_t process_create(
 						part->real,
 						part->virt,
 						part->size,
-						part->mem_type,
-						part->priv,
-						part->access,
+						(mmu_memory_t)(part->mem_type),
+						(mmu_privilege_t)(part->priv),
+						(mmu_access_t)(part->access),
 						part->name));
 			part = part->next;
 		}
