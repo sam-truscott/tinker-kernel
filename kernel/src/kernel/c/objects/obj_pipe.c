@@ -269,6 +269,7 @@ return_t obj_create_pipe(
 					total_size = 0;
 				}
 				if (result == NO_ERROR && total_size > 0)
+				{
 					debug_print(PIPE_TRACE, "PipeC: Memory at %x\n", memory);
 					if (result == NO_ERROR)
 					{
@@ -280,6 +281,7 @@ return_t obj_create_pipe(
 						}
 					}
 				}
+			}
 				break;
 			case PIPE_SEND:
 				tx_queue = pipe_list_t_create(pool);
