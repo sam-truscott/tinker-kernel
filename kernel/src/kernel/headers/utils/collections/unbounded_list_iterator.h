@@ -56,18 +56,16 @@
 	 */ \
 	PREFIX void ITERATOR_T##_initialise(ITERATOR_T * it, const LIST_T * const list) \
 	{ \
-		 if (it && list) \
+		 if (it) \
 		 { \
+			 util_memset(it, 0, sizeof(ITERATOR_T)); \
 			 it->list = list; \
 			 it->pos = 0; \
-			 if (list->size > 0) \
-			 { \
-				 it->current = list->head; \
-			 } \
-			 else \
-			 { \
-				 it->current = NULL; \
-			 } \
+			 it->current = NULL; \
+		 } \
+		 if (list && list->size > 0) \
+		 { \
+			 it->current = list->head; \
 		 } \
 	} \
 	\
