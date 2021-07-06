@@ -42,7 +42,7 @@ allprojects {
                     "-DDEBUG_KERNEL_ONLY",
 		            "-DKERNEL_DEBUGGING",
                     //"-DDEBUG_VALUE=0x0"
-                    "-DDEBUG_VALUE=0x00020001"
+                    "-DDEBUG_VALUE=0x00020403"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
 		        linker.args  "-static"
 		        if (buildType == buildTypes.debug) {
@@ -102,6 +102,7 @@ allprojects {
                        args << "-DSCHEDULER_DEBUGGING"
                        args << "-DKERNEL_DEBUGGING"
                        args << "-DMEMSET"
+                       args << "-DHAVE_MREMAP=0"
                        args << "-ftest-coverage"
                        args << "-fprofile-arcs"
 	                   args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
@@ -168,10 +169,14 @@ allprojects {
 	                    args << "-marm"
                         args << "-march=armv5te"
                         args << "-mfloat-abi=soft"
+                        //args << "-fno-use-cxa-atexit"
+                        //args << "--specs=nano.specs"
 	                }
                     linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
                         args << "-march=armv5te"
+                        args << "-fno-use-cxa-atexit"
+                        //args << "--specs=nano.specs"
                     }
 	            }
 	            target("tinkerArm4Soft") {

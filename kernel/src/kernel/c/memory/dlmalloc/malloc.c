@@ -1,14 +1,10 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC optimize ("-O2")
 
 #if defined(IS_HOST_UNIT_TEST)
 
 #include <errno.h>
 #define FORCEINLINE
-#pragma GCC system_header
 
-#pragma GCC optimize ("-O2")
 #include "memory/dlmalloc/malloc_config.h"
 #include "memory/dlmalloc/malloc_failure.h"
 
@@ -25,8 +21,6 @@
 
 #define memcpy util_memcpy
 #define memset util_memset
-
-#pragma GCC optimize ("-O2")
 
 #endif
 
@@ -5998,8 +5992,6 @@ int mspace_mallopt(int param_number, int value) {
 }
 
 #endif /* MSPACES */
-
-#pragma GCC diagnostic pop
 
 
 /* -------------------- Alternative MORECORE functions ------------------- */
