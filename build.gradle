@@ -28,6 +28,7 @@ allprojects {
 	        debug
 	        release
 	    }
+	    /* compiler and linker options for all toolchains */
 	    binaries {
 	    	all {
 		    	cCompiler.args "-pedantic",   /* always be pedantic - see below */
@@ -59,13 +60,16 @@ allprojects {
 		                "-g0",                /* no debugging */
 		                "-UKERNEL_DEBUGGING", /* no debugging */
 		                "-DKERNEL_SHELL",     /* enable shell */
-		                "-UKERNEL_SHELL_DEBUG"/* no shell debugging */
+		                "-UKERNEL_SHELL_DEBUG" /* no shell debugging */
                     linker.args  "-fno-lto"   /* for now, disable lto */
 		        }
 	    	}
 	    }
+	    /* native and cross toolchains */
 	    toolChains {
+	       /* Normal non-cross-compiler gcc */
 	        gcc(Gcc) {
+	           /* GCC on Windows */
 	           target("windows_x86") {
 	               File srcDir = new File("src")
 	               cCompiler.withArguments { args ->
@@ -88,6 +92,7 @@ allprojects {
 	                   args << "-fprofile-arcs"
 	               }
 	           }
+	           /* GCC on Linux AMD 64bit */
 	           target("linux_x86-64") {
 	               File srcDir = new File("src")
 	               cCompiler.withArguments { args ->
@@ -114,6 +119,7 @@ allprojects {
                        args << "-fPIC"
 	               }
 	           }
+	           /* GCC on Linux ARM v7 */
 	           target("linux_arm-v7") {
 	               File srcDir = new File("src")
                    cCompiler.withArguments { args ->
@@ -137,7 +143,9 @@ allprojects {
                    }
 	           }
 	        }
+	        /* Cross compilers */
 	        xgcc(Gcc) {
+	            /* gcc for powerpc */
 	            target("tinkerPpc") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "powerpc-eabi-gcc"
@@ -159,6 +167,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm (generic) */
 	            target("tinkerArm") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -180,6 +189,7 @@ allprojects {
                         //args << "--specs=nano.specs"
                     }
 	            }
+	            /* gcc for arm v4 - softfp */
 	            target("tinkerArm4Soft") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -206,6 +216,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v4 - hardfp */
 	            target("tinkerArm4HardVfp") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -235,6 +246,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v7 - softfp */
 				target("tinkerArm7Soft") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -259,6 +271,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v7 - hardfp */
 	            target("tinkerArm7HardVfp") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -289,6 +302,7 @@ allprojects {
 	            }
 	        }
 	    }
+	    /* platforms and their architecture */
 	    platforms {
 	        tinkerArm4Soft {
 	            architecture "arm"
