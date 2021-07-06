@@ -103,13 +103,13 @@ allprojects {
                        args << "-DKERNEL_DEBUGGING"
                        args << "-DMEMSET"
                        args << "-DHAVE_MREMAP=0"
-                       args << "-ftest-coverage"
-                       args << "-fprofile-arcs"
+                       //args << "-ftest-coverage"
+                       //args << "-fprofile-arcs"
 	                   args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
 	               }
 	               linker.withArguments { args ->
-	                   args << "-ftest-coverage"
-	                   args << "-fprofile-arcs"
+	                   //args << "-ftest-coverage"
+	                   //args << "-fprofile-arcs"
                        args << "-fPIC"
 	               }
 	           }
