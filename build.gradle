@@ -30,37 +30,37 @@ allprojects {
 	    }
 	    binaries {
 	    	all {
-		    	cCompiler.args "-pedantic",
+		    	cCompiler.args "-pedantic",   /* always be pedantic - see below */
 		            "-pedantic-errors",
 		            "-Wall",
 		            "-Wextra",
 		            "-Werror",
-		            "-fanalyzer",
+		            "-fanalyzer",             /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 		            "-c",
 		            "-fmessage-length=0",
-		            "-std=gnu18",
-		            "-DBUILDING_KERNEL",
-                    "-DDEBUG_KERNEL_ONLY",
-		            "-DKERNEL_DEBUGGING",
+		            "-std=gnu18",             /* for now use the default */
+		            "-DBUILDING_KERNEL",      /* used for apis - building kernel */
+                    "-DDEBUG_KERNEL_ONLY",    /* debug the kernel only */
+		            "-DKERNEL_DEBUGGING",     /* enable debugging */
                     //"-DDEBUG_VALUE=0x0"
                     "-DDEBUG_VALUE=0x00020403"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
-		        linker.args  "-static"
+		        linker.args  "-static"        /* always static - no linking */
 		        if (buildType == buildTypes.debug) {
-		            cCompiler.args "-O0", 
-		                "-g3",
-		                "-gdwarf-4",
-		                "-DKERNEL_SHELL",
-                        "-DKERNEL_SHELL_DEBUG",
-		                "-UUNIT_TESTS"
-		            linker.args  "-fno-lto"
+		            cCompiler.args "-O0",     /* no optimisation */
+		                "-g3",                /* lots of debugging */
+		                "-gdwarf-4",          /* use latest format */
+		                "-DKERNEL_SHELL",     /* enable internal shell */
+                        "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
+		                "-UUNIT_TESTS"        /* enable unit tests */
+		            linker.args  "-fno-lto"   /* for now, disable lto */
 		        } else if (buildType == buildTypes.release) {
-		            cCompiler.args "-O3",
-		                "-g0",
-		                "-UKERNEL_DEBUGGING",
-		                "-DKERNEL_SHELL",
-		                "-UKERNEL_SHELL_DEBUG"
-                    linker.args  "-flto"
+		            cCompiler.args "-O2",     /* default optimisation level */
+		                "-g0",                /* no debugging */
+		                "-UKERNEL_DEBUGGING", /* no debugging */
+		                "-DKERNEL_SHELL",     /* enable shell */
+		                "-UKERNEL_SHELL_DEBUG"/* no shell debugging */
+                    linker.args  "-fno-lto"   /* for now, disable lto */
 		        }
 	    	}
 	    }
