@@ -10,6 +10,8 @@
 #include "tinker_api_process.h"
 #include "stdio.h"
 
+void __register_exitproc(void) { }
+
 int main(void)
 {
 	tinker_debug("hello world 1\n", 14);
