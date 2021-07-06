@@ -32,6 +32,10 @@ public class TinkerBuilder {
 
 		final Endian endianness = Endian.fromString(args[2]);
 		final File kernelElf = new File(args[3]);
+		if (!kernelElf.canRead()) {
+			LOG.error("Cannot read {}", args[3]);
+			return;
+		}
 		final File kernelBinary = File.createTempFile("tinker_kernel-", ".img");
 		kernelBinary.deleteOnExit();
 		LOG.debug("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
