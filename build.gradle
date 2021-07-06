@@ -35,6 +35,7 @@ allprojects {
 		            "-Wall",
 		            "-Wextra",
 		            "-Werror",
+		            "-fanalyzer",
 		            "-c",
 		            "-fmessage-length=0",
 		            "-std=gnu18",
