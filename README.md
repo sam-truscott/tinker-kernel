@@ -49,10 +49,10 @@ Gradle is used as the build system. It can build debug and release versions of e
 For example, to build an individual target use:
 
     # Windows
-    gradlew armRaspPiDebugExecutable armRaspPiReleaseExecutable
+    gradlew armRaspPi2DebugExecutable armRaspPi2ReleaseExecutable
     
     # Linux
-    ./gradlew armRaspPiDebugExecutable armRaspPiReleaseExecutable
+    ./gradlew armRaspPi2DebugExecutable armRaspPi2ReleaseExecutable
 	
 # Unit Tests
 
@@ -70,8 +70,6 @@ You'll need a gcc available on the PATH for this to build.
 # Toolchains
 
 GCC is the compiler used by default.
-
-For ARM I'm using 9.3.0 for PowerPC I'm using 4.9.0.
 
 ## Building the toolchain
 
@@ -142,20 +140,20 @@ Then we can use it to create our final binary:
     gradlew packageJar 
     
     # Windows
-    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe
+    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi2.exe
     
     # Linux
-    java -jar build/libs/utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ../bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi.exe
+    java -jar build/libs/utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ../bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi2
     
 We can additionally use the test 'hello world' program
 
     # Execute from inside the tinker directory
-    gradlew armRaspPiDebugExecutable elfLoaderTestTinkerArm4SoftDebugExecutable
+    gradlew armRaspPi2DebugExecutable elfLoaderTestTinkerArm4SoftDebugExecutable
     
     # Now lets build the image
     cd utilBuilder
     gradlew packageJar
-    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe ..\elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\debug\elfLoaderTest.exe 
+    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi2.exe ..\elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\debug\elfLoaderTest.exe 
    
 This will generate a 'kernel.img' file in the current directory with the Raspberry Pi kernel and one userland ELF - the hello world.
 
@@ -203,16 +201,20 @@ These are the things I need to address in a rough order:
 Starting QEMU for the Raspberry Pi build
 
 	# Disassemble the Raspberry Pi build so we can look at addresses
-	arm-eabi-objdump -dS bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi.exe > dis.txt
+	arm-eabi-objdump -dS bspRaspberryPi\build\exe\armRaspPi2\debug\armRaspPi2.exe > dis.txt
 
 	# Start the emulator (Windows)
-	qemu-system-arm -m 512M -kernel bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:12345 -S
+	qemu-system-arm -m 1024M -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:12345 -S
 
 	# Start the emulator (Linux)
-	qemu-system-arm -m 512M -kernel bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi -serial tcp:127.0.0.1:12345 -S
+	qemu-system-arm -m 1024M -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2 -serial tcp:127.0.0.1:12345 -S
+	
+or
+
+    qemu-system-arm -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2 -serial stdio
 
 	# Start a debugger
-	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi.exe
+	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi2.exe
 	# Connect to the debugger
 	target remote localhost:1234
 	# Set a breakpoint at the start
