@@ -10,6 +10,7 @@
 #define STACK_H_
 
 #include "tinker_api_types.h"
+#include "utils/collections/unbounded_list.h"
 
 typedef struct stack_t stack_t;
 

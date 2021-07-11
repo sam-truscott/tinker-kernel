@@ -6,8 +6,7 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-
-#include "unbounded_queue.h"
+#include "utils/collections/unbounded_queue.h"
 
 
 #include "utils/util_memcpy.h"

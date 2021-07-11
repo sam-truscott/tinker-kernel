@@ -16,7 +16,6 @@
 #include "objects/obj_process.h"
 #include "objects/obj_thread.h"
 #include "memory/memory_manager.h"
-//#include "memory/mem_section.h"
 #include "console/print_out.h"
 
 #define INVALID_PROC_ID 0
@@ -26,7 +25,7 @@ proc_list_t * proc_create(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager)
 {
-	proc_list_t * const list = mem_alloc(pool, sizeof(process_list_t));
+	proc_list_t * const list = mem_alloc(pool, sizeof(proc_list_t));
 	if (list)
 	{
 		util_memset(list, 0, sizeof(proc_list_t));

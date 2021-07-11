@@ -6,9 +6,8 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
-#include "stack.h"
+#include "utils/collections/stack.h"
 
-#include "utils/collections/unbounded_list.h"
 #include "utils/util_memset.h"
 #include "memory/memory_manager.h"
 

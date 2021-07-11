@@ -109,7 +109,7 @@ return_t regsitery_add(
 			{
 				if (waiting_map_t_contains_key(reg->registry_waiting_map, key))
 				{
-					waiting_queue_t * queue = NULL;
+					queue_t * queue = NULL;
 					if (waiting_map_t_get(reg->registry_waiting_map, key, &queue))
 					{
 						if (queue)
@@ -199,7 +199,7 @@ void registry_wait_for(
 		util_memset(key, 0, sizeof(key));
 		util_memcpy(key, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
 
-		waiting_queue_t * queue = NULL;
+		queue_t * queue = NULL;
 		if (!waiting_map_t_contains_key(reg->registry_waiting_map, key))
 		{
 			queue = queue_create(reg->registry_waiting_map->pool);

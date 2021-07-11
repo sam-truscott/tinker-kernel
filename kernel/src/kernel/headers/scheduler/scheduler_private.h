@@ -29,7 +29,7 @@ typedef struct scheduler_t
 	/**
 	 * All the priority round-robin queues
 	 */
-	queue_t priority_queues[MAX_PRIORITY + 1];
+	queue_t * priority_queues[MAX_PRIORITY + 1];
 	/**
 	 * The current scheduler priority
 	 */
@@ -37,7 +37,7 @@ typedef struct scheduler_t
 	/**
 	 * The scheduler stack of queued round robins
 	 */
-	stack_t queue_stack;
+	stack_t * queue_stack;
 	/**
 	 * The scheduler's idle thread
 	 */

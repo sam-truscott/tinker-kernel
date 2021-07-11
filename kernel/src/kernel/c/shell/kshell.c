@@ -315,21 +315,21 @@ static void kshell_task_list(void)
 
 		thread_it_t_delete(tlist);
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_object_table(void)
 {
-	process_list_it_t * const list = proc_list_procs(kshell->proc_list);
+	list_it_t * const list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	while (proc)
 	{
@@ -453,22 +453,22 @@ static void kshell_object_table(void)
 			object_table_it_t_delete(it);
 		}
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_memory_info(void)
 {
 	print_out("mem:\n\n");
-	process_list_it_t * list = proc_list_procs(kshell->proc_list);
+	list_it_t * list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	print_out("Proc\tPool Sz    Pool Usd   P.Pool Sz  P.Pool Usd\n");
 	print_out("----\t---------- ---------- ---------- ----------\n");
@@ -484,13 +484,13 @@ static void kshell_memory_info(void)
 				mem_get_alloc_size(prv_pool),
 				mem_get_allocd_size(prv_pool));
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 
 	print_out("\nMemory mappings:\n");
 
@@ -498,7 +498,7 @@ static void kshell_memory_info(void)
 	print_out("---------- ---------- ---------- --- ---- ------ ----\n");
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 	while (proc)
 	{
 		printp_out("%s\n", process_get_image(proc));
@@ -515,12 +515,12 @@ static void kshell_memory_info(void)
 					mem_sec_get_name(sec));
 			sec = mem_sec_get_next(sec);
 		}
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 #endif /* KERNEL_SHELL */
