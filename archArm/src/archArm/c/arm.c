@@ -17,6 +17,7 @@
 #include "tinker_api_types.h"
 #include "kernel_initialise.h"
 #include "interrupts/interrupt_manager.h"
+#include "utils/util_memcpy.h"
 
 void tgt_initialise(void)
 {

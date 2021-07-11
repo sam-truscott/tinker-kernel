@@ -123,13 +123,13 @@ void map_delete(map_t * const map)
 bool_t map_get(const map_t * const map, const void * key, void ** const value)
 {
 	/* find the table entry */
-	const int32_t index = HASH_MAP_T##_index_of(map, key);
+	const int32_t index = map_index_of(map, key);
 	const HASH_MAP_T##_bucket_t * const bucket = (const HASH_MAP_T##_bucket_t *)map->buckets[index];
 	bool_t found = false;
 	/* if found and used return the value */
 	if (bucket && value)
 	{
-		for (uint32_t i=0 ; i < BUCKET_SIZE && !found ; i++)
+		for (uint32_t i=0 ; i < map->bucket_size && !found ; i++)
 		{
 			if (bucket->entries[i])
 			{
@@ -153,13 +153,13 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 	bool_t put_ok = false;
 	if (map->size < map->capacity)
 	{
-		const int32_t index = HASH_MAP_T##_index_of(map, key);
+		const int32_t index = map_index_of(map, key);
 		HASH_MAP_T##_bucket_t * bucket;
 		if (!map->buckets[index])
 		{
-			map->buckets[index] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_bucket_t));
+			map->buckets[index] = mem_alloc(map->pool, sizeof(map_bucket_t));
 			bucket = map->buckets[index];
-			util_memset(bucket, 0, sizeof(HASH_MAP_T##_bucket_t));
+			util_memset(bucket, 0, sizeof(map__bucket_t));
 		}
 		else
 		{
@@ -169,7 +169,7 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 		{
 			int32_t used_bucket_index = -1;
 			int32_t unused_bucket_index = -1;
-			for (uint32_t i = 0 ; i < BUCKET_SIZE && used_bucket_index == -1 ; i++)
+			for (uint32_t i = 0 ; i < map->bucket_size && used_bucket_index == -1 ; i++)
 			{
 				if (bucket->entries[i])
 				{
@@ -195,9 +195,9 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 			if (bucket_index != -1)
 			{
 				HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, bucket_index);
-				bucket->entries[bucket_index] = mem_alloc(map->pool, sizeof(HASH_MAP_T##_entry_t));
-				util_memset(bucket->entries[bucket_index], 0, sizeof(HASH_MAP_T##_entry_t));
-				HASH_MAP_T##_copy_key(bucket->entries[bucket_index], key);
+				bucket->entries[bucket_index] = mem_alloc(map->pool, sizeof(map_entry_t));
+				util_memset(bucket->entries[bucket_index], 0, sizeof(map_entry_t));
+				map_copy_key(bucket->entries[bucket_index], key);
 				bucket->entries[bucket_index]->value = value;
 				put_ok = true;
 				map->size++;
@@ -216,7 +216,7 @@ static int32_t map_index_of(const map_t * const map, const void * key)
 	 * normalise the hashed value to be a suitable index within
 	 * the range of the tables index
 	 */
-	return_hash(map, key) & ((MAP_CAPACITY/BUCKET_SIZE) - 1);
+	return_hash(map, key) & ((map->capacity/map->bucket_size) - 1);
 }
 
 /*
@@ -225,12 +225,12 @@ static int32_t map_index_of(const map_t * const map, const void * key)
 bool_t map_remove(map_t * const map, const void * key)
 {
 	 bool_t ok = false;
-	 const int32_t index = HASH_MAP_T##_index_of(map, key);
+	 const int32_t index = map_index_of(map, key);
 	 map_bucket_t * const bucket = map->buckets[index];
 	 if (bucket)
 	 {
 		 uint8_t c = 0;
-		 for (uint32_t i = 0 ; i < BUCKET_SIZE; i++)
+		 for (uint32_t i = 0 ; i < map->bucket_size; i++)
 		 {
 			 if (bucket->entries[i])
 			 {
@@ -285,12 +285,12 @@ bool_t map_contains_key(const map_t * const map, const void * key)
 	bool_t found = false;
 	if (map)
 	{
-		const int32_t index = HASH_MAP_T##_index_of(map, key);
+		const int32_t index = map_index_of(map, key);
 		HASH_MAP_DEBUG("hashed_map: checking for key in bucket %d\n", index);
 		if (map->buckets[index])
 		{
 			const map_bucket_t * const bucket = map->buckets[index];
-			for (uint32_t i = 0 ; i < BUCKET_SIZE && !found ; i++)
+			for (uint32_t i = 0 ; i < map->bucket_size && !found ; i++)
 			{
 				if (bucket->entries[i])
 				{
@@ -306,7 +306,7 @@ bool_t map_contains_key(const map_t * const map, const void * key)
 	return found;
 }
 
-void map_it_t_initialise(map_it_t * it, map_t * const map)
+void map_it_initialise(map_it_t * const it, map_t * const map)
 {
 	if (it && map)
 	{
@@ -318,7 +318,7 @@ void map_it_t_initialise(map_it_t * it, map_t * const map)
 map_it_t * map_it_create(map_t * const map)
 {
 	map_it_t * it = NULL;
-	if (map)
+	if (map && map->pool)
 	{
 		it = mem_alloc(map->pool, sizeof(map_it_t));
 		map_it_initialise(it, map);
@@ -326,7 +326,7 @@ map_it_t * map_it_create(map_t * const map)
 	return it;
 }
 
-void map_it_delete(map_it_t * it)
+void map_it_delete(map_it_t * const it)
 {
 	if (it && it->map && it->map->pool)
 	{
@@ -350,7 +350,7 @@ bool_t map_it_get(map_it_t * const it, void ** item)
 	return ok;
 }
 
-bool_t map_it_next(map_it_t * it, void ** item)
+bool_t map_it_next(map_it_t * const it, void ** item)
 {
 	bool_t ok = false;
 
@@ -369,11 +369,11 @@ bool_t map_it_next(map_it_t * it, void ** item)
 		}
 		if (!ok)
 		{
-			for ( uint32_t b = it->bucket + 1 ; b < (MAP_CAPACITY/BUCKET_SIZE) && !ok ; b++ )
+			for ( uint32_t b = it->bucket + 1 ; b < (it->map->capacity/it->map->bucket_size) && !ok ; b++ )
 			{
 				if ( it->map->buckets[b] )
 				{
-					for (uint32_t e = 0 ; e < BUCKET_SIZE ; e++)
+					for (uint32_t e = 0 ; e < it->map->bucket_size ; e++)
 					{
 						if (it->map->buckets[b]->entries[e])
 						{
@@ -393,7 +393,7 @@ bool_t map_it_next(map_it_t * it, void ** item)
 	return ok;
 }
 
-void map_it_reset(map_it_t * it)
+void map_it_reset(map_it_t * const it)
 {
 	if (it)
 	{
@@ -401,12 +401,12 @@ void map_it_reset(map_it_t * it)
 		it->map_entry = NULL;
 		it->entry = 0;
 		it->bucket = 0;
-		for (uint32_t b = 0 ; b < (MAP_CAPACITY/BUCKET_SIZE) ; b++ )
+		for (uint32_t b = 0 ; b < (it->map->bucket_capacity/it->map->bucket_size) ; b++ )
 		{
 			bool found = false;
 			if (it->map->buckets[b])
 			{
-				for (uint32_t e = 0 ; e < BUCKET_SIZE && !found; e++)
+				for (uint32_t e = 0 ; e < it->map->bucket_size && !found; e++)
 				{
 					if (it->map->buckets[b]->entries[e])
 					{

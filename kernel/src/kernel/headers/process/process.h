@@ -18,8 +18,10 @@
 
 typedef struct process_t process_t;
 
+/*
 HASH_MAP_TYPE_ITERATOR_TYPE(thread_it_t)
 HASH_MAP_TYPE_ITERATOR_SPEC(extern, thread_it_t, thread_t*)
+*/
 
 return_t process_create(
 		scheduler_t * const scheduler,

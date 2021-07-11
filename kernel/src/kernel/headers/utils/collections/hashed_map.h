@@ -61,6 +61,8 @@
  *
  */
 
+#define DEFAULT_BUCKET_SIZE 16
+
 typedef struct map_t map_t;
 typedef struct map_it_t map_it_t;
 
@@ -86,5 +88,12 @@ bool_t map_remove(map_t * const map, const void * key);
 uint32_t map_size(const map_t * const map);
 uint32_t map_capacity(const map_t * const map);
 bool_t map_contains_key(const map_t * const map, const void * key);
+
+void map_it_initialise(map_it_t * const it, map_t * const map);
+map_it_t * map_it_create(map_t * const map);
+void map_it_delete(map_it_t * const it);
+bool_t map_it_get(map_it_t * const it, void ** item);
+bool_t map_it_next(map_it_t * const it, void ** item);
+void map_it_reset(map_it_t * const it);
 
 #endif /* HASHED_MAP_H_ */

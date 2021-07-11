@@ -22,7 +22,6 @@
 #include "objects/obj_pipe.h"
 #include "process/thread.h"
 #include "utils/collections/hashed_map.h"
-#include "utils/collections/hashed_map_iterator.h"
 
 #define MAX_LINE_INPUT 256
 
