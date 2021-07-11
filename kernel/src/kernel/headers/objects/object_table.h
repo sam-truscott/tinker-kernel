@@ -15,9 +15,11 @@
 #include "utils/collections/hashed_map.h"
 #include "utils/collections/hashed_map_iterator.h"
 
+/*
 HASH_MAP_TYPE_T(object_map_t)
 HASH_MAP_TYPE_ITERATOR_TYPE(object_table_it_t)
 HASH_MAP_TYPE_ITERATOR_SPEC(extern, object_table_it_t, object_t*)
+*/
 
 typedef struct object_table_t object_table_t;
 

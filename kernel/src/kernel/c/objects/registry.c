@@ -21,6 +21,7 @@ typedef struct registry_entry
 
 typedef char registry_key_t[MAX_SHARED_OBJECT_NAME_LENGTH];
 
+/*
 HASH_MAP_TYPE_T(registry_map_t)
 HASH_MAP_INTERNAL_TYPE_T(registry_map_t, registry_key_t, registry_entry_t, MAX_SHARED_OBJECTS, 16)
 HASH_MAP_SPEC_CREATE(static, registry_map_t)
@@ -52,6 +53,7 @@ HASH_MAP_BODY_CONTAINS_KEY(static, waiting_map_t, registry_key_t, 1024)
 HASH_MAP_BODY_PUT(static, waiting_map_t, registry_key_t, queue_t*, MAX_SHARED_OBJECTS, 1024)
 HASH_MAP_BODY_GET(static, waiting_map_t, registry_key_t, queue_t*, 1024)
 HASH_MAP_BODY_REMOVE(static, waiting_map_t, registry_key_t, 1024)
+*/
 
 typedef struct registry_t
 {
