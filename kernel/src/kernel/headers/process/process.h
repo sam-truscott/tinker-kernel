@@ -90,7 +90,7 @@ void process_free_vmem(
 		const process_t * const process,
 		const mem_t virt_address);
 
-thread_it_t * process_iterator(const process_t * const process);
+thread_t * thread_by_index(const process_t * const process, uint32_t index);
 
 tgt_pg_tbl_t * process_get_page_table(const process_t * const process);
 
