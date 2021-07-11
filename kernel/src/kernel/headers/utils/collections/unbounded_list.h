@@ -39,6 +39,11 @@ void list_delete(list_t * const list);
 bool_t list_insert(list_t * const list, const uint32_t index, void * const item);
 uint32_t list_size(const list_t * const list);
 bool_t list_get(const list_t * const list, const uint32_t index, void * const item_ptr);
+bool_t list_contains(list_t * const list, void * const item);
+
+bool_t list_get_tail(const list_t * const list, void * const item_ptr);
+bool_t list_remove_tail(list_t * const list);
+bool_t list_head_to_tail(list_t * const list);
 
 /**
  * Add an entry to the list

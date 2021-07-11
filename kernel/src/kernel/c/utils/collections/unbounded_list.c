@@ -24,7 +24,7 @@ static inline void empty1(const char * const x, ...) {if (x){}}
  * The data structure for a single element
  * in the list
  */
-typedef struct lits_t_element
+typedef struct list_t_element
 {
 	void * item;
 	struct list_t_element * next;
@@ -78,7 +78,7 @@ void list_delete(list_t * const list)
 		UNBOUNDED_LIST_DEBUG("unbounded list: deleting %x from pool %x\n", list, list->pool);
 		while(list->size)
 		{
-			LIST_T##_element_t * const e = list->head;
+			list_t_element_t * const e = list->head;
 			list->head = e->next;
 			mem_free(list->pool, e);
 			list->size--;
@@ -222,7 +222,7 @@ bool_t list_remove(list_t * const list, const uint32_t index)
 			 * if the previous node isnt this node we
 			 * need to update the previous node
 			 */
-			if (p && p != e)
+			if (p && p != e && e != NULL)
 			{
 				/*
 				 * if the next node is empty we need to
@@ -248,7 +248,7 @@ bool_t list_remove(list_t * const list, const uint32_t index)
 			{
 				list->tail = list->head = NULL;
 			}
-			else
+			else if (e != NULL)
 			{
 				if (e == list->tail)
 				{
@@ -285,7 +285,7 @@ bool_t list_remove_item(list_t * const list, void * const item)
 			if (e->item == item)
 			{
 				UNBOUNDED_LIST_DEBUG("unbounded list: removing item %d from list %x\n", p, list);
-				ret = LIST_T##_remove(list, p);
+				ret = list_remove(list, p);
 				break;
 			}
 			e = e->next;
@@ -295,13 +295,13 @@ bool_t list_remove_item(list_t * const list, void * const item)
 }
 
 
-bool_t list_contains(list * const list, void * const item)
+bool_t list_contains(list_t * const list, void * const item)
 {
 	bool_t ret = false;
 
 	if (list && list->size)
 	{
-		LIST_T##_element_t * e = list->head;
+		list_t_element_t * e = list->head;
 		for (uint32_t p = 0 ; p < list->size ; p++ )
 		{
 			if (e->item == item)
@@ -317,7 +317,7 @@ bool_t list_contains(list * const list, void * const item)
 }
 
 
-bool_t list_remove_tail(list * const list)
+bool_t list_remove_tail(list_t * const list)
 {
 	bool_t ret = false;
 
@@ -325,14 +325,14 @@ bool_t list_remove_tail(list * const list)
 	{
 		if (list->tail)
 		{
-			LIST_T##_element_t * e = list->tail;
+			list_t_element_t * e = list->tail;
 			if (list->head == list->tail)
 			{
 				list->head = list->tail = NULL;
 			}
 			else
 			{
-				LIST_T##_element_t * pe = list->tail->prev;
+				list_t_element_t * pe = list->tail->prev;
 				pe->next = NULL;
 				list->tail = pe;
 			}
@@ -400,7 +400,7 @@ bool_t list_get(const list_t * const list, const uint32_t index, void * const it
 		}
 		if (e && item_ptr)
 		{
-			util_memcpy(item_ptr, &e->item, sizeof(ITEM_T));
+			util_memcpy(item_ptr, &e->item, sizeof(void*));
 			ret = true;
 		}
 	}
@@ -413,7 +413,7 @@ bool_t list_get_tail(const list_t * const list, void * const item_ptr)
 
 	if (list && list->tail)
 	{
-		util_memcpy(item_ptr, &list->tail->item, sizeof(ITEM_T));
+		util_memcpy(item_ptr, &list->tail->item, sizeof(void*));
 		ret = true;
 	}
 
@@ -423,11 +423,11 @@ bool_t list_get_tail(const list_t * const list, void * const item_ptr)
 /**
  * Return the next element, if one, or return NULL if there isn't
  */
-bool_t list_next(const list_t * const list, const ITEM_T current, ITEM_T * const next_ptr)
+bool_t list_next(const list_t * const list, const void * current, void ** const next_ptr)
 {
 	bool_t ret = false;
 
-	LIST_T##_element_t * e = list->head;
+	list_t_element_t * e = list->head;
 	for (uint32_t p = 0 ; p < list->size ; p++ )
 	{
 		if (e->item == current)
@@ -444,7 +444,7 @@ bool_t list_next(const list_t * const list, const ITEM_T current, ITEM_T * const
 		e = e->next;
 		if (next_ptr)
 		{
-			util_memcpy(next_ptr, &e->item, sizeof(ITEM_T));
+			util_memcpy(next_ptr, &e->item, sizeof(void*));
 			ret = true;
 		}
 	}
@@ -517,7 +517,7 @@ bool_t list_it_get(list_it_t * const it, void * item)
 
 		if (it->current)
 		{
-			util_memcpy(item, &(it->current->item), sizeof(ITEM_T));
+			util_memcpy(item, &(it->current->item), sizeof(void*));
 			ok = true;
 		}
 	}
@@ -567,12 +567,12 @@ bool_t list_it_next(list_it_t * const it, void * item)
 
 	 if (it && item)
 	 {
-		 util_memset(item, 0, sizeof(ITEM_T));
+		 util_memset(item, 0, sizeof(void*));
 		 if (it->current)
 		 {
 			 if (it->current->next)
 			 {
-				 util_memcpy(item, &(it->current->next->item), sizeof(ITEM_T));
+				 util_memcpy(item, &(it->current->next->item), sizeof(void*));
 				 it->current = it->current->next;
 				 it->pos++;
 				 ok = true;
@@ -591,12 +591,12 @@ bool_t list_it_prev(list_it_t * const it, void * item)
 	 bool_t ok = false;
 	 if (it && item)
 	 {
-		util_memset(item, 0, sizeof(ITEM_T));
+		util_memset(item, 0, sizeof(void*));
 		 if (it->current)
 		 {
 			 if (it->current->prev)
 			 {
-				 util_memcpy(item, &(it->current->prev->item), sizeof(ITEM_T));
+				 util_memcpy(item, &(it->current->prev->item), sizeof(void*));
 				 it->current = it->current->prev;
 				 it->pos--;
 				 ok = true;

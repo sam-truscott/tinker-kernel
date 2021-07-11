@@ -14,6 +14,7 @@
 typedef struct stack_t
 {
 	list_t * list;
+	mem_pool_info_t * pool;
 } stack_t_internal;
 
 list_t * stack_list(stack_t * const stack)
@@ -26,6 +27,7 @@ void stack_initialise(stack_t * const stack, mem_pool_info_t * const pool)
 	if (stack)
 	{
 		stack->list = list_create(pool);
+		stack->pool = pool;
 	}
 }
 
@@ -44,10 +46,9 @@ void stack_delete(stack_t * const stack)
 {
 	if (stack)
 	{
-		mem_pool_info_t * pool = NULL;
+		mem_pool_info_t * pool = stack->pool;
 		if (stack->list)
 		{
-			pool = stack->list->pool;
 			list_delete(stack->list);
 		}
 		if (pool != NULL)

@@ -10,11 +10,12 @@
 
 
 #include "utils/util_memcpy.h"
-#include "unbounded_list.h"
+#include "utils/collections/unbounded_list.h"
 
 typedef struct queue_t
 {
 	list_t * list;
+	mem_pool_info_t * pool;
 } queue_t_internal;
 
 void queue_initialise(queue_t * const queue, mem_pool_info_t * const pool)
@@ -22,6 +23,7 @@ void queue_initialise(queue_t * const queue, mem_pool_info_t * const pool)
 	if (queue)
 	{
 		queue->list = list_create(pool);
+		queue->pool = pool;
 	}
 }
 
@@ -44,10 +46,13 @@ void queue_delete(queue_t * const queue)
 {
 	if (queue)
 	{
+		mem_pool_info_t * const pool = queue->pool;
 		if (queue->list)
 		{
-			mem_pool_info_t * const pool = queue->list->pool;
 			list_delete(queue->list);
+		}
+		if (pool)
+		{
 			mem_free(pool, queue);
 		}
 	}
