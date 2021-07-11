@@ -13,47 +13,8 @@
 #include "config.h"
 #include "utils/collections/unbounded_queue.h"
 #include "utils/collections/stack.h"
-#include "utils/collections/unbounded_list_iterator.h"
+#include "utils/collections/unbounded_list.h"
 #include "process/thread.h"
-
-UNBOUNDED_QUEUE_TYPE(thread_queue_t)
-UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_INITIALISE(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_FRONT(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_PUSH(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_POP(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_REMOVE(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_REORDER_FIRST(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_SPEC_SIZE(static, thread_queue_t)
-UNBOUNDED_QUEUE_SPEC_CONTAINS(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_INITIALISE(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_FRONT(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_PUSH(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_POP(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_REMOVE(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_REORDER_FIRST(static, thread_queue_t, thread_t*)
-UNBOUNDED_QUEUE_BODY_SIZE(static, thread_queue_t)
-UNBOUNDED_QUEUE_BODY_CONTAINS(static, thread_queue_t, thread_t*)
-
-STACK_TYPE(queue_stack_t)
-STACK_INTERNAL_TYPE(queue_stack_t, thread_queue_t*)
-STACK_SPEC_INITIALISE(static, queue_stack_t, thread_queue_t*)
-STACK_SPEC_PUSH(static, queue_stack_t, thread_queue_t*)
-STACK_SPEC_POP(static, queue_stack_t, thread_queue_t*)
-STACK_SPEC_FRONT(static, queue_stack_t, thread_queue_t*)
-STACK_SPEC_INSERT(static, queue_stack_t, thread_queue_t*)
-STACK_SPEC_LIST(static, queue_stack_t)
-STACK_BODY_INITIALISE(static, queue_stack_t, thread_queue_t*)
-STACK_BODY_PUSH(static, queue_stack_t, thread_queue_t*)
-STACK_BODY_POP(static, queue_stack_t, thread_queue_t*)
-STACK_BODY_FRONT(static, queue_stack_t, thread_queue_t*)
-STACK_BODY_INSERT(static, queue_stack_t, thread_queue_t*)
-STACK_BODY_LIST(static, queue_stack_t)
-
-UNBOUNDED_LIST_ITERATOR_TYPE(queue_stack_it_t)
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(queue_stack_it_t, queue_stack_t_list_t, thread_queue_t*)
-UNBOUNDED_LIST_ITERATOR_SPEC(static, queue_stack_it_t, queue_stack_t_list_t, thread_queue_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(static, queue_stack_it_t, queue_stack_t_list_t, thread_queue_t*)
 
 typedef struct scheduler_t
 {
@@ -64,11 +25,11 @@ typedef struct scheduler_t
 	/**
 	 * The current queue of threads being processed (round robin)
 	 */
-	thread_queue_t * curr_queue;
+	queue_t * curr_queue;
 	/**
 	 * All the priority round-robin queues
 	 */
-	thread_queue_t priority_queues[MAX_PRIORITY + 1];
+	queue_t priority_queues[MAX_PRIORITY + 1];
 	/**
 	 * The current scheduler priority
 	 */
@@ -76,7 +37,7 @@ typedef struct scheduler_t
 	/**
 	 * The scheduler stack of queued round robins
 	 */
-	queue_stack_t queue_stack;
+	stack_t queue_stack;
 	/**
 	 * The scheduler's idle thread
 	 */

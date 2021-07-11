@@ -250,11 +250,11 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 
 static void kshell_process_list(void)
 {
-	process_list_it_t * list = NULL;
+	list_it_t * list = NULL;
 	process_t * proc = NULL;
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	print_out("Proc. Id\tThreads \tName\n");
 	print_out("--------\t--------\t----\n");
@@ -264,23 +264,23 @@ static void kshell_process_list(void)
 		printp_out("%8d", process_get_pid(proc));
 		printp_out("\t%8d", process_get_thread_count(proc));
 		printp_out("\t%s\n", process_get_image(proc));
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_task_list(void)
 {
-	process_list_it_t * list = NULL;
+	list_it_t * list = NULL;
 	process_t * proc = NULL;
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	while (proc)
 	{

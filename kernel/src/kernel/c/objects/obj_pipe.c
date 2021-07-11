@@ -13,21 +13,6 @@
 #include "objects/object_private.h"
 #include "utils/util_strlen.h"
 #include "utils/collections/unbounded_list.h"
-#include "utils/collections/unbounded_list_iterator.h"
-
-UNBOUNDED_LIST_TYPE(pipe_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_BODY_ADD(static, pipe_list_t, object_pipe_t*)
-
-UNBOUNDED_LIST_ITERATOR_TYPE(pipe_list_it_t)
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(pipe_list_it_t, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_SPEC(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
 
 typedef struct rx_blocked
 {
@@ -46,13 +31,13 @@ typedef struct rx_data
 	rx_blocked_t blocked_info;
 	uint8_t * read_msg_ptr;
 	uint8_t * write_msg_ptr;
-	pipe_list_t * senders;
+	list_t * senders;
 } rx_data_t;
 
 typedef struct tx_data
 {
 	object_thread_t * sending_thread;
-	pipe_list_t * readers;
+	list_t * readers;
 } tx_data_t;
 
 typedef struct object_pipe_t
@@ -184,24 +169,24 @@ static bool_t pipe_can_send_to_all(
 		const object_pipe_t * const pipe,
 		const bool_t blocking)
 {
-	pipe_list_it_t it;
+	list_it_t * it = list_it_create(pipe->tx_data.readers);
 	object_pipe_t * receiver = NULL;
 	bool_t can_send_all = true;
 
-	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-	if (pipe_list_it_t_get(&it, &receiver))
+	if (list_it_get(it, &receiver))
 	{
 		while (receiver)
 		{
 			const bool_t can_send_pipe = pipe_can_receive(receiver);
 			if (!can_send_pipe && blocking)
 			{
-				pipe_list_t_add(receiver->rx_data.senders, (object_pipe_t*)pipe);
+				list_add(receiver->rx_data.senders, (object_pipe_t*)pipe);
 			}
 			can_send_all = (!can_send_all) ? can_send_all : can_send_pipe;
-			pipe_list_it_t_next(&it, &receiver);
+			list_it_next(it, &receiver);
 		}
 	}
+	list_it_delete(it);
 	// if there's no one to send to then in pub/sub we're good
 	return can_send_all;
 }
@@ -228,8 +213,8 @@ return_t obj_create_pipe(
 		{
 			mem_pool_info_t * const pool = process_get_mem_pool(process);
 			uint8_t * memory = NULL;
-			pipe_list_t * tx_queue = NULL;
-			pipe_list_t * rx_queue = NULL;
+			list_t * tx_queue = NULL;
+			list_t * rx_queue = NULL;
 			switch (direction)
 			{
 			default:
@@ -237,7 +222,7 @@ return_t obj_create_pipe(
 				result = PARAMETERS_INVALID;
 				break;
 			case PIPE_SEND_RECEIVE:
-				tx_queue = pipe_list_t_create(pool);
+				tx_queue = list_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -274,7 +259,7 @@ return_t obj_create_pipe(
 					if (result == NO_ERROR)
 					{
 						util_memset(memory, 0, total_size);
-						rx_queue = pipe_list_t_create(pool);
+						rx_queue = list_create(pool);
 						if (!rx_queue)
 						{
 							result = OUT_OF_MEMORY;
@@ -284,7 +269,7 @@ return_t obj_create_pipe(
 			}
 				break;
 			case PIPE_SEND:
-				tx_queue = pipe_list_t_create(pool);
+				tx_queue = list_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -433,8 +418,8 @@ return_t obj_open_pipe(
 			{
 				mem_pool_info_t * const pool = process_get_mem_pool(process);
 				uint8_t * memory = NULL;
-				pipe_list_t * tx_queue = NULL;
-				pipe_list_t * rx_queue = NULL;
+				list_t * tx_queue = NULL;
+				list_t * rx_queue = NULL;
 				switch (direction)
 				{
 				default:
@@ -442,7 +427,7 @@ return_t obj_open_pipe(
 					result = PARAMETERS_INVALID;
 					break;
 				case PIPE_SEND_RECEIVE:
-					tx_queue = pipe_list_t_create(pool);
+					tx_queue = list_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -466,7 +451,7 @@ return_t obj_open_pipe(
 						result = OUT_OF_MEMORY;
 					}
 					debug_print(PIPE_TRACE, "PipeO: Memory at %x\n", memory);
-					rx_queue = pipe_list_t_create(pool);
+					rx_queue = list_create(pool);
 					if (!rx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -474,7 +459,7 @@ return_t obj_open_pipe(
 				}
 					break;
 				case PIPE_SEND:
-					tx_queue = pipe_list_t_create(pool);
+					tx_queue = list_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -516,18 +501,18 @@ return_t obj_open_pipe(
 						case PIPE_DIRECTION_UNKNOWN:
 							break;
 						case PIPE_SEND:
-							pipe_list_t_add(other_pipe->rx_data.senders, no);
-							pipe_list_t_add(no->tx_data.readers, other_pipe);
+							list_add(other_pipe->rx_data.senders, no);
+							list_add(no->tx_data.readers, other_pipe);
 							break;
 						case PIPE_SEND_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.readers, no);
-							pipe_list_t_add(other_pipe->rx_data.senders, no);
-							pipe_list_t_add(no->tx_data.readers, other_pipe);
-							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							list_add(other_pipe->tx_data.readers, no);
+							list_add(other_pipe->rx_data.senders, no);
+							list_add(no->tx_data.readers, other_pipe);
+							list_add(no->rx_data.senders, other_pipe);
 							break;
 						case PIPE_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.readers, no);
-							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							list_add(other_pipe->tx_data.readers, no);
+							list_add(no->rx_data.senders, other_pipe);
 							break;
 						}
 					}
@@ -620,11 +605,10 @@ return_t obj_pipe_send_message(
 
 	if (result == NO_ERROR)
 	{
-		pipe_list_it_t it;
+		list_it_t * it = list_it_create(pipe->tx_data.readers);
 		object_pipe_t * receiver = NULL;
 
-		pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
+		const bool_t has_any_receivers = list_it_get(it, &receiver);
 		if (has_any_receivers)
 		{
 			debug_prints(PIPE_TRACE, "PipeW: There are receivers waiting\n");
@@ -635,9 +619,11 @@ return_t obj_pipe_send_message(
 					debug_print(PIPE_TRACE, "PipeW: Receiver %x is ready to receive the message\n", receiver);
 					pipe_receive_message(receiver, message, message_size);
 				}
-				pipe_list_it_t_next(&it, &receiver);
+				list_it_next(it, &receiver);
 			}
 		}
+
+		list_it_delete(it);
 	}
 
 	return result;
@@ -737,10 +723,9 @@ static return_t obj_pipe_received_message(object_pipe_t * const pipe)
 		}
 
 		// notify any senders
-		pipe_list_it_t it;
+		list_it_t * it = list_it_create(pipe->rx_data.senders);
 		object_pipe_t * sender = NULL;
-		pipe_list_it_t_initialise(&it, pipe->rx_data.senders);
-		const bool_t has_any_senders = pipe_list_it_t_get(&it, &sender);
+		const bool_t has_any_senders = list_it_get(it, &sender);
 		if (has_any_senders)
 		{
 			debug_prints(PIPE_TRACE, "PipeA: Has senders to notify\n");
@@ -748,9 +733,10 @@ static return_t obj_pipe_received_message(object_pipe_t * const pipe)
 			{
 				debug_prints(PIPE_TRACE, "PipeA: Notifying sender\n");
 				obj_set_thread_ready(sender->tx_data.sending_thread);
-				pipe_list_it_t_next(&it, &sender);
+				list_it_next(it, &sender);
 			}
 		}
+		list_it_delete(it);
 	}
 	else
 	{

@@ -22,6 +22,6 @@ bool_t stack_insert(stack_t * const stack, const uint32_t index, void * const it
 bool_t stack_pop(stack_t * const stack, void * const item);
 bool_t stack_front(const stack_t * const stack, void * const item);
 bool_t stack_get(const stack_t * const stack, const uint32_t index, void * const item);
-stack_size(const stack_t * const stack);
+uint32_t stack_size(const stack_t * const stack);
 
 #endif /* STACK_H_ */

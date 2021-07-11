@@ -116,7 +116,7 @@ bool_t stack_get(const stack_t * const stack, const uint32_t index, void * const
 	return ok;
 }
 
-stack_size(const stack_t * const stack)
+uint32_t stack_size(const stack_t * const stack)
 {
 	uint32_t size = 0;
 

@@ -29,12 +29,12 @@ scheduler_t * sch_create_scheduler(mem_pool_info_t * const pool)
 		util_memset(sch, 0, sizeof(scheduler_t));
 		for (uint16_t i = 0 ; i < MAX_PRIORITY + 1 ; i++)
 		{
-			thread_queue_t_initialise(&sch->priority_queues[i], mem_get_default_pool());
+			queue_initialise(&sch->priority_queues[i], mem_get_default_pool());
 		}
 
 		sch->curr_queue = &(sch->priority_queues[0]);
-		queue_stack_t_initialise( &sch->queue_stack, mem_get_default_pool() );
-		queue_stack_t_push(&sch->queue_stack, sch->curr_queue);
+		stack_initialise( &sch->queue_stack, mem_get_default_pool() );
+		stack_push(&sch->queue_stack, sch->curr_queue);
 		sch->eval_new_thread = false;
 	}
 	return sch;
@@ -57,9 +57,9 @@ static void insert_lower_priority_queue_to_stack(
 	 * to the queue stack so when the new high priority task finishes the
 	 *  new lower priority task will be executed */
 	thread_queue_t * stack_queue = NULL;
-	queue_stack_t_list_t * const list = queue_stack_t_list(&scheduler->queue_stack);
-	queue_stack_it_t stack_it;
-	queue_stack_it_t_initialise(&stack_it, list);
+	list_t * const list = stack_list(&scheduler->queue_stack);
+	list_it_t stack_it;
+	list_it_initialise(&stack_it, list);
 
 	/*
 	 * the stack queue uses the end of the queue (size) as the highest priority
@@ -74,14 +74,14 @@ static void insert_lower_priority_queue_to_stack(
 	 * Fix and use a binary search using double linked list via iterator fwd/back functions
 	 *
 	 */
-	queue_stack_it_t_get(&stack_it, &stack_queue);
+	list_it_get(&stack_it, &stack_queue);
 	while (stack_queue)
 	{
-		const uint32_t queue_size = thread_queue_t_size(stack_queue);
+		const uint32_t queue_size = queue_size(stack_queue);
 		if (queue_size)
 		{
 			thread_t * first_thread_in_queue = NULL;
-			if (thread_queue_t_front(stack_queue, &first_thread_in_queue))
+			if (queue_front(stack_queue, &first_thread_in_queue))
 			{
 				const priority_t stack_thread_priority = thread_get_priority(first_thread_in_queue);
 				if (stack_thread_priority == thread_priority)
@@ -96,9 +96,9 @@ static void insert_lower_priority_queue_to_stack(
 					 * that at some point it'll be scheduled
 					 */
 					// TODO insert via the iterator? - avoids a second loop
-					if (queue_stack_t_insert(
+					if (queue_insert(
 							&scheduler->queue_stack,
-							queue_stack_it_t_where(&stack_it),
+							list_it_where(&stack_it),
 							queue))
 					{
 						break;
@@ -111,7 +111,7 @@ static void insert_lower_priority_queue_to_stack(
 				}
 			}
 		}
-		queue_stack_it_t_next(&stack_it, &stack_queue);
+		list_it_next(&stack_it, &stack_queue);
 	}
 }
 
@@ -121,10 +121,10 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 	{
 		const priority_t thread_priority = thread_get_priority(t);
 		thread_queue_t * const queue = &(scheduler->priority_queues[thread_priority]);
-		if (!thread_queue_t_contains(queue, t))
+		if (!queue_contains(queue, t))
 		{
 			debug_print(SCHEDULING_TRACE, "Push thread %s onto priority queue %d\n", thread_get_name(t), thread_priority);
-			thread_queue_t_push(queue, t);
+			queue_push(queue, t);
 		}
 
 		debug_print(SCHEDULING, "Scheduler: New thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
@@ -137,7 +137,7 @@ void sch_notify_new_thread(scheduler_t * const scheduler, thread_t * const t)
 			scheduler->eval_new_thread = true;
 			scheduler->curr_priority = thread_priority;
 			scheduler->curr_queue = &(scheduler->priority_queues[scheduler->curr_priority]);
-			queue_stack_t_push(&scheduler->queue_stack, scheduler->curr_queue);
+			stack_push(&scheduler->queue_stack, scheduler->curr_queue);
 		}
 		/*
 		 * a thread of lower or equal priority - inside it into the stack
@@ -156,22 +156,23 @@ void sch_notify_exit_thread(scheduler_t * const scheduler, thread_t * const t)
 	{
 		const priority_t thread_priority = thread_get_priority(t);
 		thread_queue_t * const queue = &(scheduler->priority_queues[thread_priority]);
-		const bool_t removed = thread_queue_t_remove(queue, t);
+		const bool_t removed = queue_remove(queue, t);
 
 		debug_print(SCHEDULING, "Scheduler: Exit thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 		if (removed)
 		{
 			scheduler->eval_new_thread = true;
-			if (thread_queue_t_size(scheduler->curr_queue) == 0)
+			// TODO add an isEmpty function to list, queue and empty
+			if (queue_size(scheduler->curr_queue) == 0)
 			{
 				/* pop the one we're using off */
-				queue_stack_t_pop(&scheduler->queue_stack, &scheduler->curr_queue);
+				stack_pop(&scheduler->queue_stack, &scheduler->curr_queue);
 				/* pop the next queue off the stack - if one can't be found
 				 * perform a slow search */
-				if (queue_stack_t_front(&scheduler->queue_stack, &scheduler->curr_queue))
+				if (stack_front(&scheduler->queue_stack, &scheduler->curr_queue))
 				{
 					thread_t * first_thread = NULL;
-					if (thread_queue_t_front(scheduler->curr_queue, &first_thread))
+					if (queue_front(scheduler->curr_queue, &first_thread))
 					{
 						scheduler->curr_priority = thread_get_priority(first_thread);
 					}
@@ -220,26 +221,26 @@ void sch_notify_change_priority(
 		debug_print(SCHEDULING, "Scheduler: Change thread (%s) with priority (%d)\n", thread_get_name(t), thread_priority);
 
 		/* remove it from the old list */
-		thread_queue_t * queue = &(scheduler->priority_queues[original_priority]);
-		thread_queue_t_remove(queue, t);
+		queue_t * queue = &(scheduler->priority_queues[original_priority]);
+		queue_remove(queue, t);
 
 		/* add it to the new list */
 		queue = &(scheduler->priority_queues[thread_priority]);
-		thread_queue_t_push(queue, t);
+		queue_push(queue, t);
 
 		// handle an empty priority queue - if it's empty remove it
-		const bool_t is_curr_queue_empty = !thread_queue_t_size(scheduler->curr_queue);
+		const bool_t is_curr_queue_empty = !queue_size(scheduler->curr_queue);
 		if (is_curr_queue_empty)
 		{
 			/* pop the one we're using off */
-			queue_stack_t_pop(&scheduler->queue_stack, &scheduler->curr_queue);
+			stack_pop(&scheduler->queue_stack, &scheduler->curr_queue);
 		}
 		if (thread_priority > original_priority)
 		{
 			scheduler->eval_new_thread = true;
 			scheduler->curr_priority = thread_priority;
 			scheduler->curr_queue = queue;
-			queue_stack_t_push(&scheduler->queue_stack, queue);
+			stack_push(&scheduler->queue_stack, queue);
 		}
 		else
 		{
@@ -249,10 +250,10 @@ void sch_notify_change_priority(
 		{
 			/* pop the next queue off the stack - if one can't be found
 			 * perform a slow search */
-			if (queue_stack_t_front(&scheduler->queue_stack, &scheduler->curr_queue))
+			if (stack_front(&scheduler->queue_stack, &scheduler->curr_queue))
 			{
 				thread_t * new_thread = NULL;
-				if (thread_queue_t_front(scheduler->curr_queue, &new_thread))
+				if (queue_front(scheduler->curr_queue, &new_thread))
 				{
 					scheduler->eval_new_thread = true;
 					scheduler->curr_priority = thread_get_priority(new_thread);
@@ -308,7 +309,7 @@ static void sch_priority_find_next_queue(scheduler_t * const scheduler, thread_t
 	do
 	{
 		queue = &(scheduler->priority_queues[--p]);
-		size = thread_queue_t_size(queue);
+		size = queue_size(queue);
 		if ( size )
 		{
 			break;
@@ -317,7 +318,7 @@ static void sch_priority_find_next_queue(scheduler_t * const scheduler, thread_t
 
 	scheduler->curr_priority = p;
 	scheduler->curr_queue = queue;
-	queue_stack_t_push(&scheduler->queue_stack, scheduler->curr_queue);
+	stack_push(&scheduler->queue_stack, scheduler->curr_queue);
 }
 
 void sch_set_context_for_next_thread(
@@ -332,7 +333,7 @@ void sch_set_context_for_next_thread(
 		// interrupt? Surely then we continue with the previous thread
 		//
 		// copy the head of the current queue as the current thread
-		thread_queue_t_front(scheduler->curr_queue, &scheduler->curr_thread);
+		queue_front(scheduler->curr_queue, &scheduler->curr_thread);
 	}
 
 	/* once we're either back at the start or we've
@@ -341,7 +342,7 @@ void sch_set_context_for_next_thread(
 	if (scheduler->curr_thread)
 	{
 		// move the head thread to the tail (round-robin)
-		const bool_t reorder_ok = thread_queue_t_reorder_first(scheduler->curr_queue);
+		const bool_t reorder_ok = queue_reorder_first(scheduler->curr_queue);
 		kernel_assert("re-ordering of priority queue failed", reorder_ok);
 		const thread_state_t state = thread_get_state(scheduler->curr_thread);
 
@@ -388,9 +389,9 @@ void sch_set_context_for_next_thread(
 				current_thread == NULL ? "NULL" : thread_get_name(current_thread),
 				scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
 		debug_print(SCHEDULING, "Scheduler: Switching to %s\n", scheduler->curr_thread == NULL ? "NULL" : thread_get_name(scheduler->curr_thread));
-		debug_print(SCHEDULING_TRACE, "Scheduler: Current queue size is %d\n", thread_queue_t_size(scheduler->curr_queue));
+		debug_print(SCHEDULING_TRACE, "Scheduler: Current queue size is %d\n", queue_size(scheduler->curr_queue));
 	}
-	if (thread_queue_t_size(scheduler->curr_queue) > 1)
+	if (queue_size(scheduler->curr_queue) > 1)
 	{
 		bsp_enable_schedule_timer();
 	}

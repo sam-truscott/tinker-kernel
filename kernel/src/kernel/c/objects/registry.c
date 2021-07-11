@@ -37,34 +37,20 @@ HASH_MAP_BODY_PUT(static, registry_map_t, registry_key_t, registry_entry_t, MAX_
 HASH_MAP_BODY_GET(static, registry_map_t, registry_key_t, registry_entry_t, 16)
 HASH_MAP_BODY_REMOVE(static, registry_map_t, registry_key_t, 16)
 
-UNBOUNDED_QUEUE_TYPE(waiting_queue_t)
-UNBOUNDED_QUEUE_INTERNAL_TYPE(waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_CREATE(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_DELETE(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_PUSH(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_POP(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_FRONT(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_CREATE(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_DELETE(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_PUSH(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_POP(static, waiting_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_FRONT(static, waiting_queue_t, object_thread_t*)
-
-
 HASH_MAP_TYPE_T(waiting_map_t)
-HASH_MAP_INTERNAL_TYPE_T(waiting_map_t, registry_key_t, waiting_queue_t*, MAX_SHARED_OBJECTS, 1024)
+HASH_MAP_INTERNAL_TYPE_T(waiting_map_t, registry_key_t, queue_t*, MAX_SHARED_OBJECTS, 1024)
 HASH_MAP_SPEC_CREATE(static, waiting_map_t)
 HASH_MAP_SPEC_INITALISE(static, waiting_map_t)
 HASH_MAP_SPEC_CONTAINS_KEY(static, waiting_map_t, registry_key_t)
-HASH_MAP_SPEC_PUT(static, waiting_map_t, registry_key_t, waiting_queue_t*)
-HASH_MAP_SPEC_GET(static, waiting_map_t, registry_key_t, waiting_queue_t*)
-HASH_MAP_SPEC_REMOVE(static, waiting_map_t, registry_key_t, waiting_queue_t*)
+HASH_MAP_SPEC_PUT(static, waiting_map_t, registry_key_t, queue_t*)
+HASH_MAP_SPEC_GET(static, waiting_map_t, registry_key_t, queue_t*)
+HASH_MAP_SPEC_REMOVE(static, waiting_map_t, registry_key_t, queue_t*)
 HASH_FUNCS_POINTER(waiting_map_t, registry_key_t)
 HASH_MAP_BODY_CREATE(static, waiting_map_t)
 HASH_MAP_BODY_INITALISE(static, waiting_map_t, MAX_SHARED_OBJECTS, 1024)
 HASH_MAP_BODY_CONTAINS_KEY(static, waiting_map_t, registry_key_t, 1024)
-HASH_MAP_BODY_PUT(static, waiting_map_t, registry_key_t, waiting_queue_t*, MAX_SHARED_OBJECTS, 1024)
-HASH_MAP_BODY_GET(static, waiting_map_t, registry_key_t, waiting_queue_t*, 1024)
+HASH_MAP_BODY_PUT(static, waiting_map_t, registry_key_t, queue_t*, MAX_SHARED_OBJECTS, 1024)
+HASH_MAP_BODY_GET(static, waiting_map_t, registry_key_t, queue_t*, 1024)
 HASH_MAP_BODY_REMOVE(static, waiting_map_t, registry_key_t, 1024)
 
 typedef struct registry_t
@@ -129,16 +115,16 @@ return_t regsitery_add(
 						if (queue)
 						{
 							object_thread_t * thread = NULL;
-							while (waiting_queue_t_front(queue, &thread))
+							while (queue_front(queue, &thread))
 							{
 								if (thread)
 								{
 									obj_set_thread_ready(thread);
 								}
-								waiting_queue_t_pop(queue);
+								queue_pop(queue);
 							}
 							waiting_map_t_remove(reg->registry_waiting_map, key);
-							waiting_queue_t_delete(queue);
+							queue_delete(queue);
 						}
 					}
 				}
@@ -216,7 +202,7 @@ void registry_wait_for(
 		waiting_queue_t * queue = NULL;
 		if (!waiting_map_t_contains_key(reg->registry_waiting_map, key))
 		{
-			queue = waiting_queue_t_create(reg->registry_waiting_map->pool);
+			queue = queue_create(reg->registry_waiting_map->pool);
 			if (queue)
 			{
 				waiting_map_t_put(reg->registry_waiting_map, key, queue);
@@ -229,7 +215,7 @@ void registry_wait_for(
 
 		if (queue)
 		{
-			waiting_queue_t_push(queue, thread);
+			queue_push(queue, thread);
 		}
 	}
 }

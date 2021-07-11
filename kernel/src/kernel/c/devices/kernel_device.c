@@ -42,9 +42,9 @@ return_t kernel_device_map_memory
 			"DEVICE");
 	if (NO_ERROR == result)
 	{
-		process_list_it_t * const procs = proc_list_procs(proc_list);
+		list_it_t * const procs = proc_list_procs(proc_list);
 		process_t * proc = NULL;
-		if (procs && process_list_it_t_get(procs, &proc))
+		if (procs && list_it_get(procs, &proc))
 		{
 			while (proc)
 			{
@@ -60,9 +60,9 @@ return_t kernel_device_map_memory
 							virt,
 							"DEVICE");
 				}
-				process_list_it_t_next(procs, &proc);
+				list_it_next(procs, &proc);
 			}
-			process_list_it_t_delete(procs);
+			list_it_delete(procs);
 		}
 	}
 	return result;
