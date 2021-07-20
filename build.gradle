@@ -36,7 +36,6 @@ allprojects {
 		            "-Wall",
 		            "-Wextra",
 		            "-Werror",
-		            "-fanalyzer",             /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 		            "-c",
 		            "-fmessage-length=0",
 		            "-std=gnu18",             /* for now use the default */
@@ -160,6 +159,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
 	                	args << "-nostartfiles"
@@ -181,6 +181,7 @@ allprojects {
                         args << "-mfloat-abi=soft"
                         //args << "-fno-use-cxa-atexit"
                         //args << "--specs=nano.specs"
+                        args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
                     linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
@@ -207,6 +208,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
@@ -235,6 +237,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
 	                	args << "-mfpu=vfp"
@@ -263,6 +266,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
@@ -289,6 +293,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
 	                	args << "-mfpu=vfp"

@@ -32,7 +32,7 @@ static void test_list(mem_pool_info_t * const pool)
 	kernel_assert("size should be 0", list_size(list) == 0);
 	kernel_assert("should return true", list_add(list, (void*)0));
 	kernel_assert("size should be 1", list_size(list) == 1);
-	uint32_t value = 1;
+	mem_t value = 1;
 	kernel_assert("should return true", list_get(list, 0, (void*)&value));
 	kernel_assert("size should be 0", value == 0);
 	kernel_assert("should return true", list_remove(list, 0));
@@ -97,8 +97,8 @@ static void test_list(mem_pool_info_t * const pool)
 static void test_hashmap(mem_pool_info_t * const pool)
 {
 	uint32_t key_zero = 0;
-	uint32_t values[10];
-	for (uint8_t i = 1 ; i < 10 ; i++)
+	mem_t values[10];
+	for (uint8_t i = 0 ; i < 10 ; i++)
 	{
 		values[i] = i;
 	}
@@ -108,19 +108,22 @@ static void test_hashmap(mem_pool_info_t * const pool)
 
 	kernel_assert("should return true", map_put(map, &key_zero, &values[0]));
 	kernel_assert("size should be 1", map_size(map) == 1);
+	// add the rest
 	for (uint8_t i = 1 ; i < 10 ; i++)
 	{
 		uint32_t key = i;
 		kernel_assert("should return false", !map_contains_key(map, &key));
 		kernel_assert("should return true", map_put(map, &key, &values[i]));
 	}
+
+	values[0] = 0; /* reset it back */
 	kernel_assert("size should be 10", map_size(map) == 10);
 	for (uint8_t i = 0 ; i < 10 ; i++)
 	{
 		uint32_t key = i;
-		uint32_t value = -1;
+		mem_t * value = NULL;
 		kernel_assert("should return true", map_get(map, &key, (void*)&value));
-		kernel_assert("should match value", i == value);
+		kernel_assert("should match value", i == *value);
 	}
 
 	kernel_assert("should return true", map_remove(map, &key_zero));
@@ -148,7 +151,7 @@ static void test_stack(mem_pool_info_t * const pool)
 	kernel_assert("should return true", stack_push(stack, (void*)3));
 	kernel_assert("size should be 3", stack_size(stack) == 3);
 
-	uint32_t value = 0;
+	mem_t value = 0;
 	kernel_assert("should return true", stack_front(stack, (void*)&value));
 	kernel_assert("size should be 3", value == 3);
 
@@ -174,7 +177,7 @@ static void test_queue(mem_pool_info_t * const pool)
 {
 	// remove
 	queue_t * const queue = queue_create(pool);
-	uint32_t value = 0;
+	mem_t value = 0;
 	kernel_assert("should be 0", queue_size(queue) == 0);
 
 	kernel_assert("should return true", queue_reorder_first(queue));
