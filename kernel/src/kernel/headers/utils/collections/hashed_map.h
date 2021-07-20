@@ -26,11 +26,7 @@
 
 #include "tinker_api_types.h"
 #include "tgt_types.h"
-#include "console/print_out.h"
-#include "utils/hash/basic_hashes.h"
-#include "utils/util_memset.h"
-#include "kernel_panic.h"
-#include "kernel_assert.h"
+#include "memory/memory_manager.h"
 
 /*
  * This abstract data type is used to model a hash-map.
@@ -71,15 +67,11 @@ typedef int32_t (map_create_hash)(const void * const data, const uint32_t size);
 void map_initialise(
 		map_t * const map,
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool,
-		uint32_t capacity,
-		uint32_t bucket_size);
+		mem_pool_info_t * const pool);
 
 map_t * map_create(
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool,
-		uint32_t capacity,
-		uint32_t bucket_size);
+		mem_pool_info_t * const pool);
 
 void map_delete(map_t * const map);
 bool_t map_get(const map_t * const map, const void * key, void ** const value);

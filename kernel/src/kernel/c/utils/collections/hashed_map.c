@@ -9,6 +9,17 @@
 
 #include "utils/collections/hashed_map.h"
 
+#include "console/print_out.h"
+#include "utils/hash/basic_hashes.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
+#include "kernel_panic.h"
+#include "kernel_assert.h"
+
+#define MAP_BUCKET_SIZE 32
+#define MAP_CAPACITY 65535
+#define MAP_BUCKET_COUNT (MAP_CAPACITY/MAP_BUCKET_SIZE)
+
 #if defined (DEBUG_COLLECTIONS)
 #define HASH_MAP_DEBUG debug_print
 #else
@@ -18,22 +29,20 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 
 typedef struct map_entry
 {
-	uint32_t key;
+	void * key;
 	void * value;
 } map_entry_t;
 
 typedef struct map_bucket
 {
-	map_entry_t * entries[BUCKET_SIZE];
+	map_entry_t * entries[MAP_BUCKET_SIZE];
 } map_bucket_t;
 
 typedef struct map_t
 {
 	uint32_t size;
 	uint32_t key_size;
-	uint32_t capacity;
-	uint32_t bucket_size;
-	map_bucket_t * buckets[MAP_CAPACITY/BUCKET_SIZE];
+	map_bucket_t * buckets[MAP_BUCKET_COUNT];
 	map_create_hash * hashing_algorithm;
 	mem_pool_info_t * pool;
 } map_internal_t;
@@ -47,6 +56,20 @@ typedef struct map_it_t
 	uint32_t entry;
 } map_it_internal_t;
 
+static int32_t map_hash(const map_t * const map, const void * key);
+
+static bool_t map_key_equals(
+		const void * const key1,
+		const void * const key2,
+		const uint32_t key_size);
+
+static void map_copy_key(
+		const void * const key1,
+		const void * const key2,
+		const uint32_t key_size);
+
+static int32_t map_index_of(const map_t * const map, const void * key);
+
 static int32_t map_hash(const map_t * const map, const void * key)
 {
 	/* use the assigned algorithm to generate the hash */
@@ -56,28 +79,61 @@ static int32_t map_hash(const map_t * const map, const void * key)
 	return (h ^ ((h >> 7) ^ (h >> 4)));
 }
 
+static void map_copy_key(
+		const void * const dst,
+		const void * const src,
+		const uint32_t key_size)
+{
+	uint8_t * left = (uint8_t*)dst;
+	const uint8_t * right = (uint8_t*)src;
+	for (uint32_t i = 0 ; i < key_size ; i++)
+	{
+		*left = *right;
+	}
+}
+
+static bool_t map_key_equals(
+		const void * const key1,
+		const void * const key2,
+		const uint32_t key_size)
+{
+	uint8_t * left = (uint8_t*)key1;
+	uint8_t * right = (uint8_t*)key2;
+	for (uint32_t i = 0 ; i < key_size ; i++)
+	{
+		if (*left != *right)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+/*
+ * Internal function to return the index of a key
+ */
+static int32_t map_index_of(const map_t * const map, const void * key)
+{
+	/*
+	 * normalise the hashed value to be a suitable index within
+	 * the range of the tables index
+	 */
+	return map_hash(map, key) & (MAP_BUCKET_COUNT - 1);
+}
+
 /*
  * Initialise an instance that is already declared (i.e. on the stack/bss)
  */
 void map_initialise(
 		map_t * const map,
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool,
-		uint32_t capacity,
-		uint32_t bucket_size)
+		mem_pool_info_t * const pool)
 {
-	map->capacity = capacity;
-	map->bucket_size = bucket_size;
+	util_memset(map, 0, sizeof(map_t));
 	map->size = 0;
 	map->hashing_algorithm = hashing_algorithm;
-	map->key_equal = hash_key_equal;
 	map->pool = pool;
-	map->key_is_value = key_is_value;
-	HASH_MAP_DEBUG("hashed_map: Creating %d buckets\n", capacity/bucket_size);
-	for (uint32_t tmp = 0 ; tmp < (capacity/bucket_size) ; tmp++ )
-	{
-		map->buckets[tmp] = NULL;
-	}
+	HASH_MAP_DEBUG("hashed_map: Creating %d buckets\n", MAP_BUCKET_COUNT);
 }
 
 /*
@@ -86,14 +142,12 @@ void map_initialise(
  */
 map_t * map_create(
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool,
-		uint32_t capacity,
-		uint32_t bucket_size)
+		mem_pool_info_t * const pool)
 {
 	map_t * const new_map = mem_alloc(pool, sizeof(map_t));
 	if (new_map)
 	{
-		map_initialise(new_map, hashing_algorithm, pool, capacity, bucket_size);
+		map_initialise(new_map, hashing_algorithm, pool);
 	}
 	return new_map;
 }
@@ -105,9 +159,9 @@ void map_delete(map_t * const map)
 {
 	if (map)
 	{
-		for (uint32_t i = 0 ; i < map->capacity/map->bucket_size ; i++)
+		for (uint32_t i = 0 ; i < MAP_BUCKET_COUNT ; i++)
 		{
-			kernel_assert("Map still has buckets", map->buckets[i]==NULL);
+			kernel_assert("Map still has buckets", map->buckets[i] == NULL);
 		}
 	}
 
@@ -124,16 +178,16 @@ bool_t map_get(const map_t * const map, const void * key, void ** const value)
 {
 	/* find the table entry */
 	const int32_t index = map_index_of(map, key);
-	const HASH_MAP_T##_bucket_t * const bucket = (const HASH_MAP_T##_bucket_t *)map->buckets[index];
+	const map_bucket_t * const bucket = (const map_bucket_t *)map->buckets[index];
 	bool_t found = false;
 	/* if found and used return the value */
 	if (bucket && value)
 	{
-		for (uint32_t i=0 ; i < map->bucket_size && !found ; i++)
+		for (uint32_t i=0 ; i < MAP_BUCKET_SIZE && !found ; i++)
 		{
 			if (bucket->entries[i])
 			{
-				if (map->key_equal(bucket->entries[i]->key,key))
+				if (map_key_equals(bucket->entries[i]->key, key, map->key_size))
 				{
 					HASH_MAP_DEBUG("hashed_map: get entry in bucket %d entry %d\n", index, i);
 					*value = bucket->entries[i]->value;
@@ -151,15 +205,18 @@ bool_t map_get(const map_t * const map, const void * key, void ** const value)
 bool_t map_put(map_t * const map, const void * key, void * value)
 {
 	bool_t put_ok = false;
-	if (map->size < map->capacity)
+	if (map->size < MAP_CAPACITY)
 	{
 		const int32_t index = map_index_of(map, key);
-		HASH_MAP_T##_bucket_t * bucket;
+		map_bucket_t * bucket;
 		if (!map->buckets[index])
 		{
 			map->buckets[index] = mem_alloc(map->pool, sizeof(map_bucket_t));
-			bucket = map->buckets[index];
-			util_memset(bucket, 0, sizeof(map__bucket_t));
+			if (map->buckets[index])
+			{
+				bucket = map->buckets[index];
+				util_memset(bucket, 0, sizeof(map_bucket_t));
+			}
 		}
 		else
 		{
@@ -169,11 +226,11 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 		{
 			int32_t used_bucket_index = -1;
 			int32_t unused_bucket_index = -1;
-			for (uint32_t i = 0 ; i < map->bucket_size && used_bucket_index == -1 ; i++)
+			for (uint32_t i = 0 ; i < MAP_BUCKET_SIZE && used_bucket_index == -1 ; i++)
 			{
 				if (bucket->entries[i])
 				{
-					if (map->key_equal(bucket->entries[i]->key,key))
+					if (map_key_equals(bucket->entries[i]->key, key, map->key_size))
 					{
 						used_bucket_index = i;
 					}
@@ -197,7 +254,7 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 				HASH_MAP_DEBUG("hashed_map: Putting value in bucket %d entry %d\n", index, bucket_index);
 				bucket->entries[bucket_index] = mem_alloc(map->pool, sizeof(map_entry_t));
 				util_memset(bucket->entries[bucket_index], 0, sizeof(map_entry_t));
-				map_copy_key(bucket->entries[bucket_index], key);
+				map_copy_key(bucket->entries[bucket_index], key, map->key_size);
 				bucket->entries[bucket_index]->value = value;
 				put_ok = true;
 				map->size++;
@@ -205,18 +262,6 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 		}
 	}
 	return put_ok;
-}
-
-/*
- * Internal function to return the index of a key
- */
-static int32_t map_index_of(const map_t * const map, const void * key)
-{
-	/*
-	 * normalise the hashed value to be a suitable index within
-	 * the range of the tables index
-	 */
-	return_hash(map, key) & ((map->capacity/map->bucket_size) - 1);
 }
 
 /*
@@ -230,12 +275,12 @@ bool_t map_remove(map_t * const map, const void * key)
 	 if (bucket)
 	 {
 		 uint8_t c = 0;
-		 for (uint32_t i = 0 ; i < map->bucket_size; i++)
+		 for (uint32_t i = 0 ; i < MAP_BUCKET_SIZE; i++)
 		 {
 			 if (bucket->entries[i])
 			 {
 				 c++;
-				 if (!ok && map->key_equal(bucket->entries[i]->key,key))
+				 if (!ok && map_key_equals(bucket->entries[i]->key, key, map->key_size))
 				 {
 					 HASH_MAP_DEBUG("hashed_map: removing entry in bucket %d entry %d\n", index, i);
 					 ok = true;
@@ -274,7 +319,8 @@ uint32_t map_size(const map_t * const map)
  */
 uint32_t map_capacity(const map_t * const map)
 {
-	 return map->capacity;
+	(void)map; // UNUSED
+	 return MAP_CAPACITY;
 }
 
 /*
@@ -290,11 +336,11 @@ bool_t map_contains_key(const map_t * const map, const void * key)
 		if (map->buckets[index])
 		{
 			const map_bucket_t * const bucket = map->buckets[index];
-			for (uint32_t i = 0 ; i < map->bucket_size && !found ; i++)
+			for (uint32_t i = 0 ; i < MAP_BUCKET_SIZE && !found ; i++)
 			{
 				if (bucket->entries[i])
 				{
-					if (map->key_equal(bucket->entries[i]->key,key))
+					if (map_key_equals(bucket->entries[i]->key, key, map->key_size))
 					{
 						found = true;
 					}
@@ -356,31 +402,31 @@ bool_t map_it_next(map_it_t * const it, void ** item)
 
 	if ( it && item )
 	{
-		for(uint32_t e = it->entry + 1 ; e < it->map->bucket_size ; e++)
+		for(uint32_t e = it->entry + 1 ; e < MAP_BUCKET_SIZE ; e++)
 		{
 			if (it->map_bucket->entries[e])
 			{
 				it->entry = e;
 				it->map_entry = it->map_bucket->entries[e];
 				ok = true;
-				util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T));
+				*item = it->map_entry->value;
 				break;
 			}
 		}
 		if (!ok)
 		{
-			for ( uint32_t b = it->bucket + 1 ; b < (it->map->capacity/it->map->bucket_size) && !ok ; b++ )
+			for ( uint32_t b = it->bucket + 1 ; b < MAP_BUCKET_COUNT && !ok ; b++ )
 			{
 				if ( it->map->buckets[b] )
 				{
-					for (uint32_t e = 0 ; e < it->map->bucket_size ; e++)
+					for (uint32_t e = 0 ; e < MAP_BUCKET_SIZE ; e++)
 					{
 						if (it->map->buckets[b]->entries[e])
 						{
 							it->entry = e;
 							it->bucket = b;
 							it->map_entry = it->map->buckets[b]->entries[e];
-							util_memcpy(item, &(it->map_entry->value), sizeof(VALUE_T));
+							*item = it->map_entry->value;
 							ok = true;
 							break;
 						}
@@ -401,12 +447,12 @@ void map_it_reset(map_it_t * const it)
 		it->map_entry = NULL;
 		it->entry = 0;
 		it->bucket = 0;
-		for (uint32_t b = 0 ; b < (it->map->bucket_capacity/it->map->bucket_size) ; b++ )
+		for (uint32_t b = 0 ; b < MAP_BUCKET_COUNT ; b++ )
 		{
 			bool found = false;
 			if (it->map->buckets[b])
 			{
-				for (uint32_t e = 0 ; e < it->map->bucket_size && !found; e++)
+				for (uint32_t e = 0 ; e < MAP_BUCKET_SIZE && !found; e++)
 				{
 					if (it->map->buckets[b]->entries[e])
 					{
