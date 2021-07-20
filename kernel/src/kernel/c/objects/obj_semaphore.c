@@ -15,6 +15,8 @@
 #include "objects/object_table.h"
 #include "scheduler/scheduler.h"
 #include "utils/util_strlen.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 #include "utils/collections/unbounded_queue.h"
 
 typedef enum

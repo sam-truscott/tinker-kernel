@@ -17,6 +17,7 @@
 #include "objects/obj_thread.h"
 #include "memory/memory_manager.h"
 #include "console/print_out.h"
+#include "utils/util_memset.h"
 
 #define INVALID_PROC_ID 0
 

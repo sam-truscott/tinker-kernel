@@ -9,6 +9,8 @@
 
 #include "bcm2835_intc.h"
 #include "kernel_assert.h"
+#include "kernel_panic.h"
+#include "console/print_out.h"
 
 #define IRQ_PENDING_BASIC 0x200
 #define IRQ_PENDING_1 0x204

@@ -16,6 +16,7 @@
 #include "time/alarm_manager.h"
 #include "scheduler/scheduler.h"
 #include "process/process_list.h"
+#include "console/print_out.h"
 
 typedef struct object_timer_t
 {

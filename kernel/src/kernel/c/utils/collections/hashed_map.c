@@ -19,6 +19,7 @@
 #define MAP_BUCKET_SIZE 32
 #define MAP_CAPACITY 65535
 #define MAP_BUCKET_COUNT (MAP_CAPACITY/MAP_BUCKET_SIZE)
+#define MAP_MAX_KEY_LENGTH 64
 
 #if defined (DEBUG_COLLECTIONS)
 #define HASH_MAP_DEBUG debug_print
@@ -29,7 +30,7 @@ static inline void empty2(const char * const x, ...) {if (x){}}
 
 typedef struct map_entry
 {
-	void * key;
+	uint8_t key[MAP_MAX_KEY_LENGTH];
 	void * value;
 } map_entry_t;
 
@@ -89,6 +90,8 @@ static void map_copy_key(
 	for (uint32_t i = 0 ; i < key_size ; i++)
 	{
 		*left = *right;
+		left++;
+		right++;
 	}
 }
 
@@ -105,6 +108,8 @@ static bool_t map_key_equals(
 		{
 			return false;
 		}
+		left++;
+		right++;
 	}
 	return true;
 }
@@ -127,12 +132,15 @@ static int32_t map_index_of(const map_t * const map, const void * key)
 void map_initialise(
 		map_t * const map,
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool)
+		mem_pool_info_t * const pool,
+		uint32_t key_size)
 {
 	util_memset(map, 0, sizeof(map_t));
 	map->size = 0;
 	map->hashing_algorithm = hashing_algorithm;
 	map->pool = pool;
+	map->key_size = key_size;
+	kernel_assert("Map still has buckets", key_size <= MAP_MAX_KEY_LENGTH);
 	HASH_MAP_DEBUG("hashed_map: Creating %d buckets\n", MAP_BUCKET_COUNT);
 }
 
@@ -142,12 +150,13 @@ void map_initialise(
  */
 map_t * map_create(
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool)
+		mem_pool_info_t * const pool,
+		uint32_t key_size)
 {
 	map_t * const new_map = mem_alloc(pool, sizeof(map_t));
 	if (new_map)
 	{
-		map_initialise(new_map, hashing_algorithm, pool);
+		map_initialise(new_map, hashing_algorithm, pool, key_size);
 	}
 	return new_map;
 }
@@ -235,7 +244,7 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 						used_bucket_index = i;
 					}
 				}
-				else
+				else if (unused_bucket_index == -1)
 				{
 					unused_bucket_index = i;
 				}

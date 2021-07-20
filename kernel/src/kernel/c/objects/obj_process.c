@@ -15,6 +15,7 @@
 #include "process/thread.h"
 #include "process/process_list.h"
 #include "memory/memory_manager.h"
+#include "utils/util_memset.h"
 
 typedef struct object_process_t
 {

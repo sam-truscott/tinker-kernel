@@ -15,6 +15,7 @@
 #include "process/process_list.h"
 #include "utils/util_strlen.h"
 #include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 #include "objects/object_table.h"
 #include "objects/obj_semaphore.h"
 #include "objects/obj_process.h"
@@ -324,7 +325,7 @@ static void kshell_object_table(void)
 
 	while (proc)
 	{
-		object_table_it_t * const it = obj_iterator(process_get_object_table(proc));
+		map_it_t * const it = obj_iterator(process_get_object_table(proc));
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
 		print_out("Obj No. \tType\t\n");
@@ -333,7 +334,7 @@ static void kshell_object_table(void)
 		if (it)
 		{
 			object_t * obj = NULL;
-			object_table_it_t_get(it, &obj);
+			map_it_get(it, (void**)&obj);
 
 			while (obj)
 			{
@@ -435,13 +436,13 @@ static void kshell_object_table(void)
 
 				print_out("\n");
 
-				if (!object_table_it_t_next(it, &obj))
+				if (!map_it_next(it, (void**)&obj))
 				{
 					obj = NULL;
 				}
 			}
 			print_out("\n");
-			object_table_it_t_delete(it);
+			map_it_delete(it);
 		}
 
 		if (!list_it_next(list, &proc))

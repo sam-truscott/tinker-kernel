@@ -18,6 +18,8 @@
 #include "objects/object_table.h"
 #include "objects/obj_semaphore.h"
 #include "utils/util_memcpy.h"
+#include "utils/util_memset.h"
+#include "console/print_out.h"
 
 static void sch_priority_find_next_queue(scheduler_t * const scheduler, thread_t * const t);
 

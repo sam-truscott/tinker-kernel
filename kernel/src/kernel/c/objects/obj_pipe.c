@@ -12,7 +12,10 @@
 #include "tgt.h"
 #include "objects/object_private.h"
 #include "utils/util_strlen.h"
+#include "utils/util_memcpy.h"
+#include "utils/util_memset.h"
 #include "utils/collections/unbounded_list.h"
+#include "console/print_out.h"
 
 typedef struct rx_blocked
 {

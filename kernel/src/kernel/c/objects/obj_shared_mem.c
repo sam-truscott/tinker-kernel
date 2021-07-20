@@ -10,8 +10,11 @@
 #include "config.h"
 #include "tgt_types.h"
 #include "objects/object_private.h"
-#include "utils/util_strlen.h"
+#include "console/print_out.h"
 #include "utils/collections/unbounded_list.h"
+#include "utils/util_strlen.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 
 typedef struct object_shm_t
 {

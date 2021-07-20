@@ -67,11 +67,13 @@ typedef int32_t (map_create_hash)(const void * const data, const uint32_t size);
 void map_initialise(
 		map_t * const map,
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool);
+		mem_pool_info_t * const pool,
+		uint32_t key_size);
 
 map_t * map_create(
 		map_create_hash * const hashing_algorithm,
-		mem_pool_info_t * const pool);
+		mem_pool_info_t * const pool,
+		uint32_t key_size);
 
 void map_delete(map_t * const map);
 bool_t map_get(const map_t * const map, const void * key, void ** const value);

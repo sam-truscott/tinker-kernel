@@ -13,6 +13,7 @@
 #include "kernel_assert.h"
 #include "console/print_out.h"
 #include "devices/kernel_device.h"
+#include "kernel_panic.h"
 
 #define CONTROL_OFFSET 0
 #define CLOCK_OFFSET 4

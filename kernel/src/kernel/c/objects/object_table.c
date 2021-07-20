@@ -15,6 +15,7 @@
 #include "process/process.h"
 #include "memory/memory_manager.h"
 #include "utils/util_memcpy.h"
+#include "utils/hash/basic_hashes.h"
 
 typedef struct object_table_t
 {
@@ -40,11 +41,6 @@ void obj_table_delete(const object_table_t * const table)
 	mem_free(table->pool, table);
 }
 
-static bool_t hash_equal_object_number(const object_number_t l, const object_number_t r)
-{
-	return (l == r);
-}
-
 return_t obj_initialse_table(
 		object_table_t * const table,
 		mem_pool_info_t * const pool)
@@ -58,8 +54,7 @@ return_t obj_initialse_table(
 		table->the_map = map_create(
 				hash_basic_integer,
 				pool,
-				MAX_OBJECT_TABLE_SIZE,
-				DEFAULT_BUCKET_SIZE);
+				sizeof(object_number_t));
 		if  (table->the_map )
 		{
 			table->next_id = 1;

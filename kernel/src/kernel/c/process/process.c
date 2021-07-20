@@ -21,6 +21,9 @@
 #include "objects/obj_shared_mem.h"
 #include "objects/obj_timer.h"
 #include "utils/util_strlen.h"
+#include "console/print_out.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 
 static void process_add_mem_sec(
 		process_t * const process,
@@ -362,7 +365,7 @@ void process_set_mem_info(
 			sizeof(tgt_mem_t));
 }
 
-inline uint32_t count_threads(process_t * const process, uint32_t * const id)
+static uint32_t count_threads(process_t * const process, uint32_t * const id)
 {
 	bool_t found = false;
 
@@ -472,11 +475,11 @@ void process_exit(process_t * const process)
 		process->threads[i] = NULL;
 	}
 	// object table
-	object_table_it_t * const it = obj_iterator(process->object_table);
+	map_it_t * const it = obj_iterator(process->object_table);
 	if (it)
 	{
 		object_t * object = NULL;
-		bool_t objects_exist = object_table_it_t_get(it, &object);
+		bool_t objects_exist = map_it_get(it, (void**)&object);
 		while (objects_exist)
 		{
 			// delete it
@@ -550,11 +553,11 @@ void process_exit(process_t * const process)
 					}
 				}
 			}
-			objects_exist = object_table_it_t_next(it, &object);
+			objects_exist = map_it_next(it, (void**)&object);
 		}
-		object_table_it_t_reset(it);
-		kernel_assert("object table isn't empty", object_table_it_t_get(it, &object) == false);
-		object_table_it_t_delete(it);
+		map_it_reset(it);
+		kernel_assert("object table isn't empty", map_it_get(it, (void**)&object) == false);
+		map_it_delete(it);
 	}
 	obj_table_delete(process->object_table);
 

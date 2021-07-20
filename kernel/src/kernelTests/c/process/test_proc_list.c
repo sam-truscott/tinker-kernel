@@ -19,9 +19,7 @@
 #include "scheduler/scheduler_private.h"
 #include "process/process_private.h"
 #include "process/thread_private.h"
-
-UNBOUNDED_LIST_SPEC_SIZE(static, process_list_t)
-UNBOUNDED_LIST_BODY_SIZE(static, process_list_t)
+#include "utils/util_memset.h"
 
 #define SIZE (1024 * 128)
 
@@ -52,7 +50,7 @@ void test_proc_list(void)
 	kernel_assert("last proc id should be one", list->last_pid == 1);
 	kernel_assert("should be null", list->kernel_process == NULL);
 	kernel_assert("should be non null", list->process_list != NULL);
-	kernel_assert("should be zero", process_list_t_size(list->process_list) == 0);
+	kernel_assert("should be zero", list_size(list->process_list) == 0);
 
 	proc_set_kernel_process(list, &kproc);
 	process_t * proc = proc_get_kernel_process(list);
@@ -68,21 +66,21 @@ void test_proc_list(void)
 	return_t err = proc_create_process(list, "proc", "task", NULL, 2, &kp_mem_info, 0, &proc);
 	kernel_assert("should be non null", err == NO_ERROR);
 	kernel_assert("should be non null", proc != NULL);
-	kernel_assert("should be one", process_list_t_size(list->process_list) == 1);
+	kernel_assert("should be one", list_size(list->process_list) == 1);
 
-	process_list_it_t * const it = proc_list_procs(list);
+	list_it_t * const it = proc_list_procs(list);
 	process_t * item = NULL;
-	kernel_assert("should be true", process_list_it_t_get(it, &item));
+	kernel_assert("should be true", list_it_get(it, &item));
 	kernel_assert("should be equal", item == proc);
-	kernel_assert("should be false", !process_list_it_t_next(it, &item));
-	process_list_it_t_delete(it);
+	kernel_assert("should be false", !list_it_next(it, &item));
+	list_it_delete(it);
 
 	thread_t * const task = process_get_main_thread(proc);
 	process_thread_exit(proc, task);
 	process_exit(proc);
 	proc_delete_proc(list, proc);
 
-	kernel_assert("should be zero", process_list_t_size(list->process_list) == 0);
+	kernel_assert("should be zero", list_size(list->process_list) == 0);
 
 	kernel_assert("should be equal", allocated == mem_get_allocd_size(pool));
 	mem_free(mem_get_default_pool(), pool_mem);

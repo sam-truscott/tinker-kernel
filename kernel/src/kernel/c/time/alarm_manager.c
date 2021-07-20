@@ -14,6 +14,7 @@
 #include "time/time.h"
 #include "time/time_manager.h"
 #include "utils/collections/unbounded_list.h"
+#include "console/print_out.h"
 
 typedef struct alarm_manager_t
 {
