@@ -31,9 +31,7 @@ void TINKER_API_CALL_7()
 
 void bsp_initialise()
 {
-	printf("Allocating %x\n", HOST_MEMORY_SIZE);
 	memory = (mem_t)malloc(HOST_MEMORY_SIZE);
-	printf("Allocated to %llu\n", memory);
 }
 
 void bsp_setup() {}
