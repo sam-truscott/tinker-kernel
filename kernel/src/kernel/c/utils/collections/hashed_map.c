@@ -217,7 +217,7 @@ bool_t map_put(map_t * const map, const void * key, void * value)
 	if (map->size < MAP_CAPACITY)
 	{
 		const int32_t index = map_index_of(map, key);
-		map_bucket_t * bucket;
+		map_bucket_t * bucket = NULL;
 		if (!map->buckets[index])
 		{
 			map->buckets[index] = mem_alloc(map->pool, sizeof(map_bucket_t));
