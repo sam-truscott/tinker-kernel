@@ -10,27 +10,11 @@
 #include "config.h"
 #include "tgt_types.h"
 #include "objects/object_private.h"
-#include "utils/util_strlen.h"
+#include "console/print_out.h"
 #include "utils/collections/unbounded_list.h"
-
-UNBOUNDED_LIST_TYPE(shm_client_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_DELETE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_ADD(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_GET(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_REMOVE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_SPEC_SIZE(static,shm_client_list_t)
-UNBOUNDED_LIST_BODY_CREATE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_DELETE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_ADD(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_GET(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_REMOVE(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_REMOVE_ITEM(static,shm_client_list_t, object_shm_t*)
-UNBOUNDED_LIST_BODY_SIZE(static,shm_client_list_t)
+#include "utils/util_strlen.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 
 typedef struct object_shm_t
 {
@@ -41,7 +25,7 @@ typedef struct object_shm_t
 	mem_t real_addr;
 	mem_t virt_addr;
 	uint32_t size;
-	shm_client_list_t * client_list;
+	list_t * client_list;
 	struct object_shm_t * parent_shm;
 	char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 } object_shm_internal_t;
@@ -117,7 +101,7 @@ return_t obj_create_shm(
 						no->process = process;
 						no->real_addr = (mem_t)memory;
 						no->virt_addr = virt_addr;
-						no->client_list = shm_client_list_t_create(pool);
+						no->client_list = list_create(pool);
 						no->parent_shm = NULL;
 						util_memset(no->name, 0, MAX_SHARED_OBJECT_NAME_LENGTH);
 						util_memcpy(no->name, name, util_strlen(name, MAX_SHARED_OBJECT_NAME_LENGTH));
@@ -205,7 +189,7 @@ return_t obj_open_shm(
 									no->virt_addr = virt_addr;
 									no->parent_shm = other_shm_obj;
 									no->client_list = NULL;
-									shm_client_list_t_add(other_shm_obj->client_list, no);
+									list_add(other_shm_obj->client_list, no);
 									util_memset(no->name, 0, sizeof(no->name));
 									util_memcpy(no->name, name, util_strlen(name, sizeof(name)));
 									// FIXME why are we adding it again?
@@ -267,23 +251,23 @@ return_t obj_delete_shm(
 		debug_prints(SHM, "Deleting SHM\n");
 		if (shm->client_list)
 		{
-			uint32_t size = shm_client_list_t_size(shm->client_list);
+			uint32_t size = list_size(shm->client_list);
 			debug_print(SHM, "SHM has %d clients\n", size);
 			while(size)
 			{
 				object_shm_t * attached_shm = NULL;
-				if (shm_client_list_t_get(shm->client_list, 0, &attached_shm))
+				if (list_get(shm->client_list, 0, &attached_shm))
 				{
 					if (attached_shm && attached_shm != shm)
 					{
 						obj_delete_shm(attached_shm);
 					}
 				}
-				shm_client_list_t_remove(shm->client_list, 0);
-				size = shm_client_list_t_size(shm->client_list);
+				list_remove(shm->client_list, 0);
+				size = list_size(shm->client_list);
 				debug_print(SHM, "Detached client, %d clients remain\n", size);
 			}
-			shm_client_list_t_delete(shm->client_list);
+			list_delete(shm->client_list);
 			process_free_vmem(shm->process, shm->virt_addr);
 			mem_free(shm->pool, (void*)shm->real_addr);
 			debug_prints(SHM, "Removing SHM from registry\n");
@@ -295,7 +279,7 @@ return_t obj_delete_shm(
 			process_free_vmem(shm->process, shm->virt_addr);
 			if (shm->parent_shm)
 			{
-				shm_client_list_t_remove_item(shm->parent_shm->client_list, shm);
+				list_remove_item(shm->parent_shm->client_list, shm);
 			}
 			mem_free(shm->pool, shm);
 		}

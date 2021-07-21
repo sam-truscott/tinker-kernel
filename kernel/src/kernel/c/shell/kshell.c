@@ -15,6 +15,7 @@
 #include "process/process_list.h"
 #include "utils/util_strlen.h"
 #include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 #include "objects/object_table.h"
 #include "objects/obj_semaphore.h"
 #include "objects/obj_process.h"
@@ -22,7 +23,6 @@
 #include "objects/obj_pipe.h"
 #include "process/thread.h"
 #include "utils/collections/hashed_map.h"
-#include "utils/collections/hashed_map_iterator.h"
 
 #define MAX_LINE_INPUT 256
 
@@ -250,11 +250,11 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 
 static void kshell_process_list(void)
 {
-	process_list_it_t * list = NULL;
+	list_it_t * list = NULL;
 	process_t * proc = NULL;
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	print_out("Proc. Id\tThreads \tName\n");
 	print_out("--------\t--------\t----\n");
@@ -264,76 +264,68 @@ static void kshell_process_list(void)
 		printp_out("%8d", process_get_pid(proc));
 		printp_out("\t%8d", process_get_thread_count(proc));
 		printp_out("\t%s\n", process_get_image(proc));
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_task_list(void)
 {
-	process_list_it_t * list = NULL;
+	list_it_t * list = NULL;
 	process_t * proc = NULL;
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	while (proc)
 	{
-		thread_it_t * tlist = process_iterator(proc);
-		thread_t  * t = NULL;
-
-		thread_it_t_get(tlist, &t);
-
 		printp_out("Process:\t%s\n", process_get_image(proc));
 		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tPc\t\tName\n");
 		print_out("--------\t----------\t----------\t---\t--------\t-----\t--\t\t----\n");
 
-		while (t)
+		for (uint32_t index = 0 ; index < MAX_THREADS ; index++)
 		{
-			printp_out("%8d", thread_get_tid(t));
-			printp_out("\t0x%8X", thread_get_stack_size(t));
-			const tgt_context_t * context = thread_get_context(t);
-			printp_out("\t0x%8X", tgt_get_context_stack_pointer(context));
-			printp_out("\t%3d", thread_get_priority(t));
-			printp_out("\t%8x", thread_get_entry_point(t));
-			printp_out("\t%s", ksh_thread_states[thread_get_state(t)]);
-			printp_out("\t%8x", tgt_get_pc(context));
-			printp_out("\t%s", thread_get_name(t));
-			print_out("\n");
-
-			if (!thread_it_t_next(tlist, &t))
+			thread_t * const t = thread_by_index(proc, index);
+			if (t != NULL)
 			{
-				t = NULL;
+				printp_out("%8d", thread_get_tid(t));
+				printp_out("\t0x%8X", thread_get_stack_size(t));
+				const tgt_context_t * context = thread_get_context(t);
+				printp_out("\t0x%8X", tgt_get_context_stack_pointer(context));
+				printp_out("\t%3d", thread_get_priority(t));
+				printp_out("\t%8x", thread_get_entry_point(t));
+				printp_out("\t%s", ksh_thread_states[thread_get_state(t)]);
+				printp_out("\t%8x", tgt_get_pc(context));
+				printp_out("\t%s", thread_get_name(t));
+				print_out("\n");
 			}
 		}
 		print_out("\n");
 
-		thread_it_t_delete(tlist);
-
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_object_table(void)
 {
-	process_list_it_t * const list = proc_list_procs(kshell->proc_list);
+	list_it_t * const list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	while (proc)
 	{
-		object_table_it_t * const it = obj_iterator(process_get_object_table(proc));
+		map_it_t * const it = obj_iterator(process_get_object_table(proc));
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
 		print_out("Obj No. \tType\t\n");
@@ -342,7 +334,7 @@ static void kshell_object_table(void)
 		if (it)
 		{
 			object_t * obj = NULL;
-			object_table_it_t_get(it, &obj);
+			map_it_get(it, (void**)&obj);
 
 			while (obj)
 			{
@@ -444,31 +436,31 @@ static void kshell_object_table(void)
 
 				print_out("\n");
 
-				if (!object_table_it_t_next(it, &obj))
+				if (!map_it_next(it, (void**)&obj))
 				{
 					obj = NULL;
 				}
 			}
 			print_out("\n");
-			object_table_it_t_delete(it);
+			map_it_delete(it);
 		}
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_memory_info(void)
 {
 	print_out("mem:\n\n");
-	process_list_it_t * list = proc_list_procs(kshell->proc_list);
+	list_it_t * list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	print_out("Proc\tPool Sz    Pool Usd   P.Pool Sz  P.Pool Usd\n");
 	print_out("----\t---------- ---------- ---------- ----------\n");
@@ -484,13 +476,13 @@ static void kshell_memory_info(void)
 				mem_get_alloc_size(prv_pool),
 				mem_get_allocd_size(prv_pool));
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 
 	print_out("\nMemory mappings:\n");
 
@@ -498,7 +490,7 @@ static void kshell_memory_info(void)
 	print_out("---------- ---------- ---------- --- ---- ------ ----\n");
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 	while (proc)
 	{
 		printp_out("%s\n", process_get_image(proc));
@@ -515,12 +507,12 @@ static void kshell_memory_info(void)
 					mem_sec_get_name(sec));
 			sec = mem_sec_get_next(sec);
 		}
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 #endif /* KERNEL_SHELL */

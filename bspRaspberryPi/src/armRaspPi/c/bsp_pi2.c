@@ -28,6 +28,8 @@
 #include "bcm2835_intc.h"
 #include "shell/kshell.h"
 
+#include "console/print_out.h"
+
 #include "memory/mem_section_private.h"
 #include "memory/mem_section.h"
 

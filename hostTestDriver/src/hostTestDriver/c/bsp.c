@@ -14,9 +14,9 @@
 #include "tinker_api_errors.h"
 #include "memory/mem_pool.h"
 
-#define HOST_MEMORY_SIZE 1 * 1024 * 1024
+#define HOST_MEMORY_SIZE 4 * 1024 * 1024
 
-static void * memory = NULL;
+static mem_t memory = 0;
 
 unsigned int __text = 0;
 unsigned int __text_end = 0;
@@ -31,7 +31,9 @@ void TINKER_API_CALL_7()
 
 void bsp_initialise()
 {
-	memory = malloc(HOST_MEMORY_SIZE);
+	printf("Allocating %x\n", HOST_MEMORY_SIZE);
+	memory = (mem_t)malloc(HOST_MEMORY_SIZE);
+	printf("Allocated to %llu\n", memory);
 }
 
 void bsp_setup() {}

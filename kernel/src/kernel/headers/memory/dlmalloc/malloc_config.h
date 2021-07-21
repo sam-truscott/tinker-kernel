@@ -23,6 +23,10 @@
 #define NO_MALLINFO 0
 #define NO_MALLOC_STATS 1
 
+#if ! defined (_X86_) && defined (__i386__)
+# define _X86_ 1
+#endif
+
 #else /* IS_HOST_UNIT_TEST */
 
 #undef WIN32

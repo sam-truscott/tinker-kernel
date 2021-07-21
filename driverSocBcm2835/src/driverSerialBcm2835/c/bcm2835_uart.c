@@ -17,6 +17,7 @@
 #include "tgt_types.h"
 #include "tgt_io.h"
 #include "bcm2835_uart.h"
+#include "utils/util_memset.h"
 
 // The offsets for reach register.
 // Controls actuation of pull up/down to ALL GPIO pins.
@@ -164,11 +165,28 @@ static return_t bcm2835_uart_isr(
 		const uint32_t vector)
 {
 	// TODO this is only reading one char at a time
+	return_t ret = NO_ERROR;
 	(void)vector;
 	bcm2835_user_data_t * const user_data = (bcm2835_user_data_t*)usr_data;
-	char buffer[2] = {0, 0};
-	buffer[0] = bcm2835_uart_getc(user_data->base);
-	return kernel_isr_write_pipe(user_data->input_pipe, buffer, 1);
+	if (user_data && user_data->base)
+	{
+		char buffer[2] = {0, 0};
+		buffer[0] = bcm2835_uart_getc(user_data->base);
+		if (user_data->input_pipe)
+		{
+			ret =  kernel_isr_write_pipe(user_data->input_pipe, buffer, 1);
+		}
+		else
+		{
+			ret = DEVICE_REGISTER_INVALID;
+		}
+	}
+	else
+	{
+		ret = DEVICE_REGISTER_INVALID;
+	}
+
+	return ret;
 }
 
 void early_uart_putc(const char c)

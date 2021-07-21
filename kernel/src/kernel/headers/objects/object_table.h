@@ -13,11 +13,12 @@
 #include "memory/mem_pool.h"
 #include "objects/object.h"
 #include "utils/collections/hashed_map.h"
-#include "utils/collections/hashed_map_iterator.h"
 
+/*
 HASH_MAP_TYPE_T(object_map_t)
 HASH_MAP_TYPE_ITERATOR_TYPE(object_table_it_t)
 HASH_MAP_TYPE_ITERATOR_SPEC(extern, object_table_it_t, object_t*)
+*/
 
 typedef struct object_table_t object_table_t;
 
@@ -40,6 +41,6 @@ return_t obj_remove_object(
 
 object_t * obj_get_object(const object_table_t * const t, object_number_t oid);
 
-object_table_it_t * obj_iterator(const object_table_t * t);
+map_it_t * obj_iterator(const object_table_t * t);
 
 #endif /* OBJECT_TABLE_H_ */

@@ -1,5 +1,22 @@
 #pragma GCC optimize ("-O2")
 
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wanalyzer-double-fclose"
+#pragma GCC diagnostic ignored "-Wanalyzer-double-free"
+#pragma GCC diagnostic ignored "-Wanalyzer-exposure-through-output-file"
+#pragma GCC diagnostic ignored "-Wanalyzer-file-leak"
+#pragma GCC diagnostic ignored "-Wanalyzer-free-of-non-heap"
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#pragma GCC diagnostic ignored "-Wanalyzer-possible-null-argument"
+#pragma GCC diagnostic ignored "-Wanalyzer-possible-null-dereference"
+#pragma GCC diagnostic ignored "-Wanalyzer-null-argument"
+#pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
+#pragma GCC diagnostic ignored "-Wanalyzer-stale-setjmp-buffer"
+#pragma GCC diagnostic ignored "-Wanalyzer-tainted-array-index"
+#pragma GCC diagnostic ignored "-Wanalyzer-unsafe-call-within-signal-handler"
+#pragma GCC diagnostic ignored "-Wanalyzer-use-after-free"
+#pragma GCC diagnostic ignored "-Wanalyzer-use-of-pointer-in-stale-stack-frame"
+
 #if defined(IS_HOST_UNIT_TEST)
 
 #include <errno.h>

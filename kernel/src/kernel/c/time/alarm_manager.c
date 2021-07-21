@@ -14,27 +14,11 @@
 #include "time/time.h"
 #include "time/time_manager.h"
 #include "utils/collections/unbounded_list.h"
-
-UNBOUNDED_LIST_TYPE(alarm_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_REMOVE(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_REMOVE_ITEM(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_GET(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_SPEC_SIZE(static, alarm_list_t)
-UNBOUNDED_LIST_BODY_CREATE(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_ADD(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_REMOVE(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_REMOVE_ITEM(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_GET(static, alarm_list_t, alarm_t*)
-UNBOUNDED_LIST_BODY_SIZE(static, alarm_list_t)
+#include "console/print_out.h"
 
 typedef struct alarm_manager_t
 {
-	alarm_list_t * alarm_list;
+	list_t * alarm_list;
 	alarm_t * next_alarm;
 	timer_t * alarm_timer;
 	mem_pool_info_t * pool;
@@ -67,7 +51,7 @@ alarm_manager_t * alarm_initialse(mem_pool_info_t * const pool, time_manager_t *
 	{
 		am->alarm_timer = NULL;
 		am->next_alarm = NULL;
-		am->alarm_list = alarm_list_t_create(pool);
+		am->alarm_list = list_create(pool);
 		am->pool = pool;
 		am->time_manager = tm;
 	}
@@ -107,7 +91,7 @@ return_t alarm_set_alarm(
 		time_get_system_time(am->time_manager, &now);
 
 		/* check there's room of the new alarm */
-		const uint32_t alarm_list_size = alarm_list_t_size(am->alarm_list);
+		const uint32_t alarm_list_size = list_size(am->alarm_list);
 		if (alarm_list_size < MAX_ALARMS)
 		{
 			alarm_t * tmp = NULL;
@@ -117,7 +101,7 @@ return_t alarm_set_alarm(
 			uint32_t new_alarm_id = 0;
 			for (uint32_t i = 0 ; i < alarm_list_size ; i++)
 			{
-				if ( !alarm_list_t_get(am->alarm_list, i, &tmp) )
+				if ( !list_get(am->alarm_list, i, &tmp) )
 				{
 					new_alarm_id = i;
 					break;
@@ -134,7 +118,7 @@ return_t alarm_set_alarm(
 					usr_data);
 			if (new_alarm)
 			{
-				if (alarm_list_t_add(am->alarm_list, new_alarm))
+				if (list_add(am->alarm_list, new_alarm))
 				{
 					alarm_calculate_next_alarm(am, new_alarm);
 					if (alarm_id)
@@ -181,11 +165,11 @@ return_t alarm_unset_alarm(
 	return_t ret = NO_ERROR;
 	debug_print(ALARM, "Alarms: Unset alarm id %d\n", alarm_id);
 	alarm_t * alarm = NULL;
-	const bool_t got = alarm_list_t_get(am->alarm_list, alarm_id, &alarm);
+	const bool_t got = list_get(am->alarm_list, alarm_id, &alarm);
 	if (got && alarm)
 	{
 		debug_print(ALARM, "Alarms: Removing %d\n", alarm_id);
-		alarm_list_t_remove_item(am->alarm_list, alarm);
+		list_remove_item(am->alarm_list, alarm);
 		if (alarm == am->next_alarm)
 		{
 			debug_prints(ALARM, "Alarms: Disabling the alarm timer\n");
@@ -229,9 +213,9 @@ void alarm_calculate_next_alarm(
 	}
 	else
 	{
-		if (alarm_list_t_size(am->alarm_list) > 0)
+		if (list_size(am->alarm_list) > 0)
 		{
-			alarm_list_t_get(am->alarm_list, 0, &am->next_alarm);
+			list_get(am->alarm_list, 0, &am->next_alarm);
 			alarm_enable_timer(am);
 		}
 	}

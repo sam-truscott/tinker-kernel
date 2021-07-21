@@ -28,43 +28,47 @@ allprojects {
 	        debug
 	        release
 	    }
+	    /* compiler and linker options for all toolchains */
 	    binaries {
 	    	all {
-		    	cCompiler.args "-pedantic",
+		    	cCompiler.args "-pedantic",   /* always be pedantic - see below */
 		            "-pedantic-errors",
 		            "-Wall",
 		            "-Wextra",
 		            "-Werror",
 		            "-c",
 		            "-fmessage-length=0",
-		            "-std=gnu18",
-		            "-DBUILDING_KERNEL",
-                    "-DDEBUG_KERNEL_ONLY",
-		            "-DKERNEL_DEBUGGING",
+		            "-std=gnu18",             /* for now use the default */
+		            "-DBUILDING_KERNEL",      /* used for apis - building kernel */
+                    "-DDEBUG_KERNEL_ONLY",    /* debug the kernel only */
+		            "-DKERNEL_DEBUGGING",     /* enable debugging */
                     //"-DDEBUG_VALUE=0x0"
-                    "-DDEBUG_VALUE=0x00020403"
+                    "-DDEBUG_VALUE=0x00020003"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
-		        linker.args  "-static"
+		        linker.args  "-static"        /* always static - no linking */
 		        if (buildType == buildTypes.debug) {
-		            cCompiler.args "-O0", 
-		                "-g3",
-		                "-gdwarf-4",
-		                "-DKERNEL_SHELL",
-                        "-DKERNEL_SHELL_DEBUG",
-		                "-UUNIT_TESTS"
-		            linker.args  "-fno-lto"
+		            cCompiler.args "-O0",     /* no optimisation */
+		                "-g3",                /* lots of debugging */
+		                "-gdwarf-4",          /* use latest format */
+		                "-DKERNEL_SHELL",     /* enable internal shell */
+                        "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
+		                "-UUNIT_TESTS"        /* enable unit tests */
+		            linker.args  "-fno-lto"   /* for now, disable lto */
 		        } else if (buildType == buildTypes.release) {
-		            cCompiler.args "-O3",
-		                "-g0",
-		                "-UKERNEL_DEBUGGING",
-		                "-DKERNEL_SHELL",
-		                "-UKERNEL_SHELL_DEBUG"
-                    linker.args  "-flto"
+		            cCompiler.args "-O2",     /* default optimisation level */
+		                "-g0",                /* no debugging */
+		                "-UKERNEL_DEBUGGING", /* no debugging */
+		                "-DKERNEL_SHELL",     /* enable shell */
+		                "-UKERNEL_SHELL_DEBUG" /* no shell debugging */
+                    linker.args  "-fno-lto"   /* for now, disable lto */
 		        }
 	    	}
 	    }
+	    /* native and cross toolchains */
 	    toolChains {
+	       /* Normal non-cross-compiler gcc */
 	        gcc(Gcc) {
+	           /* GCC on Windows */
 	           target("windows_x86") {
 	               File srcDir = new File("src")
 	               cCompiler.withArguments { args ->
@@ -72,7 +76,7 @@ allprojects {
 	                   args << "-Wno-pointer-to-int-cast"
 	                   args << "-Wno-int-to-pointer-cast"
 	                   args << "-Wno-type-limits"
-	                   args << "-D__i386__"
+	                   args << "-D__x86_64__"
                        args << "-DUNIT_TESTS"
 	                   args << "-DIS_HOST_UNIT_TEST"
                        args << "-DSCHEDULER_DEBUGGING"
@@ -87,6 +91,7 @@ allprojects {
 	                   args << "-fprofile-arcs"
 	               }
 	           }
+	           /* GCC on Linux AMD 64bit */
 	           target("linux_x86-64") {
 	               File srcDir = new File("src")
 	               cCompiler.withArguments { args ->
@@ -113,6 +118,7 @@ allprojects {
                        args << "-fPIC"
 	               }
 	           }
+	           /* GCC on Linux ARM v7 */
 	           target("linux_arm-v7") {
 	               File srcDir = new File("src")
                    cCompiler.withArguments { args ->
@@ -136,7 +142,9 @@ allprojects {
                    }
 	           }
 	        }
+	        /* Cross compilers */
 	        xgcc(Gcc) {
+	            /* gcc for powerpc */
 	            target("tinkerPpc") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "powerpc-eabi-gcc"
@@ -151,6 +159,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
 	                	args << "-nostartfiles"
@@ -158,6 +167,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm (generic) */
 	            target("tinkerArm") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -171,6 +181,7 @@ allprojects {
                         args << "-mfloat-abi=soft"
                         //args << "-fno-use-cxa-atexit"
                         //args << "--specs=nano.specs"
+                        args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
                     linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
@@ -179,6 +190,7 @@ allprojects {
                         //args << "--specs=nano.specs"
                     }
 	            }
+	            /* gcc for arm v4 - softfp */
 	            target("tinkerArm4Soft") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -196,6 +208,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
@@ -205,6 +218,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v4 - hardfp */
 	            target("tinkerArm4HardVfp") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -223,6 +237,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
 	                	args << "-mfpu=vfp"
@@ -234,6 +249,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v7 - softfp */
 				target("tinkerArm7Soft") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -250,6 +266,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
@@ -258,6 +275,7 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v7 - hardfp */
 	            target("tinkerArm7HardVfp") {
 	                File srcDir = new File("src")
 	                cppCompiler.executable = "arm-eabi-gcc"
@@ -275,6 +293,7 @@ allprojects {
 	                    args << "-fpic"
 	                    args << "-fno-builtin"
 		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
 	                linker.withArguments { args ->
 	                	args << "-mfpu=vfp"
@@ -288,6 +307,7 @@ allprojects {
 	            }
 	        }
 	    }
+	    /* platforms and their architecture */
 	    platforms {
 	        tinkerArm4Soft {
 	            architecture "arm"

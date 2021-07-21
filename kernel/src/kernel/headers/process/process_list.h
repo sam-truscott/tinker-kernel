@@ -12,13 +12,8 @@
 #include "process.h"
 #include "objects/object.h"
 #include "utils/collections/unbounded_list.h"
-#include "utils/collections/unbounded_list_iterator.h"
 
 typedef struct proc_list_t proc_list_t;
-
-UNBOUNDED_LIST_TYPE(process_list_t)
-UNBOUNDED_LIST_ITERATOR_TYPE(process_list_it_t)
-UNBOUNDED_LIST_ITERATOR_SPEC(extern, process_list_it_t, process_list_t, process_t*)
 
 proc_list_t * proc_create(
 		mem_pool_info_t * const pool,
@@ -51,7 +46,7 @@ return_t proc_create_thread(
 		object_t ** thread_object,
 		thread_t ** new_thread);
 
-process_list_it_t * proc_list_procs(proc_list_t * const list);
+list_it_t * proc_list_procs(proc_list_t * const list);
 
 void proc_delete_proc(
 		proc_list_t * const list,

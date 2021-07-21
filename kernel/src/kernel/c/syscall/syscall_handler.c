@@ -23,6 +23,8 @@
 #include "objects/obj_shared_mem.h"
 #include "objects/obj_timer.h"
 #include "time/time_manager.h"
+#include "console/print_out.h"
+#include "kernel_panic.h"
 
 #define MAX_SYSCALL_ARGS 7
 

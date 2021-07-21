@@ -13,6 +13,8 @@
 #include "utils/util_strcpy.h"
 #include "kernel_assert.h"
 #include "tinker_api_kernel_interface.h"
+#include "console/print_out.h"
+#include "utils/util_memset.h"
 
 static void thread_end(void) __attribute__((section(".api")));
 

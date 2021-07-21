@@ -16,24 +16,21 @@
 #include "objects/obj_process.h"
 #include "objects/obj_thread.h"
 #include "memory/memory_manager.h"
-//#include "memory/mem_section.h"
 #include "console/print_out.h"
+#include "utils/util_memset.h"
 
 #define INVALID_PROC_ID 0
-
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(process_list_it_t, process_list_t, process_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(extern, process_list_it_t, process_list_t, process_t*)
 
 proc_list_t * proc_create(
 		mem_pool_info_t * const pool,
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager)
 {
-	proc_list_t * const list = mem_alloc(pool, sizeof(process_list_t));
+	proc_list_t * const list = mem_alloc(pool, sizeof(proc_list_t));
 	if (list)
 	{
 		util_memset(list, 0, sizeof(proc_list_t));
-		list->process_list = process_list_t_create(pool);
+		list->process_list = list_create(pool);
 		list->scheduler = scheduler;
 		list->alarm_manager = alarm_manager;
 		list->last_pid = 1;
@@ -101,7 +98,7 @@ static inline uint32_t get_proc_id(proc_list_t * const list)
 	uint32_t proc_id = INVALID_PROC_ID;
 	for (uint32_t i = list->last_pid ; i < MAX_PROCESSES ; i++)
 	{
-		if (!process_list_t_get(list->process_list, i, &tmp))
+		if (!list_get(list->process_list, i, &tmp))
 		{
 			proc_id = i;
 			list->last_pid = i;
@@ -207,7 +204,7 @@ static inline bool_t add_process_to_list(
 {
 	(void)image;
 	debug_print(PROCESS, "Process: Adding process to process list: %s\n", image);
-	bool_t ok = (process_list_t_add(list->process_list, proc));
+	bool_t ok = (list_add(list->process_list, proc));
 	debug_print(PROCESS, "Process: Add process to process list: %s = %d\n", image, ok);
 	return ok;
 }
@@ -391,16 +388,16 @@ void proc_delete_proc(
 {
 	if (list)
 	{
-		process_list_t_remove_item(list->process_list, process);
+		list_remove_item(list->process_list, process);
 	}
 }
 
-process_list_it_t * proc_list_procs(proc_list_t * const list)
+list_it_t * proc_list_procs(proc_list_t * const list)
 {
-	process_list_it_t * ret = NULL;
+	list_it_t * ret = NULL;
 	if (list)
 	{
-		ret = process_list_it_t_create(list->process_list);
+		ret = list_it_create(list->process_list);
 	}
 	return ret;
 }

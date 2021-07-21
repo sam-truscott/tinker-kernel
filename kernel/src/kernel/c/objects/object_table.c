@@ -14,33 +14,13 @@
 #include "kernel_assert.h"
 #include "process/process.h"
 #include "memory/memory_manager.h"
-
-HASH_MAP_INTERNAL_TYPE_T(object_map_t, object_number_t, object_t*, MAX_OBJECT_TABLE_SIZE, 16)
-HASH_MAP_SPEC_CREATE(static, object_map_t)
-HASH_MAP_SPEC_INITALISE(static, object_map_t)
-HASH_MAP_SPEC_DELETE(static, object_map_t)
-HASH_MAP_SPEC_CAPACITY(static, object_map_t)
-HASH_MAP_SPEC_CONTAINS_KEY(static, object_map_t, object_number_t)
-HASH_MAP_SPEC_PUT(static, object_map_t, object_number_t, object_t*)
-HASH_MAP_SPEC_GET(static, object_map_t, object_number_t, object_t*)
-HASH_MAP_SPEC_REMOVE(static, object_map_t, object_number_t, object_t*)
-HASH_FUNCS_VALUE(object_map_t, object_number_t)
-HASH_MAP_BODY_CREATE(static, object_map_t)
-HASH_MAP_BODY_INITALISE(static, object_map_t, MAX_OBJECT_TABLE_SIZE, 16)
-HASH_MAP_BODY_DELETE(static, object_map_t, MAX_OBJECT_TABLE_SIZE, 16)
-HASH_MAP_BODY_CAPACITY(static, object_map_t, MAX_OBJECT_TABLE_SIZE)
-HASH_MAP_BODY_CONTAINS_KEY(static, object_map_t, object_number_t, 16)
-HASH_MAP_BODY_PUT(static, object_map_t, object_number_t, object_t*, MAX_OBJECT_TABLE_SIZE, 16)
-HASH_MAP_BODY_GET(static, object_map_t, object_number_t, object_t*, 16)
-HASH_MAP_BODY_REMOVE(static, object_map_t, object_number_t, 16)
-
-HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(object_table_it_t, object_map_t)
-HASH_MAP_TYPE_ITERATOR_BODY(extern, object_table_it_t, object_map_t, object_number_t, object_t*, MAX_OBJECT_TABLE_SIZE, 16)
+#include "utils/util_memcpy.h"
+#include "utils/hash/basic_hashes.h"
 
 typedef struct object_table_t
 {
 	mem_pool_info_t * pool;
-	object_map_t * the_map;
+	map_t * the_map;
 	object_number_t next_id;
 } object_table_internal_t;
 
@@ -57,13 +37,8 @@ object_table_t * obj_table_create(mem_pool_info_t * const pool)
 void obj_table_delete(const object_table_t * const table)
 {
 	kernel_assert("obj_table_delete - check that the object table is present", table != NULL);
-	object_map_t_delete(table->the_map);
+	map_delete(table->the_map);
 	mem_free(table->pool, table);
-}
-
-static bool_t hash_equal_object_number(const object_number_t l, const object_number_t r)
-{
-	return (l == r);
 }
 
 return_t obj_initialse_table(
@@ -76,11 +51,10 @@ return_t obj_initialse_table(
 	if (table)
 	{
 		table->pool = pool;
-		table->the_map = object_map_t_create(
+		table->the_map = map_create(
 				hash_basic_integer,
-				hash_equal_object_number,
-				true,
-				pool);
+				pool,
+				sizeof(object_number_t));
 		if  (table->the_map )
 		{
 			table->next_id = 1;
@@ -105,10 +79,10 @@ return_t obj_add_object(
 	{
 		/* find the next suitable object id to use */
 		object_number_t id = t->next_id;
-		const uint32_t tc = object_map_t_capacity(t->the_map);
+		const uint32_t tc = map_capacity(t->the_map);
 		for ( ; id != tc ; id++ )
 		{
-			if ( !object_map_t_contains_key(t->the_map, id) )
+			if ( !map_contains_key(t->the_map, &id) )
 			{
 				id_ok = true;
 				break;
@@ -118,7 +92,7 @@ return_t obj_add_object(
 		/* now create an allocate the object */
 		if (id_ok)
 		{
-			if ( !object_map_t_put((t->the_map), id, obj))
+			if ( !map_put((t->the_map), &id, obj))
 			{
 				ret = OBJECT_ADD_FAILED;
 			}
@@ -149,9 +123,9 @@ return_t obj_remove_object(
 
 	if (t)
 	{
-		if (object_map_t_contains_key(t->the_map, objno))
+		if (map_contains_key(t->the_map, &objno))
 		{
-			if(!object_map_t_remove(t->the_map, objno))
+			if(!map_remove(t->the_map, &objno))
 			{
 				ret = OBJECT_NOT_REMOVED_FROM_REGISTRY;
 			}
@@ -171,7 +145,7 @@ object_t * obj_get_object(const object_table_t * const t, object_number_t oid)
 	if (t)
 	{
 		object_t * tmp_object = NULL;
-		if (object_map_t_get(t->the_map, oid, &tmp_object))
+		if (map_get(t->the_map, &oid, (void**)&tmp_object))
 		{
 			o = tmp_object;
 		}
@@ -179,7 +153,7 @@ object_t * obj_get_object(const object_table_t * const t, object_number_t oid)
 	return o;
 }
 
-object_table_it_t * obj_iterator(const object_table_t * t)
+map_it_t * obj_iterator(const object_table_t * t)
 {
-	return object_table_it_t_create(t->the_map);
+	return map_it_create(t->the_map);
 }

@@ -15,6 +15,8 @@
 #include "scheduler/scheduler_private.h"
 #include "process/thread.h"
 #include "process/thread_private.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 
 #define SIZE (1024 * 8)
 
@@ -32,7 +34,7 @@ void test_scheduler(void)
 	kernel_assert("kernel idle thread should be null", sch->idle_thread == NULL);
 	kernel_assert("kernel idle thread should be 0", sch->curr_priority == 0);
 	kernel_assert("kernel idle thread should be null", sch->curr_thread == NULL);
-	kernel_assert("kernel idle thread should be null", sch->curr_queue == &(sch->priority_queues[0]));
+	kernel_assert("kernel idle thread should be null", sch->curr_queue == sch->priority_queues[0]);
 
 	thread_t idle_thread;
 	util_memset(&idle_thread, 0, sizeof(idle_thread));
@@ -51,9 +53,9 @@ void test_scheduler(void)
 
 	sch_notify_new_thread(sch, &idle_thread);
 	kernel_assert("thread should be 1", sch->curr_priority == 0);
-	kernel_assert("thread should be equal", sch->curr_queue == &(sch->priority_queues[0]));
-	thread_queue_t * q = NULL;
-	queue_stack_t_front(&sch->queue_stack, &q);
+	kernel_assert("thread should be equal", sch->curr_queue == sch->priority_queues[0]);
+	queue_t * q = NULL;
+	stack_front(sch->queue_stack, (void**)&q);
 	kernel_assert("thread should be equal", sch->curr_queue == q);
 
 	sch_set_context_for_next_thread(sch, NULL, THREAD_READY);
@@ -71,9 +73,9 @@ void test_scheduler(void)
 
 	sch_notify_new_thread(sch, &thread);
 	kernel_assert("thread should be 1", sch->curr_priority == 1);
-	kernel_assert("thread should be equal", sch->curr_queue == &(sch->priority_queues[1]));
+	kernel_assert("thread should be equal", sch->curr_queue == sch->priority_queues[1]);
 	q = NULL;
-	queue_stack_t_front(&sch->queue_stack, &q);
+	stack_front(sch->queue_stack, (void**)&q);
 	kernel_assert("thread should be equal", sch->curr_queue == q);
 
 	sch_set_context_for_next_thread(sch, NULL, THREAD_READY);
@@ -82,18 +84,18 @@ void test_scheduler(void)
 	thread.priority = 2;
 	sch_notify_change_priority(sch, &thread, 1);
 	kernel_assert("thread should be 2", sch->curr_priority == 2);
-	kernel_assert("thread should be equal", sch->curr_queue == &(sch->priority_queues[2]));
+	kernel_assert("thread should be equal", sch->curr_queue == sch->priority_queues[2]);
 
 	thread.priority = 1;
 	sch_notify_change_priority(sch, &thread, 2);
 	kernel_assert("thread should be 1", sch->curr_priority == 1);
-	kernel_assert("thread should be equal", sch->curr_queue == &(sch->priority_queues[1]));
+	kernel_assert("thread should be equal", sch->curr_queue == sch->priority_queues[1]);
 
 	sch_notify_exit_thread(sch, &thread);
 	kernel_assert("thread should be 0", sch->curr_priority == 0);
-	kernel_assert("thread should be equal", sch->curr_queue == &(sch->priority_queues[0]));
+	kernel_assert("thread should be equal", sch->curr_queue == sch->priority_queues[0]);
 	q = NULL;
-	queue_stack_t_front(&sch->queue_stack, &q);
+	stack_front(sch->queue_stack, (void**)&q);
 	kernel_assert("thread should be equal", sch->curr_queue == q);
 
 	sch_set_context_for_next_thread(sch, NULL, THREAD_READY);

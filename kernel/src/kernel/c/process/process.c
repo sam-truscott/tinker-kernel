@@ -21,9 +21,9 @@
 #include "objects/obj_shared_mem.h"
 #include "objects/obj_timer.h"
 #include "utils/util_strlen.h"
-
-HASH_MAP_TYPE_ITERATOR_INTERNAL_TYPE(thread_it_t, thread_map_t)
-HASH_MAP_TYPE_ITERATOR_BODY(extern, thread_it_t, thread_map_t, uint32_t, thread_t*, MAX_THREADS, 16)
+#include "console/print_out.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 
 static void process_add_mem_sec(
 		process_t * const process,
@@ -153,16 +153,14 @@ return_t process_create(
 		kernel_assert("new process's pool wasn't created from private pool", new_proc->page_table != NULL);
 
 		debug_print(PROCESS, "Process: Allocating memory for page table: %s\n", name);
-		new_proc->threads = thread_map_t_create(
-		        hash_basic_integer,
-		        hash_equal_integer,
-		        true,
-		        new_proc->private_pool);
+		for (int i = 0 ; i < MAX_THREADS ; i++)
+		{
+			new_proc->threads[i] = NULL;
+		}
 		const uint32_t length = util_strlen(name,MAX_PROCESS_IMAGE_LEN);
 		util_memcpy(new_proc->image, name, length);
 		new_proc->image[length] = '\0';
 		new_proc->object_table = obj_table_create(new_proc->private_pool);
-		new_proc->next_thread_id = 0;
 		new_proc->initial_thread = NULL;
 		new_proc->first_section = NULL;
 
@@ -367,6 +365,29 @@ void process_set_mem_info(
 			sizeof(tgt_mem_t));
 }
 
+static uint32_t count_threads(process_t * const process, uint32_t * const id)
+{
+	bool_t found = false;
+
+	uint32_t threads = 0;
+	if (process)
+	{
+		for (int i = 0 ; i < MAX_THREADS ; i++)
+		{
+			if (process->threads[i] != NULL)
+			{
+				threads++;
+			}
+			if (process->threads[i] == NULL && !found && id != NULL)
+			{
+				*id = i;
+				found = true;
+			}
+		}
+	}
+	return threads;
+}
+
 bool_t process_add_thread(
 		process_t * const process,
 		thread_t * const thread,
@@ -374,20 +395,12 @@ bool_t process_add_thread(
 {
 	kernel_assert("process is null", process != NULL);
 	bool_t ret = false;
-	const uint32_t thread_count = thread_map_t_size(process->threads);
+
+	uint32_t thread_id = 0;
+	const uint32_t thread_count = count_threads(process, &thread_id);
+
 	if ( thread_count < MAX_THREADS )
 	{
-		uint32_t thread_id = (process->next_thread_id % MAX_THREADS);
-		for ( uint32_t i = thread_id ; i < MAX_THREADS ; i++ )
-		{
-			if ( !thread_map_t_contains_key(process->threads, thread_id) )
-			{
-				thread_id = i;
-				break;
-			}
-		}
-		process->next_thread_id++;
-
 		if (process->initial_thread == NULL)
 		{
 			process->initial_thread = thread;
@@ -404,15 +417,12 @@ bool_t process_add_thread(
 				process->object_table,
 				thread_id,
 				thread,
-				 objno);
+				objno);
 
 		if (ret)
 		{
 			thread_set_oid(thread, *objno);
-			if(!thread_map_t_put(process->threads, thread_id, thread))
-			{
-				ret = OUT_OF_MEMORY;
-			}
+			process->threads[thread_id] = thread;
 		}
 	}
 	return ret;
@@ -428,10 +438,10 @@ thread_t * process_get_main_thread(const process_t * process)
 	return initial;
 }
 
-uint32_t process_get_thread_count(const process_t * process)
+uint32_t process_get_thread_count(const process_t * const process)
 {
 	kernel_assert("process is null", process != NULL);
-	return thread_map_t_size(process->threads);
+	return count_threads((process_t *)process, NULL);
 }
 
 const mem_section_t * process_get_first_section(const process_t * const process)
@@ -448,20 +458,28 @@ void process_thread_exit(process_t * const process, thread_t * const thread)
 {
 	kernel_assert("process_thread_exit - check process is not null", process != NULL);
 	kernel_assert("process_thread_exit - check thread is not null", thread != NULL);
-	thread_map_t_remove(process->threads, thread_get_tid(thread));
+	uint32_t tid = thread_get_tid(thread);
+	thread_t * const t = process->threads[tid];
+	if (t)
+	{
+		process->threads[tid] = NULL;
+	}
 }
 
 void process_exit(process_t * const process)
 {
 	kernel_assert("process_exit - check process is not null", process != NULL);
 	// thread list - process should only die when this is empty
-	thread_map_t_delete(process->threads);
+	for (uint32_t i = 0 ; i < MAX_THREADS ; i++)
+	{
+		process->threads[i] = NULL;
+	}
 	// object table
-	object_table_it_t * const it = obj_iterator(process->object_table);
+	map_it_t * const it = obj_iterator(process->object_table);
 	if (it)
 	{
 		object_t * object = NULL;
-		bool_t objects_exist = object_table_it_t_get(it, &object);
+		bool_t objects_exist = map_it_get(it, (void**)&object);
 		while (objects_exist)
 		{
 			// delete it
@@ -535,11 +553,11 @@ void process_exit(process_t * const process)
 					}
 				}
 			}
-			objects_exist = object_table_it_t_next(it, &object);
+			objects_exist = map_it_next(it, (void**)&object);
 		}
-		object_table_it_t_reset(it);
-		kernel_assert("object table isn't empty", object_table_it_t_get(it, &object) == false);
-		object_table_it_t_delete(it);
+		map_it_reset(it);
+		kernel_assert("object table isn't empty", map_it_get(it, (void**)&object) == false);
+		map_it_delete(it);
 	}
 	obj_table_delete(process->object_table);
 
@@ -701,12 +719,12 @@ void process_free_vmem(
 	}
 }
 
-thread_it_t * process_iterator(const process_t * const process)
+thread_t * thread_by_index(const process_t * const process, uint32_t index)
 {
-	thread_it_t * it = NULL;
-	if (process)
+	thread_t * it = NULL;
+	if (process && index < MAX_THREADS)
 	{
-		it = thread_it_t_create(process->threads);
+		it = process->threads[index];
 	}
 	return it;
 }
