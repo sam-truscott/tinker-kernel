@@ -84,12 +84,10 @@ static void __attribute__((naked)) arm_bootstrap(
 {
 	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
 	asm volatile("add fp, sp, #4");
-	asm volatile("sub sp, sp, #32");
-	asm volatile("str r0, [fp, #-16]");		/* these two wrong? */
-	asm volatile("str r1, [fp, #-20]");		/* and this? */
-	asm volatile("str r2, [fp, #-24]");
-	asm volatile("str r5, [fp, #-28]");
-	asm volatile("str r6, [fp, #-32]");
+	asm volatile("sub sp, sp, #16");
+	asm volatile("str r0, [fp, #-8]");		/* these two wrong? */
+	asm volatile("str r1, [fp, #-12]");		/* and this? */
+	asm volatile("str r2, [fp, #-16]");
 
 	asm volatile("mrs %r7, cpsr");			/* get cpsr */
 	asm volatile("mov r8, #0xFFFFFF20");	/* blat out the mode and enable interrupts */
@@ -97,14 +95,18 @@ static void __attribute__((naked)) arm_bootstrap(
 	asm volatile("orr r7, r7, #0x10");		/* set the mode */
 	asm volatile("msr cpsr, r7");			/* move the mode into cpsr */
 
-	//asm volatile("bl hello_world");
-	asm volatile("ldr r0, [r11, #-28]");	/* wait, what's r11? fp? */
-	asm volatile("ldr r1, [r11, #-32]");
-	asm volatile("ldr r3, [r11, #-16]");
-	asm volatile("blx r3");					/* call entry 	-> r0 (-16) -> r0 */
-	asm volatile("ldr r3, [r11, #-20]");
-	asm volatile("blx r3");					/* call exit	-> r1 (-20) -> r3 */
-	asm volatile("sub sp, r11, #4");
+	asm volatile("ldr r0, [fp, #-8]");
+	asm volatile("ldr r1, [fp, #-12]");
+	asm volatile("ldr r2, [fp, #-16]");
+
+	asm volatile("ldr r3, [fp, #-8]");
+
+	asm volatile("blx r3");					/* call entry 	-> r0 (-8) -> r0 */
+
+	asm volatile("ldr r3, [fp, #-12]");
+	asm volatile("blx r3");					/* call exit	-> r1 (-12) -> r3 */
+
+	asm volatile("sub sp, fp, #4");
 	asm volatile("pop {fp, lr}");
 	(void)sp;
 	(void)entry;
