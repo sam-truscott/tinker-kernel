@@ -71,10 +71,6 @@ void bsp_initialise(void)
 	if (is_debug_enabled(TARGET))
 	{
 		early_uart_put("Vector init done\n");
-	}
-
-	if (is_debug_enabled(TARGET))
-	{
 		debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
 		debug_print(TARGET, "SP %8x, FP %8x\n", tgt_get_stack_pointer(), tgt_get_frame_pointer());
 	}

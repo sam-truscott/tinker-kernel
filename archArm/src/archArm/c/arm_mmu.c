@@ -258,12 +258,15 @@ static void arm_map_section(
 			arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY));
-	debug_print(TARGET, "MMU: S [%s]: %8x -> %8x: %8x = %8x\n",
-			mem_sec_get_name(section),
-			real,
-			virt,
-			ARM_GET_LVL1_SECTION_INDEX(virt),
-			table->lvl1_entry[ARM_GET_LVL1_SECTION_INDEX(virt)]);
+	if (is_debug_enabled(TARGET))
+	{
+		debug_print(TARGET, "MMU: S [%s]: %8x -> %8x: %8x = %8x\n",
+				mem_sec_get_name(section),
+				real,
+				virt,
+				ARM_GET_LVL1_SECTION_INDEX(virt),
+				table->lvl1_entry[ARM_GET_LVL1_SECTION_INDEX(virt)]);
+	}
 }
 
 static return_t arm_map_page(
@@ -291,7 +294,10 @@ static return_t arm_map_page(
 					ap_bits[priv],
 					(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 					(mem_type == MMU_RANDOM_ACCESS_MEMORY));
-			debug_print(TARGET, "MMU: P [%s]: %8x -> %8x: %8x = %8x\n", mem_sec_get_name(section), real, virt, lvl2_entry, *lvl2_entry);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "MMU: P [%s]: %8x -> %8x: %8x = %8x\n", mem_sec_get_name(section), real, virt, lvl2_entry, *lvl2_entry);
+			}
 			return NO_ERROR;
 		}
 		else
@@ -390,12 +396,18 @@ void arm_unmap_memory(
 
 void arm_print_page_table(tgt_pg_tbl_t * const table)
 {
-	debug_prints(TARGET, "Print page table\n");
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "Print page table\n");
+	}
 	for (uint16_t section = 0 ; section < NUM_L1_ENTRIES ; section++)
 	{
 		if ((table->lvl1_entry[section] & 1) == 1)
 		{
-			debug_print(TARGET, "%d: Course table\n", section);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "%d: Course table\n", section);
+			}
 			l2_tbl_t * const lvl2 = arm_get_lvl2_table(
 					section * ARM_MMU_SECTION_SIZE,
 					false,
@@ -409,19 +421,25 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 				}
 				else if ((lvl2->l2_tbl[page] & 2) == 2)
 				{
-					debug_print(TARGET, "%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
-							(section * ARM_MMU_SECTION_SIZE) + (page * MMU_PAGE_SIZE),
-							lvl2->l2_tbl[page] & 0xFFFFF000,
-							(lvl2->l2_tbl[page] & 0x4) >> 2,
-							(lvl2->l2_tbl[page] & 0x8) >> 3,
-							(lvl2->l2_tbl[page] & 0x30) >> 4,
-							(lvl2->l2_tbl[page] >> 6) & 0x7);
+					if (is_debug_enabled(TARGET))
+					{
+						debug_print(TARGET, "%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
+								(section * ARM_MMU_SECTION_SIZE) + (page * MMU_PAGE_SIZE),
+								lvl2->l2_tbl[page] & 0xFFFFF000,
+								(lvl2->l2_tbl[page] & 0x4) >> 2,
+								(lvl2->l2_tbl[page] & 0x8) >> 3,
+								(lvl2->l2_tbl[page] & 0x30) >> 4,
+								(lvl2->l2_tbl[page] >> 6) & 0x7);
+					}
 				}
 			}
 		}
 		else if ((table->lvl1_entry[section] & 2) == 2)
 		{
-			debug_print(TARGET, "%d: Section entry\n", section);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "%d: Section entry\n", section);
+			}
 		}
 	}
 }
