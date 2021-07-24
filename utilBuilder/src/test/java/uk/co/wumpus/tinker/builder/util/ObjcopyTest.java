@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.testng.Assert;
+import org.junit.Assert;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Objcopy.class, ProcessBuilder.class})

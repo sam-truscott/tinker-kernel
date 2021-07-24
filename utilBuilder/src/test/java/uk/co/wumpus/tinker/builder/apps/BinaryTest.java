@@ -1,11 +1,12 @@
 package uk.co.wumpus.tinker.builder.apps;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.testng.Assert;
+import org.junit.Assert;
 
 public class BinaryTest {
 
@@ -16,7 +17,8 @@ public class BinaryTest {
 		f.deleteOnExit();
 		try {
 			Binary b = new Binary(f);
-			Assert.assertEquals(new byte[]{}, b.getData());
+			// Assert.assertEquals(new byte[]{}, b.getData());
+			Assert.assertTrue(Arrays.equals(new byte[]{}, b.getData()));
 			Assert.assertEquals(f, b.getFile());
 			b.validate();
 			Payload p = Mockito.mock(Payload.class);

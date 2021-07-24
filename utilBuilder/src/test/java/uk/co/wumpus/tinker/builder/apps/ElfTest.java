@@ -1,6 +1,7 @@
 package uk.co.wumpus.tinker.builder.apps;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,14 +9,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.testng.Assert;
+import org.junit.Assert;
 
 import uk.co.wumpus.tinker.builder.util.ReadElf;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ReadElf.class, ProcessBuilder.class})
+@PowerMockIgnore({
+		"java.lang.*",
+		"org.objenesis.*"})
 public class ElfTest {
 
 	private Process proc;
@@ -36,7 +41,7 @@ public class ElfTest {
 		f.deleteOnExit();
 		try {
 			Elf b = new Elf(f, "myarch");
-			Assert.assertEquals(new byte[]{}, b.getData());
+			Assert.assertTrue(Arrays.equals(new byte[]{}, b.getData()));
 			Assert.assertEquals(f, b.getFile());
 			b.validate();
 			Payload p = Mockito.mock(Payload.class);
