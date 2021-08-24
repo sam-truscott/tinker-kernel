@@ -25,7 +25,7 @@ task configureGdbArm (type:Exec) {
   commandLine 'bash',
     '-c',
     'rm -rf *;\
-    ../src/gdb-9.2/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --with-expat --with-lzma --with-mpfr'
+    ../src/gdb-9.2/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --with-expat --with-system-zlib --disable-sim --with-mpfr --with-system-readline --with-python=no'
 }
 
 configureGdbArm.dependsOn setupGdbArm

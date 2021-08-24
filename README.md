@@ -75,7 +75,7 @@ GCC is the compiler used by default.
 
 I've added gradle tasks to build a stage-3 gcc compiler with support for C and C++.
 
-You'll need the following (and possibly more) dependencies
+You'll need the following (and possibly more) dependencies (for mingw mingw-w64-x86_64-toolchain is a good start)
 
 * gcc
 * g++ (aka gcc-g++)

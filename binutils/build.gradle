@@ -33,7 +33,7 @@ task makeBinutilsArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        'make -j4'
+        project.getProperties().get("MAKE") + ' -j4'
 }
 
 makeBinutilsArm.dependsOn configureBinutilsArm
