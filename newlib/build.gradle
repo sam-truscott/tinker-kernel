@@ -41,7 +41,7 @@ task makeNewlibArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        'CFLAGS_FOR_TARGET=\'-Ofast -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -j4'
+        'CFLAGS_FOR_TARGET=\'-Ofast -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
 }
 
 makeNewlibArm.dependsOn configureNewlibArm
@@ -50,7 +50,7 @@ task makeInstallNewlibArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        project.getProperties().get("MAKE") + ' install'
+        'make install'
 }
 
 makeInstallNewlibArm.dependsOn makeNewlibArm

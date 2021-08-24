@@ -34,7 +34,7 @@ task makeGdbArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        project.getProperties().get("MAKE") + ' -j4'
+        project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
 }
 
 makeGdbArm.dependsOn configureGdbArm

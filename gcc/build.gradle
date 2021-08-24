@@ -34,7 +34,7 @@ task makeGccStage1Arm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
     commandLine 'bash',
         '-c',
-        project.getProperties().get("MAKE") + ' all-gcc -j6'
+        project.getProperties().get("MAKE") + ' all-gcc -' + project.getProperties().get("CONBUILDS")
 }
 
 makeGccStage1Arm.dependsOn configureGccStage1Arm
@@ -68,7 +68,7 @@ task makeGccStage3Arm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
     commandLine 'bash',
         '-c',
-        project.getProperties().get("MAKE") + ' all -j6'
+        project.getProperties().get("MAKE") + ' all -' + project.getProperties().get("CONBUILDS")
 }
 
 makeGccStage3Arm.dependsOn configureGccStage3Arm
