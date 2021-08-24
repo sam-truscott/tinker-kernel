@@ -42,7 +42,7 @@ task makeInstallBintutilsArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        'make install'
+        project.getProperties().get("MAKE") + ' install'
 }
 
 makeInstallBintutilsArm.dependsOn makeBinutilsArm
