@@ -126,7 +126,6 @@ allprojects {
 	                   args << "-Wno-pointer-to-int-cast"
 	                   args << "-Wno-int-to-pointer-cast"
 	                   args << "-Wno-type-limits"
-	                   args << "-D__i386__"
 	                   args << "-DUSE_DL_PREFIX"
 		               args << "-fPIC"
                        args << "-DUNIT_TESTS"
