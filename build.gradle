@@ -38,18 +38,18 @@ allprojects {
 		            "-Werror",
 		            "-c",
 		            "-fmessage-length=0",
-		            "-std=gnu18",             /* for now use the default */
+		            "-std=gnu2x",             /* for now use the default */
 		            "-DBUILDING_KERNEL",      /* used for apis - building kernel */
                     "-DDEBUG_KERNEL_ONLY",    /* debug the kernel only */
 		            "-DKERNEL_DEBUGGING",     /* enable debugging */
                     //"-DDEBUG_VALUE=0x0"
-                    "-DDEBUG_VALUE=0x00020001"
+                    "-DDEBUG_VALUE=0x00000000"
                     //"-DDEBUG_VALUE=0xFFFFFFFFu"
 		        linker.args  "-static"        /* always static - no linking */
 		        if (buildType == buildTypes.debug) {
 		            cCompiler.args "-O0",     /* no optimisation */
 		                "-g3",                /* lots of debugging */
-		                "-gdwarf-4",          /* use latest format */
+		                "-gdwarf-5",          /* use latest format */
 		                "-DKERNEL_SHELL",     /* enable internal shell */
                         "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
 		                "-UUNIT_TESTS"        /* enable unit tests */
