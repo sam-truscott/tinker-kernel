@@ -345,11 +345,6 @@ static void kshell_object_table(void)
 
 				switch (type)
 				{
-					default:
-					case UNKNOWN_OBJ:
-					case OBJECT:
-						break;
-
 					case PROCESS_OBJ:
 					{
 						object_process_t * const p = obj_cast_process(obj);
@@ -402,6 +397,7 @@ static void kshell_object_table(void)
 									printp_out("Wr Pos: %d", obj_pipe_get_write_msg_pos(p));
 									break;
 								default:
+									printp_out("Invalid object type: %d ", dir);
 									break;
 							}
 						}
@@ -428,9 +424,21 @@ static void kshell_object_table(void)
 						break;
 					case SHARED_MEMORY_OBJ:
 						/* TODO KSHELL dump for Shared Memory */
+						print_out("SHM");
 						break;
 					case TIMER_OBJ:
 						/* TODO KSHELL dump for Timer */
+						print_out("TIMER");
+						break;
+					case UNKNOWN_OBJ:
+						print_out("UNKNOWN OBJECT");
+						break;
+					case OBJECT:
+
+						print_out("UNSUPPORTED OBJECT");
+						break;
+					default:
+						print_out("UNKNOWN OBJECT TYPE");
 						break;
 				}
 
