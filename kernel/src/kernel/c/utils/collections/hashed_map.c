@@ -434,6 +434,7 @@ bool_t map_it_next(map_it_t * const it, void ** item)
 						{
 							it->entry = e;
 							it->bucket = b;
+							it->map_bucket = it->map->buckets[b];
 							it->map_entry = it->map->buckets[b]->entries[e];
 							*item = it->map_entry->value;
 							ok = true;
