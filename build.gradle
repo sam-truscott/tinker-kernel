@@ -48,8 +48,8 @@ allprojects {
 		        linker.args  "-static"        /* always static - no linking */
 		        if (buildType == buildTypes.debug) {
 		            cCompiler.args "-O0",     /* no optimisation */
+		            	"-g",
 		                "-g3",                /* lots of debugging */
-		                "-gdwarf-5",          /* use latest format */
 		                "-DKERNEL_SHELL",     /* enable internal shell */
                         "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
 		                "-UUNIT_TESTS"        /* enable unit tests */
