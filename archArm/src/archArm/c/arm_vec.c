@@ -10,6 +10,7 @@
 #include "arm_vec.h"
 #include "console/print_out.h"
 #pragma GCC optimize ("-O0")
+#pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
 
 /*
  * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0203j/Cacdfeci.html
