@@ -22,7 +22,7 @@ void arm_disable_mmu(void);
 
 void arm_enable_mmu(const bool_t cache);
 
-uint32_t arm_get_cp15_c1();
+uint32_t arm_get_cp15_c1(void);
 
 void arm_set_domain_access_register(const uint32_t dar);
 

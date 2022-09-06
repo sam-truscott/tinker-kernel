@@ -36,6 +36,12 @@ allprojects {
 		            "-Wall",
 		            "-Wextra",
 		            "-Werror",
+		            "-Wshadow",
+		            "-Wundef",
+		            "-Wstrict-prototypes",
+		            "-Wwrite-strings",
+		            "-ffunction-sections",
+		            "-fdata-sections",
 		            "-c",
 		            "-fmessage-length=0",
 		            "-std=gnu2x",             /* for now use the default */
@@ -50,12 +56,13 @@ allprojects {
 		            cCompiler.args "-O0",     /* no optimisation */
 		            	"-g",
 		                "-g3",                /* lots of debugging */
+		                "-fverbose-asm",
 		                "-DKERNEL_SHELL",     /* enable internal shell */
                         "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
 		                "-UUNIT_TESTS"        /* enable unit tests */
 		            linker.args  "-fno-lto"   /* for now, disable lto */
 		        } else if (buildType == buildTypes.release) {
-		            cCompiler.args "-O2",     /* default optimisation level */
+		            cCompiler.args "-Os",     /* default optimisation level */
 		                "-g0",                /* no debugging */
 		                "-UKERNEL_DEBUGGING", /* no debugging */
 		                "-DKERNEL_SHELL",     /* enable shell */

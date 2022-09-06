@@ -12,6 +12,6 @@
 /**
  * Fatal Kernel problem
  */
-void kernel_panic();
+void kernel_panic(void);
 
 #endif /* KERNEL_PANIC_H_ */
