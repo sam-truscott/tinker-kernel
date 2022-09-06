@@ -228,9 +228,6 @@ return_t object_delete_semaphore(
 	{
 		switch (semaphore->sema_type)
 		{
-		case unknown_sema_type:
-			result = INVALID_OBJECT;
-			break;
 		case sema_type_owner:
 			registry_remove(semaphore->reg, semaphore->data.owner.name);
 			queue_delete(semaphore->data.owner.listeners);
@@ -239,6 +236,10 @@ return_t object_delete_semaphore(
 			break;
 		case sema_type_link:
 			mem_free(semaphore->pool, semaphore);
+			break;
+		case unknown_sema_type:
+		default:
+			result = INVALID_OBJECT;
 			break;
 		}
 	}
@@ -463,14 +464,15 @@ uint32_t obj_get_sema_count(const object_sema_t * const sema)
 	{
 		switch (sema->sema_type)
 		{
-		case unknown_sema_type:
-			count = 0;
-			break;
 		case sema_type_owner:
 			count = sema->data.owner.sem_count;
 			break;
 		case sema_type_link:
 			count = sema->data.link.link->data.owner.sem_count;
+			break;
+		case unknown_sema_type:
+		default:
+			count = 0;
 			break;
 		}
 	}
@@ -484,14 +486,15 @@ uint32_t obj_get_sema_alloc(const object_sema_t * const sema)
 	{
 		switch (sema->sema_type)
 		{
-		case unknown_sema_type:
-			alloc = 0;
-			break;
 		case sema_type_owner:
 			alloc = sema->data.owner.sem_alloc;
 			break;
 		case sema_type_link:
 			alloc = sema->data.link.link->data.owner.sem_alloc;
+			break;
+		case unknown_sema_type:
+		default:
+			alloc = 0;
 			break;
 		}
 	}
@@ -505,14 +508,15 @@ priority_t obj_get_sema_highest_priority(const object_sema_t * const sema)
 	{
 		switch (sema->sema_type)
 		{
-		case unknown_sema_type:
-			pri = 0;
-			break;
 		case sema_type_owner:
 			pri = sema->data.owner.highest_priority;
 			break;
 		case sema_type_link:
 			pri = sema->data.link.link->data.owner.highest_priority;
+			break;
+		case unknown_sema_type:
+		default:
+			pri = 0;
 			break;
 		}
 	}

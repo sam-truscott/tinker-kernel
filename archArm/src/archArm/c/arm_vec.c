@@ -150,5 +150,7 @@ void arm_vec_install(arm_vec_t vector, arm_vec_handler_t * const handler)
 	case VECTOR_SYSTEM_CALL:
 		vector_root[vector] = GET_BRANCH_FOR_VECTOR(&arm_vector_system_call, vector);
 		break;
+	default:
+		return;
 	}
 }

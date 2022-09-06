@@ -501,8 +501,6 @@ return_t obj_open_pipe(
 						no->reg = reg;
 						switch(direction)
 						{
-						case PIPE_DIRECTION_UNKNOWN:
-							break;
 						case PIPE_SEND:
 							list_add(other_pipe->rx_data.senders, no);
 							list_add(no->tx_data.readers, other_pipe);
@@ -516,6 +514,9 @@ return_t obj_open_pipe(
 						case PIPE_RECEIVE:
 							list_add(other_pipe->tx_data.readers, no);
 							list_add(no->rx_data.senders, other_pipe);
+							break;
+						case PIPE_DIRECTION_UNKNOWN:
+						default:
 							break;
 						}
 					}

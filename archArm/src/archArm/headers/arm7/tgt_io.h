@@ -24,7 +24,7 @@
 	static inline T in_##N(const T * const addr) \
 	{ \
 		asm volatile ("DMB"); \
-		return *((volatile T*)(addr)); \
+		return *((const volatile T*)(addr)); \
 	}
 
 out_(u8, uint8_t)

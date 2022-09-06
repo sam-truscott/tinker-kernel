@@ -206,6 +206,8 @@ void tgt_set_context_param(
     case 1:
         context->gpr[6] = parameter;
         break;
+    default:
+    	/* no-op */
     }
 }
 

@@ -26,7 +26,7 @@
 	{ \
 		asm volatile("" ::: "memory"); \
 		asm volatile ("mcr	p15, 0, r0, c7, c10, 4"); \
-		return *((volatile T*)(addr)); \
+		return *((const volatile T*)(addr)); \
 	}
 
 out_(u8, uint8_t)

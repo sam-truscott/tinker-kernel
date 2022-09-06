@@ -792,6 +792,9 @@ void syscall_handle_system_call(
 		case SYSCALL_GET_PID:
 			ret = syscall_get_pid(context, this_thread);
 			break;
+		case SYSCALL_UNKNOWN:
+		case MAX_SYSCALL:
+		case SYSCALL_RECEIVED_MESSAGE_NOT_USED:
 		default:
 			ret = ERROR_UNKNOWN_SYSCALL;
 			break;

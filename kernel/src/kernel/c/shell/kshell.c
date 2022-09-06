@@ -396,6 +396,7 @@ static void kshell_object_table(void)
 									printp_out("Rd Pos: %d, ", obj_pipe_get_read_msg_pos(p));
 									printp_out("Wr Pos: %d", obj_pipe_get_write_msg_pos(p));
 									break;
+								case PIPE_DIRECTION_UNKNOWN:
 								default:
 									printp_out("Invalid object type: %d ", dir);
 									break;

@@ -199,6 +199,7 @@ return_t intc_handle(const intc_t * const intc, tgt_context_t * const context)
 						}
 						break;
 					case EMPTY_DEVICE:
+					default:
 						ret = UNKNOWN_INTERRUPT_CAUSE;
 						break;
 					}
