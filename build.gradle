@@ -44,7 +44,7 @@ allprojects {
 		            "-Wpointer-arith",
 		            //"-Wcast-qual",
 		            //"-Wcast-align",
-		            //"-Waggregate-return",
+		            "-Waggregate-return",
 		            "-Wstrict-overflow=3",
 		            "-Wswitch-default",
 		            "-Wswitch-enum",

@@ -190,6 +190,9 @@ mem_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 	return size;
 }
 
+
+#pragma GCC diagnostic ignored "-Waggregate-return"
+
 mem_t mem_get_allocd_size(const mem_pool_info_t * const pool)
 {
 	return mspace_mallinfo(pool->space).uordblks;

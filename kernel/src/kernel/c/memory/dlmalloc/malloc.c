@@ -16,6 +16,7 @@
 #pragma GCC diagnostic ignored "-Wanalyzer-unsafe-call-within-signal-handler"
 #pragma GCC diagnostic ignored "-Wanalyzer-use-after-free"
 #pragma GCC diagnostic ignored "-Wanalyzer-use-of-pointer-in-stale-stack-frame"
+#pragma GCC diagnostic ignored "-Waggregate-return"
 
 #if defined(IS_HOST_UNIT_TEST)
 
