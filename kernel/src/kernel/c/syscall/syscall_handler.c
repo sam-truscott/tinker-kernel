@@ -45,6 +45,10 @@ static inline object_number_t syscall_get_thread_oid(const thread_t * const thre
 
 static inline object_thread_t * syscall_get_thread_object(
 		const process_t * const process,
+		const thread_t * const thread) __attribute__((always_inline));
+
+static inline object_thread_t * syscall_get_thread_object(
+		const process_t * const process,
 		const thread_t * const thread)
 {
 	return (object_thread_t*)obj_get_object(
@@ -54,12 +58,20 @@ static inline object_thread_t * syscall_get_thread_object(
 
 static inline return_t syscall_delete_object(
 		const process_t * const process,
+		const object_number_t obj_no) __attribute__((always_inline));
+
+static inline return_t syscall_delete_object(
+		const process_t * const process,
 		const object_number_t obj_no)
 {
 	return obj_remove_object(
 			process_get_object_table(process),
 			obj_no);
 }
+
+static inline object_sema_t * syscall_get_sema_obj(
+		process_t * const process,
+		object_number_t sema_id) __attribute__((always_inline));
 
 static inline object_sema_t * syscall_get_sema_obj(
 		process_t * const process,
@@ -93,7 +105,7 @@ syscall_handler_t * create_handler(
 	return sys;
 }
 
-static inline mem_t virtual_to_real(
+static mem_t virtual_to_real(
 		process_t * process,
 		mem_t address)
 {

@@ -14,6 +14,7 @@
 #pragma GCC push_options
 #pragma GCC optimize ("-Og")
 #define out_(N,T) \
+	static inline void out_##N(T * const addr, T value) __attribute__((always_inline)); \
 	static inline void out_##N(T * const addr, T value) \
 	{ \
 		*((volatile T *)(addr)) = value; \
@@ -22,6 +23,7 @@
 	}
 
 #define in_(N,T) \
+	static inline T in_##N(const T * const addr) __attribute__((always_inline));\
 	static inline T in_##N(const T * const addr) \
 	{ \
 		asm volatile("" ::: "memory"); \

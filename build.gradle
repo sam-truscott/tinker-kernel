@@ -31,19 +31,22 @@ allprojects {
 	    /* compiler and linker options for all toolchains */
 	    binaries {
 	    	all {
+	    		/* https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html */
 		    	cCompiler.args "-pedantic",   /* always be pedantic - see below */
 		            "-pedantic-errors",
 		            "-Wall",
 		            "-Wextra",
 		            "-Werror",
-		            "-Wshadow",
+		            "-Wshadow=global",
+		            "-Winline",
 		            "-Wundef",
 		            "-Wstrict-prototypes",
 		            "-Wwrite-strings",
 		            "-Wfloat-equal",
 		            "-Wpointer-arith",
-		            //"-Wcast-qual",
-		            //"-Wcast-align",
+		            "-Wnull-dereference",
+		            "-Warray-bounds=2",
+		            //"-Wcast-align=strict",
 		            "-Waggregate-return",
 		            "-Wstrict-overflow=3",
 		            "-Wswitch-default",
