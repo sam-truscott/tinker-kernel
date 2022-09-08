@@ -46,15 +46,15 @@ allprojects {
 		            "-Wpointer-arith",
 		            "-Wnull-dereference",
 		            "-Warray-bounds=2",
-		            //"-Wcast-align=strict",
+		            "-Wcast-align",
 		            "-Waggregate-return",
 		            "-Wstrict-overflow=3",
 		            "-Wswitch-default",
 		            "-Wswitch-enum",
 		            "-Wformat=2",
 		            "-Winit-self",
-		            "-ffunction-sections",
-		            "-fdata-sections",
+		            //	"-ffunction-sections",
+		            //"-fdata-sections",
 		            "-c",
 		            "-fmessage-length=0",
 		            "-std=gnu2x",             /* for now use the default */
@@ -221,6 +221,11 @@ allprojects {
 	                assembler.executable = "arm-eabi-gcc"
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
+	                assembler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv5te"
+                        args << "-mfloat-abi=soft"
+	                }
 	                cCompiler.withArguments { args ->
 	                    args << "-marm"
                         args << "-march=armv5te"
@@ -244,6 +249,11 @@ allprojects {
 	                assembler.executable = "arm-eabi-gcc"
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
+	                assembler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv5te"
+                        args << "-mfloat-abi=soft"
+	                }
 	                cCompiler.withArguments { args ->
 	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
 	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
@@ -272,6 +282,11 @@ allprojects {
 	                assembler.executable = "arm-eabi-gcc"
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
+	                assembler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv5te"
+                        args << "-mfloat-abi=hard"
+	                }
 	                cCompiler.withArguments { args ->
 	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
 	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
@@ -303,6 +318,11 @@ allprojects {
 	                assembler.executable = "arm-eabi-gcc"
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
+	                assembler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv7-a"
+                        args << "-mfloat-abi=soft"
+	                }
 	                cCompiler.withArguments { args ->
 	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
 	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm7"
@@ -329,6 +349,11 @@ allprojects {
 	                assembler.executable = "arm-eabi-gcc"
 	                linker.executable = "arm-eabi-gcc"
 	                staticLibArchiver.executable = "arm-eabi-ar"
+	                assembler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv7-a"
+                        args << "-mfloat-abi=hard"
+	                }
 	                cCompiler.withArguments { args ->
 	                	args << "-I" + projectDir + "/../archArm/src/archArm/headers"
 	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm7"

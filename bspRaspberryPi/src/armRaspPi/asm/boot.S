@@ -46,4 +46,6 @@ kernel_start:
 	bl	kernel_boot
 
 halt:
+	MOV r0, #0
+	MCR p15, 0, r0, c7, c0, 4
 	b	halt

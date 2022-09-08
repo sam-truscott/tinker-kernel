@@ -52,4 +52,5 @@ kernel_start:
 	bl	kernel_boot
 
 halt:
+    wfi
 	b	halt
