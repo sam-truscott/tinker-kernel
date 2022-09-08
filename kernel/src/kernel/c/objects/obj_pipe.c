@@ -57,7 +57,7 @@ typedef struct object_pipe_t
 
 static return_t obj_pipe_received_message(object_pipe_t * const pipe);
 
-object_pipe_t * obj_cast_pipe(object_t * const o)
+object_pipe_t * obj_cast_pipe(void * const o)
 {
 	object_pipe_t * result = NULL;
 	if (o)
@@ -116,8 +116,7 @@ static void pipe_receive_message(
 				receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
 	}
 	// copy the message size over
-	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
-	*msg_size = message_size;
+	util_memcpy(receiver->rx_data.write_msg_ptr, &message_size, sizeof(uint32_t));
 	// copy the the payload over (bytes, not 32)
 	util_memcpy(receiver->rx_data.write_msg_ptr+sizeof(uint32_t), message, message_size);
 	// ring buffer; if at the end, return to home

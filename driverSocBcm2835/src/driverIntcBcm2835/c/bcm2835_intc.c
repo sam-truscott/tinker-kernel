@@ -12,6 +12,8 @@
 #include "kernel_panic.h"
 #include "console/print_out.h"
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #define IRQ_PENDING_BASIC 0x200
 #define IRQ_PENDING_1 0x204
 #define IRQ_PENDING_2 0x208

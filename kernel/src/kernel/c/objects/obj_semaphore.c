@@ -58,7 +58,7 @@ static void obj_notify_semaphore_listener(
 		object_sema_t * const semaphore,
 		queue_t * const list);
 
-object_sema_t * obj_cast_semaphore(object_t * o)
+object_sema_t * obj_cast_semaphore(void * o)
 {
 	object_sema_t * result = NULL;
 	if(o)

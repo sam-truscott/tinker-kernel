@@ -26,7 +26,7 @@ typedef struct object_process_t
 	proc_list_t * proc_list;
 } object_process_internal_t;
 
-object_process_t * obj_cast_process(object_t * o)
+object_process_t * obj_cast_process(void * o)
 {
 	object_process_t * result = NULL;
 	if(o)

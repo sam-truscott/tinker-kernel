@@ -97,8 +97,8 @@ SECTIONS{
         __text_end = .;
     }>RAM
     
-    end = .;
+    end_of_the_world = .;
     .memory_pool ALIGN (0x1000) (NOLOAD) : {
-    	end_aligned = .;
+    	end_of_the_world_aligned = .;
     }>RAM
 }

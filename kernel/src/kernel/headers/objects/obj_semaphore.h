@@ -16,7 +16,7 @@
 
 typedef struct object_sema_t object_sema_t;
 
-object_sema_t * obj_cast_semaphore(object_t * o);
+object_sema_t * obj_cast_semaphore(void * o);
 
 object_number_t obj_semaphore_get_oid
 	(const object_sema_t * const o);

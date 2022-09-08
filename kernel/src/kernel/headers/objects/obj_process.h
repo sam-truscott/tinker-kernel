@@ -18,7 +18,7 @@
 
 typedef struct object_process_t object_process_t;
 
-object_process_t * obj_cast_process(object_t * o);
+object_process_t * obj_cast_process(void * o);
 
 object_number_t obj_process_get_oid
 	(const object_process_t * const o);

@@ -19,6 +19,8 @@
 #include "bcm2835_uart.h"
 #include "utils/util_memset.h"
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 // The offsets for reach register.
 // Controls actuation of pull up/down to ALL GPIO pins.
 #define GPPUD  (0x94)

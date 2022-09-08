@@ -30,7 +30,7 @@ typedef struct object_shm_t
 	char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 } object_shm_internal_t;
 
-object_shm_t * obj_cast_shm(object_t * const o)
+object_shm_t * obj_cast_shm(void * const o)
 {
 	object_shm_t * shm = NULL;
 	if (o)

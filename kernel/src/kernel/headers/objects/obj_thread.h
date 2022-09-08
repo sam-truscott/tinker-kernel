@@ -29,7 +29,7 @@ return_t obj_create_thread(
 
 void obj_delete_thread(object_thread_t * const thread);
 
-object_thread_t * obj_cast_thread(object_t * const o);
+object_thread_t * obj_cast_thread(void * const o);
 
 object_number_t obj_thread_get_oid(const object_thread_t * const o);
 

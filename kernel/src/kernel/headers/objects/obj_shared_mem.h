@@ -17,7 +17,7 @@
 
 typedef struct object_shm_t object_shm_t;
 
-object_shm_t * obj_cast_shm(object_t * const o);
+object_shm_t * obj_cast_shm(void * const o);
 
 object_number_t obj_shm_get_oid
 	(const object_shm_t * const o);

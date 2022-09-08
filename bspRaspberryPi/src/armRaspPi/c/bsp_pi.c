@@ -314,8 +314,8 @@ void bsp_enable_schedule_timer(void)
 
 mem_t bsp_get_usable_memory_start()
 {
-	extern uint32_t end;
-	return (mem_t)&end;
+	extern uint32_t end_of_the_world;
+	return (mem_t)&end_of_the_world;
 }
 
 mem_t bsp_get_usable_memory_end()

@@ -506,7 +506,7 @@ static return_t syscall_receive_message(
 	object_table_t* const table = process_get_object_table(process);
 	object_pipe_t* const pipe = obj_cast_pipe(
 			obj_get_object(table, (object_number_t) tgt_get_syscall_param(context, 1)));
-	uint8_t* msg = (uint8_t*) virtual_to_real(process, tgt_get_syscall_param(context, 2));
+	void* msg = (void*) virtual_to_real(process, tgt_get_syscall_param(context, 2));
 	uint32_t* msg_size = (uint32_t*) virtual_to_real(process, tgt_get_syscall_param(context, 3));
 	uint32_t max_size = tgt_get_syscall_param(context, 4);
 

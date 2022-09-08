@@ -15,6 +15,8 @@
 #include "devices/kernel_device.h"
 #include "kernel_panic.h"
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #define CONTROL_OFFSET 0
 #define CLOCK_OFFSET 4
 #define CLOCK_TIMER_COMPARE_0 0x0c

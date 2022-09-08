@@ -32,7 +32,7 @@ typedef struct object_timer_t
 	object_thread_t * thread_obj;
 } object_timer_internal_t;
 
-object_timer_t * obj_cast_timer(object_t * const o)
+object_timer_t * obj_cast_timer(void * const o)
 {
 	object_timer_t * timer = NULL;
 	if (o)

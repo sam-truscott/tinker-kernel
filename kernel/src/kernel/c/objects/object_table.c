@@ -69,7 +69,7 @@ return_t obj_initialse_table(
 
 return_t obj_add_object(
 		object_table_t * const t,
-		object_t * const obj,
+		void * const obj,
 		object_number_t * const objno)
 {
 	bool_t id_ok = false;
@@ -139,7 +139,7 @@ return_t obj_remove_object(
 	return ret;
 }
 
-object_t * obj_get_object(const object_table_t * const t, object_number_t oid)
+void * obj_get_object(const object_table_t * const t, object_number_t oid)
 {
 	object_t * o = NULL;
 	if (t)
