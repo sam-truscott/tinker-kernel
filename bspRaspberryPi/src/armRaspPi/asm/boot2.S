@@ -15,7 +15,7 @@ kernel_start:
     mrc p15, 0, r5, c0, c0, 5
     and r5, r5, #3
     cmp r5, #0
-    bne halt
+    bne halt				/* if not core zero, halt please */
 
 	msr cpsr, #0xD1			/* enter fiq mode & disable interrupts */
 	ldr sp, =__ivtse		/* setup fiq stack */
