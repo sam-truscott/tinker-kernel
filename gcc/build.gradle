@@ -14,6 +14,8 @@ task untarGcc (type:Exec) {
 
 untarGcc.dependsOn downloadGcc
 
+/* -------------------------------- arm-eabi stage 1 --------------------------- */
+
 task setupGccStage1 (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
     target = 'arm-eabi-stage1'
@@ -47,6 +49,8 @@ task makeInstallGccStage1Arm (type:Exec) {
 }
 
 makeInstallGccStage1Arm.dependsOn makeGccStage1Arm
+
+/* -------------------------------- arm-eabi stage 3 --------------------------- */
 
 task setupGccStage3 (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
@@ -102,10 +106,107 @@ task weaveApiArm (type:Exec, dependsOn: [
         cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../../arm-eabi/arm-eabi/include/;'
 }
 
+/* -------------------------------- x86_64-elf stage 1 --------------------------- */
+
+task setupGccStage1X86_64 (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'x86_64-elf-stage1'
+}
+
+setupGccStage1X86_64.dependsOn untarGcc
+
+task configureGccStage1X86_64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage1"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;../src/gcc-12.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+}
+
+configureGccStage1X86_64.dependsOn setupGccStage1X86_64
+
+task makeGccStage1X86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage1"
+    commandLine 'bash',
+        '-c',
+        project.getProperties().get("MAKE") + ' all-gcc -' + project.getProperties().get("CONBUILDS")
+}
+
+makeGccStage1X86_64.dependsOn configureGccStage1X86_64
+
+task makeInstallGccStage1X86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage1"
+    commandLine 'bash',
+        '-c',
+        project.getProperties().get("MAKE") + ' install-gcc'
+}
+
+makeInstallGccStage1X86_64.dependsOn makeGccStage1X86_64
+
+/* -------------------------------- x86_64-elf stage 3 --------------------------- */
+
+task setupGccStage3X86_64 (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'x86_64-elf-stage3'
+}
+
+setupGccStage3X86_64.dependsOn untarGcc
+
+task configureGccStage3X86_64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage3"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;../src/gcc-12.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork --enable-softfloat --with-multilib-list=aprofile'
+}
+
+configureGccStage3X86_64.dependsOn setupGccStage3X86_64
+
+task makeGccStage3X86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage3"
+    commandLine 'bash',
+        '-c',
+        project.getProperties().get("MAKE") + ' all -' + project.getProperties().get("CONBUILDS")
+}
+
+makeGccStage3X86_64.dependsOn configureGccStage3X86_64
+
+task makeInstallGccStage3X86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage3"
+    commandLine 'bash',
+        '-c',
+        project.getProperties().get("MAKE") + ' install'
+}
+
+makeInstallGccStage3X86_64.dependsOn makeGccStage3X86_64
+
+task weaveApiX86_64 (type:Exec, dependsOn: [
+    ':api:apiTinkerArm4SoftDebugStaticLibrary', 
+    ':archArm:archArmTinkerArm4SoftDebugStaticLibrary']) {
+    workingDir getProjectDir().getAbsolutePath()
+    commandLine 'bash',
+        '-c',
+        'mkdir -p tmp;\
+        cd tmp;\
+        cp ../../arm-eabi/arm-eabi//lib/libc.a ../../arm-eabi/arm-eabi//lib/libc.a.old;\
+        arm-eabi-ar x ../../arm-eabi/arm-eabi//lib/libc.a;\
+        arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/*;\
+        arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/*;\
+        arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o*;\
+        rm -rf tmp;\
+        cp ../../api/src/api/headers/*.h ../../arm-eabi/arm-eabi/include/;\
+        cp ../../base/src/base/headers/*.h ../../arm-eabi/arm-eabi/include/;\
+        cp ../../archArm/src/archArm/headers/tgt_mem.h ../../arm-eabi/arm-eabi/include/;\
+        cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../../arm-eabi/arm-eabi/include/;'
+}
+
+/* -------------------------------- clean --------------------------- */
+
 task cleanGcc(type:Exec) {
 	commandLine 'bash',
 		'-c',
-		'rm -rf build-arm-eabi*;\
+		'rm -rf build-arm-eabi-stage1;\
+		 rm -rf build-arm-eabi-stage3;\
+		 rm -rf build-x86_64-elf-stage1;\
+		 rm -rf build-x86_64-elf-stage3;\
 		 rm -rf src;\
 		 rm -rf *.tar.xz'
 }

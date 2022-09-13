@@ -376,6 +376,31 @@ allprojects {
 			        	args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for x86_64 */
+	            target("tinkerX86_64") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "x86_64-elf-gcc"
+	                cCompiler.executable = "x86_64-elf-gcc"
+	                assembler.executable = "x86_64-elf-gcc"
+	                linker.executable = "x86_64-elf-gcc"
+	                staticLibArchiver.executable = "x86_64-elf-ar"
+	                assembler.withArguments { args ->
+	                }
+	                cCompiler.withArguments { args ->
+	                	args << "-I" + projectDir + "/../archArm/src/archX86_64/headers"
+                        args << "-D__x86_64__"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            	args << "-ffreestanding"
+		            	args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
+	                }
+	                linker.withArguments { args ->
+	                    args << "-fpic"
+	                	args << "-nostartfiles"
+			       		args << "-nodefaultlibs"
+			        	args << "-nostdlib"
+	                }
+	            }
 	        }
 	    }
 	    /* platforms and their architecture */
@@ -397,6 +422,9 @@ allprojects {
 	        }
 	        tinkerPpc {
 	            architecture "ppc"
+	        }
+	        tinkerX86_64 {
+	        	architecture "x86_64"
 	        }
 	    }
 	}

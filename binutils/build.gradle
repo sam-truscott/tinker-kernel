@@ -13,6 +13,8 @@ task untarBinutils (type: Copy) {
 
 untarBinutils.dependsOn downloadBinutils
 
+/* -------------------------------- arm-eabi --------------------------- */
+
 task setupBinutilsArm (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
     target = 'arm-eabi'
@@ -47,10 +49,49 @@ task makeInstallBintutilsArm (type:Exec) {
 
 makeInstallBintutilsArm.dependsOn makeBinutilsArm
 
+/* -------------------------------- x86_64-elf --------------------------- */
+
+task setupBinutilsX86_64 (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'x86_64-elf'
+}
+
+setupBinutilsX86_64.dependsOn untarBinutils
+
+task configureBinutilsX86_64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;../src/binutils-2.39/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --enable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-interwork'
+}
+
+configureBinutilsX86_64.dependsOn setupBinutilsX86_64
+
+task makeBinutilsX86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+    commandLine 'bash',
+        '-c',
+        project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
+}
+
+makeBinutilsX86_64.dependsOn configureBinutilsX86_64
+
+task makeInstallBintutilsX86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+    commandLine 'bash',
+        '-c',
+        project.getProperties().get("MAKE") + ' install'
+}
+
+makeInstallBintutilsX86_64.dependsOn makeBinutilsX86_64
+
+/* -------------------------------- clean --------------------------- */
+
 task cleanBinUtils(type:Exec) {
 	commandLine 'bash',
 		'-c',
 		'rm -rf build-arm-eabi;\
+		 rm -rf build-x86_64-elf;\
 		 rm -rf src;\
 		 rm -rf *.tar.gz'
 }
