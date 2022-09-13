@@ -8,6 +8,7 @@ model {
             targetPlatform "tinkerArm7Soft"
             targetPlatform "tinkerArm7HardVfp"
             targetPlatform "tinkerPpc"
+	    	targetPlatform "tinkerX86_64"
             targetPlatform "windows_x86"
             targetPlatform "linux_x86-64"
             targetPlatform "linux_arm-v7"

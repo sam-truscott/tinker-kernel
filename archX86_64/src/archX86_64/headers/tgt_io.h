@@ -18,12 +18,14 @@
 	static inline void out_##N(T * const addr, T value) \
 	{ \
 		*((volatile T *)(addr)) = value; \
+		/* TODO flush */ \
 	}
 
 #define in_(N,T) \
 	static inline T in_##N(const T * const addr) __attribute__((always_inline));\
 	static inline T in_##N(const T * const addr) \
 	{ \
+		/* TODO flush */ \
 		return *((const volatile T*)(addr)); \
 	}
 

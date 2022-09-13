@@ -11,7 +11,7 @@
 
 #include "tgt_types.h"
 
-#define MMU_PAGE_SIZE 	4096
+#define MMU_PAGE_SIZE 4096
 
 #define NUM_L1_ENTRIES 4096
 

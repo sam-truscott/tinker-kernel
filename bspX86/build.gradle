@@ -1,0 +1,35 @@
+apply plugin: 'assembler'
+apply plugin: 'c'
+
+model {
+	components {
+		armRaspPi(NativeExecutableSpec) {
+	    	targetPlatform "tinkerX86_64"
+	        binaries.all {
+	            linker.args "-lgcc",
+	                 "-T",
+	                 projectDir.path + "/src/bspX86/resources/linker.ld"
+	        }
+	        sources {
+		        c {
+		            lib project: ':kernel', library: 'kernel', linkage: 'static'
+		            lib project: ':kernel', library: 'kernelTests', linkage: 'static'
+		            lib project: ':libelf', library: 'libelf', linkage: 'static'
+		            lib project: ':archArm', library: 'archArm', linkage: 'static'
+		            lib project: ':api', library: 'api', linkage: 'static'
+		            lib project: ':base', library: 'base', linkage: 'static'
+		            source {
+                        srcDirs "src/bspX86/c"
+                        include "**/bsp_x86.c"
+                    }
+		        }
+                asm {
+                    source {
+                        srcDirs "src/bspX86/asm"
+                        include "**/boot.S"
+                    }
+                }
+	        }
+	    }
+	}
+}
