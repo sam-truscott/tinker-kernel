@@ -1,0 +1,15 @@
+apply plugin: 'c'
+
+model {
+	components {
+		archArm(NativeLibrarySpec) {
+	        targetPlatform "tinkerX86_64"
+	        sources {
+		        c {
+		            lib project: ':base', library: 'base', linkage: 'static'
+		            lib project: ':kernel', library: 'kernel', linkage: 'static'
+		        }
+	        }
+	    }
+	}
+}

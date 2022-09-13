@@ -13,12 +13,15 @@ task untarNewlib (type: Copy) {
 
 untarNewlib.dependsOn downloadNewlib
 
+/* -------------------------------- arm-eabi --------------------------- */
+
 task setupNewlibArm (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
     target = 'arm-eabi'
 }
 
 setupNewlibArm.dependsOn untarNewlib
+
 
 task configureNewlibArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
@@ -32,7 +35,7 @@ task configureNewlibArm (type:Exec) {
     cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.5.0/newlib/libc/sys/arm;\
     cp ../../archArm/src/archArm/headers/tgt_mem.h ../src/newlib-2.5.0/newlib/libc/sys/arm;\
     cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../src/newlib-2.5.0/newlib/libc/sys/arm;\
-    CFLAGS_FOR_TARGET=\'-Ofast -g0 -fomit-frame-pointer\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib --disable-newlib-atexit-dynamic-alloc'
+    CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib --disable-newlib-atexit-dynamic-alloc'
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
@@ -41,7 +44,7 @@ task makeNewlibArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        'CFLAGS_FOR_TARGET=\'-Ofast -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
+        'CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
 }
 
 makeNewlibArm.dependsOn configureNewlibArm
@@ -54,6 +57,51 @@ task makeInstallNewlibArm (type:Exec) {
 }
 
 makeInstallNewlibArm.dependsOn makeNewlibArm
+
+/* -------------------------------- arm-eabi --------------------------- */
+
+task setupNewlibX86_64 (type: BuildSetup) {
+    root = getProjectDir().getAbsolutePath()
+    target = 'x86_64-elf'
+}
+
+setupNewlibX86_64.dependsOn untarNewlib
+
+task configureNewlibX86_64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+  commandLine 'bash',
+    '-c',
+    'rm -rf *;\
+    cp -R ../src/newlib/newlib ../src/newlib-2.5.0;\
+    cp ../../api/src/api/headers/* ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
+    cp ../../api/src/api/c/* ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
+    cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
+    cp ../../archX86_64/src/archX86_64/headers/tgt_mem.h ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
+    cp ../../archX86_64/src/archX86_64/headers/tgt_io.h ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
+    CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib --disable-newlib-atexit-dynamic-alloc'
+}
+
+configureNewlibX86_64.dependsOn setupNewlibX86_64
+
+task makeNewlibX86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+    commandLine 'bash',
+        '-c',
+        'CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
+}
+
+makeNewlibX86_64.dependsOn configureNewlibX86_64
+
+task makeInstallNewlibX86_64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+    commandLine 'bash',
+        '-c',
+        'make install'
+}
+
+makeInstallNewlibX86_64.dependsOn makeNewlibX86_64
+
+/* -------------------------------- clean --------------------------- */
 
 task cleanNewLib(type:Exec) {
 	commandLine 'bash',
