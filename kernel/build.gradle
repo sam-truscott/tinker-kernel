@@ -1,4 +1,3 @@
-apply plugin: 'assembler'
 apply plugin: 'c'
 
 model {
@@ -9,11 +8,14 @@ model {
 	    	targetPlatform "tinkerArm7Soft"
 	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
+	    	targetPlatform "tinkerX86_64"
 	    	targetPlatform "windows_x86"
+            targetPlatform "linux_x86-64"
+            targetPlatform "linux_arm-v7"
+		    targetPlatform "unix_x86"
 	    	sources {
 			    c {
 		            lib project: ':base', library: 'base', linkage: 'static'
-		            lib project: ':kernel', library: 'kernelTests', linkage: 'static'
 		            lib project: ':libelf', library: 'libelf', linkage: 'static'
 		        }
 	        }
@@ -24,7 +26,11 @@ model {
 	    	targetPlatform "tinkerArm7Soft"
 	    	targetPlatform "tinkerArm7HardVfp"
 	    	targetPlatform "tinkerPpc"
+	    	targetPlatform "tinkerX86_64"
 	    	targetPlatform "windows_x86"
+            targetPlatform "linux_x86-64"
+            targetPlatform "linux_arm-v7"
+		    targetPlatform "unix_x86"
 	    	sources {
 			    c {
 		            lib project: ':base', library: 'base', linkage: 'static'

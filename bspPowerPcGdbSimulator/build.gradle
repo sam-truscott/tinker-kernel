@@ -1,4 +1,3 @@
-apply plugin: 'assembler'
 apply plugin: 'c'
 
 model {
@@ -8,7 +7,7 @@ model {
            binaries.all {
                 linker.args "-lgcc",
                      "-T",
-                     'src/bspPowerPcGdbSimulator/resources/linker.ld'
+                     projectDir.path + "src/bspPowerPcGdbSimulator/resources/linker.ld"
             }
            sources {
                 c {
@@ -16,7 +15,6 @@ model {
                     lib project: ':driverUart16550', library: 'driverSerialUart16550', linkage: 'static'
                     lib project: ':driverOpic', library: 'driverOpicIntc', linkage: 'static'
                     lib project: ':driverOpic', library: 'driverOpicTimer', linkage: 'static'
-                    lib project: ':boot', library: 'boot', linkage: 'static'
                     lib project: ':kernel', library: 'kernel', linkage: 'static'
                     lib project: ':archPowerPc', library: 'archPowerPc', linkage: 'static'
                     lib project: ':api', library: 'api', linkage: 'static'

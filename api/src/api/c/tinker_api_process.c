@@ -24,7 +24,7 @@
  * @param thread A pointer to the created Thread.
  * @return
  */
-error_t tinker_create_process(
+return_t tinker_create_process(
 		const char * image_name,
 		thread_entry_point * entry,
 		uint8_t priority,
@@ -42,7 +42,7 @@ error_t tinker_create_process(
 			(uint32_t)process);
 }
 
-error_t tinker_create_thread(
+return_t tinker_create_thread(
 		const char * thread_name,
 		thread_entry_point * entry,
 		uint8_t priority,
@@ -60,14 +60,14 @@ error_t tinker_create_thread(
 			(uint32_t)thread);
 }
 
-error_t tinker_get_thread_object(tinker_thread_t * thread)
+return_t tinker_get_thread_object(tinker_thread_t * thread)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_THREAD_OBJECT,
 			(uint32_t)thread);
 }
 
-error_t	tinker_get_thread_priority(
+return_t tinker_get_thread_priority(
 		tinker_thread_t thread,
 		uint8_t * priority)
 {
@@ -82,14 +82,14 @@ void tinker_thread_wait(void)
 	TINKER_API_CALL_0(SYSCALL_WAIT_THREAD);
 }
 
-error_t tinker_exit_thread(void)
+return_t tinker_exit_thread(void)
 {
 	return TINKER_API_CALL_0(SYSCALL_EXIT_THREAD);
 }
 
-void tinker_debug(const char * const str)
+void tinker_debug(const char * const str, int len)
 {
-	TINKER_API_CALL_1(SYSCALL_DEBUG, (uint32_t)str);
+	TINKER_API_CALL_2(SYSCALL_DEBUG, (uint32_t)str, len);
 }
 
 void tinker_wait_for_interrupt(void)
@@ -97,7 +97,7 @@ void tinker_wait_for_interrupt(void)
 	TINKER_API_CALL_0(SYSCALL_WFI);
 }
 
-error_t tinker_map_mempry(
+return_t tinker_map_mempry(
 		void * real,
 		uint32_t size,
 		tinker_memory_t type,
@@ -114,11 +114,18 @@ void * tinker_sbrk(void * memory, uint32_t size)
 	return *memory_addr;
 }
 
-error_t tinker_load_elf(
+return_t tinker_load_elf(
 		void * elf_data,
 		char * const image,
 		uint8_t priority,
 		uint32_t flags)
 {
 	return TINKER_API_CALL_4(SYSCALL_LOAD_ELF, (uint32_t)elf_data, (uint32_t)image, priority, flags);
+}
+
+int32_t tinker_get_pid(void)
+{
+	int32_t pid = -1;
+	TINKER_API_CALL_1(SYSCALL_GET_PID, (uint32_t)&pid);
+	return pid;
 }

@@ -25,25 +25,26 @@ void kernel_device_init(
 	registry = reg;
 }
 
-error_t kernel_device_map_memory
-	(const uint32_t addr,
-	 const uint32_t size,
+return_t kernel_device_map_memory
+	(const mem_t addr,
+	 const mem_t size,
 	 const mmu_memory_t type,
-	 uint32_t * const virt)
+	 mem_t * const virt)
 {
-	const error_t result = process_allocate_vmem(
+	const return_t result = process_allocate_vmem(
 			kernel_process,
 			addr,
 			size,
 			type,
 			MMU_KERNEL_ACCESS,
 			MMU_READ_WRITE,
-			virt);
+			virt,
+			"DEVICE");
 	if (NO_ERROR == result)
 	{
-		process_list_it_t * const procs = proc_list_procs(proc_list);
+		list_it_t * const procs = proc_list_procs(proc_list);
 		process_t * proc = NULL;
-		if (procs && process_list_it_t_get(procs, &proc))
+		if (procs && list_it_get(procs, &proc))
 		{
 			while (proc)
 			{
@@ -56,18 +57,19 @@ error_t kernel_device_map_memory
 							type,
 							MMU_KERNEL_ACCESS,
 							MMU_READ_WRITE,
-							virt);
+							virt,
+							"DEVICE");
 				}
-				process_list_it_t_next(procs, &proc);
+				list_it_next(procs, &proc);
 			}
-			process_list_it_t_delete(procs);
+			list_it_delete(procs);
 		}
 	}
 	return result;
 }
 
 void * kernel_device_malloc(
-		const uint32_t size)
+		const mem_t size)
 {
 	return mem_alloc(mem_get_default_pool(), size);
 }
@@ -101,7 +103,7 @@ object_pipe_t * kernel_isr_get_pipe(
 	return pipe;
 }
 
-error_t kernel_isr_write_pipe(
+return_t kernel_isr_write_pipe(
 		object_pipe_t * const pipe,
 		void * buffer,
 		uint32_t size)

@@ -19,18 +19,26 @@ public class TinkerBuilder {
 	private static final Logger LOG = LoggerFactory.getLogger(TinkerBuilder.class);
 	
 	public static void main(final String... args) throws Exception {
-		LOG.info("TinkerBuilder");
+		LOG.debug("TinkerBuilder");
 		if (args.length < 4) {
-			LOG.error("Need to specify output, arch (e.g. arm-eabi-), endianness (big or small) and kernel image as a minimum");
+			LOG.error("Need to specify output, arch (e.g. arm-eabi), endianness (big or small) and kernel image as a minimum");
+			return;
+		}
+		final String archPrefix = args[1];
+		if (archPrefix == null || archPrefix.isEmpty()) {
+			LOG.error("Architecture is empty or missing");
 			return;
 		}
 
-		Endian endianness = Endian.fromString(args[2]);
+		final Endian endianness = Endian.fromString(args[2]);
 		final File kernelElf = new File(args[3]);
+		if (!kernelElf.canRead()) {
+			LOG.error("Cannot read {}", args[3]);
+			return;
+		}
 		final File kernelBinary = File.createTempFile("tinker_kernel-", ".img");
 		kernelBinary.deleteOnExit();
-		LOG.info("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
-		final String archPrefix = args[1];
+		LOG.debug("Using kernel file {} to generate binary {}", kernelElf, kernelBinary);
 		final Objcopy converter = new Objcopy(archPrefix, kernelElf, kernelBinary);
 		if (!converter.execute()) {
 			LOG.error("Failed to convert the kernel from ELF to a binary, aborting.");
@@ -42,19 +50,18 @@ public class TinkerBuilder {
 			LOG.error("Failed to delete the existing package image, aborting.");
 			return;
 		}
-		final Payload payload = new Payload(outputFile, new Binary(kernelBinary));
-		final List<String> argList = new ArrayList<>(Arrays.asList(args));
-		argList.remove(0);
-		argList.remove(0);
-		argList.remove(0);
-		argList.remove(0);
-		for (final String elf : argList) {
-			payload.addApplication(new Elf(new File(elf), endianness, archPrefix));
-		}
-		try {
+		try (final Payload payload = new Payload(endianness, outputFile, new Binary(kernelBinary))) {
+			final List<String> argList = new ArrayList<>(Arrays.asList(args));
+			argList.remove(0);
+			argList.remove(0);
+			argList.remove(0);
+			argList.remove(0);
+			for (final String elf : argList) {
+				payload.addApplication(new Elf(new File(elf), archPrefix));
+			}
+			LOG.debug("Writing payload to disk");
 			payload.writeToDisk();
-		} finally {
-			payload.close();
 		}
+		LOG.debug("Written");
 	}
 }

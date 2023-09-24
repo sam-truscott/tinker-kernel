@@ -10,28 +10,43 @@
 #include "process/thread_private.h"
 #include "config.h"
 #include "tgt.h"
-#include "utils/util_strlen.h"
+#include "utils/util_strcpy.h"
 #include "kernel_assert.h"
 #include "tinker_api_kernel_interface.h"
+#include "console/print_out.h"
+#include "utils/util_memset.h"
 
 static void thread_end(void) __attribute__((section(".api")));
 
 static void thread_setup_stack(thread_t * const thread)
 {
-	const uint32_t stack_size = thread->stack_size;
-	const uint32_t rsp = ((uint32_t)thread->stack) + stack_size - 12;
-	uint32_t vsp;
+	const mem_t stack_size = thread->stack_size;
+	const mem_t rsp = ((uint32_t)thread->stack) + (stack_size - 12);
+	mem_t vsp = 0;
+#if defined (KERNEL_DEBUGGING)
 	bool_t is_kernel = process_is_kernel(thread->parent);
-	if (!is_kernel)
+#endif
+	const mem_section_t * mem = process_get_first_section(thread->parent);
+	while (mem)
 	{
-		vsp = VIRTUAL_ADDRESS_SPACE(is_kernel)
-				+ (((uint32_t)thread->stack
-						- mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
-						+ stack_size - 12);
-	}
-	else
-	{
-		vsp = rsp;
+		if (mem_sec_get_real_addr(mem) == mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
+		{
+			vsp = mem_sec_get_virt_addr(mem)
+					+ (((uint32_t)thread->stack
+							- mem_get_start_addr(process_get_user_mem_pool(thread->parent)))
+							+ (stack_size - 12));
+			if (is_debug_enabled(PROCESS))
+			{
+				debug_print(PROCESS, "Process: Base %8x, Stack: %8x, Pool: %8x, Sz: %8x = [%8x]\n",
+						VIRTUAL_ADDRESS_SPACE(is_kernel),
+						thread->stack,
+						mem_get_start_addr(process_get_user_mem_pool(thread->parent)),
+						stack_size,
+						vsp);
+			}
+			break;
+		}
+		mem = mem_sec_get_next(mem);
 	}
 	thread->r_stack_base = rsp;
 	thread->v_stack_base = vsp;
@@ -57,25 +72,24 @@ thread_t * thread_create(
 		thread->entry_point = entry_point;
 		thread->flags = flags;
 		thread->stack = mem_alloc_aligned(user_pool, stack, MMU_PAGE_SIZE);
-		const uint32_t length = util_strlen(name, MAX_THREAD_NAME_LEN);
-		util_memcpy(thread->name, name, length);
-		thread->name[length] = '\0';
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
-#endif
+		if (thread->stack)
+		{
+			util_memset(thread->stack, 0, stack);
+		}
+		util_strcpy(thread->name, name, MAX_THREAD_NAME_LEN);
+		debug_print(PROCESS, "Process: Created thread %s with stack size %x at %x\n", name, stack, thread->stack);
 		if (thread->stack)
 		{
 			thread->stack_size = stack;
 			thread->state = THREAD_READY;
 			/*
-			 * We need to ensure that the context information
-			 * is configured properly
+			 * We need to ensure that the context information is configured properly
 			 */
 			thread_setup_stack(thread);
 			tgt_initialise_context(
 					thread,
 					&thread->context,
-					(const uint32_t)thread_end);
+					(const mem_t)thread_end);
 		}
 		else
 		{
@@ -185,6 +199,7 @@ void thread_save_context(
 {
 	if (thread && context)
 	{
+		debug_print(PROCESS, "Process: Saving context %8x for %s\n", context, thread->name);
 		tgt_save_context(thread->context, context);
 	}
 }
@@ -209,6 +224,7 @@ object_number_t thread_get_object_no(
 	return object_number;
 }
 
+// FIXME should be mem_t
 uint32_t thread_get_virt_stack_base(
 		const thread_t * const thread)
 {
@@ -255,9 +271,7 @@ const object_t * thread_get_waiting_on(
 	const object_t * waiting_on = NULL;
 	if (thread)
 	{
-#if defined (PROCESS_DEBUGGING)
-		debug_print("Process: Thread %s Waiting on %x\n", thread->name, thread->waiting_on);
-#endif
+		debug_print(PROCESS, "Process: Thread %s Waiting on %x\n", thread->name, thread->waiting_on);
 		waiting_on = thread->waiting_on;
 	}
 	return waiting_on;
@@ -268,9 +282,7 @@ void thread_set_waiting_on(
 		const object_t * const object)
 {
 	kernel_assert("thread is null", thread != NULL);
-#if defined (PROCESS_DEBUGGING)
-	debug_print("Process: Thread %s Waiting on %x\n", thread->name, object);
-#endif
+	debug_print(PROCESS, "Process: Thread %s Waiting on %x\n", thread->name, object);
 	thread->waiting_on = object;
 }
 

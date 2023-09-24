@@ -130,12 +130,12 @@ void tinker_time_nanoseconds(const uint64_t nanoseconds, tinker_time_t * const a
 	}
 }
 
-error_t tinker_get_time(tinker_time_t * const time)
+return_t tinker_get_time(tinker_time_t * const time)
 {
 	return TINKER_API_CALL_1(SYSCALL_GET_TIME, (uint32_t)time);
 }
 
-error_t tinker_sleep(const tinker_time_t * const time)
+return_t tinker_sleep(const tinker_time_t * const time)
 {
 	return TINKER_API_CALL_1(SYSCALL_SLEEP, (uint32_t)time);
 }

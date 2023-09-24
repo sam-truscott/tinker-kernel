@@ -18,7 +18,7 @@
  */
 static void opic_swap_endianness(uint32_t* var);
 
-static error_t opic_timer_write_register(
+static return_t opic_timer_write_register(
 		const void * usr_data,
 		const uint32_t reg,
 		const uint32_t value);
@@ -93,12 +93,12 @@ void opic_tmr_timer_cancel(timer_param_t usr_data)
 			TIMER_DISABLED);
 }
 
-error_t opic_timer_write_register(
+return_t opic_timer_write_register(
 		const void * usr_data,
 		const uint32_t reg,
 		const uint32_t value)
 {
-	error_t err = NO_ERROR;
+	return_t err = NO_ERROR;
 	uint32_t new_value = value;
 
 	uint32_t * base_addr = (uint32_t*)usr_data;

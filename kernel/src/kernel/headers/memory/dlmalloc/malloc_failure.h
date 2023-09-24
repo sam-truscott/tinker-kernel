@@ -10,5 +10,7 @@
 #define MALLOC_FAILURE_H_
 
 void malloc_failure(void);
+void malloc_abort(void);
+void malloc_corruption(void* x);
 
 #endif /* MALLOC_FAILURE_H_ */

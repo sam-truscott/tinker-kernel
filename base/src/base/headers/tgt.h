@@ -22,11 +22,11 @@ void tgt_enter_usermode(void);
 
 void tgt_disable_external_interrupts(void);
 
-error_t tgt_initialise_process(process_t * const process);
+return_t tgt_initialise_process(process_t * const process);
 
 tgt_pg_tbl_t * tgt_initialise_page_table(mem_pool_info_t * const pool);
 
-error_t tgt_map_memory(
+return_t tgt_map_memory(
 		const process_t * const process,
 		const mem_section_t * const section);
 
@@ -48,9 +48,17 @@ void tgt_prepare_context(
 		const thread_t * const thread,
         const process_t * const current_process);
 
+// FIXME should be mem_t
 uint32_t tgt_get_frame_pointer(void);
 
+// FIXME should be mem_t
+uint32_t tgt_get_stack_pointer(void);
+
+// FIXME should be mem_t
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context);
+
+// FIXME should be mem_t
+uint32_t tgt_get_pc(const tgt_context_t * const context);
 
 void tgt_load_context(
 		const tgt_context_t * const thread,

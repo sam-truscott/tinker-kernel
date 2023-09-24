@@ -1,14 +1,9 @@
-apply plugin: 'assembler'
 apply plugin: 'c'
 
 model {
 	components {
-		boot(NativeLibrarySpec) {
-	        targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
-	    	targetPlatform "tinkerPpc"
+		archX86_64(NativeLibrarySpec) {
+	        targetPlatform "tinkerX86_64"
 	        sources {
 		        c {
 		            lib project: ':base', library: 'base', linkage: 'static'

@@ -16,7 +16,6 @@
 #if defined(MEMCPY)
 #include <string.h>
 #else
-#pragma GCC optimize ("-O3")
 void memcpy(void * dst, const void * src, uint32_t size)
 {
 	uint32_t eight = size;
@@ -31,7 +30,6 @@ void memcpy(void * dst, const void * src, uint32_t size)
 }
 #endif
 
-#pragma GCC optimize ("-O3")
 void util_memcpy(void * dst, const void * src, uint32_t size)
 {
 	memcpy(dst, src, size);

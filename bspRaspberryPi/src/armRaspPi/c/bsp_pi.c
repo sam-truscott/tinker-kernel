@@ -6,6 +6,7 @@
  *  [2009] - [2013] Samuel Steven Truscott
  *  All Rights Reserved.
  */
+#include "board_support.h"
 #include "ivt.h"
 #include "tgt.h"
 
@@ -27,6 +28,11 @@
 #include "bcm2835_intc.h"
 #include "shell/kshell.h"
 
+#include "console/print_out.h"
+
+#include "memory/mem_section_private.h"
+#include "memory/mem_section.h"
+
 #define UART_DEVICE_NAME "/dev/char/bcm2835_uart"
 
 static timer_t bcm2835_scheduler_timer;
@@ -40,25 +46,83 @@ static time_manager_t * time_manager = NULL;
 
 void bsp_initialise(void)
 {
-	early_uart_init();
-#if defined (TARGET_DEBUGGING)
-	early_uart_put("BSP\n");
-	printp_out("CPSR %x\n", arm_get_cpsr());
+#if defined (KERNEL_DEBUGGING)
+	const uint32_t cpsr = arm_get_cpsr();
+	const uint32_t sctrl = arm_get_cp15_c1();
 #endif
+	tgt_disable_external_interrupts();
+	early_uart_init((void*)0x20201000);
+	if (is_debug_enabled(TARGET))
+	{
+		early_uart_put("BSP\n");
+	}
 
 	/* Initialise the Target Processor */
 	tgt_initialise();
 
-#if defined (TARGET_DEBUGGING)
-	early_uart_put("Target init done\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		early_uart_put("Target init done\n");
+	}
 
 	/* Initialise the Interrupt Vector Table */
 	ivt_initialise();
 
-#if defined (TARGET_DEBUGGING)
-	early_uart_put("Vector init done\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		early_uart_put("Vector init done\n");
+		debug_print(TARGET, "@Startup cpsr is 0x%8x, sctrl = 0x%8x\n", cpsr, sctrl);
+		debug_print(TARGET, "SP %8x, FP %8x\n", tgt_get_stack_pointer(), tgt_get_frame_pointer());
+	}
+
+	{
+		tgt_pg_tbl_t * pg_table = (tgt_pg_tbl_t*)0x02000000;
+		util_memset(pg_table, 0, sizeof(tgt_pg_tbl_t));
+		mem_section_t sec;
+		{
+			// map the ram
+			debug_prints(TARGET, "RAM\n");
+			mem_sec_initialise(
+					&sec,
+					NULL,
+					0,
+					0,
+					0x08000000,
+					MMU_RANDOM_ACCESS_MEMORY,
+					MMU_ALL_ACCESS,
+					MMU_READ_WRITE,
+					"RAM");
+			arm_map_memory(NULL, pg_table, &sec);
+		}
+		{
+			// map device space for uart
+			debug_prints(TARGET, "RAM (UART)\n");
+			mem_sec_initialise(
+					&sec,
+					NULL,
+					0x20000000,
+					0x20000000,
+					0x01000000,
+					MMU_DEVICE_MEMORY,
+					MMU_ALL_ACCESS,
+					MMU_READ_WRITE,
+					"RAM (UART)");
+			arm_map_memory(NULL, pg_table, &sec);
+		}
+		if (is_debug_enabled(TARGET))
+		{
+			debug_print(TARGET, "Setting MMU On, pgtbl @ 0x%8x, cpsr is 0x%8x, sctrl = 0x%8x\n", pg_table, arm_get_cpsr(), arm_get_cp15_c1());
+		}
+		arm_print_page_table(pg_table);
+		arm_set_domain_access_register(0);
+		arm_set_translation_table_base(pg_table);
+		arm_enable_mmu(false);
+		arm_invalidate_all_tlbs();
+		if (is_debug_enabled(TARGET))
+		{
+			early_uart_put("MMU on\n");
+		}
+	}
 }
 
 void bsp_setup(
@@ -70,38 +134,48 @@ void bsp_setup(
 	interrupt_controller = controller;
 	time_manager = tm;
 
-	arm_invalidate_all_tlbs();
+	arm_print_page_table(process_get_page_table(kernel_process));
 	arm_set_translation_table_base(process_get_page_table(kernel_process));
-	arm_set_domain_access_register(0);
-	arm_enable_mmu();
+	arm_invalidate_all_tlbs();
 
-	bcm2835_uart_get_device(&uart, UART_DEVICE_NAME);
+	// init uart before setting the page table
+	bcm2835_uart_get_device((void*)0x20201000, &uart, UART_DEVICE_NAME);
 #if defined(KERNEL_SHELL)
+	// FIXME use object
 	kshell_set_input_device(UART_DEVICE_NAME);
 #endif
 
 	bcm2835_intc = bcm2835_intc_create(mem_get_default_pool(), (void*)0x2000B000);
 	int_install_isr(controller, bcm2835_intc);
 
-	time_set_system_clock(tm, bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
-
+	// we use 1 & 3 as 0 & 2 are reserved for the GPU
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_scheduler_timer, (void*)0x20003000, 1);
 	bcm2835_get_timer(mem_get_default_pool(), &bcm2835_system_timer, (void*)0x20003000, 3);
+
+	time_set_system_clock(tm, bcm2835_get_clock((void*)0x20003000, mem_get_default_pool()));
 
 	alarm_set_timer(am, &bcm2835_system_timer);
 
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER1, &bcm2835_scheduler_timer);
 	intc_add_timer(bcm2835_intc, INTERRUPT_TIMER3, &bcm2835_system_timer);
+	/* add both, bug in qemu build for raspi */
+	intc_add_device(bcm2835_intc, INTERRUPT_VC_UART, &uart);
 	intc_add_device(bcm2835_intc, INTERRUPT_UART, &uart);
 
-#if defined(TARGET_DEBUGGING)
-	arm_print_page_table(process_get_page_table(kernel_process));
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		arm_print_page_table(process_get_page_table(kernel_process));
+	}
 
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER1);
 	intc_enable(bcm2835_intc, INTERRUPT_TIMER3);
+	/* add both, bug in qemu build for raspi */
+	//intc_enable(bcm2835_intc, INTERRUPT_UART);
 	intc_enable(bcm2835_intc, INTERRUPT_VC_UART);
+	arm_set_translation_table_base(process_get_page_table(kernel_process));
+	arm_invalidate_all_tlbs();
 }
+
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp);
 
@@ -120,63 +194,109 @@ void ivt_initialise(void)
 
 static void arm_vec_handler(arm_vec_t type, uint32_t contextp)
 {
-#if defined(TARGET_DEBUGGING)
-	debug_print("BSP: Vector %d\n", type);
-#endif
+	debug_print(TARGET, "BSP: Vector %d\n", type);
 	kernel_assert("interrupt controller not set in bsp\n", interrupt_controller != NULL);
 	tgt_context_t * const context = (tgt_context_t*)contextp;
+
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: VECTOR START\n");
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
+
 	switch(type)
 	{
-	case VECTOR_RESET:
-	case VECTOR_UNDEFINED:
-	case VECTOR_PRETECH_ABORT:
 	case VECTOR_DATA_ABORT:
-	case VECTOR_RESERVED:
+		error_print("## ------------------S------------------------- ##\n");
+		error_print("Data Abort sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
 		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
+		break;
+	case VECTOR_RESET:
+		error_print("## ------------------S------------------------- ##\n");
+		error_print("Reset sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
+		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
+		break;
+	case VECTOR_UNDEFINED:
+		error_print("## ------------------S------------------------- ##\n");
+		error_print("Undefined sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
+		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
+		break;
+	case VECTOR_PRETECH_ABORT:
+		error_print("## ------------------S------------------------- ##\n");
+		error_print("Prefetch sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
+		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
+		break;
+	case VECTOR_RESERVED:
+		error_print("## ------------------S------------------------- ##\n");
+		error_print("Reserved sp=[%x] pc=[%x], lr=[%x]\n", context->sp, context->pc, context->lr);
+		int_fatal_program_error_interrupt(interrupt_controller, context);
+		error_print("## ------------------E------------------------- ##\n");
 		break;
 	case VECTOR_SYSTEM_CALL:
 		int_syscall_request_interrupt(interrupt_controller, context);
 		break;
 	case VECTOR_IRQ:
 	case VECTOR_FIQ:
-	{
-		const error_t handled = int_handle_external_vector(interrupt_controller, context);
-		if (handled != NO_ERROR)
 		{
-			debug_print("BSP: Failed to handle external interrupt, error = %d\n", handled);
+			const return_t handled = int_handle_external_vector(interrupt_controller, context);
+			if (handled != NO_ERROR)
+			{
+				debug_print(TARGET, "BSP: Failed to handle external interrupt, error = %d\n", handled);
+			}
 		}
-	}
 		break;
 	default:
-		debug_print("BSP: Unknown interrupt type %d\n", type);
+		debug_print(TARGET, "BSP: Unknown interrupt type %d\n", type);
 		break;
+	}
+
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: VECTOR END\n");
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
 	}
 }
 
 static void bsp_scheduler_timeout(tgt_context_t * const context, void * const param)
 {
 	(void)param; // UNUSED
-#if defined(TARGET_DEBUGGING)
-	debug_print("BSP: ----------------------\n");
-	debug_print("BSP: Scheduler timeout\n");
-	debug_print("BSP: Mode %d\n", arm_get_psr_mode());
-	debug_print("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
-	debug_print("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
-	debug_print("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-	debug_print("BSP: sp %x lr %x\n", context->sp, context->lr);
-	debug_print("BSP: ----------------------\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: Scheduler timeout\n");
+		debug_print(TARGET, "BSP: Mode %d\n", arm_get_psr_mode());
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
 	int_context_switch_interrupt(interrupt_controller, context);
-#if defined(TARGET_DEBUGGING)
-	debug_print("BSP: ----------------------\n");
-	debug_print("BSP: Scheduler timeout done\n");
-	debug_print("BSP: Mode %d\n", arm_get_psr_mode());
-	debug_print("BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
-	debug_print("BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
-	debug_print("BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
-	debug_print("BSP: sp %x lr %x\n", context->sp, context->lr);
-	debug_print("BSP: ----------------------\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "BSP: ----------------------\n");
+		debug_prints(TARGET, "BSP: Scheduler timeout done\n");
+		debug_print(TARGET, "BSP: Mode %d\n", arm_get_psr_mode());
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[0], context->gpr[1], context->gpr[2], context->gpr[3], context->gpr[4]);
+		debug_print(TARGET, "BSP: %x %x %x %x %x\n", context->gpr[5], context->gpr[6], context->gpr[7], context->gpr[8], context->gpr[9]);
+		debug_print(TARGET, "BSP: %x %x %x\n", context->gpr[10], context->gpr[11], context->gpr[12]);
+		debug_print(TARGET, "BSP: sp %x lr %x pc %x cpsr %x\n", context->sp, context->lr, context->pc, context->cpsr);
+		debug_prints(TARGET, "BSP: ----------------------\n");
+	}
 }
 
 void bsp_enable_schedule_timer(void)
@@ -192,15 +312,15 @@ void bsp_enable_schedule_timer(void)
 			NULL);
 }
 
-uint32_t bsp_get_usable_memory_start()
+mem_t bsp_get_usable_memory_start()
 {
-	extern uint32_t end;
-	return (uint32_t)&end;
+	extern uint32_t end_of_the_world;
+	return (mem_t)&end_of_the_world;
 }
 
-uint32_t bsp_get_usable_memory_end()
+mem_t bsp_get_usable_memory_end()
 {
-	return (128 * 1024 * 1024);
+	return (mem_t)((32 * 1024 * 1024) - 1);
 }
 
 void bsp_write_debug_char(const char c)

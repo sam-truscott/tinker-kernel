@@ -1,9 +1,31 @@
+#pragma GCC optimize ("-O2")
+
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wanalyzer-double-fclose"
+#pragma GCC diagnostic ignored "-Wanalyzer-double-free"
+#pragma GCC diagnostic ignored "-Wanalyzer-exposure-through-output-file"
+#pragma GCC diagnostic ignored "-Wanalyzer-file-leak"
+#pragma GCC diagnostic ignored "-Wanalyzer-free-of-non-heap"
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#pragma GCC diagnostic ignored "-Wanalyzer-possible-null-argument"
+#pragma GCC diagnostic ignored "-Wanalyzer-possible-null-dereference"
+#pragma GCC diagnostic ignored "-Wanalyzer-null-argument"
+#pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
+#pragma GCC diagnostic ignored "-Wanalyzer-stale-setjmp-buffer"
+#pragma GCC diagnostic ignored "-Wanalyzer-tainted-array-index"
+#pragma GCC diagnostic ignored "-Wanalyzer-unsafe-call-within-signal-handler"
+#pragma GCC diagnostic ignored "-Wanalyzer-use-after-free"
+#pragma GCC diagnostic ignored "-Wanalyzer-use-of-pointer-in-stale-stack-frame"
+#pragma GCC diagnostic ignored "-Waggregate-return"
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #if defined(IS_HOST_UNIT_TEST)
 
 #include <errno.h>
 #define FORCEINLINE
 
 #include "memory/dlmalloc/malloc_config.h"
+#include "memory/dlmalloc/malloc_failure.h"
 
 #else
 
@@ -18,8 +40,6 @@
 
 #define memcpy util_memcpy
 #define memset util_memset
-
-#pragma GCC optimize ("-O3")
 
 #endif
 
@@ -1021,7 +1041,7 @@ DLMALLOC_EXPORT size_t dlmalloc_max_footprint(void);
   guarantee that this number of bytes can actually be obtained from
   the system.
 */
-DLMALLOC_EXPORT size_t dlmalloc_footprint_limit();
+DLMALLOC_EXPORT size_t dlmalloc_footprint_limit(void);
 
 /*
   malloc_set_footprint_limit();

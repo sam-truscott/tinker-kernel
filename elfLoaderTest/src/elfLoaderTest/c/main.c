@@ -11,6 +11,6 @@
 
 void main(void)
 {
-	tinker_debug("hello world\n");
+	tinker_debug("hello world\n", 12);
 	return;
 }

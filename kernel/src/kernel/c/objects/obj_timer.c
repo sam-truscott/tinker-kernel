@@ -16,6 +16,7 @@
 #include "time/alarm_manager.h"
 #include "scheduler/scheduler.h"
 #include "process/process_list.h"
+#include "console/print_out.h"
 
 typedef struct object_timer_t
 {
@@ -31,7 +32,7 @@ typedef struct object_timer_t
 	object_thread_t * thread_obj;
 } object_timer_internal_t;
 
-object_timer_t * obj_cast_timer(object_t * const o)
+object_timer_t * obj_cast_timer(void * const o)
 {
 	object_timer_t * timer = NULL;
 	if (o)
@@ -59,9 +60,10 @@ object_number_t obj_timer_get_oid
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p) __attribute__((section(".api")));
 static void obj_timer_thread(tinker_timer_callback_t * const t, const void * p)
 {
-#if defined(TIMER_DEBUGGING)
-	debug_print("Timer: Callback thread\n");
-#endif
+	if (is_debug_enabled(TIMER))
+	{
+		debug_prints(TIMER, "Timer: Callback thread\n");
+	}
 	if (t)
 	{
 		t(p);
@@ -74,16 +76,18 @@ static void obj_timer_timeout(
 		void * const usr_data)
 {
 	object_timer_t * const timer = (object_timer_t*)usr_data;
-#if defined(TIMER_DEBUGGING)
-	debug_print("Timer: My alarm is id %d, fired alarm is %d\n", timer->alarm_id, alarm_id);
-#endif
+	if (is_debug_enabled(TIMER))
+	{
+		debug_print(TIMER, "Timer: My alarm is id %d, fired alarm is %d\n", timer->alarm_id, alarm_id);
+	}
 	if (timer && (alarm_id == timer->alarm_id))
 	{
 		thread_set_state(timer->callback_thread, THREAD_READY);
 		thread_set_waiting_on(timer->callback_thread, NULL);
-#if defined(TIMER_DEBUGGING)
-		debug_print("Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);
-#endif
+		if (is_debug_enabled(TIMER))
+		{
+			debug_print(TIMER, "Timer: Resuming waiting thread\n", timer->alarm_id, alarm_id);
+		}
 		sch_notify_resume_thread(timer->scheduler, timer->callback_thread);
 		thread_set_context_param(timer->callback_thread, 0, (uint32_t)timer->callback);
 		thread_set_context_param(timer->callback_thread, 1, (uint32_t)timer->parameter);
@@ -92,7 +96,7 @@ static void obj_timer_timeout(
 	}
 }
 
-error_t obj_create_timer(
+return_t obj_create_timer(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
 		process_t * const process,
@@ -103,7 +107,7 @@ error_t obj_create_timer(
 		tinker_timer_callback_t * const callback,
 		const void* parameter)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (process && objectno && (seconds || nanoseconds) && callback)
 	{
 		object_table_t * const table = process_get_object_table(process);
@@ -190,9 +194,9 @@ static void obj_timer_delete_thread(object_timer_t * const timer)
 			oid);
 }
 
-error_t obj_cancel_timer(object_timer_t * const timer)
+return_t obj_cancel_timer(object_timer_t * const timer)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (timer)
 	{
 		if (timer->callback)
@@ -214,9 +218,9 @@ error_t obj_cancel_timer(object_timer_t * const timer)
 	return result;
 }
 
-error_t obj_delete_timer(object_timer_t * const timer)
+return_t obj_delete_timer(object_timer_t * const timer)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (timer)
 	{
 		if (timer->callback)

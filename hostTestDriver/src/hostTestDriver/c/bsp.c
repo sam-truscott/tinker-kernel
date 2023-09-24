@@ -14,9 +14,9 @@
 #include "tinker_api_errors.h"
 #include "memory/mem_pool.h"
 
-#define HOST_MEMORY_SIZE 1 * 1024 * 1024
+#define HOST_MEMORY_SIZE 4 * 1024 * 1024
 
-static void * memory = NULL;
+static mem_t memory = 0;
 
 unsigned int __text = 0;
 unsigned int __text_end = 0;
@@ -31,19 +31,19 @@ void TINKER_API_CALL_7()
 
 void bsp_initialise()
 {
-	memory = malloc(HOST_MEMORY_SIZE);
+	memory = (mem_t)malloc(HOST_MEMORY_SIZE);
 }
 
 void bsp_setup() {}
 
-unsigned int bsp_get_usable_memory_start()
+mem_t bsp_get_usable_memory_start()
 {
-	return (unsigned int)memory;
+	return (mem_t)memory;
 }
 
-unsigned int bsp_get_usable_memory_end()
+mem_t bsp_get_usable_memory_end()
 {
-	return ((unsigned int)memory) + HOST_MEMORY_SIZE;
+	return ((mem_t)memory) + HOST_MEMORY_SIZE;
 }
 
 void bsp_enable_schedule_timer() {}
@@ -56,7 +56,7 @@ void tgt_set_syscall_return() {}
 tgt_pg_tbl_t* tgt_initialise_page_table(mem_pool_info_t * const pool) { return mem_alloc(pool, 4); }
 void tgt_map_memory() {}
 void tgt_unmap_memory() {}
-error_t tgt_initialise_process() { return NO_ERROR; }
+return_t tgt_initialise_process() { return NO_ERROR; }
 void tgt_load_context() {}
 void tgt_save_context() {}
 void tgt_initialise_context() {}

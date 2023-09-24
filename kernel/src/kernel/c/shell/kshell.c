@@ -15,6 +15,7 @@
 #include "process/process_list.h"
 #include "utils/util_strlen.h"
 #include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 #include "objects/object_table.h"
 #include "objects/obj_semaphore.h"
 #include "objects/obj_process.h"
@@ -22,7 +23,6 @@
 #include "objects/obj_pipe.h"
 #include "process/thread.h"
 #include "utils/collections/hashed_map.h"
-#include "utils/collections/hashed_map_iterator.h"
 
 #define MAX_LINE_INPUT 256
 
@@ -78,10 +78,10 @@ static const char ksh_object_types[9][8] =
 
 static const char ksh_pipe_dir[4][13] =
 {
-		"UNKNOWN     \0",
-		"SEND/RECEIVE\0",
-		"SEND        \0",
-		"RECEIVE     \0"
+		"UNKN\0",
+		"BOTH\0",
+		"TX  \0",
+		"RX  \0"
 };
 
 static const char ksh_mem_type[2][4] =
@@ -127,15 +127,15 @@ void kshell_start(void)
 	kshell->ksh_input_pointer = 0;
 	bool_t running = true;
 
-	print_out("KSHELL\n");
+	print_out("Tinker Shell: Starting...\n");
 	print_out("Commands: procs, tasks, objects, mem\n");
 
 	tinker_pipe_t pipe;
-	error_t input_result = tinker_open_pipe(
+	return_t input_result = tinker_open_pipe(
 			&pipe,
 			kshell_dev_name,
 			PIPE_RECEIVE,
-			4,
+			1,
 			MAX_LINE_INPUT);
 
 	if (input_result != NO_ERROR)
@@ -144,26 +144,32 @@ void kshell_start(void)
 		return;
 	}
 
+	util_memset(kshell->ksh_input_buffer, 0, MAX_LINE_INPUT);
+
+	print_out("Tinker Shell: Ready\n");
+
+	// kshell_process_list();
+	// kshell_task_list();
+	// kshell_memory_info();
+	// kshell_object_table();
 	while (running)
 	{
-		char * received = NULL;
-		uint32_t * bytesReceived = NULL;
-#if defined(KERNEL_SHELL_DEBUG)
-		print_out("KSHELL Rx\n");
-#endif
-		error_t read_status = tinker_receive_message(pipe, (void**)&received, &bytesReceived, true);
-#if defined(KERNEL_SHELL_DEBUG)
-		printp_out("KSHELL status = %d, got %d bytes at %x\n", read_status, *bytesReceived, received);
-#endif
+		char received[2];
+		util_memset(received, 0, sizeof(received));
+		uint32_t bytesReceived = 0;
+		if (is_debug_enabled(SHELL))
+		{
+			print_out("KSHELL Rx\n");
+		}
+		return_t read_status = tinker_receive_message(pipe, (void*)received, &bytesReceived, MAX_LINE_INPUT, true);
+		if (is_debug_enabled(SHELL))
+		{
+			printp_out("KSHELL status = %d, got %d bytes: %d\n", read_status, bytesReceived, received[0]);
+		}
 		if (read_status == NO_ERROR)
 		{
-			error_t ack = tinker_received_message(pipe);
-			if (ack != NO_ERROR)
-			{
-				printp_out("KSHELL Failed to ack packet with error %d\n", ack);
-			}
 			uint16_t p = 0;
-			while(p != (*bytesReceived))
+			while (p < bytesReceived)
 			{
 				kshell->ksh_input_buffer[kshell->ksh_input_pointer++] = received[p++];
 			}
@@ -183,6 +189,7 @@ void kshell_start(void)
 						kshell_execute_command(kshell->ksh_input_buffer);
 						kshell->ksh_input_pointer = 0;
 						util_memset(kshell->ksh_input_buffer, 0, MAX_LINE_INPUT);
+						print_out("> ");
 					}
 				}
 			}
@@ -243,11 +250,11 @@ static bool_t kshell_strcmp(const char * a, const char * b)
 
 static void kshell_process_list(void)
 {
-	process_list_it_t * list = NULL;
+	list_it_t * list = NULL;
 	process_t * proc = NULL;
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	print_out("Proc. Id\tThreads \tName\n");
 	print_out("--------\t--------\t----\n");
@@ -257,74 +264,68 @@ static void kshell_process_list(void)
 		printp_out("%8d", process_get_pid(proc));
 		printp_out("\t%8d", process_get_thread_count(proc));
 		printp_out("\t%s\n", process_get_image(proc));
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_task_list(void)
 {
-	process_list_it_t * list = NULL;
+	list_it_t * list = NULL;
 	process_t * proc = NULL;
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	while (proc)
 	{
-		thread_it_t * tlist = process_iterator(proc);
-		thread_t  * t = NULL;
-
-		thread_it_t_get(tlist, &t);
-
 		printp_out("Process:\t%s\n", process_get_image(proc));
-		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tName\n");
-		print_out("--------\t----------\t----------\t---\t--------\t-----\t----\n");
+		print_out("ThreadID\tStack Sz  \tStack Pt  \tPri\tEntry   \tState\tPc\t\tName\n");
+		print_out("--------\t----------\t----------\t---\t--------\t-----\t--\t\t----\n");
 
-		while (t)
+		for (uint32_t index = 0 ; index < MAX_THREADS ; index++)
 		{
-			printp_out("%8d", thread_get_tid(t));
-			printp_out("\t0x%8X", thread_get_stack_size(t));
-			printp_out("\t0x%8X", tgt_get_context_stack_pointer(thread_get_context(t)));
-			printp_out("\t%3d", thread_get_priority(t));
-			printp_out("\t%8x", thread_get_entry_point(t));
-			printp_out("\t%s", ksh_thread_states[thread_get_state(t)]);
-			printp_out("\t%s", thread_get_name(t));
-			print_out("\n");
-
-			if (!thread_it_t_next(tlist, &t))
+			thread_t * const t = thread_by_index(proc, index);
+			if (t != NULL)
 			{
-				t = NULL;
+				printp_out("%8d", thread_get_tid(t));
+				printp_out("\t0x%8X", thread_get_stack_size(t));
+				const tgt_context_t * context = thread_get_context(t);
+				printp_out("\t0x%8X", tgt_get_context_stack_pointer(context));
+				printp_out("\t%3d", thread_get_priority(t));
+				printp_out("\t%8x", thread_get_entry_point(t));
+				printp_out("\t%s", ksh_thread_states[thread_get_state(t)]);
+				printp_out("\t%8x", tgt_get_pc(context));
+				printp_out("\t%s", thread_get_name(t));
+				print_out("\n");
 			}
 		}
 		print_out("\n");
 
-		thread_it_t_delete(tlist);
-
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_object_table(void)
 {
-	process_list_it_t * const list = proc_list_procs(kshell->proc_list);
+	list_it_t * const list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	while (proc)
 	{
-		object_table_it_t * const it = obj_iterator(process_get_object_table(proc));
+		map_it_t * const it = obj_iterator(process_get_object_table(proc));
 
 		printp_out("Process:\t%s\n", process_get_image(proc));
 		print_out("Obj No. \tType\t\n");
@@ -333,7 +334,7 @@ static void kshell_object_table(void)
 		if (it)
 		{
 			object_t * obj = NULL;
-			object_table_it_t_get(it, &obj);
+			map_it_get(it, (void**)&obj);
 
 			while (obj)
 			{
@@ -344,11 +345,6 @@ static void kshell_object_table(void)
 
 				switch (type)
 				{
-					default:
-					case UNKNOWN_OBJ:
-					case OBJECT:
-						break;
-
 					case PROCESS_OBJ:
 					{
 						object_process_t * const p = obj_cast_process(obj);
@@ -400,7 +396,9 @@ static void kshell_object_table(void)
 									printp_out("Rd Pos: %d, ", obj_pipe_get_read_msg_pos(p));
 									printp_out("Wr Pos: %d", obj_pipe_get_write_msg_pos(p));
 									break;
+								case PIPE_DIRECTION_UNKNOWN:
 								default:
+									printp_out("Invalid object type: %d ", dir);
 									break;
 							}
 						}
@@ -427,38 +425,51 @@ static void kshell_object_table(void)
 						break;
 					case SHARED_MEMORY_OBJ:
 						/* TODO KSHELL dump for Shared Memory */
+						print_out("SHM");
 						break;
 					case TIMER_OBJ:
 						/* TODO KSHELL dump for Timer */
+						print_out("TIMER");
+						break;
+					case UNKNOWN_OBJ:
+						print_out("UNKNOWN OBJECT");
+						break;
+					case OBJECT:
+
+						print_out("UNSUPPORTED OBJECT");
+						break;
+					default:
+						print_out("UNKNOWN OBJECT TYPE");
 						break;
 				}
 
 				print_out("\n");
 
-				if (!object_table_it_t_next(it, &obj))
+				if (!map_it_next(it, (void**)&obj))
 				{
 					obj = NULL;
 				}
 			}
 			print_out("\n");
-			object_table_it_t_delete(it);
+			map_it_delete(it);
 		}
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 	print_out("Complete\n");
 }
 
 static void kshell_memory_info(void)
 {
-	process_list_it_t * list = proc_list_procs(kshell->proc_list);
+	print_out("mem:\n\n");
+	list_it_t * list = proc_list_procs(kshell->proc_list);
 	process_t * proc = NULL;
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 
 	print_out("Proc\tPool Sz    Pool Usd   P.Pool Sz  P.Pool Usd\n");
 	print_out("----\t---------- ---------- ---------- ----------\n");
@@ -474,41 +485,43 @@ static void kshell_memory_info(void)
 				mem_get_alloc_size(prv_pool),
 				mem_get_allocd_size(prv_pool));
 
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
 
-	process_list_it_t_delete(list);
+	list_it_delete(list);
 
 	print_out("\nMemory mappings:\n");
 
-	print_out("Real       Virt       Size       Typ Priv Access\n");
-	print_out("---------- ---------- ---------- --- ---- ------\n");
+	print_out("Real       Virt       Size       Typ Priv Access Name\n");
+	print_out("---------- ---------- ---------- --- ---- ------ ----\n");
 
 	list = proc_list_procs(kshell->proc_list);
-	process_list_it_t_get(list, &proc);
+	list_it_get(list, &proc);
 	while (proc)
 	{
 		printp_out("%s\n", process_get_image(proc));
 		const mem_section_t * sec = process_get_first_section(proc);
 		while (sec)
 		{
-			printp_out("0x%8x 0x%8x 0x%8x %s %s %s\n",
+			printp_out("0x%8x 0x%8x 0x%8x %s %s %s     %s\n",
 					mem_sec_get_real_addr(sec),
 					mem_sec_get_virt_addr(sec),
 					mem_sec_get_size(sec),
 					ksh_mem_type[mem_sec_get_mem_type(sec)],
 					ksh_mem_priv[mem_sec_get_priv(sec)],
-					ksh_mem_acc[mem_sec_get_access(sec)]);
+					ksh_mem_acc[mem_sec_get_access(sec)],
+					mem_sec_get_name(sec));
 			sec = mem_sec_get_next(sec);
 		}
-		if (!process_list_it_t_next(list, &proc))
+		if (!list_it_next(list, &proc))
 		{
 			proc = NULL;
 		}
 	}
-	process_list_it_t_delete(list);
+	list_it_delete(list);
+	print_out("Complete\n");
 }
 #endif /* KERNEL_SHELL */

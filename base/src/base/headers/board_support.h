@@ -35,9 +35,9 @@ void bsp_setup(
  */
 void bsp_enable_schedule_timer(void);
 
-uint32_t bsp_get_usable_memory_start();
+mem_t bsp_get_usable_memory_start(void);
 
-uint32_t bsp_get_usable_memory_end();
+mem_t bsp_get_usable_memory_end(void);
 
 void bsp_write_debug_char(const char c);
 

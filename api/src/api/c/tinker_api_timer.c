@@ -9,7 +9,7 @@
 #include "tinker_api_timer.h"
 #include "tinker_api_kernel_interface.h"
 
-error_t tinker_timer_create(
+return_t tinker_timer_create(
 		tinker_timer_t * const timer,
 		const uint8_t priority,
 		const tinker_timeout_time_t * const timeout,
@@ -26,14 +26,14 @@ error_t tinker_timer_create(
 			(uint32_t)data);
 }
 
-error_t tinker_timer_cancel(tinker_timer_t timer)
+return_t tinker_timer_cancel(tinker_timer_t timer)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_CANCEL_TIMER,
 			(uint32_t)timer);
 }
 
-error_t tinker_timer_delete(tinker_timer_t timer)
+return_t tinker_timer_delete(tinker_timer_t timer)
 {
 	return TINKER_API_CALL_1(
 			SYSCALL_DELETE_TIMER,

@@ -23,37 +23,46 @@ typedef struct mem_pool_info_t
 	/* dlmalloc memory space */
 	mspace space;
 	/* total heap in bytes */
-	uint32_t pool_alloc_size;
+	mem_t pool_alloc_size;
 } mem_pool_info_internal_t;
 
 bool_t 	mem_init_memory_pool(
-		const uint32_t base_addr,
-		const uint32_t pool_size,
+		const mem_t base_addr,
+		const mem_t pool_size,
 		mem_pool_info_t ** const pool)
 {
 	mem_pool_info_t * pool_info = NULL;
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: creating new pool at 0x%x for %d bytes\n", base_addr, pool_size);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: creating new pool at 0x%x for %d bytes\n", base_addr, pool_size);
+	}
 
 	/*
 	 * put the first info block after the heap at the beginning
 	 * of the next page. this gives access to the full heap
 	 */
 	pool_info = (mem_pool_info_t*)(base_addr);
-
 	pool_info->pool_alloc_size = pool_size;
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_prints(MEMORY, "mem: creating mspace\n");
+	}
 	pool_info->space = create_mspace_with_base(pool_info + sizeof(mem_pool_info_t), pool_size - sizeof(mem_pool_info_t), 0);
 
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_prints(MEMORY, "mem: mspace created\n");
+	}
 	if (pool)
 	{
 		*pool = pool_info;
 	}
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: new pool is at %x\n", pool_info);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: new pool is at %x\n", pool_info);
+	}
 
 	return true;
 }
@@ -65,26 +74,28 @@ bool_t	mem_init_process_memory(
 {
 	bool_t ret = false;
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: initalising process pool %x size %x\n", pool, size);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: initalising process pool %x size %x\n", pool, size);
+	}
 
 	/* allocate that from RAM */
-	const uint32_t proc_memory_pool = (uint32_t)mem_alloc_aligned(
+	const mem_t proc_memory_pool = (mem_t)mem_alloc_aligned(
 			pool,
-			size,
+			size + MMU_PAGE_SIZE,
 			MMU_PAGE_SIZE);
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: initalised process pool %x size %x result %x\n", pool, size, proc_memory_pool);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: initalised process pool %x size %x result %x\n", pool, size, proc_memory_pool);
+	}
 
 	if (proc_memory_pool != 0)
 	{
 		/* create a table for the given process */
 		ret = mem_init_memory_pool(
 				proc_memory_pool,
-				size,
+				size - MMU_PAGE_SIZE,
 				proc_memory_block);
 	}
 	else
@@ -97,7 +108,7 @@ bool_t	mem_init_process_memory(
 
 void *	mem_alloc(
 		mem_pool_info_t * const pool,
-		const uint32_t size)
+		const mem_t size)
 {
 	return mem_alloc_aligned(pool, size, 0);
 }
@@ -105,33 +116,46 @@ void *	mem_alloc(
 void *  mem_realloc(
 		mem_pool_info_t * const pool,
 		void * mem,
-		const uint32_t size)
+		const mem_t size)
 {
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
 	void * const new_base = mspace_realloc(pool->space, mem, size);
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: base at 0x%x, size 0x%x, now 0x%x\n", mem, size, new_base);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: base at 0x%x, size 0x%x, now 0x%x\n", mem, size, new_base);
+	}
 	return new_base;
 }
 
 void* mem_alloc_aligned(
 		mem_pool_info_t * const pool,
-		const uint32_t size,
-		const uint32_t alignment)
+		const mem_t size,
+		const mem_t alignment)
 {
 	void* new_base = NULL;
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: looking for %d bytes in pool 0x%x\n", size, pool);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: alloc %d bytes (align 0x%x) in pool 0x%x (t=%X/u=%X/f=%X)\n", size, alignment, pool,
+				mspace_mallinfo(pool->space).usmblks,
+				mspace_mallinfo(pool->space).uordblks,
+				mspace_mallinfo(pool->space).fordblks);
+	}
 
 	kernel_assert("mem: attempt to allocate to a null pool\n", pool != NULL);
-	new_base = mspace_memalign(pool->space, alignment, size);
+	if (alignment == 0)
+	{
+		new_base = mspace_malloc(pool->space, size);
+	}
+	else
+	{
+		new_base = mspace_memalign(pool->space, alignment, size);
+	}
 
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: base at 0x%x, size 0x%x\n", new_base, size);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: base at 0x%x, size 0x%x\n", new_base, size);
+	}
 
 	return new_base;
 }
@@ -140,20 +164,21 @@ void mem_free(
 		mem_pool_info_t * const pool,
 		const void * const base)
 {
-#if defined (MEMORY_DEBUGGING)
-	debug_print("mem: free pool 0x%x, base 0x%x\n", pool, base);
-#endif
+	if (is_debug_enabled(MEMORY))
+	{
+		debug_print(MEMORY, "mem: free pool 0x%x, base 0x%x\n", pool, base);
+	}
 	mspace_free(pool->space, (void*)base);
 }
 
-uint32_t mem_get_start_addr(const mem_pool_info_t * const pool)
+mem_t mem_get_start_addr(const mem_pool_info_t * const pool)
 {
-	return (uint32_t)(pool);
+	return (mem_t)(pool);
 }
 
-uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool)
+mem_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 {
-	uint32_t size;
+	mem_t size;
 	if (pool)
 	{
 		size = pool->pool_alloc_size;
@@ -165,7 +190,10 @@ uint32_t mem_get_alloc_size(const mem_pool_info_t * const pool)
 	return size;
 }
 
-uint32_t mem_get_allocd_size(const mem_pool_info_t * const pool)
+
+#pragma GCC diagnostic ignored "-Waggregate-return"
+
+mem_t mem_get_allocd_size(const mem_pool_info_t * const pool)
 {
 	return mspace_mallinfo(pool->space).uordblks;
 }

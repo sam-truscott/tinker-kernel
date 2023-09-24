@@ -11,15 +11,14 @@
 #include "board_support.h"
 #include "kernel_assert.h"
 #include "kernel_idle.h"
-#if defined(KERNEL_INIT)
 #include "console/print_out.h"
-#endif /* KERNEL_INIT */
 #include "interrupts/interrupt_manager.h"
 #include "memory/memory_manager.h"
 #include "process/process_list.h"
 #include "time/time_manager.h"
 #include "time/alarm_manager.h"
 #include "utils/util_memset.h"
+#include "utils/util_strcpy.h"
 #include "objects/registry.h"
 #include "syscall/syscall_handler.h"
 #include "scheduler/scheduler.h"
@@ -27,124 +26,97 @@
 #include "tgt.h"
 #include "loader/loader.h"
 
-static void load_processes(const uint32_t end_of_bin, loader_t* const loader)
+static void load_processes(const mem_t end_of_bin, loader_t* const loader)
 {
-	uint32_t app_start = end_of_bin;
-	uint32_t sz = *(uint32_t*) app_start;
-#if defined(ELF_LOAD_DEBUGGING)
-	debug_print("Size of %x is %x bytes\n", app_start, sz);
-#endif /* ELF_LOAD_DEBUGGING */
-	app_start += sizeof(uint32_t);
-	while (sz)
+	uint32_t* app_start = (uint32_t*)(end_of_bin + 4);
+	debug_print(ELF_LOADER, "Loader: Loading first app at %8x\n", end_of_bin + (*app_start));
+	while (*app_start)
 	{
-		const error_t elf_error = load_elf(loader, (void*) app_start, "app", 128, 0);
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Loading of process: %d\n", elf_error);
-#else
-		(void)elf_error;
-#endif /* ELF_LOAD_DEBUGGING */
-		app_start += sz;
-		// need to align to a word boundry
-		while ((app_start % sizeof(uint32_t)) != 0)
+		const return_t elf_error = load_elf(loader, (void*) (end_of_bin + *app_start), "app", 128, 0);
+		if (is_debug_enabled(ELF_LOADER))
 		{
-			app_start++;
+			debug_print(ELF_LOADER, "Loader: Loading result: %d\n", elf_error);
 		}
-		sz = *(uint32_t*) app_start;
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Size of %x is %x bytes\n", app_start, sz);
-#endif /* ELF_LOAD_DEBUGGING */
-		app_start += sizeof(uint32_t);
+		kernel_assert("Failed to load ELF", elf_error == NO_ERROR);
+		app_start++;
+		if (is_debug_enabled(ELF_LOADER))
+		{
+			debug_print(ELF_LOADER, "Loader: Loading next app at %8x\n", end_of_bin + *app_start);
+		}
 	}
 }
 
-static uint32_t calculate_start_of_pool(const uint32_t end_of_bin)
+static mem_t calculate_start_of_pool(const mem_t end_of_bin)
 {
-	uint32_t app_start = end_of_bin;
-	uint32_t sz = *(uint32_t*) app_start;
-	app_start += sizeof(uint32_t);
-	while (sz)
+	mem_t sizes = sizeof(mem_t);
+	mem_t size_ptr = end_of_bin + sizeof(mem_t);
+	debug_prints(INITIALISATION, "Determining app sizes\n");
+	while (1)
 	{
-		app_start += sz;
-		while ((app_start % sizeof(uint32_t)) != 0)
+		const mem_t size = *(mem_t*)size_ptr;
+		if (size == 0)
 		{
-			app_start++;
+			debug_prints(INITIALISATION, "No more apps\n");
+			break;
 		}
-		sz = *(uint32_t*) app_start;
-		app_start += sizeof(uint32_t);
+		else
+		{
+			debug_print(INITIALISATION, "Size of payload ay 0x%8x is 0%8x\n", size_ptr, size);
+			sizes += size;
+		}
+		size_ptr += sizeof(mem_t);
 	}
-	return app_start;
+	return end_of_bin + sizes;
 }
 
 void kernel_initialise(void)
 {
-	const uint32_t end_of_bin = bsp_get_usable_memory_start();
-	uint32_t memory_start = calculate_start_of_pool(end_of_bin);
-	while (memory_start % MMU_PAGE_SIZE != 0)
+	const mem_t end_of_bin = bsp_get_usable_memory_start();
+	mem_t memory_start = calculate_start_of_pool(end_of_bin);
+	const mem_t memory_end = bsp_get_usable_memory_end() - (MMU_PAGE_SIZE);
+
+	debug_print(INITIALISATION, "Loader: Apps start at %x, mem at %x. Size of %x\n", end_of_bin, memory_start, memory_start - end_of_bin);
+
+	mem_t aligned_start = memory_start;
+	while ((aligned_start % MMU_PAGE_SIZE) != 0)
 	{
-		memory_start++;
+		aligned_start++;
 	}
-	const uint32_t memory_end = bsp_get_usable_memory_end();
 
-#if defined(KERNEL_INIT)
-	const uint32_t size_of_apps = memory_start - end_of_bin;
-	debug_print("Apps start at %x, size of %x\n", end_of_bin, size_of_apps);
-
-	debug_print("Memory: Initialising Pool, start %X, end %x\n",
-			memory_start,
-			memory_end);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Memory: Initialising Pool, start %X (%x), end %x\n", memory_start, aligned_start, memory_end);
 
 	kernel_assert("Memory End > 0", memory_end > 0);
-	kernel_assert("Memory Size > 0", memory_end > memory_start);
+	kernel_assert("Memory Size > 0", memory_end > aligned_start);
 
-	const bool_t mem_init_ok = mem_initialise(
-			memory_start,
-			memory_end);
+	debug_print(INITIALISATION, "Memory: Zeroing %d bytes\n", (memory_end - aligned_start));
+	util_memset((void*)aligned_start, 0, memory_end - aligned_start);
+
+	const bool_t mem_init_ok = mem_initialise(aligned_start, memory_end);
 	kernel_assert("Failed to Initialise Memory Manager", mem_init_ok);
 
 	mem_pool_info_t * const pool = mem_get_default_pool();
 
-#if defined(KERNEL_INIT)
-	debug_print("Time: Initialising services...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Time: Initialising services...\n");
 	time_manager_t * const time_manager = time_initialise(pool);
 	alarm_manager_t * const alarm_manager = alarm_initialse(pool, time_manager);
-#if defined(KERNEL_INIT)
-	debug_print("Time: Time Manager at %x, Alarm Manager at %x\n", time_manager, alarm_manager);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Time: Time Manager at %x, Alarm Manager at %x\n", time_manager, alarm_manager);
 
-#if defined(KERNEL_INIT)
-	debug_print("Registry: Initialising the Registry...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Registry: Initialising the Registry...\n");
 	registry_t * const registry = registry_create(pool);
-#if defined(KERNEL_INIT)
-	debug_print("Registry: Registry at %x\n", registry);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Registry: Registry at %x\n", registry);
 
-#if defined(KERNEL_INIT)
-	debug_print("Scheduler: Initialising Scheduler...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Scheduler: Initialising Scheduler...\n");
 	scheduler_t * const scheduler = sch_create_scheduler(pool);
-#if defined(KERNEL_INIT)
-	debug_print("Scheduler: Scheduler at %x\n", scheduler);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Scheduler: Scheduler at %x\n", scheduler);
 
-#if defined(KERNEL_INIT)
-	debug_print("Process: Initialising Management...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Process: Initialising Management...\n");
 	proc_list_t * const proc_list = proc_create(pool, scheduler, alarm_manager);
-#if defined(KERNEL_INIT)
-	debug_print("Process: Process list at %x\n", proc_list);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Process: Process list at %x\n", proc_list);
 
-#if defined(KERNEL_INIT)
-	debug_print("Loader: Initialising Loader...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Loader: Initialising Loader...\n");
 	loader_t * const loader = loader_create(pool, proc_list);
 
-#if defined(KERNEL_INIT)
-	debug_print("Syscall: Initialising...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Syscall: Initialising...\n");
 	syscall_handler_t * const syscall_handler = create_handler(
 			pool,
 			proc_list,
@@ -153,21 +125,13 @@ void kernel_initialise(void)
 			time_manager,
 			alarm_manager,
 			loader);
-#if defined(KERNEL_INIT)
-	debug_print("Syscall: Syscall Handler at %x\n", syscall_handler);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Syscall: Syscall Handler at %x\n", syscall_handler);
 
-#if defined(KERNEL_INIT)
-	debug_print("Intc: Initialising Interrupt Controller...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Intc: Initialising Interrupt Controller...\n");
 	interrupt_controller_t * const interrupt_controller = int_create(pool, syscall_handler, scheduler);
-#if defined(KERNEL_INIT)
-	debug_print("Intc: Initialising Interrupt Controller at %x\n", interrupt_controller);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Intc: Initialising Interrupt Controller at %x\n", interrupt_controller);
 
-#if defined(KERNEL_INIT)
-	debug_print("Kernel: Initialising Kernel Process...\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "Kernel: Initialising Kernel Process...\n");
 
 	extern char * __text;
 	extern char * __text_end;
@@ -178,34 +142,37 @@ void kernel_initialise(void)
 	char * data_end = (char*)&__data_end;
 	tinker_mempart_t data =
 	{
+		/* data */
 		.real = (uint32_t)data_pos,
 		.virt = (uint32_t)data_pos,
 		.size = (uint32_t)(data_end - data_pos),
 		.mem_type = MEM_RANDOM_ACCESS_MEMORY,
-		.priv = MEM_KERNEL_ACCESS,
+		.priv = MEM_ALL_ACCESS,
 		.access = MEM_READ_WRITE,
 		.next = NULL
 	};
+	util_strcpy(data.name, "KERNEL (DATA)", 32);
 	tinker_mempart_t code =
 	{
+		/* code */
 		.real = (uint32_t)text_pos,
 		.virt = (uint32_t)text_pos,
 		.size = (uint32_t)(text_epos - text_pos),
 		.mem_type = MEM_RANDOM_ACCESS_MEMORY,
-		.priv = MEM_KERNEL_ACCESS,
+		.priv = MEM_ALL_ACCESS,
 		.access = MEM_READ_ONLY,
 		.next = &data
 	};
+	util_strcpy(code.name, "KERNEL (CODE)", 32);
 	tinker_meminfo_t meminfo =
 	{
+		/* wrapper */
 		.heap_size = KERNEL_HEAP,
 		.stack_size = KERNEL_IDLE_STACK,
 		.first_part = &code
 	};
 
-#if defined(KERNEL_INIT)
-	debug_print("Kernel: Process list %x\n", proc_list);
-#endif /* KERNEL_INIT */
+	debug_print(INITIALISATION, "Kernel: Process list %x\n", proc_list);
 	process_t * kernel_process = NULL;
 	proc_create_process(
 			proc_list,
@@ -235,30 +202,39 @@ void kernel_initialise(void)
 	// Map the RAM into Kernel space
 	mem_section_t * const kernel_ram_sec = mem_sec_create(
 			mem_get_default_pool(),
-			MMU_PAGE_SIZE,
 			0,
-			bsp_get_usable_memory_end(),
+			0,
+			32 * (1024 * 1024),
 			MMU_RANDOM_ACCESS_MEMORY,
-			MMU_KERNEL_ACCESS,
-			MMU_READ_WRITE);
+			(mmu_privilege_t)MEM_ALL_ACCESS,
+			MMU_READ_WRITE,
+			"RAM (Kernel)");
 	tgt_map_memory(kernel_process, kernel_ram_sec);
 
 	kernel_assert("Kernel couldn't start Idle Thread", kernel_idle_thread != NULL);
 	sch_set_current_thread(scheduler, kernel_idle_thread);
 
 	/* Get the BSP to configure itself */
-#if defined(KERNEL_INIT)
-	debug_print("BSP: Setting up the Board...\n");
-#endif /* KERNEL_INIT */
-	bsp_setup(interrupt_controller, time_manager, alarm_manager, kernel_process);
-#if defined(KERNEL_INIT)
-	debug_print("BSP: Setup Complete\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "BSP: Setting up the Board...\n");
+	bsp_setup(
+			interrupt_controller,
+			time_manager,
+			alarm_manager,
+			kernel_process);
+	debug_prints(INITIALISATION, "BSP: Setup Complete\n");
+
+	const mem_section_t * b = process_get_first_section(kernel_process);
+	while (b)
+	{
+		if (mem_sec_get_virt_addr(b) == VIRTUAL_ADDRESS_SPACE(true) + PRIVATE_POOL_SIZE)
+		{
+			tgt_map_memory(kernel_process, b);
+		}
+		b = mem_sec_get_next(b);
+	}
 
 #if defined (KERNEL_SHELL)
-#if defined (KERNEL_INIT)
-	debug_print("System: Creating kshell\n");
-#endif /* KERNEL_INIT */
+	debug_prints(INITIALISATION, "System: Creating kshell\n");
 	proc_create_thread(
 			kernel_process,
 			"kernel_shell",

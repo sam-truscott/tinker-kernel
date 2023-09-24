@@ -1,4 +1,3 @@
-apply plugin: 'assembler'
 apply plugin: 'c'
 
 model {
@@ -11,7 +10,7 @@ model {
             binaries.all {
                 linker.args "-lgcc",
                      "-T",
-                     'src/elfLoaderTest/resources/linker.ld'
+                     projectDir.path + "/src/elfLoaderTest/resources/linker.ld"
             }
             sources {
                 c {

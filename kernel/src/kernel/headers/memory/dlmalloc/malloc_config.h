@@ -23,6 +23,10 @@
 #define NO_MALLINFO 0
 #define NO_MALLOC_STATS 1
 
+#if ! defined (_X86_) && defined (__i386__)
+# define _X86_ 1
+#endif
+
 #else /* IS_HOST_UNIT_TEST */
 
 #undef WIN32
@@ -35,6 +39,7 @@
 #undef DEBUG
 #define ABORT_ON_ASSERT_FAILURE 1
 #define MALLOC_FAILURE_ACTION malloc_failure()
+#define CORRUPTION_ERROR_ACTION malloc_corruption
 
 #define LACKS_UNISTD_H 1
 #define LACKS_FCNTL_H 1
@@ -48,7 +53,7 @@
 #define LACKS_SCHED_H 1
 #define LACKS_TIME_H 1
 
-#define ABORT kernel_panic()
+#define ABORT malloc_abort()
 #define EINVAL PARAMETERS_INVALID
 #define ENOMEM OUT_OF_MEMORY
 #define malloc_getpagesize MMU_PAGE_SIZE

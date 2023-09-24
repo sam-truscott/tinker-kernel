@@ -3,6 +3,8 @@ package uk.co.wumpus.tinker.builder.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 public enum Endian {
 	BIG("big"),
 	SMALL("small");
@@ -22,9 +24,10 @@ public enum Endian {
 		MAP.put(e, end);
 	}
 
+	@Nonnull
 	public static Endian fromString(final String e) {
 		final Endian endianness = MAP.get(e);
-		if (e == null) {
+		if (endianness == null) {
 			throw new IllegalArgumentException("Unsupported");
 		}
 		return endianness;

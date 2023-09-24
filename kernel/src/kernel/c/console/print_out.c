@@ -80,31 +80,55 @@ void error_print(const char * const msg, ...)
 	__builtin_va_end(list);
 }
 
-void debug_print(const char * const msg, ...)
+void debug_print1(
+		const debug_subsystem_t subsys,
+		const char * const file,
+		const uint32_t line,
+		const char * const msg,
+		...)
 {
 #if defined(KERNEL_DEBUGGING)
-	const char * ptr = msg;
-
-	print_time();
-
-	__builtin_va_list list;
-	__builtin_va_start(list, msg);
-	while(*ptr)
+	if (is_debug_enabled(subsys))
 	{
-		if(*ptr == '%')
+		const char * ptr = msg;
+
+		print_time();
+		const char * file_ptr = file;
+		const char * print_file_ptr = file_ptr;
+		while (*file_ptr)
 		{
-			print_out_process(&ptr, &list);
+			if (*file_ptr == '\\')
+			{
+				print_file_ptr = file_ptr+1;
+			}
+			file_ptr++;
+		}
+		print_out(print_file_ptr);
+		printp_out("(%d)", line);
+		print_out("->");
+
+		__builtin_va_list list;
+		__builtin_va_start(list, msg);
+		while(*ptr)
+		{
+			if(*ptr == '%')
+			{
+				print_out_process(&ptr, &list);
+				ptr++;
+			}
+			else
+			{
+				print_out_print_char(*ptr);
+			}
 			ptr++;
 		}
-		else
-		{
-			print_out_print_char(*ptr);
-		}
-		ptr++;
+		__builtin_va_end(list);
 	}
-	__builtin_va_end(list);
 #else
-	if (msg) {}
+	(void)subsys;
+	(void)msg;
+	(void)file;
+	(void)line;
 #endif
 }
 
@@ -187,6 +211,15 @@ void print_out_print_string(const uint32_t padding, const char * string)
 	while (*string)
 	{
 		print_out_print_char(*string++);
+	}
+}
+
+void print_out_len(const char * const msg, int len)
+{
+	const char * m = msg;
+	for (int32_t i = 0 ; i < len ; i++)
+	{
+		print_out_print_char(*(m++));
 	}
 }
 

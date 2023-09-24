@@ -60,6 +60,7 @@ typedef struct tinker_mempart
 	tinker_memory_t mem_type;
 	tinker_privilege_t priv;
 	tinker_access_t access;
+	char name[33];
 	struct tinker_mempart * next;
 } tinker_mempart_t;
 
@@ -69,7 +70,7 @@ typedef struct tinker_meminfo {
 	tinker_mempart_t * first_part;
 } tinker_meminfo_t;
 
-error_t tinker_create_process(
+return_t tinker_create_process(
 		const char * image_name,
 		thread_entry_point * entry,
 		uint8_t priority,
@@ -77,7 +78,7 @@ error_t tinker_create_process(
 		uint32_t flags,
 		tinker_process_t * process) TINKER_API_SUFFIX;
 
-error_t tinker_create_thread(
+return_t tinker_create_thread(
 		const char * thread_name,
 		thread_entry_point * entry,
 		uint8_t priority,
@@ -85,21 +86,21 @@ error_t tinker_create_thread(
 		uint32_t flags,
 		tinker_thread_t * thread) TINKER_API_SUFFIX;
 
-error_t tinker_get_thread_object(tinker_thread_t * thread) TINKER_API_SUFFIX ;
+return_t tinker_get_thread_object(tinker_thread_t * thread) TINKER_API_SUFFIX ;
 
-error_t	tinker_get_thread_priority(
+return_t tinker_get_thread_priority(
 		tinker_thread_t thread,
 		uint8_t * priority) TINKER_API_SUFFIX;
 
 void tinker_thread_wait(void);
 
-error_t tinker_exit_thread(void) TINKER_API_SUFFIX;
+return_t tinker_exit_thread(void) TINKER_API_SUFFIX;
 
-void tinker_debug(const char * const str) TINKER_API_SUFFIX;
+void tinker_debug(const char * const str, int len) TINKER_API_SUFFIX;
 
 void tinker_wait_for_interrupt(void) TINKER_API_SUFFIX;
 
-error_t tinker_map_mempry(
+return_t tinker_map_mempry(
 		void * real,
 		uint32_t size,
 		tinker_memory_t type,
@@ -108,7 +109,9 @@ error_t tinker_map_mempry(
 
 void * tinker_sbrk(void * memory, uint32_t size);
 
-error_t tinker_load_elf(
+int32_t tinker_get_pid(void);
+
+return_t tinker_load_elf(
 		void * elf_data,
 		char * const image,
 		uint8_t priority,

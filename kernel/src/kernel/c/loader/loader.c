@@ -11,21 +11,30 @@
 #include "elfload.h"
 #include "utils/util_memcpy.h"
 #include "utils/util_memset.h"
+#include "utils/util_strcpy.h"
+#include "utils/util_strcat.h"
 #include "process/process.h"
 #include "memory/mem_pool.h"
-#if defined(ELF_LOAD_DEBUGGING)
 #include "console/print_out.h"
-#endif
+#include "config.h"
+
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 typedef struct loader_t
 {
 	mem_pool_info_t * pool;
 	proc_list_t * list;
+	void * current_data;
 } loader_internal_t;
 
+/**
+ * Copy memory from the offset into the data to some virtual location
+ */
 static bool fpread(el_ctx *ctx, void *dest, size_t nb, size_t offset)
 {
-	util_memcpy(dest, ((uint8_t*)ctx->user_param) + offset, nb);
+	debug_print(ELF_LOADER, "Loader: Reading %d bytes to %d with offset %x\n", nb, dest, offset);
+	util_memcpy(dest, ((uint8_t*)((loader_t*)ctx->user_param)->current_data) + offset, nb);
 	return true;
 }
 
@@ -35,9 +44,8 @@ static void *alloccb(
     Elf_Addr virt,
     Elf_Addr size)
 {
-	(void)ctx;
-	(void)phys;
-	(void)size;
+	debug_print(ELF_LOADER, "Loader: alloccb p=%x, v=%x, size=%x\n", phys, virt, size);
+	(void) ctx;
     return (void*) virt;
 }
 
@@ -55,7 +63,7 @@ loader_t * loader_create(
 	return load;
 }
 
-error_t load_elf(
+return_t load_elf(
 		loader_t * const loader,
 		const void * const data,
 		const char * const image,
@@ -64,25 +72,28 @@ error_t load_elf(
 {
 	el_ctx ctx;
 	el_status status;
-	ctx.user_param = (void*)data;
+	ctx.user_param = (void*)loader;
+	loader->current_data = (void*)data;
 	ctx.pread = fpread;
 
 	status = el_init(&ctx);
 	if (EL_OK != status)
 	{
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Failed to init ELF context: %d\n", status);
-#endif
+		debug_print(ELF_LOADER, "Loader: Failed to init ELF context: %d\n", status);
 		return INVALID_ELF;
 	}
 
-	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) data;
+	void * buffer = mem_alloc_aligned(loader->pool, ctx.memsz, ctx.align);
+	if (!buffer)
+	{
+		return OUT_OF_MEMORY;
+	}
+	ctx.base_load_vaddr = ctx.base_load_paddr = (uintptr_t) buffer;
+	debug_print(ELF_LOADER, "Loader: Allocating %d bytes with %x alignment: %x\n", ctx.memsz, ctx.align, buffer);
 	status = el_load(&ctx, alloccb);
 	if (EL_OK != status)
 	{
-#if defined(ELF_LOAD_DEBUGGING)
-		debug_print("Failed to load ELF: %d\n", status);
-#endif
+		debug_print(ELF_LOADER, "Loader: Failed to load ELF: %d\n", status);
 		return INVALID_ELF;
 	}
 
@@ -103,51 +114,59 @@ error_t load_elf(
 			else
 			{
 				ctr++;
-#if defined(ELF_LOAD_DEBUGGING)
-				debug_print("PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
-						ctr,
-						addr.p_type,
-						addr.p_offset,
-						addr.p_vaddr,
-						addr.p_paddr,
-						addr.p_memsz,
-						addr.p_align,
-						addr.p_flags);
-				if (addr.p_flags & PF_X)
+				char name[33];
+				util_memset(name, 0, 33);
+				util_strcpy(name, "ELF", 32);
+				if (is_debug_enabled(ELF_LOADER))
 				{
-					debug_print("PT_LOAD: %d: Executable\n", ctr);
+					util_strcat(name, " ", 32);
+					debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: type %d, offset 0x%8X, virt 0x%8X, phy 0x%8X sz %d align %d flags %d\n",
+							ctr,
+							addr.p_type,
+							addr.p_offset,
+							addr.p_vaddr,
+							addr.p_paddr,
+							addr.p_memsz,
+							addr.p_align,
+							addr.p_flags);
+
+					if (addr.p_flags & PF_X)
+					{
+						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Executable\n", ctr);
+						util_strcat(name, "X", 32);
+					}
+					if (addr.p_flags & PF_W)
+					{
+						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Writable\n", ctr);
+						util_strcat(name, "W", 32);
+					}
+					if (addr.p_flags & PF_R)
+					{
+						debug_print(ELF_LOADER, "Loader: PT_LOAD: %d: Readable\n", ctr);
+						util_strcat(name, "R", 32);
+					}
 				}
-				if (addr.p_flags & PF_W)
-				{
-					debug_print("PT_LOAD: %d: Writable\n", ctr);
-				}
-				if (addr.p_flags & PF_R)
-				{
-					debug_print("PT_LOAD: %d: Readable\n", ctr);
-				}
-#endif
 				tinker_mempart_t * new_part = (tinker_mempart_t*)mem_alloc(loader->pool, sizeof(tinker_mempart_t));
 				if (new_part)
 				{
+					util_memset(new_part, 0, sizeof(tinker_mempart_t));
 					if (current_part)
 					{
 						current_part->next = new_part;
 					}
 					current_part = new_part;
-					util_memset(current_part, 0, sizeof(tinker_mempart_t));
-					current_part->real = addr.p_paddr;
+					current_part->real = ((mem_t)buffer + addr.p_offset);
 					current_part->virt = addr.p_vaddr;
 					current_part->size = addr.p_memsz;
 					current_part->mem_type = MEM_RANDOM_ACCESS_MEMORY;
-					current_part->priv = MEM_USER_ACCESS;
+					current_part->priv = MEM_ALL_ACCESS;
+					util_strcpy(current_part->name, name, 32);
 					// TODO add exec
-					/*
 					if (addr.p_flags & PF_X)
 					{
 						current_part->access = MEM_READ_WRITE;
 					}
-					*/
-					if (addr.p_flags & PF_W)
+					else if (addr.p_flags & PF_W)
 					{
 						current_part->access = MEM_READ_WRITE;
 					}
@@ -169,27 +188,27 @@ error_t load_elf(
 		}
 		else
 		{
-#if defined(ELF_LOAD_DEBUGGING)
-			debug_print("Failed to find next section: %d\n", status);
-#endif
+			debug_print(ELF_LOADER, "Loader: Failed to find next section: %d\n", status);
 			break;
 		}
 	}
-	error_t ret = NO_ERROR;
+	return_t ret = NO_ERROR;
 	if (first_part)
 	{
 		process_t * proc = NULL;
 		tinker_meminfo_t memory =
 		{
+				// FIXME 1k stack and heap predefined?
 				.stack_size = 4096,
-				.heap_size = 4096,
+				.heap_size = 4096 * 4,
 				.first_part = first_part
 		};
+		debug_print(ELF_LOADER, "Loader: Start address of app is: %x (0x%x)\n", ctx.ehdr.e_entry, ctx.ehdr.e_entry + (mem_t)buffer);
 		ret = proc_create_process(
 				loader->list,
 				image,
 				"main",
-				(thread_entry_point*)(ctx.ehdr.e_entry + (uint32_t)data),
+				(thread_entry_point*)(ctx.ehdr.e_entry),
 				priority,
 				&memory,
 				flags,

@@ -15,8 +15,8 @@
  * Initialise memory services
  */
 bool_t mem_initialise(
-		const uint32_t start,
-		const uint32_t end);
+		const mem_t start,
+		const mem_t end);
 
 /**
  * Get the default memory pool

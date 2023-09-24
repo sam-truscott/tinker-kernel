@@ -34,7 +34,7 @@ typedef struct object_thread_t
 	alarm_manager_t * alarm_manager;
 } object_thread_internal_t;
 
-error_t obj_create_thread(
+return_t obj_create_thread(
 		mem_pool_info_t * const pool,
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
@@ -44,7 +44,7 @@ error_t obj_create_thread(
 		object_number_t * const object_no)
 {
 	object_thread_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if ( table )
 	{
@@ -102,7 +102,7 @@ object_number_t obj_thread_get_oid
 	return oid;
 }
 
-object_thread_t * obj_cast_thread(object_t * const o)
+object_thread_t * obj_cast_thread(void * const o)
 {
 	object_thread_t * result = NULL;
 	if(o)
@@ -116,18 +116,15 @@ object_thread_t * obj_cast_thread(object_t * const o)
 	return result;
 }
 
-error_t obj_exit_thread(object_thread_t * const o)
+return_t obj_exit_thread(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
 		thread_t * const t = o->thread;
 
-#if defined(PROCESS_DEBUGGING)
-		const uint32_t pid = process_get_pid(thread_get_parent(t));
-		debug_print("Objects: proc %d thread %d (%s) is exiting\n", pid, o->tid, thread_get_name(o->thread));
-#endif
+		debug_print(PROCESS, "Objects: proc %d thread %d (%s) is exiting\n", process_get_pid(thread_get_parent(t)), o->tid, thread_get_name(o->thread));
 
 		const thread_state_t state = thread_get_state(t);
 		if (state != THREAD_TERMINATED
@@ -157,11 +154,11 @@ error_t obj_exit_thread(object_thread_t * const o)
 	return result;
 }
 
-error_t obj_get_thread_state(
+return_t obj_get_thread_state(
 		object_thread_t * const o,
 		thread_state_t * const state)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 
 	if (o && state)
@@ -177,18 +174,16 @@ error_t obj_get_thread_state(
 	return result;
 }
 
-error_t obj_set_thread_waiting(
+return_t obj_set_thread_waiting(
 		object_thread_t * const o,
 		const object_t * const waiting_on)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
 		const thread_state_t state = thread_get_state(o->thread);
-#if defined(PROCESS_DEBUGGING)
-		debug_print("Process: State of %s is %x\n", thread_get_name(o->thread), state);
-#endif
+		debug_print(PROCESS, "Process: State of %s is %x\n", thread_get_name(o->thread), state);
 		if (state == THREAD_RUNNING
 				|| state == THREAD_READY
 				|| state == THREAD_PAUSED
@@ -225,9 +220,9 @@ bool_t obj_thread_is_waiting_on(
 	return is_waiting;
 }
 
-error_t obj_set_thread_ready(object_thread_t * const o)
+return_t obj_set_thread_ready(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -257,11 +252,11 @@ priority_t obj_get_thread_priority_ex(object_thread_t * const o)
 	return p;
 }
 
-error_t obj_get_thread_priority(
+return_t obj_get_thread_priority(
 		object_thread_t * const o,
 		uint8_t * const priority)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -282,11 +277,11 @@ error_t obj_get_thread_priority(
 	return result;
 }
 
-error_t obj_set_thread_priority(
+return_t obj_set_thread_priority(
 		object_thread_t * const o,
 		const uint8_t priority)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -315,9 +310,9 @@ error_t obj_set_thread_priority(
 	return result;
 }
 
-error_t obj_reset_thread_original_priority(object_thread_t * const o)
+return_t obj_reset_thread_original_priority(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
@@ -335,14 +330,13 @@ error_t obj_reset_thread_original_priority(object_thread_t * const o)
 	return result;
 }
 
-error_t obj_set_thread_original_priority(object_thread_t * const o)
+return_t obj_set_thread_original_priority(object_thread_t * const o)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o)
 	{
-		o->original_priority =
-				thread_get_priority(o->thread);
+		o->original_priority = thread_get_priority(o->thread);
 		o->priority_inheritance = 1;
 	}
 	else
@@ -375,9 +369,13 @@ thread_t * obj_get_thread(const object_thread_t * const o)
 	return t;
 }
 
-static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t * const o)
+static void obj_thread_sleep_callback(
+		alarm_manager_t * const am,
+		const uint32_t alarm_id,
+		void * const usr_data)
 {
-	if (o && o->alarm_id == alarm_id)
+	object_thread_t * o = (object_thread_t*)usr_data;
+	if (am && o && o->alarm_id == alarm_id)
 	{
 		thread_set_state(o->thread, THREAD_READY);
 		sch_notify_resume_thread(o->scheduler, o->thread);
@@ -385,9 +383,9 @@ static void obj_thread_sleep_callback(const uint32_t alarm_id, object_thread_t *
 	}
 }
 
-error_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const duration)
+return_t obj_thread_sleep(object_thread_t * const o, const tinker_time_t * const duration)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (o && duration)
 	{

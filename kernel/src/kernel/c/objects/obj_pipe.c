@@ -12,22 +12,17 @@
 #include "tgt.h"
 #include "objects/object_private.h"
 #include "utils/util_strlen.h"
+#include "utils/util_memcpy.h"
+#include "utils/util_memset.h"
 #include "utils/collections/unbounded_list.h"
-#include "utils/collections/unbounded_list_iterator.h"
+#include "console/print_out.h"
 
-UNBOUNDED_LIST_TYPE(pipe_list_t)
-UNBOUNDED_LIST_INTERNAL_TYPE(pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_SPEC_CREATE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_SPEC_INITIALISE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_SPEC_ADD(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_BODY_CREATE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_BODY_INITIALISE(static, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_BODY_ADD(static, pipe_list_t, object_pipe_t*)
-
-UNBOUNDED_LIST_ITERATOR_TYPE(pipe_list_it_t)
-UNBOUNDED_LIST_ITERATOR_INTERNAL_TYPE(pipe_list_it_t, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_SPEC(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
-UNBOUNDED_LIST_ITERATOR_BODY(static, pipe_list_it_t, pipe_list_t, object_pipe_t*)
+typedef struct rx_blocked
+{
+	object_thread_t * blocked_owner;
+	void * message;
+	uint32_t * message_size;
+} rx_blocked_t;
 
 typedef struct rx_data
 {
@@ -36,16 +31,16 @@ typedef struct rx_data
 	uint32_t read_msg_position;
 	uint32_t write_msg_position;
 	uint32_t message_size;
-	object_thread_t * blocked_owner;
+	rx_blocked_t blocked_info;
 	uint8_t * read_msg_ptr;
 	uint8_t * write_msg_ptr;
-	pipe_list_t * senders;
+	list_t * senders;
 } rx_data_t;
 
 typedef struct tx_data
 {
 	object_thread_t * sending_thread;
-	pipe_list_t * readers;
+	list_t * readers;
 } tx_data_t;
 
 typedef struct object_pipe_t
@@ -60,7 +55,9 @@ typedef struct object_pipe_t
 	char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 } object_pipe_internal_t;
 
-object_pipe_t * obj_cast_pipe(object_t * const o)
+static return_t obj_pipe_received_message(object_pipe_t * const pipe);
+
+object_pipe_t * obj_cast_pipe(void * const o)
 {
 	object_pipe_t * result = NULL;
 	if (o)
@@ -92,20 +89,37 @@ static bool_t pipe_can_receive(const object_pipe_t * const pipe)
 			&& pipe->rx_data.free_messages > 0);
 }
 
+static uint32_t align(uint32_t a, uint32_t b)
+{
+	uint32_t aligned_size;
+	if (a % b == 0)
+	{
+		aligned_size = a;
+	}
+	else
+	{
+		aligned_size = a + (b - (a % b));
+	}
+	return aligned_size;
+}
+
 static void pipe_receive_message(
 		object_pipe_t * const receiver,
 		const void * message,
 		const uint32_t message_size)
 {
-#if defined(PIPE_DEBUGGING)
-	debug_print("PipeW: Writing size (%d) to %x and data to %x\n",
-			message_size,
-			receiver->rx_data.write_msg_ptr,
-			receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
-#endif
-	uint32_t * const msg_size = (uint32_t*)receiver->rx_data.write_msg_ptr;
-	*msg_size = message_size;
+	if (is_debug_enabled(PIPE))
+	{
+		debug_print(PIPE, "PipeW: Writing size (%d) to %x and data to %x\n",
+				message_size,
+				receiver->rx_data.write_msg_ptr,
+				receiver->rx_data.write_msg_ptr+sizeof(uint32_t));
+	}
+	// copy the message size over
+	util_memcpy(receiver->rx_data.write_msg_ptr, &message_size, sizeof(uint32_t));
+	// copy the the payload over (bytes, not 32)
 	util_memcpy(receiver->rx_data.write_msg_ptr+sizeof(uint32_t), message, message_size);
+	// ring buffer; if at the end, return to home
 	if ((receiver->rx_data.write_msg_position + 1) == receiver->rx_data.total_messages)
 	{
 		receiver->rx_data.write_msg_position = 0;
@@ -113,28 +127,33 @@ static void pipe_receive_message(
 	}
 	else
 	{
+		// write the buffer size
 		receiver->rx_data.write_msg_position++;
-		receiver->rx_data.write_msg_ptr += (receiver->rx_data.message_size+sizeof(uint32_t));
+		uint32_t aligned_size = align(receiver->rx_data.message_size, sizeof(uint32_t));
+		debug_print(PIPE, "Increasing by 4 + aligned size of %d\n", aligned_size);
+		receiver->rx_data.write_msg_ptr += (aligned_size + sizeof(uint32_t));
 	}
-#if defined(PIPE_TRACING)
+#if defined (KERNEL_DEBUGGING)
 	const uint32_t old_free = receiver->rx_data.free_messages;
 #endif
 	receiver->rx_data.free_messages--;
-#if defined(PIPE_TRACING)
-	debug_print("PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
-#endif
-#if defined(PIPE_TRACING)
-	debug_print("PipeW: Receiver has thread %x blocking on %x\n",
-			(receiver->rx_data.blocked_owner),
-			receiver);
-#endif
-	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_owner, (object_t*)receiver))
+	if (is_debug_enabled(PIPE_TRACE))
 	{
-#if defined(PIPE_TRACING)
-		debug_print("PipeW: Blocked owner - resuming them\n");
-#endif
-		obj_set_thread_ready(receiver->rx_data.blocked_owner);
-		receiver->rx_data.blocked_owner = NULL;
+		debug_print(PIPE_TRACE, "PipeW: Receiver has %d -> %d free messages\n", old_free, receiver->rx_data.free_messages);
+		debug_print(PIPE_TRACE, "PipeW: Receiver has thread %x blocking on %x\n",
+			(receiver->rx_data.blocked_info.blocked_owner),
+			receiver);
+	}
+	if (obj_thread_is_waiting_on(receiver->rx_data.blocked_info.blocked_owner, (object_t*)receiver))
+	{
+		debug_prints(PIPE_TRACE, "PipeW: Blocked owner - resuming them\n");
+		obj_set_thread_ready(receiver->rx_data.blocked_info.blocked_owner);
+		receiver->rx_data.blocked_info.blocked_owner = NULL;
+		util_memcpy(receiver->rx_data.blocked_info.message_size, receiver->rx_data.read_msg_ptr, sizeof(uint32_t));
+		util_memcpy(receiver->rx_data.blocked_info.message, receiver->rx_data.read_msg_ptr + sizeof(uint32_t), *receiver->rx_data.blocked_info.message_size);
+		obj_pipe_received_message(receiver);
+		receiver->rx_data.blocked_info.message = NULL;
+		receiver->rx_data.blocked_info.message_size = NULL;
 	}
 }
 
@@ -152,29 +171,29 @@ static bool_t pipe_can_send_to_all(
 		const object_pipe_t * const pipe,
 		const bool_t blocking)
 {
-	pipe_list_it_t it;
+	list_it_t * it = list_it_create(pipe->tx_data.readers);
 	object_pipe_t * receiver = NULL;
 	bool_t can_send_all = true;
 
-	pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-	if (pipe_list_it_t_get(&it, &receiver))
+	if (list_it_get(it, &receiver))
 	{
 		while (receiver)
 		{
 			const bool_t can_send_pipe = pipe_can_receive(receiver);
 			if (!can_send_pipe && blocking)
 			{
-				pipe_list_t_add(receiver->rx_data.senders, (object_pipe_t*)pipe);
+				list_add(receiver->rx_data.senders, (object_pipe_t*)pipe);
 			}
 			can_send_all = (!can_send_all) ? can_send_all : can_send_pipe;
-			pipe_list_it_t_next(&it, &receiver);
+			list_it_next(it, &receiver);
 		}
 	}
+	list_it_delete(it);
 	// if there's no one to send to then in pub/sub we're good
 	return can_send_all;
 }
 
-error_t obj_create_pipe(
+return_t obj_create_pipe(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -184,11 +203,9 @@ error_t obj_create_pipe(
 		const uint32_t messages)
 {
 	object_pipe_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
-#if defined(PIPE_TRACING)
-	debug_print("PipeC: Creating pipe named %s direction %d\n", name, direction);
-#endif
+	debug_print(PIPE_TRACE, "PipeC: Creating pipe named %s direction %d\n", name, direction);
 
 	if (process && objectno)
 	{
@@ -198,8 +215,8 @@ error_t obj_create_pipe(
 		{
 			mem_pool_info_t * const pool = process_get_mem_pool(process);
 			uint8_t * memory = NULL;
-			pipe_list_t * tx_queue = NULL;
-			pipe_list_t * rx_queue = NULL;
+			list_t * tx_queue = NULL;
+			list_t * rx_queue = NULL;
 			switch (direction)
 			{
 			default:
@@ -207,12 +224,12 @@ error_t obj_create_pipe(
 				result = PARAMETERS_INVALID;
 				break;
 			case PIPE_SEND_RECEIVE:
-				tx_queue = pipe_list_t_create(pool);
+				tx_queue = list_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
 				}
-				/* no break */
+				// fall through
 			case PIPE_RECEIVE:
 			{
 				if ((message_size % 4) != 0)
@@ -234,22 +251,27 @@ error_t obj_create_pipe(
 						result = OUT_OF_MEMORY;
 					}
 				}
-#if defined(PIPE_TRACING)
-				debug_print("PipeC: Memory at %x\n", memory);
-#endif
-				if (result == NO_ERROR)
+				else
 				{
-					util_memset(memory, 0, total_size);
-					rx_queue = pipe_list_t_create(pool);
-					if (!rx_queue)
+					total_size = 0;
+				}
+				if (result == NO_ERROR && total_size > 0)
+				{
+					debug_print(PIPE_TRACE, "PipeC: Memory at %x\n", memory);
+					if (result == NO_ERROR)
 					{
-						result = OUT_OF_MEMORY;
+						util_memset(memory, 0, total_size);
+						rx_queue = list_create(pool);
+						if (!rx_queue)
+						{
+							result = OUT_OF_MEMORY;
+						}
 					}
 				}
 			}
 				break;
 			case PIPE_SEND:
-				tx_queue = pipe_list_t_create(pool);
+				tx_queue = list_create(pool);
 				if (!tx_queue)
 				{
 					result = OUT_OF_MEMORY;
@@ -259,9 +281,7 @@ error_t obj_create_pipe(
 			if (result == NO_ERROR)
 			{
 				no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
-#if defined(PIPE_TRACING)
-				debug_print("PipeC: Creating pipe at %x\n", no);
-#endif
+				debug_print(PIPE_TRACE, "PipeC: Creating pipe at %x\n", no);
 				object_number_t objno;
 				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
@@ -316,7 +336,7 @@ error_t obj_create_pipe(
 	return result;
 }
 
-error_t obj_open_pipe(
+return_t obj_open_pipe(
 		registry_t * const reg,
 		process_t * const process,
 		object_thread_t * const thread,
@@ -327,11 +347,9 @@ error_t obj_open_pipe(
 		const uint32_t messages)
 {
 	object_pipe_t * no = NULL;
-	error_t result;
+	return_t result;
 
-#if defined(PIPE_TRACING)
-	debug_print("PipeO: Opening pipe %s direction %d\n", name, direction);
-#endif
+	debug_print(PIPE_TRACE, "PipeO: Opening pipe %s direction %d\n", name, direction);
 
 	process_t * other_proc = NULL;
 	object_pipe_t * other_pipe = NULL;
@@ -349,9 +367,7 @@ error_t obj_open_pipe(
 			// check that the named object actually is a pipe
 			if (other_pipe)
 			{
-#if defined(PIPE_TRACING)
-	debug_print("PipeO: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
-#endif
+				debug_print(PIPE_TRACE, "PipeO: Opening pipe %s other pipe at %x direction is %d\n", name, other_pipe, other_pipe->direction);
 				// we have a pipe! check that the direction is correct
 				switch (direction)
 				{
@@ -394,9 +410,7 @@ error_t obj_open_pipe(
 		registry_wait_for(reg, thread, name);
 		result = BLOCKED_RETRY;
 	}
-#if defined(PIPE_TRACING)
-	debug_print("PipeO: Open direction check result %d\n", result);
-#endif
+	debug_print(PIPE_TRACE, "PipeO: Open direction check result %d\n", result);
 	if (result == NO_ERROR)
 	{
 		if (process && objectno)
@@ -406,8 +420,8 @@ error_t obj_open_pipe(
 			{
 				mem_pool_info_t * const pool = process_get_mem_pool(process);
 				uint8_t * memory = NULL;
-				pipe_list_t * tx_queue = NULL;
-				pipe_list_t * rx_queue = NULL;
+				list_t * tx_queue = NULL;
+				list_t * rx_queue = NULL;
 				switch (direction)
 				{
 				default:
@@ -415,12 +429,12 @@ error_t obj_open_pipe(
 					result = PARAMETERS_INVALID;
 					break;
 				case PIPE_SEND_RECEIVE:
-					tx_queue = pipe_list_t_create(pool);
+					tx_queue = list_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
 					}
-					/* no break */
+					// fall through
 				case PIPE_RECEIVE:
 				{
 					uint32_t total_size = (message_size * messages);
@@ -438,10 +452,8 @@ error_t obj_open_pipe(
 					{
 						result = OUT_OF_MEMORY;
 					}
-#if defined(PIPE_TRACING)
-					debug_print("PipeO: Memory at %x\n", memory);
-#endif
-					rx_queue = pipe_list_t_create(pool);
+					debug_print(PIPE_TRACE, "PipeO: Memory at %x\n", memory);
+					rx_queue = list_create(pool);
 					if (!rx_queue)
 					{
 						result = OUT_OF_MEMORY;
@@ -449,16 +461,14 @@ error_t obj_open_pipe(
 				}
 					break;
 				case PIPE_SEND:
-					tx_queue = pipe_list_t_create(pool);
+					tx_queue = list_create(pool);
 					if (!tx_queue)
 					{
 						result = OUT_OF_MEMORY;
 					}
 					break;
 				}
-#if defined(PIPE_TRACING)
-				debug_print("PipeO: Open setup result %d\n", result);
-#endif
+				debug_print(PIPE_TRACE, "PipeO: Open setup result %d\n", result);
 				if (result == NO_ERROR)
 				{
 					no = (object_pipe_t*)mem_alloc(pool, sizeof(object_pipe_t));
@@ -490,29 +500,28 @@ error_t obj_open_pipe(
 						no->reg = reg;
 						switch(direction)
 						{
-						case PIPE_DIRECTION_UNKNOWN:
-							break;
 						case PIPE_SEND:
-							pipe_list_t_add(other_pipe->rx_data.senders, no);
-							pipe_list_t_add(no->tx_data.readers, other_pipe);
+							list_add(other_pipe->rx_data.senders, no);
+							list_add(no->tx_data.readers, other_pipe);
 							break;
 						case PIPE_SEND_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.readers, no);
-							pipe_list_t_add(other_pipe->rx_data.senders, no);
-							pipe_list_t_add(no->tx_data.readers, other_pipe);
-							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							list_add(other_pipe->tx_data.readers, no);
+							list_add(other_pipe->rx_data.senders, no);
+							list_add(no->tx_data.readers, other_pipe);
+							list_add(no->rx_data.senders, other_pipe);
 							break;
 						case PIPE_RECEIVE:
-							pipe_list_t_add(other_pipe->tx_data.readers, no);
-							pipe_list_t_add(no->rx_data.senders, other_pipe);
+							list_add(other_pipe->tx_data.readers, no);
+							list_add(no->rx_data.senders, other_pipe);
+							break;
+						case PIPE_DIRECTION_UNKNOWN:
+						default:
 							break;
 						}
 					}
 					else
 					{
-#if defined(PIPE_TRACING)
-						debug_print("PipeO: Failed to add the pipe to the object table\n");
-#endif
+						debug_prints(PIPE_TRACE, "PipeO: Failed to add the pipe to the object table\n");
 						mem_free(pool, no);
 					}
 				}
@@ -535,9 +544,9 @@ error_t obj_open_pipe(
 	return result;
 }
 
-error_t obj_delete_pipe(object_pipe_t * const pipe)
+return_t obj_delete_pipe(object_pipe_t * const pipe)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (pipe)
 	{
@@ -553,7 +562,7 @@ error_t obj_delete_pipe(object_pipe_t * const pipe)
 	return result;
 }
 
-error_t obj_pipe_send_message(
+return_t obj_pipe_send_message(
 		object_pipe_t * const pipe,
 		object_thread_t * const thread,
 		const tinker_pipe_send_kind_t send_kind,
@@ -561,31 +570,22 @@ error_t obj_pipe_send_message(
 		const uint32_t message_size,
 		const bool_t block)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
-#if defined(PIPE_TRACING)
-	debug_print("PipeW: Sending %d bytes to pipe %x\n", message_size, pipe);
-#endif
-
+	debug_print(PIPE_TRACE, "PipeW: Sending %d bytes to pipe %x\n", message_size, pipe);
 	if (pipe)
 	{
-#if defined(PIPE_TRACING)
-		debug_print("PipeW: Direction %d\n", pipe->direction);
-#endif
+		debug_print(PIPE_TRACE, "PipeW: Direction %d\n", pipe->direction);
 		if (pipe->direction == PIPE_SEND || pipe->direction == PIPE_SEND_RECEIVE)
 		{
 			if (send_kind == PIPE_TX_SEND_ALL && !pipe_can_send_to_all(pipe, block))
 			{
-#if defined(PIPE_TRACING)
-				debug_print("PipeW: Can't send to all receivers\n");
-#endif
+				debug_prints(PIPE_TRACE, "PipeW: Can't send to all receivers\n");
 				// we can't send to everyone
 				if (block)
 				{
 					pipe->tx_data.sending_thread = thread;
-#if defined(PIPE_TRACING)
-					debug_print("PipeW: Thread %x blocking on pipe %x\n", thread, pipe);
-#endif
+					debug_print(PIPE_TRACE, "PipeW: Thread %x blocking on pipe %x\n", thread, pipe);
 					obj_set_thread_waiting(thread, (object_t*)pipe);
 					result = BLOCKED_RETRY;
 					// TODO need to block in kernel mode
@@ -608,88 +608,81 @@ error_t obj_pipe_send_message(
 
 	if (result == NO_ERROR)
 	{
-		pipe_list_it_t it;
+		list_it_t * it = list_it_create(pipe->tx_data.readers);
 		object_pipe_t * receiver = NULL;
 
-		pipe_list_it_t_initialise(&it, pipe->tx_data.readers);
-		const bool_t has_any_receivers = pipe_list_it_t_get(&it, &receiver);
+		const bool_t has_any_receivers = list_it_get(it, &receiver);
 		if (has_any_receivers)
 		{
-#if defined(PIPE_TRACING)
-			debug_print("PipeW: There are receivers waiting\n");
-#endif
+			debug_prints(PIPE_TRACE, "PipeW: There are receivers waiting\n");
 			while (receiver)
 			{
 				if (pipe_can_receive(receiver))
 				{
-#if defined(PIPE_TRACING)
-					debug_print("PipeW: Receiver %x is ready to receive the message\n", receiver);
-#endif
+					debug_print(PIPE_TRACE, "PipeW: Receiver %x is ready to receive the message\n", receiver);
 					pipe_receive_message(receiver, message, message_size);
 				}
-				pipe_list_it_t_next(&it, &receiver);
+				list_it_next(it, &receiver);
 			}
 		}
+
+		list_it_delete(it);
 	}
 
 	return result;
 }
 
-error_t obj_pipe_receive_message(
+return_t obj_pipe_receive_message(
 		object_pipe_t * const pipe,
 		object_thread_t * const thread,
-		void ** const message,
-		uint32_t ** const message_size,
+		void * const message,
+		uint32_t * const message_size,
+		uint32_t max_size,
 		const bool_t block)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (pipe)
 	{
-#if defined(PIPE_DEBUGGING)
-		debug_print("PipeR: Recieving message, buffer at %x\n", pipe->memory);
-#endif
+		debug_print(PIPE, "PipeR: Recieving message, buffer at %x\n", pipe->memory);
 		if (message && message_size)
 		{
 			if (pipe->direction == PIPE_RECEIVE || pipe->direction == PIPE_SEND_RECEIVE)
 			{
-				*message = NULL;
-				*message_size = 0;
-
-				const bool_t messages_in_buffer =
-						pipe->rx_data.free_messages < pipe->rx_data.total_messages;
-#if defined(PIPE_TRACING)
-				debug_print("PipeR: Receiver has free messages? %d. %d free, %d total\n",
+				const bool_t messages_in_buffer = pipe->rx_data.free_messages < pipe->rx_data.total_messages;
+				debug_print(PIPE_TRACE,
+						"PipeR: Receiver has free messages? %d. %d free, %d total\n",
 						messages_in_buffer,
 						pipe->rx_data.free_messages,
 						pipe->rx_data.total_messages);
-#endif
-				if (!messages_in_buffer)
+				if (messages_in_buffer)
+				{
+					debug_print(PIPE, "PipeR: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
+					util_memcpy(message_size, pipe->rx_data.read_msg_ptr, sizeof(uint32_t));
+					if (*message_size > max_size)
+					{
+						result = PARAMETERS_OUT_OF_RANGE;
+					}
+					else
+					{
+						util_memcpy(message, pipe->rx_data.read_msg_ptr + sizeof(uint32_t), *message_size);
+						obj_pipe_received_message(pipe);
+					}
+				}
+				else
 				{
 					if (block)
 					{
-						// TODO fix here
-						*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
-						*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 						obj_set_thread_waiting(thread, (object_t*)pipe);
-#if defined(PIPE_TRACING)
-						debug_print("PipeR: Thread %x blocking on pipe %x\n", thread, pipe);
-#endif
-						pipe->rx_data.blocked_owner = thread;
+						debug_print(PIPE_TRACE, "PipeR: Thread %x blocking on pipe %x\n", thread, pipe);
+						pipe->rx_data.blocked_info.blocked_owner = thread;
+						pipe->rx_data.blocked_info.message = message;
+						pipe->rx_data.blocked_info.message_size = message_size;
 					}
 					else
 					{
 						result = PIPE_EMPTY;
 					}
-				}
-				else
-				{
-#if defined(PIPE_DEBUGGING)
-					debug_print("PipeR: Current buffer at at %x\n", pipe->rx_data.read_msg_ptr);
-#endif
-					// TODO and here
-					*message = pipe->rx_data.read_msg_ptr + sizeof(uint32_t);
-					*message_size = (uint32_t*)pipe->rx_data.read_msg_ptr;
 				}
 			}
 			else
@@ -709,13 +702,11 @@ error_t obj_pipe_receive_message(
 	return result;
 }
 
-error_t obj_pipe_received_message(object_pipe_t * const pipe)
+static return_t obj_pipe_received_message(object_pipe_t * const pipe)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
-#if defined(PIPE_DEBUGGING)
-	debug_print("PipeA: Acknowledging message received\n");
-#endif
+	debug_prints(PIPE, "PipeA: Acknowledging message received\n");
 
 	if (pipe)
 	{
@@ -723,48 +714,38 @@ error_t obj_pipe_received_message(object_pipe_t * const pipe)
 
 		if ((pipe->rx_data.read_msg_position + 1) == pipe->rx_data.total_messages)
 		{
-#if defined(PIPE_TRACING)
-	debug_print("PipeA: Resettng to start\n");
-#endif
+			debug_prints(PIPE_TRACE, "PipeA: Resettng to start\n");
 			pipe->rx_data.read_msg_position = 0;
 			pipe->rx_data.read_msg_ptr = pipe->memory;
 		}
 		else
 		{
 			pipe->rx_data.read_msg_position++;
-			pipe->rx_data.read_msg_ptr += (pipe->rx_data.message_size+sizeof(uint32_t));
-#if defined(PIPE_DEBUGGING)
-	debug_print("PipeA: Pipe read position moved to %d\n", pipe->rx_data.read_msg_position);
-#endif
+			pipe->rx_data.read_msg_ptr += (align(pipe->rx_data.message_size, sizeof(uint32_t)) + sizeof(uint32_t));
+			debug_print(PIPE, "PipeA: Pipe read position moved to %d\n", pipe->rx_data.read_msg_position);
 		}
 
 		// notify any senders
-		pipe_list_it_t it;
+		list_it_t * it = list_it_create(pipe->rx_data.senders);
 		object_pipe_t * sender = NULL;
-		pipe_list_it_t_initialise(&it, pipe->rx_data.senders);
-		const bool_t has_any_senders = pipe_list_it_t_get(&it, &sender);
+		const bool_t has_any_senders = list_it_get(it, &sender);
 		if (has_any_senders)
 		{
-#if defined(PIPE_TRACING)
-			debug_print("PipeA: Has senders to notify\n");
-#endif
+			debug_prints(PIPE_TRACE, "PipeA: Has senders to notify\n");
 			while (sender)
 			{
-#if defined(PIPE_TRACING)
-				debug_print("PipeA: Notifying sender\n");
-#endif
+				debug_prints(PIPE_TRACE, "PipeA: Notifying sender\n");
 				obj_set_thread_ready(sender->tx_data.sending_thread);
-				pipe_list_it_t_next(&it, &sender);
+				list_it_next(it, &sender);
 			}
 		}
+		list_it_delete(it);
 	}
 	else
 	{
 		result = INVALID_OBJECT;
 	}
-#if defined(PIPE_TRACING)
-	debug_print("PipeA: Results %d\n", result);
-#endif
+	debug_print(PIPE_TRACE, "PipeA: Results %d\n", result);
 	return result;
 }
 

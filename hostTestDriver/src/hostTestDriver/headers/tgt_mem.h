@@ -30,4 +30,6 @@ typedef struct tgt_pg_tbl
 
 #define PAGE_TABLE_SIZE sizeof(tgt_pg_tbl_t)
 
+typedef uint64_t mem_t;
+
 #endif /* TESTS_DRIVER_TGT_MEM_H_ */

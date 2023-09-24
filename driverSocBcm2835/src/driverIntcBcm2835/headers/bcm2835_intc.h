@@ -42,7 +42,7 @@
 #define INTERRUPT_DMA10                (ARM_IRQ1_BASE + 26)
 #define INTERRUPT_DMA11                (ARM_IRQ1_BASE + 27)
 #define INTERRUPT_DMA12                (ARM_IRQ1_BASE + 28)
-#define INTERRUPT_AUX                (ARM_IRQ1_BASE + 29)
+#define INTERRUPT_AUX                  (ARM_IRQ1_BASE + 29)
 #define INTERRUPT_ARM                  (ARM_IRQ1_BASE + 30)
 #define INTERRUPT_VPUDMA               (ARM_IRQ1_BASE + 31)
 

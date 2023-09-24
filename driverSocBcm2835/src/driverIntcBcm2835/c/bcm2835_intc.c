@@ -9,6 +9,10 @@
 
 #include "bcm2835_intc.h"
 #include "kernel_assert.h"
+#include "kernel_panic.h"
+#include "console/print_out.h"
+
+#pragma GCC diagnostic ignored "-Wcast-align"
 
 #define IRQ_PENDING_BASIC 0x200
 #define IRQ_PENDING_1 0x204
@@ -90,7 +94,7 @@ static const bcm2835_cause_t CAUSE_TABLE[MAX_IRQ_REGISTERS][MAX_IRQS_PER_REQ] =
 				{1<<28, INTERRUPT_DMA12},
 				{1<<29, INTERRUPT_AUX},
 				{1<<30, INTERRUPT_ARM},
-				{1<<31, INTERRUPT_VPUDMA}
+				{0x8000000u, INTERRUPT_VPUDMA}
 		},
 		// IRQ 2
 		{
@@ -125,7 +129,7 @@ static const bcm2835_cause_t CAUSE_TABLE[MAX_IRQ_REGISTERS][MAX_IRQS_PER_REQ] =
 				{1<<28, INTERRUPT_CPG},
 				{1<<29, INTERRUPT_RNG},
 				{1<<30, INTERRUPT_VC_ARASANSDIO},
-				{1<<31, INTERRUPT_AVSPMON}
+				{0x8000000u, INTERRUPT_AVSPMON}
 		}
 };
 
@@ -140,9 +144,7 @@ static bool_t bcm2835_get(
 		uint8_t irq;
 		if (pending_basic)
 		{
-#if defined(INTC_DEBUGGING)
-			debug_print("BCM2835 Basic %x\n", pending_basic);
-#endif
+			debug_print(INTC, "BCM2835 Basic %x\n", pending_basic);
 			for (irq = 0 ; irq < MAX_IRQS_BASIC ; irq++)
 			{
 				if (pending_basic & CAUSE_TABLE[0][irq].bit)
@@ -158,9 +160,7 @@ static bool_t bcm2835_get(
 			const uint32_t pending_1 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_1));
 			if (pending_1)
 			{
-#if defined(INTC_DEBUGGING)
-				debug_print("BCM2835 Pending 1 %x\n", pending_1);
-#endif
+				debug_print(INTC, "BCM2835 Pending 1 %x\n", pending_1);
 				for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 				{
 					if (pending_1 & CAUSE_TABLE[1][irq].bit)
@@ -177,9 +177,7 @@ static bool_t bcm2835_get(
 			const uint32_t pending_2 = in_u32((uint32_t*)((uint8_t*)user_data + IRQ_PENDING_2));
 			if (pending_2)
 			{
-#if defined(INTC_DEBUGGING)
-				debug_print("BCM2835 Pending 2 %x\n", pending_2);
-#endif
+				debug_print(INTC, "BCM2835 Pending 2 %x\n", pending_2);
 				for (irq = 0 ; irq < MAX_IRQS_PER_REQ ; irq++)
 				{
 					if (pending_2 & CAUSE_TABLE[2][irq].bit)
@@ -192,9 +190,7 @@ static bool_t bcm2835_get(
 			}
 		}
 	}
-#if defined(INTC_DEBUGGING)
-	debug_print("BCM2835: fired? %d cause=%d\n", fired, *cause);
-#endif
+	debug_print(INTC, "BCM2835: fired? %d cause=%d\n", fired, *cause);
 	return fired;
 }
 
@@ -211,16 +207,12 @@ static void bcm2835_mask(
 		const uint32_t cause,
 		const void * const user_data)
 {
-#if defined(INTC_DEBUGGING)
-	debug_print("BCM2835: disabling %d\n", cause);
-#endif
+	debug_print(INTC, "BCM2835: disabling %d\n", cause);
 	if (cause && user_data)
 	{
 		const uint8_t bank = (uint8_t)(cause/MAX_IRQS_PER_REQ);
 		const uint8_t index = (uint8_t)(cause % MAX_IRQS_PER_REQ);
-#if defined(INTC_DEBUGGING)
-		debug_print("BCM2835: disabling %d bank %d index %d\n", cause, bank, index);
-#endif
+		debug_print(INTC, "BCM2835: disabling %d bank %d index %d\n", cause, bank, index);
 		uint32_t disable;
 		switch (bank)
 		{
@@ -250,16 +242,12 @@ static void bcm2835_enable(
 		const uint32_t cause,
 		const void * const user_data)
 {
-#if defined(INTC_DEBUGGING)
-	debug_print("BCM2835: enabling %d\n", cause);
-#endif
+	debug_print(INTC, "BCM2835: enabling %d\n", cause);
 	if (cause && user_data)
 	{
 		const uint8_t bank = (uint8_t)(cause/MAX_IRQS_PER_REQ);
 		const uint8_t index = (uint8_t)(cause % MAX_IRQS_PER_REQ);
-#if defined(INTC_DEBUGGING)
-		debug_print("BCM2835: enabling %d bank %d index %d\n", cause, bank, index);
-#endif
+		debug_print(INTC, "BCM2835: enabling %d bank %d index %d\n", cause, bank, index);
 		uint16_t offset;
 		uint32_t bit;
 		switch (bank)
@@ -278,12 +266,15 @@ static void bcm2835_enable(
 			break;
 		default:
 			kernel_assert("BCM2835 intc enable interrupt for invalid bank", false);
+			offset = -1;
+			bit = -1;
 			break;
 		}
 		const uint32_t enabled = in_u32((uint32_t*)((uint8_t*)user_data + offset));
-#if defined(INTC_DEBUGGING)
-		debug_print("BCM2835: enabling base %x, offset %x, enabled %x -> %x\n", user_data, offset, enabled, enabled | bit);
-#endif
+		if (is_debug_enabled(INTC))
+		{
+			debug_print(INTC, "BCM2835: enabling base %x, offset %x, enabled %x -> %x\n", user_data, offset, enabled, enabled | bit);
+		}
 		out_u32((uint32_t*)((uint8_t*)user_data + offset), enabled | bit);
 	}
 }
@@ -316,8 +307,8 @@ intc_t* bcm2835_intc_create(
 		intc_device->enable_cause = bcm2835_enable;
 		intc_device->mask_cause = bcm2835_mask;
 		intc_device->setup_cause = bcm2835_setup;
-		uint32_t base = 0;
-		kernel_device_map_memory((uint32_t) base_address, 0x1000, MMU_DEVICE_MEMORY, &base);
+		mem_t base = 0;
+		kernel_device_map_memory((mem_t) base_address, 0x1000, MMU_DEVICE_MEMORY, &base);
 		intc_device->user_data = (void*)base;
 		intc = intc_create(pool, intc_device);
 	}

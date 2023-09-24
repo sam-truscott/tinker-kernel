@@ -15,6 +15,7 @@
 #include "process/thread.h"
 #include "process/process_list.h"
 #include "memory/memory_manager.h"
+#include "utils/util_memset.h"
 
 typedef struct object_process_t
 {
@@ -25,7 +26,7 @@ typedef struct object_process_t
 	proc_list_t * proc_list;
 } object_process_internal_t;
 
-object_process_t * obj_cast_process(object_t * o)
+object_process_t * obj_cast_process(void * o)
 {
 	object_process_t * result = NULL;
 	if(o)
@@ -39,7 +40,7 @@ object_process_t * obj_cast_process(object_t * o)
 	return result;
 }
 
-error_t obj_create_process(
+return_t obj_create_process(
 		proc_list_t * const proc_list,
 		mem_pool_info_t * const pool,
 		object_table_t * const table,
@@ -48,7 +49,7 @@ error_t obj_create_process(
 		object_t ** object)
 {
 	object_process_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (object)
 	{
@@ -56,18 +57,14 @@ error_t obj_create_process(
 		{
 			no = (object_process_t*)mem_alloc(pool, sizeof(object_process_t));
 			util_memset(no, 0, sizeof(object_process_t));
-#if defined (PROCESS_DEBUGGING)
-			debug_print("Objects: Creating process, address is %x\n", no);
-#endif
+			debug_print(PROCESS, "Objects: Creating process, address is %x\n", no);
 			if (no)
 			{
 				object_number_t objno;
 				result = obj_add_object(table, (object_t*)no, &objno);
 				if (result == NO_ERROR)
 				{
-#if defined (PROCESS_DEBUGGING)
-					debug_print("Objects: Process added to object table\n");
-#endif
+					debug_prints(PROCESS, "Objects: Process added to object table\n");
 					obj_initialise_object(&no->object, objno, PROCESS_OBJ);
 					no->pid = process_id;
 					no->pool = pool;
@@ -98,17 +95,15 @@ error_t obj_create_process(
 	return result;
 }
 
-error_t obj_process_thread_exit(
+return_t obj_process_thread_exit(
 		object_process_t * const o,
 		object_thread_t * const thread)
 {
-	error_t ret;
+	return_t ret;
 	kernel_assert("obj_process_thread - check process object exists\n", o != NULL);
 	kernel_assert("obj_process_thread - check thread object exists\n", thread != NULL);
 
-#if defined(PROCESS_DEBUGGING)
-		debug_print("Objects: Process %d (%s) Thread %s is exiting\n", o->pid, process_get_image(o->process), thread_get_name(obj_get_thread(thread)));
-#endif
+	debug_print(PROCESS, "Objects: Process %d (%s) Thread %s is exiting\n", o->pid, process_get_image(o->process), thread_get_name(obj_get_thread(thread)));
 
 	process_thread_exit(o->process, obj_get_thread(thread));
 	obj_remove_object(
@@ -132,9 +127,7 @@ void obj_process_exit(object_process_t * const o)
 	obj_remove_object(
 			process_get_object_table(o->process),
 			o->object.object_number);
-#if defined(PROCESS_DEBUGGING)
-	debug_print("Objects: Process %d exit\n", o->pid);
-#endif
+	debug_print(PROCESS, "Objects: Process %d exit\n", o->pid);
 	process_t * const proc = o->process;
 	obj_delete_process(o);
 	proc_delete_proc(o->proc_list, proc);

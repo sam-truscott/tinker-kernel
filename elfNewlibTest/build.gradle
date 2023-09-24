@@ -1,0 +1,9 @@
+apply plugin: 'c'
+
+model {
+    components {
+        elfNewlibTest(NativeExecutableSpec) {
+            targetPlatform "tinkerArm"
+        }
+    }
+}

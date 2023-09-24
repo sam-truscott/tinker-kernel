@@ -15,24 +15,9 @@
 #include "objects/object_table.h"
 #include "scheduler/scheduler.h"
 #include "utils/util_strlen.h"
+#include "utils/util_memset.h"
+#include "utils/util_memcpy.h"
 #include "utils/collections/unbounded_queue.h"
-
-UNBOUNDED_QUEUE_TYPE(thread_obj_queue_t)
-UNBOUNDED_QUEUE_INTERNAL_TYPE(thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_CREATE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_DELETE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_FRONT(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_PUSH(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_POP(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_REMOVE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_SPEC_SIZE(static,thread_obj_queue_t)
-UNBOUNDED_QUEUE_BODY_CREATE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_DELETE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_FRONT(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_PUSH(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_POP(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_REMOVE(static,thread_obj_queue_t, object_thread_t*)
-UNBOUNDED_QUEUE_BODY_SIZE(static,thread_obj_queue_t)
 
 typedef enum
 {
@@ -53,8 +38,8 @@ typedef struct object_sema_t
 		{
 			uint32_t sem_count;
 			uint32_t sem_alloc;
-			thread_obj_queue_t * listeners;
-			thread_obj_queue_t * owners;
+			queue_t * listeners;
+			queue_t * owners;
 			priority_t highest_priority;
 			char name[MAX_SHARED_OBJECT_NAME_LENGTH];
 		} owner;
@@ -66,14 +51,14 @@ typedef struct object_sema_t
 } object_sema_internal_t;
 
 static void obj_push_semaphore_listener(
-		thread_obj_queue_t * const list,
+		queue_t * const list,
 		object_thread_t * const object);
 
 static void obj_notify_semaphore_listener(
 		object_sema_t * const semaphore,
-		thread_obj_queue_t * const list);
+		queue_t * const list);
 
-object_sema_t * obj_cast_semaphore(object_t * o)
+object_sema_t * obj_cast_semaphore(void * o)
 {
 	object_sema_t * result = NULL;
 	if(o)
@@ -98,7 +83,7 @@ object_number_t obj_semaphore_get_oid
 	return oid;
 }
 
-error_t obj_create_semaphore(
+return_t obj_create_semaphore(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
@@ -106,7 +91,7 @@ error_t obj_create_semaphore(
 		const uint32_t initial_count)
 {
 	object_sema_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (objectno && process)
 	{
@@ -125,8 +110,8 @@ error_t obj_create_semaphore(
 					no->sema_type = sema_type_owner;
 					no->data.owner.sem_count = initial_count;
 					no->data.owner.sem_alloc = 0;
-					no->data.owner.listeners = thread_obj_queue_t_create(pool);
-					no->data.owner.owners = thread_obj_queue_t_create(pool);
+					no->data.owner.listeners = queue_create(pool);
+					no->data.owner.owners = queue_create(pool);
 					no->data.owner.highest_priority = 0;
 					no->pool = pool;
 					no->reg = reg;
@@ -155,14 +140,14 @@ error_t obj_create_semaphore(
 	return result;
 }
 
-error_t obj_open_semaphore(
+return_t obj_open_semaphore(
 		registry_t * const reg,
 		process_t * const process,
 		object_number_t * objectno,
 		const char * name)
 {
 	object_sema_t * no = NULL;
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (objectno && process)
 	{
@@ -235,25 +220,26 @@ error_t obj_open_semaphore(
 	return result;
 }
 
-error_t object_delete_semaphore(
+return_t object_delete_semaphore(
 		object_sema_t * const semaphore)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 	if (semaphore)
 	{
 		switch (semaphore->sema_type)
 		{
-		case unknown_sema_type:
-			result = INVALID_OBJECT;
-			break;
 		case sema_type_owner:
 			registry_remove(semaphore->reg, semaphore->data.owner.name);
-			thread_obj_queue_t_delete(semaphore->data.owner.listeners);
-			thread_obj_queue_t_delete(semaphore->data.owner.owners);
+			queue_delete(semaphore->data.owner.listeners);
+			queue_delete(semaphore->data.owner.owners);
 			mem_free(semaphore->pool, semaphore);
 			break;
 		case sema_type_link:
 			mem_free(semaphore->pool, semaphore);
+			break;
+		case unknown_sema_type:
+		default:
+			result = INVALID_OBJECT;
 			break;
 		}
 	}
@@ -264,11 +250,11 @@ error_t object_delete_semaphore(
 	return result;
 }
 
-error_t obj_get_semaphore(
+return_t obj_get_semaphore(
 		object_thread_t * const thread,
 		object_sema_t * const semaphore)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (thread && semaphore && semaphore->sema_type != unknown_sema_type)
 	{
@@ -288,7 +274,7 @@ error_t obj_get_semaphore(
 				sema = semaphore->data.link.link;
 			}
 
-			thread_obj_queue_t_front(sema->data.owner.owners, &first_owner_obj);
+			queue_front(sema->data.owner.owners, &first_owner_obj);
 
 			const priority_t thread_priority =
 					obj_get_thread_priority_ex(thread);
@@ -325,7 +311,7 @@ error_t obj_get_semaphore(
 				/* not a priority inversion, just update the numbers to ensure
 				 * that when the semaphore is released we don't accidently change
 				 * a threads priority level*/
-				thread_obj_queue_t_push(sema->data.owner.owners, thread);
+				queue_push(sema->data.owner.owners, thread);
 
 				sema->data.owner.highest_priority = thread_priority;
 			}
@@ -357,11 +343,11 @@ error_t obj_get_semaphore(
 	return result;
 }
 
-error_t obj_release_semaphore(
+return_t obj_release_semaphore(
 		object_thread_t * const thread,
 		object_sema_t * const semaphore)
 {
-	error_t result = NO_ERROR;
+	return_t result = NO_ERROR;
 
 	if (semaphore && semaphore->sema_type != unknown_sema_type)
 	{
@@ -379,7 +365,7 @@ error_t obj_release_semaphore(
 			sema->data.owner.sem_count++;
 			sema->data.owner.sem_alloc--;
 
-			thread_obj_queue_t_remove(sema->data.owner.owners, thread);
+			queue_remove(sema->data.owner.owners, thread);
 
 			/* the thread was a lower priority thread that had
 			 * its priority temporarily elevated to avoid priority
@@ -414,28 +400,28 @@ error_t obj_release_semaphore(
 }
 
 static void obj_push_semaphore_listener(
-		thread_obj_queue_t * const list,
+		queue_t * const list,
 		object_thread_t * const thread)
 {
 	if (list && thread)
 	{
-		thread_obj_queue_t_push(list, thread);
+		queue_push(list, thread);
 	}
 }
 
 static void obj_notify_semaphore_listener(
 		object_sema_t * const semaphore,
-		thread_obj_queue_t * const list)
+		queue_t * const list)
 {
 	if (list)
 	{
-		const uint32_t listener_count = thread_obj_queue_t_size(list);
+		const uint32_t listener_count = queue_size(list);
 		if (listener_count > 0)
 		{
 			object_thread_t * next_thread = NULL;
 			bool_t ok;
 
-			ok = thread_obj_queue_t_front(list, &next_thread);
+			ok = queue_front(list, &next_thread);
 
 			if (ok && next_thread)
 			{
@@ -461,11 +447,11 @@ static void obj_notify_semaphore_listener(
 					semaphore->data.owner.highest_priority = thread_priority;
 				}
 
-				thread_obj_queue_t_push(
+				queue_push(
 						semaphore->data.owner.owners,
 						next_thread);
 
-				thread_obj_queue_t_pop(list);
+				queue_pop(list);
 			}
 		}
 	}
@@ -478,14 +464,15 @@ uint32_t obj_get_sema_count(const object_sema_t * const sema)
 	{
 		switch (sema->sema_type)
 		{
-		case unknown_sema_type:
-			count = 0;
-			break;
 		case sema_type_owner:
 			count = sema->data.owner.sem_count;
 			break;
 		case sema_type_link:
 			count = sema->data.link.link->data.owner.sem_count;
+			break;
+		case unknown_sema_type:
+		default:
+			count = 0;
 			break;
 		}
 	}
@@ -499,14 +486,15 @@ uint32_t obj_get_sema_alloc(const object_sema_t * const sema)
 	{
 		switch (sema->sema_type)
 		{
-		case unknown_sema_type:
-			alloc = 0;
-			break;
 		case sema_type_owner:
 			alloc = sema->data.owner.sem_alloc;
 			break;
 		case sema_type_link:
 			alloc = sema->data.link.link->data.owner.sem_alloc;
+			break;
+		case unknown_sema_type:
+		default:
+			alloc = 0;
 			break;
 		}
 	}
@@ -520,14 +508,15 @@ priority_t obj_get_sema_highest_priority(const object_sema_t * const sema)
 	{
 		switch (sema->sema_type)
 		{
-		case unknown_sema_type:
-			pri = 0;
-			break;
 		case sema_type_owner:
 			pri = sema->data.owner.highest_priority;
 			break;
 		case sema_type_link:
 			pri = sema->data.link.link->data.owner.highest_priority;
+			break;
+		case unknown_sema_type:
+		default:
+			pri = 0;
 			break;
 		}
 	}

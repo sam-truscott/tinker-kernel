@@ -218,11 +218,12 @@ static bool_t arm_is_1mb_section(
 	{
 		return false;
 	}
-	// are we aligned to 1mb
+	// is the end more than 1Mb away from the start?
 	if ((end < (start + ARM_MMU_SECTION_SIZE)))
 	{
 		return false;
 	}
+	// size is at least 1mb
 	return true;
 }
 
@@ -257,9 +258,18 @@ static void arm_map_section(
 			arm_pg_tbl_execute, // TODO default to execute - may wish to change in future
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 			(mem_type == MMU_RANDOM_ACCESS_MEMORY));
+	if (is_debug_enabled(TARGET))
+	{
+		debug_print(TARGET, "MMU: S [%s]: %8x -> %8x: %8x = %8x\n",
+				mem_sec_get_name(section),
+				real,
+				virt,
+				ARM_GET_LVL1_SECTION_INDEX(virt),
+				table->lvl1_entry[ARM_GET_LVL1_SECTION_INDEX(virt)]);
+	}
 }
 
-static error_t arm_map_page(
+static return_t arm_map_page(
 		const mem_section_t * const section,
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
@@ -284,6 +294,10 @@ static error_t arm_map_page(
 					ap_bits[priv],
 					(mem_type == MMU_RANDOM_ACCESS_MEMORY),
 					(mem_type == MMU_RANDOM_ACCESS_MEMORY));
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "MMU: P [%s]: %8x -> %8x: %8x = %8x\n", mem_sec_get_name(section), real, virt, lvl2_entry, *lvl2_entry);
+			}
 			return NO_ERROR;
 		}
 		else
@@ -297,7 +311,7 @@ static error_t arm_map_page(
 	}
 }
 
-error_t arm_map_memory(
+return_t arm_map_memory(
 		mem_pool_info_t * const pool,
 		tgt_pg_tbl_t * const table,
 		const mem_section_t * const section)
@@ -313,7 +327,7 @@ error_t arm_map_memory(
 		for (uint32_t page = 0 ; page < pages ; page++)
 		{
 			const uint32_t virt = mem_sec_get_virt_addr(section) + (page * MMU_PAGE_SIZE);
-			const uint32_t end = virt + (pages * MMU_PAGE_SIZE);
+			const uint32_t end = virt + ((pages - page) * MMU_PAGE_SIZE);
 			const uint32_t real = mem_sec_get_real_addr(section) + (page * MMU_PAGE_SIZE);
 			if (arm_is_1mb_section(virt, end))
 			{
@@ -326,7 +340,7 @@ error_t arm_map_memory(
 			}
 			else
 			{
-				const error_t ret = arm_map_page(
+				const return_t ret = arm_map_page(
 						section,
 						pool,
 						table,
@@ -338,6 +352,7 @@ error_t arm_map_memory(
 				}
 			}
 		}
+		arm_invalidate_all_tlbs();
 	}
 	else
 	{
@@ -371,6 +386,7 @@ void arm_unmap_memory(
 		{
 			// TODO error
 		}
+		arm_invalidate_all_tlbs();
 	}
 	else
 	{
@@ -380,12 +396,18 @@ void arm_unmap_memory(
 
 void arm_print_page_table(tgt_pg_tbl_t * const table)
 {
-	debug_print("Print page table\n");
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "Print page table\n");
+	}
 	for (uint16_t section = 0 ; section < NUM_L1_ENTRIES ; section++)
 	{
 		if ((table->lvl1_entry[section] & 1) == 1)
 		{
-			debug_print("%d: Course table\n", section);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "%d: Course table\n", section);
+			}
 			l2_tbl_t * const lvl2 = arm_get_lvl2_table(
 					section * ARM_MMU_SECTION_SIZE,
 					false,
@@ -395,23 +417,29 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 			{
 				if ((lvl2->l2_tbl[page] & 1) == 1)
 				{
-					debug_print("64K entry\n");
+					debug_prints(TARGET, "64K entry\n");
 				}
 				else if ((lvl2->l2_tbl[page] & 2) == 2)
 				{
-					debug_print("%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
-							(section * ARM_MMU_SECTION_SIZE) + (page * MMU_PAGE_SIZE),
-							lvl2->l2_tbl[page] & 0xFFFFF000,
-							(lvl2->l2_tbl[page] & 0x4) >> 2,
-							(lvl2->l2_tbl[page] & 0x8) >> 3,
-							(lvl2->l2_tbl[page] & 0x30) >> 4,
-							(lvl2->l2_tbl[page] >> 6) & 0x7);
+					if (is_debug_enabled(TARGET))
+					{
+						debug_print(TARGET, "%x -> %x (c=%d, b=%d, ap=%d, tex=%d)\n",
+								(section * ARM_MMU_SECTION_SIZE) + (page * MMU_PAGE_SIZE),
+								lvl2->l2_tbl[page] & 0xFFFFF000,
+								(lvl2->l2_tbl[page] & 0x4) >> 2,
+								(lvl2->l2_tbl[page] & 0x8) >> 3,
+								(lvl2->l2_tbl[page] & 0x30) >> 4,
+								(lvl2->l2_tbl[page] >> 6) & 0x7);
+					}
 				}
 			}
 		}
 		else if ((table->lvl1_entry[section] & 2) == 2)
 		{
-			debug_print("%d: Section entry\n", section);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "%d: Section entry\n", section);
+			}
 		}
 	}
 }
@@ -421,7 +449,9 @@ void arm_print_page_table(tgt_pg_tbl_t * const table)
 void arm_invalidate_all_tlbs(void)
 {
 	asm volatile("mov r0, #0x0");
-	asm volatile("mcr p15, 0, r0, c8, c7, 0");	// invalidate all tlbs
+	asm volatile("mcr p15, 0, r0, c8, c5, 0");	// invalidate instruction
+	asm volatile("mcr p15, 0, r0, c8, c6, 0");	// invalidate data
+	asm volatile("mcr p15, 0, r0, c8, c7, 0");	// invalidate unified
 }
 
 void arm_disable_mmu(void)
@@ -432,14 +462,20 @@ void arm_disable_mmu(void)
 	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
 
-void arm_enable_mmu(void)
+void arm_enable_mmu(const bool_t cache)
 {
 	// domain
 	asm volatile("mov r0, #0x3");
 	asm volatile("mcr p15, 0, r0, c3, c0, 0");
-
 	asm volatile("mrc p15, 0, r0, c1, c0, 0");
-	asm volatile("ldr r1, =0x1003");
+	if (cache)
+	{
+		asm volatile("ldr r1, =0x1005");
+	}
+	else
+	{
+		asm volatile("ldr r1, =0x0001");
+	}
 	asm volatile("orr r0, r0, r1");			// enable Instruction & Data cache, enable MMU
 	asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
@@ -459,6 +495,14 @@ void arm_set_domain_access_register(const uint32_t dar)
 void arm_set_translation_table_base(tgt_pg_tbl_t * const base)
 {
 	(void)base;
+	asm volatile("" ::: "memory");
 	asm volatile("mcr p15, 0, r0, c2, c0, 0");	// TTBR0, r0 -> base
 	arm_set_translation_control(0);
+}
+
+uint32_t arm_get_cp15_c1(void)
+{
+	uint32_t r;
+	asm volatile("mrc p15, 0, %[ps], c1, c0, 0" : [ps]"=r" (r));
+	return r;
 }

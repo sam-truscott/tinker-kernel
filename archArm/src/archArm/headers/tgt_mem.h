@@ -33,4 +33,6 @@ typedef struct tgt_pg_tbl
 
 #define PAGE_TABLE_SIZE sizeof(tgt_pg_tbl_t)
 
+typedef uint32_t mem_t;
+
 #endif /* TGT_MEM_H_ */

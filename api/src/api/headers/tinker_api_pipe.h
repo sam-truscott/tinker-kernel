@@ -30,37 +30,36 @@ typedef enum tinker_pipe_send_kind
 
 // TODO: Add timeouts to the open, send and receive calls
 
-error_t tinker_create_pipe(
+return_t tinker_create_pipe(
         tinker_pipe_t * pipe,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages) TINKER_API_SUFFIX;
 
-error_t tinker_open_pipe(
+return_t tinker_open_pipe(
         tinker_pipe_t * pipe,
 		const char * const name,
 		const tinker_pipe_direction_t direction,
 		const uint32_t message_size,
 		const uint32_t messages) TINKER_API_SUFFIX;
 
-error_t tinker_close_pipe(tinker_pipe_t pipe) TINKER_API_SUFFIX;
+return_t tinker_close_pipe(tinker_pipe_t pipe) TINKER_API_SUFFIX;
 
-error_t tinker_delete_pipe(tinker_pipe_t pipe) TINKER_API_SUFFIX;
+return_t tinker_delete_pipe(tinker_pipe_t pipe) TINKER_API_SUFFIX;
 
-error_t tinker_send_message(
+return_t tinker_send_message(
         tinker_pipe_t pipe,
 		const tinker_pipe_send_kind_t send_kend,
 		void * const message,
 		const uint32_t message_size,
 		const bool_t block) TINKER_API_SUFFIX;
 
-error_t tinker_receive_message(
+return_t tinker_receive_message(
         tinker_pipe_t pipe,
-		void ** message,
-		uint32_t ** const message_size,
+		void * message,
+		uint32_t * const message_size,
+		uint32_t max_size,
 		const bool_t block) TINKER_API_SUFFIX;
-
-error_t tinker_received_message(tinker_pipe_t pipe) TINKER_API_SUFFIX;
 
 #endif /* TINKER_API_PIPE_H_ */

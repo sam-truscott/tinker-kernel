@@ -1,3 +1,4 @@
+
 /*
  *
  * TINKER Source Code
@@ -16,19 +17,16 @@
 #include "tgt_types.h"
 #include "tgt_io.h"
 #include "bcm2835_uart.h"
+#include "utils/util_memset.h"
 
-// The GPIO registers base address.
-#define GPIO_BASE 0x20200000
+#pragma GCC diagnostic ignored "-Wcast-align"
 
 // The offsets for reach register.
 // Controls actuation of pull up/down to ALL GPIO pins.
-#define GPPUD  (GPIO_BASE + 0x94)
+#define GPPUD  (0x94)
 
 // Controls actuation of pull up/down for specific GPIO pin.
-#define GPPUDCLK0  (GPIO_BASE + 0x98)
-
-// The base address for UART.
-#define UART0_BASE  0x20201000
+#define GPPUDCLK0  (0x98)
 
 // The offsets for reach register for the UART.
 #define UART0_DR      0x00
@@ -63,7 +61,7 @@ typedef struct bcm2835_user_data
  * This just loops <delay> times in a way that the compiler
  * wont optimize away.
  */
-static void delay(const uint32_t count)
+static inline void delay(const uint32_t count)
 {
     asm volatile(
     		"__delay_%=:"
@@ -72,33 +70,54 @@ static void delay(const uint32_t count)
 	     : : [count]"r"(count) : "cc");
 }
 
-static bool_t early_available;
+static bool_t early_available = false;
+static uint8_t * early_base = NULL;
+
+static void bcm2835_uart_putc(const uint32_t base, uint8_t byte)
+{
+	while (1)
+	{
+		if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 5)))
+		{
+			break;
+		}
+	}
+	out_u32((uint32_t*)(base + UART0_DR), byte);
+}
 
 /*
  * Initialize UART0.
  */
-void early_uart_init()
+void early_uart_init(const uint8_t * const base_address)
 {
-	early_available = false;
-
     // Disable UART0.
-    out_u32((uint32_t*)(UART0_BASE + UART0_CR), 0x00000000);
-    delay(200);
+    out_u32((uint32_t*)(base_address + UART0_CR), 0x00000000);
     // Setup the GPIO pin 14 && 15.
 
     // Disable pull up/down for all GPIO pins & delay for 150 cycles.
-    out_u32((uint32_t*)GPPUD, 0x00000000);
-    delay(200);
+    uint8_t * const gpio_base = (uint8_t*)(base_address - 0x1000);
+    out_u32((uint32_t*)(gpio_base + GPPUD), 0x00000000);
+    delay(150);
 
     // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    out_u32((uint32_t*)GPPUDCLK0, (1 << 14) | (1 << 15));
-    delay(200);
+    out_u32((uint32_t*)(gpio_base + GPPUDCLK0), (1 << 14) | (1 << 15));
+    delay(150);
 
     // Write 0 to GPPUDCLK0 to make it take effect.
-    out_u32((uint32_t*)GPPUDCLK0, 0x00000000);
+    out_u32((uint32_t*)(gpio_base + GPPUDCLK0), 0x00000000);
 
     // Clear pending interrupts.
-    out_u32((uint32_t*)(UART0_BASE + UART0_ICR), 0x7FF);
+    out_u32((uint32_t*)(base_address + UART0_ICR), 0x7FF);
+
+    // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
+	uint32_t new_lcrh = (0 << 4) // disable fifo
+    	    		| (1 << 5) | (1 << 6); // 8bit word length
+	uint32_t lcrh = in_u32((uint32_t*)(base_address + UART0_LCRH));
+
+	if (new_lcrh != lcrh)
+	{
+		out_u32((uint32_t*)(base_address + UART0_LCRH), new_lcrh);
+	}
 
     // Set integer & fractional part of baud rate.
     // Divider = UART_CLOCK/(16 * Baud)
@@ -111,37 +130,24 @@ void early_uart_init()
     // Fractional part register = 0.
 
     // 9600
-    //out_u32((uint32_t*)UART0_BASE + UART0_IBRD, 19);
-    //out_u32((uint32_t*)UART0_BASE + UART0_FBRD, 0);
+    //out_u32((uint32_t*)(base_address + UART0_IBRD), 19);
+    //out_u32((uint32_t*)(base_address + UART0_FBRD), 0);
 
     // 115200
-    out_u32((uint32_t*)(UART0_BASE + UART0_IBRD), 1);
-	out_u32((uint32_t*)(UART0_BASE + UART0_FBRD), 40);
+    out_u32((uint32_t*)(base_address + UART0_IBRD), 1);
+	out_u32((uint32_t*)(base_address + UART0_FBRD), 40);
 
-    // Enable FIFO & 8 bit data transmission (1 stop bit, no parity).
-    out_u32((uint32_t*)(UART0_BASE + UART0_LCRH), /* (1 << 4) |*/ (1 << 5) | (1 << 6));
+	// set the fifo size to smallest
+	out_u32((uint32_t*)(base_address + UART0_IFLS), 0);
 
-    // Mask all interrupts.
-    out_u32((uint32_t*)(UART0_BASE + UART0_IMSC), (1 << 1) | (1 << 4) | /*(1 << 5) |*/
-		    (1 << 6) | (1 << 7) | (1 << 8) |
-		    (1 << 9) | (1 << 10));
+    // Mask *in* the RX interrupt
+    out_u32((uint32_t*)(base_address + UART0_IMSC), (1 << 4));
 
     // Enable UART0, receive & transfer part of UART.
-    out_u32((uint32_t*)(UART0_BASE + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
+    out_u32((uint32_t*)(base_address + UART0_CR), (1 << 0) | (1 << 8) | (1 << 9));
 
-    early_available = true;
-}
-
-static void bcm2835_uart_putc(const uint32_t const base, uint8_t byte)
-{
-	while (1)
-	{
-		if (!(in_u32((uint32_t*)(base + UART0_FR)) & (1 << 5)))
-		{
-			break;
-		}
-	}
-	out_u32((uint32_t*)(base + UART0_DR), byte);
+    early_base = (uint8_t *)base_address;
+	early_available = true;
 }
 
 static uint8_t bcm2835_uart_getc(const uint32_t base)
@@ -156,22 +162,40 @@ static uint8_t bcm2835_uart_getc(const uint32_t base)
     return in_u32((uint32_t*)(base + UART0_DR));
 }
 
-static error_t bcm2835_uart_isr(
+static return_t bcm2835_uart_isr(
 		const void * const usr_data,
 		const uint32_t vector)
 {
+	// TODO this is only reading one char at a time
+	return_t ret = NO_ERROR;
 	(void)vector;
 	bcm2835_user_data_t * const user_data = (bcm2835_user_data_t*)usr_data;
-	char buffer[2] = {0, 0};
-	buffer[0] = bcm2835_uart_getc(user_data->base);
-	return kernel_isr_write_pipe(user_data->input_pipe, buffer, 1);
+	if (user_data && user_data->base)
+	{
+		char buffer[2] = {0, 0};
+		buffer[0] = bcm2835_uart_getc(user_data->base);
+		if (user_data->input_pipe)
+		{
+			ret =  kernel_isr_write_pipe(user_data->input_pipe, buffer, 1);
+		}
+		else
+		{
+			ret = DEVICE_REGISTER_INVALID;
+		}
+	}
+	else
+	{
+		ret = DEVICE_REGISTER_INVALID;
+	}
+
+	return ret;
 }
 
 void early_uart_putc(const char c)
 {
 	if (early_available)
 	{
-		bcm2835_uart_putc(UART0_BASE, c);
+		bcm2835_uart_putc((uint32_t)(early_base), c);
 	}
 }
 
@@ -186,18 +210,26 @@ void early_uart_put(const char * c)
 	}
 }
 
-static error_t bcm2835_uart_write(
+static return_t bcm2835_uart_write(
 		const void * const usr_data,
 		const uint32_t id,
 		const uint32_t val)
 {
 	(void)id;
 	bcm2835_user_data_t * const user_data = (bcm2835_user_data_t*)usr_data;
-	bcm2835_uart_putc(((usr_data == NULL) ? UART0_BASE : user_data->base), val);
+	if (usr_data == NULL)
+	{
+		bcm2835_uart_putc((uint32_t)(early_base), val);
+	}
+	else
+	{
+		bcm2835_uart_putc(user_data->base, val);
+	}
 	return NO_ERROR;
 }
 
 void bcm2835_uart_get_device(
+		const uint8_t * const base_address,
 		kernel_device_t * const device,
 		const char * const name)
 {
@@ -211,7 +243,7 @@ void bcm2835_uart_get_device(
 		device->read_register = NULL;
 		device->write_register = bcm2835_uart_write;
 		uint32_t base = 0;
-		kernel_device_map_memory(UART0_BASE, 0x1000, MMU_DEVICE_MEMORY, &base);
+		kernel_device_map_memory((mem_t)(base_address), 0x1000, MMU_DEVICE_MEMORY, &base);
 		device->user_data = kernel_device_malloc(sizeof(bcm2835_user_data_t));
 		util_memset(device->user_data, 0, sizeof(bcm2835_user_data_t));
 		((bcm2835_user_data_t*)device->user_data)->base = base;

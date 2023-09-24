@@ -17,22 +17,26 @@
 #include "tinker_api_types.h"
 #include "kernel_initialise.h"
 #include "interrupts/interrupt_manager.h"
+#include "utils/util_memcpy.h"
+#include "console/print_out.h"
 
 void tgt_initialise(void)
 {
-#if defined (TARGET_DEBUGGING)
-	debug_print("Target: Disable MMU\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "Target: Disable MMU\n");
+	}
 	arm_disable_mmu();
-#if defined (TARGET_DEBUGGING)
-	debug_print("Target: Invalidate TLBs\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "Target: Invalidate TLBs\n");
+	}
 	arm_invalidate_all_tlbs();
 }
 
-error_t tgt_initialise_process(process_t * const process)
+return_t tgt_initialise_process(process_t * const process)
 {
-    error_t ok = NO_ERROR;
+    return_t ok = NO_ERROR;
 
     if (!process_is_kernel(process))
     {
@@ -45,7 +49,11 @@ error_t tgt_initialise_process(process_t * const process)
         while (section && (ok == NO_ERROR))
         {
             /* setup virt -> real mapping for size */
-        	tgt_map_memory(process, section);
+			tgt_map_memory(process, section);
+			if (is_debug_enabled(TARGET))
+			{
+				debug_print(TARGET, "Mapping %8x to %8x\n", mem_sec_get_virt_addr(section), mem_sec_get_real_addr(section));
+			}
             section = mem_sec_get_next(section);
         }
     }
@@ -53,31 +61,59 @@ error_t tgt_initialise_process(process_t * const process)
     return ok;
 }
 
+#pragma GCC push_options
+#pragma GCC optimize ("-O0")
+
 static void __attribute__((naked)) arm_bootstrap(
 		thread_entry_point * const entry,
 		uint32_t exit_function,
 		const uint32_t sp) TINKER_API_SUFFIX;
 
-static void __attribute__((naked)) arm_bootstrap(
-		thread_entry_point * const entry,
-		uint32_t exit_function,
-		const uint32_t sp)
+static void __attribute__((used)) hello_world(void) TINKER_API_SUFFIX;
+
+static void hello_world(void)
 {
+	char message[] = "STARTIING APP\n";
+	tinker_debug(message, 14);
+}
+
+static void __attribute__((naked)) arm_bootstrap(
+		 /* R0 */ thread_entry_point * const entry,
+		 /* R1 */ uint32_t exit_function,
+		 /* R2 */ const uint32_t sp)
+{
+	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
+	asm volatile("add fp, sp, #4");
+	asm volatile("sub sp, sp, #16");
+	asm volatile("str r0, [fp, #-8]");		/* these two wrong? */
+	asm volatile("str r1, [fp, #-12]");		/* and this? */
+	asm volatile("str r2, [fp, #-16]");
+
 	asm volatile("mrs %r7, cpsr");			/* get cpsr */
 	asm volatile("mov r8, #0xFFFFFF20");	/* blat out the mode and enable interrupts */
 	asm volatile("and r7, r7, r8");			/* and cpsr and mode wipe */
 	asm volatile("orr r7, r7, #0x10");		/* set the mode */
 	asm volatile("msr cpsr, r7");			/* move the mode into cpsr */
 
-	asm volatile("mov sp, r2");				/* set the programs stack */
-	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
-	asm volatile("mov r0, r5");				/* set arg1 */
-	asm volatile("mov r1, r6");				/* set arg2 */
-	entry();
-	((thread_entry_point*)(exit_function))();
+	asm volatile("ldr r0, [fp, #-8]");
+	asm volatile("ldr r1, [fp, #-12]");
+	asm volatile("ldr r2, [fp, #-16]");
+
+	asm volatile("ldr r3, [fp, #-8]");
+
+	asm volatile("blx r3");					/* call entry 	-> r0 (-8) -> r0 */
+
+	asm volatile("ldr r3, [fp, #-12]");
+	asm volatile("blx r3");					/* call exit	-> r1 (-12) -> r3 */
+
+	asm volatile("sub sp, fp, #4");
 	asm volatile("pop {fp, lr}");
 	(void)sp;
+	(void)entry;
+	(void)exit_function;
 }
+
+#pragma GCC pop_options
 
 void tgt_initialise_context(
         const thread_t * thread,
@@ -94,19 +130,21 @@ void tgt_initialise_context(
             arm_context->gpr[gpr] = 0;
         }
         arm_context->sp = thread_get_virt_stack_base(thread);
-        arm_context->alignment = 0;
 		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
-        arm_context->usr_lr = arm_context->lr = (uint32_t)arm_bootstrap;
-        arm_context->apsr = PSR_MODE_USER;
-#if defined(TARGET_DEBUGGING)
-        debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
-        debug_print("ARM: %x %x %x %x %x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
-        debug_print("ARM: %x %x %x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
-        debug_print("ARM: sp %x lr %x\n", arm_context->sp, arm_context->lr);
-#endif
+        arm_context->pc = (uint32_t)arm_bootstrap;
+        arm_context->lr = 0;
+        arm_context->cpsr = PSR_MODE_USER;
+
+        if (is_debug_enabled(TARGET))
+        {
+			debug_print(TARGET, "ARM: %8x %8x %8x %8x %8x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
+			debug_print(TARGET, "ARM: %8x %8x %8x %8x %8x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
+			debug_print(TARGET, "ARM: %8x %8x %8x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
+			debug_print(TARGET, "ARM: sp %8x lr %8x pc %8x\n", arm_context->sp, arm_context->lr, arm_context->pc);
+        }
     }
 }
 
@@ -122,10 +160,11 @@ void tgt_prepare_context(
         if (current_process != proc)
         {
         	tgt_pg_tbl_t * const pg_table = process_get_page_table(proc);
-#if defined (TARGET_DEBUGGING)
-        	debug_print("Page table for %s\n", process_get_image(proc));
+        	if (is_debug_enabled(TARGET))
+        	{
+        		debug_print(TARGET, "Page table for %s\n", process_get_image(proc));
+        	}
         	arm_print_page_table(pg_table);
-#endif
         	arm_set_translation_table_base(pg_table);
         	arm_invalidate_all_tlbs();
         }
@@ -167,14 +206,16 @@ void tgt_set_context_param(
     case 1:
         context->gpr[6] = parameter;
         break;
+    default:
+    	/* no-op */
     }
 }
 
-error_t tgt_map_memory(
+return_t tgt_map_memory(
         const process_t * const process,
         const mem_section_t * const section)
 {
-    error_t result = PARAMETERS_INVALID;
+    return_t result = PARAMETERS_INVALID;
     if (process && section)
     {
 		arm_map_memory(
@@ -207,15 +248,17 @@ void tgt_disable_external_interrupts(void)
 
 void tgt_enter_usermode(void)
 {
-#if defined(TARGET_DEBUGGING)
-	debug_print("Kernel: Entering user mode\n");
-	debug_print("Kernel: CPSR %x\n", arm_get_cpsr());
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_prints(TARGET, "Kernel: Entering user mode\n");
+		debug_print(TARGET, "Kernel: CPSR %x\n", arm_get_cpsr());
+	}
 	arm_enable_irq();
-#if defined(TARGET_DEBUGGING)
-	debug_print("Kernel: CPSR %x\n", arm_get_cpsr());
-	debug_print("Kernel: User mode entered\n");
-#endif
+	if (is_debug_enabled(TARGET))
+	{
+		debug_print(TARGET, "Kernel: CPSR %x\n", arm_get_cpsr());
+		debug_prints(TARGET, "Kernel: User mode entered\n");
+	}
 }
 
 uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
@@ -228,10 +271,27 @@ uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
     return sp;
 }
 
+uint32_t tgt_get_pc(const tgt_context_t * const context)
+{
+	uint32_t pc = 0;
+	if (context)
+	{
+		pc = context->pc;
+	}
+	return pc;
+}
+
 uint32_t tgt_get_frame_pointer(void)
 {
 	uint32_t sp;
 	asm volatile("mov %[ps], fp" : [ps]"=r" (sp));
+	return sp;
+}
+
+uint32_t tgt_get_stack_pointer(void)
+{
+	uint32_t sp;
+	asm volatile("mov %[ps], sp" : [ps]"=r" (sp));
 	return sp;
 }
 

@@ -18,12 +18,12 @@
 
 typedef struct object_process_t object_process_t;
 
-object_process_t * obj_cast_process(object_t * o);
+object_process_t * obj_cast_process(void * o);
 
 object_number_t obj_process_get_oid
 	(const object_process_t * const o);
 
-error_t obj_create_process(
+return_t obj_create_process(
 		proc_list_t * const proc_list,
 		mem_pool_info_t * const pool,
 		object_table_t * const table,
@@ -31,7 +31,7 @@ error_t obj_create_process(
 		process_t * const process,
 		object_t ** object);
 
-error_t obj_process_thread_exit(
+return_t obj_process_thread_exit(
 		object_process_t * const o,
 		object_thread_t * const thread);
 

@@ -17,12 +17,12 @@
 
 typedef struct object_timer_t object_timer_t;
 
-object_timer_t * obj_cast_timer(object_t * const o);
+object_timer_t * obj_cast_timer(void * const o);
 
 object_number_t obj_timer_get_oid
 	(const object_timer_t * const o);
 
-error_t obj_create_timer(
+return_t obj_create_timer(
 		scheduler_t * const scheduler,
 		alarm_manager_t * const alarm_manager,
 		process_t * const process,
@@ -33,8 +33,8 @@ error_t obj_create_timer(
 		tinker_timer_callback_t * const callback,
 		const void* parameter);
 
-error_t obj_cancel_timer(object_timer_t * const timer);
+return_t obj_cancel_timer(object_timer_t * const timer);
 
-error_t obj_delete_timer(object_timer_t * const timer);
+return_t obj_delete_timer(object_timer_t * const timer);
 
 #endif /* OBJ_TIMER_H_ */
