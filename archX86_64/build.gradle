@@ -2,7 +2,7 @@ apply plugin: 'c'
 
 model {
 	components {
-		archArm(NativeLibrarySpec) {
+		archX86_64(NativeLibrarySpec) {
 	        targetPlatform "tinkerX86_64"
 	        sources {
 		        c {
