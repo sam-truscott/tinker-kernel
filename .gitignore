@@ -18,5 +18,6 @@ gdb/src
 gdb/build*
 gdb/*.tar.*
 arm-eabi
+x86_64-elf
 /gradle-app.setting
 arm-eabi
