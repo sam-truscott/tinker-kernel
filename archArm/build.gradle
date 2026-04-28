@@ -2,11 +2,11 @@ apply plugin: 'c'
 
 model {
 	components {
-		archArm(NativeLibrarySpec) {
+            archArm(NativeLibrarySpec) {
 	        targetPlatform "tinkerArm4Soft"
-	    	targetPlatform "tinkerArm4HardVfp"
-	    	targetPlatform "tinkerArm7Soft"
-	    	targetPlatform "tinkerArm7HardVfp"
+	        targetPlatform "tinkerArm4HardVfp"
+	        targetPlatform "tinkerArm7Soft"
+	        targetPlatform "tinkerArm7HardVfp"
 	        sources {
 		        c {
 		            lib project: ':base', library: 'base', linkage: 'static'
