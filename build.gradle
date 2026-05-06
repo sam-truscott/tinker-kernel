@@ -72,7 +72,7 @@ allprojects {
 		            "-fverbose-asm",
 		            "-DKERNEL_SHELL",     /* enable internal shell */
                             "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
-		            "-DUNIT_TESTS"        /* enable unit tests */
+		            "-UUNIT_TESTS"        /* disable unit tests */
 		        linker.args  "-fno-lto"   /* for now, disable lto */
 		    } else if (buildType == buildTypes.release) {
 		        cCompiler.args "-Os",     /* default optimisation level */
@@ -86,14 +86,15 @@ allprojects {
 	    }
 	    /* native and cross toolchains */
 	    toolChains {
-                gcc(Gcc) {
+/*                gcc(Gcc) {
                     target("linux_aarch64") {
                         cCompiler.withArguments { args ->
                             args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
                             args << "-w"
+                            args << "-DUNIT_TESTS"
                         }
                     }
-                }
+                }*/
 	        /* Cross compilers */
 	        xgcc(Gcc) {
 	            /* gcc for arm (generic) */
