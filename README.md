@@ -6,14 +6,7 @@ Hybrid Kernel written in C and assembly.
 ## Supported targets
 ### ARM
 - Raspberry Pi
-
-## In development:
-### ARM
 - Raspberry Pi 2
-
-## Deprecated
-### PowerPC
-- gdb simulator (aka PSIM)
 
 # License
 
@@ -48,10 +41,6 @@ Gradle is used as the build system. It can build debug and release versions of e
 
 For example, to build an individual target use:
 
-    # Windows
-    gradlew armRaspPi2DebugExecutable armRaspPi2ReleaseExecutable
-    
-    # Linux
     ./gradlew armRaspPi2DebugExecutable armRaspPi2ReleaseExecutable
 	
 # Unit Tests
@@ -59,11 +48,7 @@ For example, to build an individual target use:
 Unit tests can be enabled at compile time to run at kernel initialisation - this ensures they run on the target
 and with the target compiler as opposed to the host compiler. However, for debugging purposes a host variant is provided.
 
-	# Windows
-	gradlew hostTestDriverDebugExecutable
-	
-	# Linux
-	./gradlew hostTestDriverDebugExecutable
+    ./gradlew hostTestDriverDebugExecutable
 	
 You'll need a gcc available on the PATH for this to build.
 	
@@ -83,23 +68,24 @@ You'll need the following (and possibly more) dependencies (for mingw mingw-w64-
 * automake
 * diffutils
 * texinfo
-* gmp-devel
-* mpc-devel (aka libmpc-devel)
-* mpfr-devel
-* isl-devel
+* libgmp-dev
+* libmpc-dev
+* libmpfr-dev
+* libisl-dev
 * tar
 * libiconv
-* libiconv-devel
+* libiconv-dev
 * flex
 * m4
 * bison
 * expat
-* zlib-devel
+* zlib1g-dev
+* readline
+* libreadline-dev
 
 Then execute:
 
-    # Linux (or MSYS2 under Windows)
-    PATH=$PATH:/home/sam/git/tinker-kernel/arm-eabi/bin
+    PATH=$PATH:~/git/tinker-kernel/arm-eabi/bin
     ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm weaveApiArm makeInstallGdbArm
 
 You should then have a toolchain in 'arm-eabi'.
@@ -115,7 +101,7 @@ The packager will create a binary image with the kernel followed by user-land pr
   - service<| (i.e. block access for sata)
   - service<| (i.e. tcp/ip stack)
   - service</ (i.e. hardware device driver)
-  
+
 The intention is that the kernel is started by firmware or bootloader like u-boot.
 
 ## Packaging Builds
@@ -126,54 +112,45 @@ We need to tell it the output file 'kernel.img', the format 'arm-eabi' and endia
 
 Firstly, utilBuilder must be built
 
-	cd utilBuilder
-
-    # Windows
-    gradlew packageJar
-
-    # Linux
+    cd utilBuilder
     ./gradlew packageJar
-    
+
 Then we can use it to create our final binary:
 
     # Execute from inside the utilBuilder directory
-    gradlew packageJar 
-    
-    # Windows
-    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi2.exe
-    
-    # Linux
+    ./gradlew packageJar 
+
     java -jar build/libs/utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ../bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi2
-    
+
 We can additionally use the test 'hello world' program
 
     # Execute from inside the tinker directory
-    gradlew armRaspPi2DebugExecutable elfLoaderTestTinkerArm4SoftDebugExecutable
-    
+    ./gradlew armRaspPi2DebugExecutable elfLoaderTestTinkerArm4SoftDebugExecutable
+
     # Now lets build the image
     cd utilBuilder
-    gradlew packageJar
-    java -jar build\libs\utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ..\bspRaspberryPi\build\exe\armRaspPi\debug\armRaspPi2.exe ..\elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\debug\elfLoaderTest.exe 
-   
+    ./gradlew packageJar
+    java -jar build/libs/utilBuilder-bin-1.0.0.jar kernel.img arm-eabi small ../bspRaspberryPi/build/exe/armRaspPi/debug/armRaspPi2 ../elfLoaderTest/build/exe/elfLoaderTest/tinkerArm4Soft/debug/elfLoaderTest 
+
 This will generate a 'kernel.img' file in the current directory with the Raspberry Pi kernel and one userland ELF - the hello world.
 
 # Hello World (no C library)
 
 The following is an example process that can be loaded into the kernel.
 
-    gradlew elfLoaderTestTinkerArm4SoftReleaseExecutable
-    
+    ./gradlew elfLoaderTestTinkerArm4SoftReleaseExecutable
+
 We can check the layout of the process with objdump.
 
-    arm-eabi-objdump -x elfLoaderTest\build\exe\elfLoaderTest\tinkerArm4Soft\release\elfLoaderTest.exe
-    
+    arm-eabi-objdump -x elfLoaderTest/build/exe/elfLoaderTest/tinkerArm4Soft/release/elfLoaderTest
+
 To load the elf it needs to be loaded either in kernel_main or via a syscall from another process (such as an init process).
 
 # Hello World (newlib C library)
 
 As I write newlib support I've also written hello world which uses printf
 
-	gradlew elfNewlibTestDebugExecutable
+    ./gradlew elfNewlibTestDebugExecutable
 	
 This is still work in progress.
 
@@ -200,43 +177,25 @@ These are the things I need to address in a rough order:
 
 Starting QEMU for the Raspberry Pi build
 
-	# Disassemble the Raspberry Pi build so we can look at addresses
-	arm-eabi-objdump -dS bspRaspberryPi\build\exe\armRaspPi2\debug\armRaspPi2.exe > dis.txt
+    # Start the emulator, local console (stdio)
+    qemu-system-arm -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2b -serial stdio -display none
 
-	# Start the emulator (Windows)
-	qemu-system-arm -m 1024M -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2.exe -gdb tcp::1234,ipv4 -no-reboot -no-shutdown -machine raspi1ap -serial tcp:127.0.0.1:12345 -S -display none
-	
-or
-
-    qemu-system-arm -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2.exe -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2b -serial stdio -display none
-
-	# Start the emulator (Linux)
-	qemu-system-arm -m 1024M -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2b -serial tcp:127.0.0.1:12345 -S
+    # Start the emulator - wait for debugger to attach, print out to netcat on port 12345
+    qemu-system-arm -m 1024M -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2b -serial tcp:127.0.0.1:12345 -S
 	
 or
 
     qemu-system-arm -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2b -serial stdio -display none
 
-	# Start a debugger
-	arm-eabi-gdb build\binaries\armRaspPiExecutable\debug\armRaspPi2.exe
-	# Connect to the debugger
-	target remote localhost:1234
-	# Set a breakpoint at the start
-	b kernel_main
-	# Start the kernel
-	continue
+    # Start a debugger
+    arm-eabi-gdb build/binaries/armRaspPiExecutable/debug/armRaspPi2
+    # Connect to the debugger
+    target remote localhost:1234
+    # Set a breakpoint at the start
+    b kernel_main
+    # Start the kernel
+    continue
 	
-# Building QEMU
-
-	git clone https://github.com/Torlus/qemu.git
-	cd qemu
-
-	# Cut down QEMU for just ARM
-	CFLAGS="-Ofast -g0 -march=native -pipe -fomit-frame-pointer" LDFLAGS="-g0 -Ofast" ./configure --target-list=arm-softmmu --disable-werror --disable-stack-protector --audio-drv-list= --enable-trace-backends=nop --disable-slirp --enable-tcg-interpreter --disable-user --disable-linux-user --enable-pie --disable-vte --disable-sdl --disable-vnc --disable-curses --disable-virtfs --disable-xen --disable-brlapi --disable-curl --enable-fdt --disable-bluez --enable-kvm --disable-rdma --enable-uuid --disable-vde --disable-netmap --enable-linux-aio --disable-cap-ng --enable-attr --disable-vhost-net --disable-spice --disable-rbd --disable-libiscsi --disable-libnfs --disable-smartcard-nss --disable-libusb --disable-usb-redir --disable-lzo --disable-snappy --disable-bzip2 --disable-seccomp --disable-tpm --disable-numa --disable-gtk --disable-docs  --disable-vhdx --disable-vhost-scsi
-	
-	make
-	make install
-
 # Concepts
 Below is a description of the core concepts of the kernel and the rational of any design decisions.
 ## Locking
