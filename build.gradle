@@ -72,7 +72,7 @@ allprojects {
 		            "-fverbose-asm",
 		            "-DKERNEL_SHELL",     /* enable internal shell */
                             "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
-		            "-UUNIT_TESTS"        /* enable unit tests */
+		            "-DUNIT_TESTS"        /* enable unit tests */
 		        linker.args  "-fno-lto"   /* for now, disable lto */
 		    } else if (buildType == buildTypes.release) {
 		        cCompiler.args "-Os",     /* default optimisation level */
