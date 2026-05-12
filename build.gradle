@@ -97,16 +97,24 @@ allprojects {
 	                linker.executable = "gcc"
 	                staticLibArchiver.executable = "ar"
 	                assembler.withArguments { args ->
+                            args << "-march=native"
 	                }
 	                cCompiler.withArguments { args ->
 	                    args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
                             args << "-w"
+                            args << "-march=native"
                             args << "-DUNIT_TESTS"
+                            args << "-DIS_HOST_UNIT_TEST"
+                            args << "-UKERNEL_SHELL"
+                            args << "-UKERNEL_SHELL_DEBUG"
+                            args << "-DUSE_DL_PREFIX"
+                            args << "-DDEBUG_VALUE=0xFFFFFFEFu"
                             args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
-                        linker.withArguments { args ->
-                            args << "-fno-use-cxa-atexit"
-                        }
+                    linker.withArguments { args ->
+                        args << "-fpic"
+                        args << "-fno-use-cxa-atexit"
+                    }
 	            }
 	            /* gcc for arm (generic) */
 	            target("tinkerArm") {
@@ -129,12 +137,12 @@ allprojects {
                             //args << "--specs=nano.specs"
                             args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
 	                }
-                        linker.withArguments { args ->
-                            args << "-mfloat-abi=soft"
-                            args << "-march=armv5te"
-                            args << "-fno-use-cxa-atexit"
-                            //args << "--specs=nano.specs"
-                        }
+                    linker.withArguments { args ->
+                        args << "-mfloat-abi=soft"
+                        args << "-march=armv5te"
+                        args << "-fno-use-cxa-atexit"
+                        //args << "--specs=nano.specs"
+                    }
 	            }
 	            /* gcc for arm v4 - softfp */
 	            target("tinkerArm4Soft") {
