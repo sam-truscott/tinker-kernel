@@ -3,6 +3,7 @@ apply plugin: 'c'
 model {
     components {
         hostTestDriver(NativeExecutableSpec) {
+            targetPlatform "tinkerLocal"
 	    sources {
 	        c {
                     exportedHeaders {

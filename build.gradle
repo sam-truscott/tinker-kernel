@@ -86,17 +86,28 @@ allprojects {
 	    }
 	    /* native and cross toolchains */
 	    toolChains {
-/*                gcc(Gcc) {
-                    target("linux_aarch64") {
-                        cCompiler.withArguments { args ->
-                            args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
-                            args << "-w"
-                            args << "-DUNIT_TESTS"
-                        }
-                    }
-                }*/
 	        /* Cross compilers */
 	        xgcc(Gcc) {
+	            /* local gcc */
+	            target("tinkerLocal") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "gcc"
+	                cCompiler.executable = "gcc"
+	                assembler.executable = "gcc"
+	                linker.executable = "gcc"
+	                staticLibArchiver.executable = "ar"
+	                assembler.withArguments { args ->
+	                }
+	                cCompiler.withArguments { args ->
+	                    args << "-I" + projectDir + "/../hostTestDriver/src/hostTestDriver/headers"
+                            args << "-w"
+                            args << "-DUNIT_TESTS"
+                            args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
+	                }
+                        linker.withArguments { args ->
+                            args << "-fno-use-cxa-atexit"
+                        }
+	            }
 	            /* gcc for arm (generic) */
 	            target("tinkerArm") {
 	                File srcDir = new File("src")
@@ -279,6 +290,8 @@ allprojects {
 	        tinkerArm7HardVfp {
 	            architecture "arm"
 	        }
+                tinkerLocal {
+                }
 	    }
 	}
 }
