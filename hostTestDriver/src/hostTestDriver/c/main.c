@@ -9,6 +9,7 @@
 
 #include "unit_tests.h"
 #include "board_support.h"
+#include <stdio.h>
 
 int main(int argc, char * argv[])
 {
@@ -17,6 +18,8 @@ int main(int argc, char * argv[])
 
 	(void)argc; // UNUSED
 	(void)argv; // UNUSED
+	printf("starting\n");
 	run_unit_tests();
+	printf("done\n");
 	return 0;
 }

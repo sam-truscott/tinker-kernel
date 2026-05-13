@@ -14,6 +14,7 @@
 #define MSPACES 1
 #define ONLY_MSPACES 0
 
+#define HAVE_MMAP 0
 #define HAVE_MORECORE 0
 #define MORECORE_CONTIGUOUS 0
 #define MORECORE_CANNOT_TRIM 1
@@ -22,6 +23,8 @@
 
 #define NO_MALLINFO 0
 #define NO_MALLOC_STATS 1
+
+#define USE_BUILTIN_FFS 0
 
 #if ! defined (_X86_) && defined (__i386__)
 # define _X86_ 1
