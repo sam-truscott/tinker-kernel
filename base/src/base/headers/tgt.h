@@ -37,7 +37,7 @@ void tgt_unmap_memory(
 void tgt_initialise_context(
 		const thread_t * thread,
 		tgt_context_t ** const context,
-		const uint32_t exit_function);
+		const mem_t exit_function);
 
 void tgt_destroy_context(
 		mem_pool_info_t * const pool,
@@ -48,17 +48,13 @@ void tgt_prepare_context(
 		const thread_t * const thread,
         const process_t * const current_process);
 
-// FIXME should be mem_t
-uint32_t tgt_get_frame_pointer(void);
+mem_t tgt_get_frame_pointer(void);
 
-// FIXME should be mem_t
-uint32_t tgt_get_stack_pointer(void);
+mem_t tgt_get_stack_pointer(void);
 
-// FIXME should be mem_t
-uint32_t tgt_get_context_stack_pointer(const tgt_context_t * const context);
+mem_t tgt_get_context_stack_pointer(const tgt_context_t * const context);
 
-// FIXME should be mem_t
-uint32_t tgt_get_pc(const tgt_context_t * const context);
+mem_t tgt_get_pc(const tgt_context_t * const context);
 
 void tgt_load_context(
 		const tgt_context_t * const thread,
@@ -75,11 +71,11 @@ uint32_t tgt_get_syscall_param(
 void tgt_set_context_param(
 		tgt_context_t * const context,
 		const uint8_t index,
-		const uint32_t parameter);
+		const mem_t parameter);
 
 void tgt_set_syscall_return(
         tgt_context_t * const context,
-		const uint32_t value);
+		const mem_t value);
 
 void tgt_wait_for_interrupt(void);
 

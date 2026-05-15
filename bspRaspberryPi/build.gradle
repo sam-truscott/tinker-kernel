@@ -3,7 +3,7 @@ apply plugin: 'c'
 
 model {
 	components {
-		armRaspPi(NativeExecutableSpec) {
+            armRaspPi(NativeExecutableSpec) {
 	    	targetPlatform "tinkerArm4Soft"
 	        binaries.all {
 	            linker.args "-lgcc",
@@ -34,7 +34,7 @@ model {
                 }
 	        }
 	    }
-		armRaspPi2(NativeExecutableSpec) {
+            armRaspPi2(NativeExecutableSpec) {
 	    	targetPlatform "tinkerArm7HardVfp"
 	        binaries.all {
 	            linker.args "-lgcc",
@@ -54,6 +54,36 @@ model {
 		            source {
 		                srcDirs "src/armRaspPi/c"
 		                include "**/bsp_pi2.c"
+		            }
+		        }
+		        asm {
+		        	source {
+		        		srcDirs "src/armRaspPi/asm"
+		        		include "**/boot2.S"
+		        	}
+		        }
+	        }
+	    }
+	    armRaspPi4(NativeExecutableSpec) {
+	    	targetPlatform "tinkerArm8aHardVfp"
+	        binaries.all {
+	            linker.args "-lgcc",
+	                 "-T",
+	                 projectDir.path + "/src/armRaspPi/resources/linker.ld"
+	        }
+	        sources {
+		        c {
+		            lib project: ':driverSocBcm2835', library: 'driverTimerBcm2835', linkage: 'static'
+		            lib project: ':driverSocBcm2835', library: 'driverSerialBcm2835', linkage: 'static'
+		            lib project: ':driverSocBcm2835', library: 'driverIntcBcm2835', linkage: 'static'
+		            lib project: ':kernel', library: 'kernel', linkage: 'static'
+		            lib project: ':libelf', library: 'libelf', linkage: 'static'
+		            lib project: ':archAArch64', library: 'archAArch64', linkage: 'static'
+		            lib project: ':api', library: 'api', linkage: 'static'
+		            lib project: ':base', library: 'base', linkage: 'static'
+		            source {
+		                srcDirs "src/armRaspPi/c"
+		                include "**/bsp_pi4.c"
 		            }
 		        }
 		        asm {

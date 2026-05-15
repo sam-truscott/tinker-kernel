@@ -64,10 +64,10 @@ return_t tgt_initialise_process(process_t * const process)
 #pragma GCC push_options
 #pragma GCC optimize ("-O0")
 
-static void __attribute__((naked)) arm_bootstrap(
+extern void arm_bootstrap(
 		thread_entry_point * const entry,
-		uint32_t exit_function,
-		const uint32_t sp) TINKER_API_SUFFIX;
+		uint64_t exit_function,
+		const uint64_t sp) TINKER_API_SUFFIX;
 
 static void __attribute__((used)) hello_world(void) TINKER_API_SUFFIX;
 
@@ -75,42 +75,6 @@ static void hello_world(void)
 {
 	char message[] = "STARTIING APP\n";
 	tinker_debug(message, 14);
-}
-
-static void __attribute__((naked)) arm_bootstrap(
-		 /* R0 */ thread_entry_point * const entry,
-		 /* R1 */ uint32_t exit_function,
-		 /* R2 */ const uint32_t sp)
-{
-	asm volatile("push {fp, lr}");			/* move the new stack on the stack for the first frame */
-	asm volatile("add fp, sp, #4");
-	asm volatile("sub sp, sp, #16");
-	asm volatile("str r0, [fp, #-8]");		/* these two wrong? */
-	asm volatile("str r1, [fp, #-12]");		/* and this? */
-	asm volatile("str r2, [fp, #-16]");
-
-	asm volatile("mrs %r7, cpsr");			/* get cpsr */
-	asm volatile("mov r8, #0xFFFFFF20");	/* blat out the mode and enable interrupts */
-	asm volatile("and r7, r7, r8");			/* and cpsr and mode wipe */
-	asm volatile("orr r7, r7, #0x10");		/* set the mode */
-	asm volatile("msr cpsr, r7");			/* move the mode into cpsr */
-
-	asm volatile("ldr r0, [fp, #-8]");
-	asm volatile("ldr r1, [fp, #-12]");
-	asm volatile("ldr r2, [fp, #-16]");
-
-	asm volatile("ldr r3, [fp, #-8]");
-
-	asm volatile("blx r3");					/* call entry 	-> r0 (-8) -> r0 */
-
-	asm volatile("ldr r3, [fp, #-12]");
-	asm volatile("blx r3");					/* call exit	-> r1 (-12) -> r3 */
-
-	asm volatile("sub sp, fp, #4");
-	asm volatile("pop {fp, lr}");
-	(void)sp;
-	(void)entry;
-	(void)exit_function;
 }
 
 #pragma GCC pop_options
@@ -130,20 +94,19 @@ void tgt_initialise_context(
             arm_context->gpr[gpr] = 0;
         }
         arm_context->sp = thread_get_virt_stack_base(thread);
-		arm_context->gpr[0] = (uint32_t)thread_get_entry_point(thread);
+		arm_context->gpr[0] = (uint64_t)thread_get_entry_point(thread);
 		arm_context->gpr[1] = exit_function;
 		arm_context->gpr[2] = arm_context->sp;
         arm_context->gpr[ARM_FP_REGISTER] = arm_context->sp;
-        arm_context->pc = (uint32_t)arm_bootstrap;
-        arm_context->lr = 0;
-        arm_context->cpsr = PSR_MODE_USER;
+        arm_context->lr = (uint64_t)arm_bootstrap;
+        arm_context->spsr_el1 = 0;
 
         if (is_debug_enabled(TARGET))
         {
 			debug_print(TARGET, "ARM: %8x %8x %8x %8x %8x\n", arm_context->gpr[0], arm_context->gpr[1], arm_context->gpr[2], arm_context->gpr[3], arm_context->gpr[4]);
 			debug_print(TARGET, "ARM: %8x %8x %8x %8x %8x\n", arm_context->gpr[5], arm_context->gpr[6], arm_context->gpr[7], arm_context->gpr[8], arm_context->gpr[9]);
 			debug_print(TARGET, "ARM: %8x %8x %8x\n", arm_context->gpr[10], arm_context->gpr[11], arm_context->gpr[12]);
-			debug_print(TARGET, "ARM: sp %8x lr %8x pc %8x\n", arm_context->sp, arm_context->lr, arm_context->pc);
+			debug_print(TARGET, "ARM: sp %8x lr %8x\n", arm_context->sp, arm_context->lr);
         }
     }
 }
@@ -188,7 +151,7 @@ mem_t tgt_get_syscall_param(
 	return context->gpr[param];
 }
 
-void tgt_set_syscall_return(tgt_context_t * const context, const uint32_t value)
+void tgt_set_syscall_return(tgt_context_t * const context, const mem_t value)
 {
     context->gpr[0] = value;
 }
@@ -248,22 +211,12 @@ void tgt_disable_external_interrupts(void)
 
 void tgt_enter_usermode(void)
 {
-	if (is_debug_enabled(TARGET))
-	{
-		debug_prints(TARGET, "Kernel: Entering user mode\n");
-		debug_print(TARGET, "Kernel: CPSR %x\n", arm_get_cpsr());
-	}
 	arm_enable_irq();
-	if (is_debug_enabled(TARGET))
-	{
-		debug_print(TARGET, "Kernel: CPSR %x\n", arm_get_cpsr());
-		debug_prints(TARGET, "Kernel: User mode entered\n");
-	}
 }
 
 mem_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
 {
-    uint32_t sp = 0;
+	mem_t sp = 0;
     if (context)
     {
         sp = context->gpr[ARM_FP_REGISTER];
@@ -273,24 +226,24 @@ mem_t tgt_get_context_stack_pointer(const tgt_context_t * const context)
 
 mem_t tgt_get_pc(const tgt_context_t * const context)
 {
-	uint32_t pc = 0;
+	mem_t pc = 0;
 	if (context)
 	{
-		pc = context->pc;
+		pc = context->lr;
 	}
 	return pc;
 }
 
 mem_t tgt_get_frame_pointer(void)
 {
-	uint32_t sp;
+	mem_t sp;
 	asm volatile("mov %[ps], fp" : [ps]"=r" (sp));
 	return sp;
 }
 
 mem_t tgt_get_stack_pointer(void)
 {
-	uint32_t sp;
+	mem_t sp;
 	asm volatile("mov %[ps], sp" : [ps]"=r" (sp));
 	return sp;
 }

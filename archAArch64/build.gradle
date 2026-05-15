@@ -2,9 +2,8 @@ apply plugin: 'c'
 
 model {
 	components {
-            archArm(NativeLibrarySpec) {
-	        targetPlatform "tinkerArm4Soft"
-	        targetPlatform "tinkerArm7HardVfp"
+            archAArch64(NativeLibrarySpec) {
+                targetPlatform "tinkerArm8aHardVfp"
                 binaries.withType(SharedLibraryBinarySpec) {
                     buildable = false
                 }

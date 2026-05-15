@@ -5,6 +5,7 @@ model {
         libelf(NativeLibrarySpec) {
             targetPlatform "tinkerArm4Soft"
             targetPlatform "tinkerArm7HardVfp"
+            targetPlatform "tinkerArm8aHardVfp"
             targetPlatform "tinkerLocal"
             binaries.withType(SharedLibraryBinarySpec) {
                 buildable = false
