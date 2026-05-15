@@ -61,6 +61,8 @@ typedef struct bcm2835_user_data
  * This just loops <delay> times in a way that the compiler
  * wont optimize away.
  */
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 static inline void delay(const uint32_t count)
 {
     asm volatile(
@@ -69,6 +71,7 @@ static inline void delay(const uint32_t count)
     		"%[count], #1; bne __delay_%=\n"
 	     : : [count]"r"(count) : "cc");
 }
+#pragma GCC pop_options
 
 static bool_t early_available = false;
 static uint8_t * early_base = NULL;
