@@ -2,14 +2,14 @@ apply plugin: 'assembler'
 apply plugin: 'c'
 
 task downloadGcc(type: Downloader) {
-    sourceUrl = 'ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-12.2.0/gcc-12.2.0.tar.xz'
-    target = file('gcc-12.2.0.tar.xz')
+    sourceUrl = 'https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-16.1.0/gcc-16.1.0.tar.xz'
+    target = file('gcc-16.1.0.tar.xz')
 }
 
 task untarGcc (type:Exec) {
   commandLine 'bash',
     '-c',
-    'rm -rf ' + getProjectDir().getAbsolutePath().replace("\\","/") + '/src;mkdir -p ' + getProjectDir().getAbsolutePath().replace("\\","/") + '/src;tar xf gcc-12.2.0.tar.xz -C src'
+    'rm -rf ' + getProjectDir().getAbsolutePath().replace("\\","/") + '/src;mkdir -p ' + getProjectDir().getAbsolutePath().replace("\\","/") + '/src;tar xf gcc-16.1.0.tar.xz -C src'
 }
 
 untarGcc.dependsOn downloadGcc
@@ -27,7 +27,7 @@ task configureGccStage1Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage1"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-12.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-16.1.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
 configureGccStage1Arm.dependsOn setupGccStage1
@@ -63,7 +63,7 @@ task configureGccStage3Arm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi-stage3"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-12.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork --enable-softfloat --with-multilib-list=aprofile'
+    'rm -rf *;../src/gcc-16.1.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork --enable-softfloat --with-multilib-list=aprofile'
 }
 
 configureGccStage3Arm.dependsOn setupGccStage3
@@ -87,15 +87,15 @@ task makeInstallGccStage3Arm (type:Exec) {
 makeInstallGccStage3Arm.dependsOn makeGccStage3Arm
 
 task weaveApiArm (type:Exec, dependsOn: [
-    ':api:apiTinkerArm4SoftDebugStaticLibrary', 
+    ':api:apiTinkerArm4SoftDebugStaticLibrary',
     ':archArm:archArmTinkerArm4SoftDebugStaticLibrary']) {
     workingDir getProjectDir().getAbsolutePath()
     commandLine 'bash',
         '-c',
         'mkdir -p tmp;\
         cd tmp;\
-        cp ../../arm-eabi/arm-eabi//lib/libc.a ../../arm-eabi/arm-eabi//lib/libc.a.old;\
-        arm-eabi-ar x ../../arm-eabi/arm-eabi//lib/libc.a;\
+        cp ../../arm-eabi/arm-eabi/lib/libc.a ../../arm-eabi/arm-eabi/lib/libc.a.old;\
+        arm-eabi-ar x ../../arm-eabi/arm-eabi/lib/libc.a;\
         arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/*;\
         arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/*;\
         arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o*;\
@@ -106,96 +106,96 @@ task weaveApiArm (type:Exec, dependsOn: [
         cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../../arm-eabi/arm-eabi/include/;'
 }
 
-/* -------------------------------- x86_64-elf stage 1 --------------------------- */
+/* -------------------------------- aarch64-elf stage 1 --------------------------- */
 
-task setupGccStage1X86_64 (type: BuildSetup) {
+task setupGccStage1Aarch64 (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
-    target = 'x86_64-elf-stage1'
+    target = 'aarch64-elf-stage1'
 }
 
-setupGccStage1X86_64.dependsOn untarGcc
+setupGccStage1Aarch64.dependsOn untarGcc
 
-task configureGccStage1X86_64 (type:Exec) {
-  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage1"
+task configureGccStage1Aarch64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf-stage1"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-12.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
+    'rm -rf *;../src/gcc-16.1.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../aarch64-elf --target=aarch64-elf --disable-multilib --enable-lto --disable-libstdcxx --disable-libquadmath --disable-nls --enable-languages=c --without-headers --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork'
 }
 
-configureGccStage1X86_64.dependsOn setupGccStage1X86_64
+configureGccStage1Aarch64.dependsOn setupGccStage1Aarch64
 
-task makeGccStage1X86_64 (type:Exec) {
-    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage1"
+task makeGccStage1Aarch64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf-stage1"
     commandLine 'bash',
         '-c',
         project.getProperties().get("MAKE") + ' all-gcc -' + project.getProperties().get("CONBUILDS")
 }
 
-makeGccStage1X86_64.dependsOn configureGccStage1X86_64
+makeGccStage1Aarch64.dependsOn configureGccStage1Aarch64
 
-task makeInstallGccStage1X86_64 (type:Exec) {
-    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage1"
+task makeInstallGccStage1Aarch64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf-stage1"
     commandLine 'bash',
         '-c',
         project.getProperties().get("MAKE") + ' install-gcc'
 }
 
-makeInstallGccStage1X86_64.dependsOn makeGccStage1X86_64
+makeInstallGccStage1Aarch64.dependsOn makeGccStage1Aarch64
 
-/* -------------------------------- x86_64-elf stage 3 --------------------------- */
+/* -------------------------------- aarch64-elf stage 3 --------------------------- */
 
-task setupGccStage3X86_64 (type: BuildSetup) {
+task setupGccStage3Aarch64 (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
-    target = 'x86_64-elf-stage3'
+    target = 'aarch64-elf-stage3'
 }
 
-setupGccStage3X86_64.dependsOn untarGcc
+setupGccStage3Aarch64.dependsOn untarGcc
 
-task configureGccStage3X86_64 (type:Exec) {
-  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage3"
+task configureGccStage3Aarch64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf-stage3"
   commandLine 'bash',
     '-c',
-    'rm -rf *;../src/gcc-12.2.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork --enable-softfloat --with-multilib-list=aprofile'
+    'rm -rf *;../src/gcc-16.1.0/configure --with-system-zlib --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../aarch64-elf --target=aarch64-elf --enable-multilib --enable-lto --disable-libquadmath --disable-nls --enable-languages=c --with-newlib --disable-libssp --disable-gomp --disable-libstcxx-pch --enable-threads --disable-libmudflap --enable-interwork --enable-softfloat'
 }
 
-configureGccStage3X86_64.dependsOn setupGccStage3X86_64
+configureGccStage3Aarch64.dependsOn setupGccStage3Aarch64
 
-task makeGccStage3X86_64 (type:Exec) {
-    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage3"
+task makeGccStage3Aarch64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf-stage3"
     commandLine 'bash',
         '-c',
         project.getProperties().get("MAKE") + ' all -' + project.getProperties().get("CONBUILDS")
 }
 
-makeGccStage3X86_64.dependsOn configureGccStage3X86_64
+makeGccStage3Aarch64.dependsOn configureGccStage3Aarch64
 
-task makeInstallGccStage3X86_64 (type:Exec) {
-    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf-stage3"
+task makeInstallGccStage3Aarch64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf-stage3"
     commandLine 'bash',
         '-c',
         project.getProperties().get("MAKE") + ' install'
 }
 
-makeInstallGccStage3X86_64.dependsOn makeGccStage3X86_64
+makeInstallGccStage3Aarch64.dependsOn makeGccStage3Aarch64
 
-task weaveApiX86_64 (type:Exec, dependsOn: [
-    ':api:apiTinkerArm4SoftDebugStaticLibrary', 
-    ':archArm:archArmTinkerArm4SoftDebugStaticLibrary']) {
+task weaveApiAarch64 (type:Exec, dependsOn: [
+    ':api:apiTinkerArm8aHardVfpDebugStaticLibrary', 
+    ':archArm:archArmTinkerArm8aHardVfpDebugStaticLibrary']) {
     workingDir getProjectDir().getAbsolutePath()
     commandLine 'bash',
         '-c',
         'mkdir -p tmp;\
         cd tmp;\
-        cp ../../arm-eabi/arm-eabi//lib/libc.a ../../arm-eabi/arm-eabi//lib/libc.a.old;\
-        arm-eabi-ar x ../../arm-eabi/arm-eabi//lib/libc.a;\
-        arm-eabi-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/*;\
-        arm-eabi-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/*;\
-        arm-eabi-ar q ../../arm-eabi/arm-eabi/lib/libc.a *.o*;\
+        cp ../../aarch64-elf/aarch64-elf/lib/libc.a ../../aarch64-elf/aarch64-elf/lib/libc.a.old;\
+        aarch64-elf-ar x ../../aarch64-elf/aarch64-elf/lib/libc.a;\
+        aarch64-elf-ar x ../../api/build/libs/api/static/tinkerArm4Soft/debug/*;\
+        aarch64-elf-ar x ../../archArm/build/libs/archArm/static/tinkerArm4Soft/debug/*;\
+        aarch64-elf-ar q ../../aarch64-elf/aarch64-elf/lib/libc.a *.o*;\
         rm -rf tmp;\
-        cp ../../api/src/api/headers/*.h ../../arm-eabi/arm-eabi/include/;\
-        cp ../../base/src/base/headers/*.h ../../arm-eabi/arm-eabi/include/;\
-        cp ../../archArm/src/archArm/headers/tgt_mem.h ../../arm-eabi/arm-eabi/include/;\
-        cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../../arm-eabi/arm-eabi/include/;'
+        cp ../../api/src/api/headers/*.h ../../aarch64-elf/aarch64-elf/include/;\
+        cp ../../base/src/base/headers/*.h ../../aarch64-elf/aarch64-elf/include/;\
+        cp ../../archArm/src/archArm/headers/tgt_mem.h ../../aarch64-elf/aarch64-elf/include/;\
+        cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../../aarch64-elf/aarch64-elf/include/;'
 }
 
 /* -------------------------------- clean --------------------------- */
@@ -205,8 +205,6 @@ task cleanGcc(type:Exec) {
 		'-c',
 		'rm -rf build-arm-eabi-stage1;\
 		 rm -rf build-arm-eabi-stage3;\
-		 rm -rf build-x86_64-elf-stage1;\
-		 rm -rf build-x86_64-elf-stage3;\
 		 rm -rf src;\
 		 rm -rf *.tar.xz'
 }

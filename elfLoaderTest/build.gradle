@@ -4,8 +4,6 @@ model {
     components {
         elfLoaderTest(NativeExecutableSpec) {
             targetPlatform "tinkerArm4Soft"
-            targetPlatform "tinkerArm4HardVfp"
-            targetPlatform "tinkerArm7Soft"
             targetPlatform "tinkerArm7HardVfp"
             binaries.all {
                 linker.args "-lgcc",

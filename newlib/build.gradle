@@ -22,20 +22,20 @@ task setupNewlibArm (type: BuildSetup) {
 
 setupNewlibArm.dependsOn untarNewlib
 
-
 task configureNewlibArm (type:Exec) {
   workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
   commandLine 'bash',
     '-c',
     'rm -rf *;\
-    rm -rf ../src/newlib-2.5.0/newlib/libc/sys/arm;\
+    rm -rf ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    mkdir -p ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
     cp -R ../src/newlib/newlib ../src/newlib-2.5.0;\
-    cp ../../api/src/api/headers/* ../src/newlib-2.5.0/newlib/libc/sys/arm;\
-    cp ../../api/src/api/c/* ../src/newlib-2.5.0/newlib/libc/sys/arm;\
-    cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.5.0/newlib/libc/sys/arm;\
-    cp ../../archArm/src/archArm/headers/tgt_mem.h ../src/newlib-2.5.0/newlib/libc/sys/arm;\
-    cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../src/newlib-2.5.0/newlib/libc/sys/arm;\
-    CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib --disable-newlib-atexit-dynamic-alloc'
+    cp ../../api/src/api/headers/* ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../api/src/api/c/* ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../archArm/src/archArm/headers/tgt_mem.h ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    CFLAGS_FOR_TARGET=\'-Wno-implicit-int -Wno-implicit-function-declaration -w -Os\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../arm-eabi --target=arm-eabi --disable-multilib --disable-newlib-atexit-dynamic-alloc --disable-werror'
 }
 
 configureNewlibArm.dependsOn setupNewlibArm
@@ -44,7 +44,7 @@ task makeNewlibArm (type:Exec) {
     workingDir getProjectDir().getAbsolutePath() + "//build-arm-eabi"
     commandLine 'bash',
         '-c',
-        'CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
+        'CFLAGS_FOR_TARGET=\'-Wno-implicit-int -Wno-implicit-function-declaration -w -Os\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
 }
 
 makeNewlibArm.dependsOn configureNewlibArm
@@ -58,48 +58,50 @@ task makeInstallNewlibArm (type:Exec) {
 
 makeInstallNewlibArm.dependsOn makeNewlibArm
 
-/* -------------------------------- arm-eabi --------------------------- */
+/* -------------------------------- aarch64-elf --------------------------- */
 
-task setupNewlibX86_64 (type: BuildSetup) {
+task setupNewlibAArch64 (type: BuildSetup) {
     root = getProjectDir().getAbsolutePath()
-    target = 'x86_64-elf'
+    target = 'aarch64-elf'
 }
 
-setupNewlibX86_64.dependsOn untarNewlib
+setupNewlibAArch64.dependsOn untarNewlib
 
-task configureNewlibX86_64 (type:Exec) {
-  workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+task configureNewlibAArch64 (type:Exec) {
+  workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf"
   commandLine 'bash',
     '-c',
     'rm -rf *;\
+    rm -rf ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    mkdir -p ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
     cp -R ../src/newlib/newlib ../src/newlib-2.5.0;\
-    cp ../../api/src/api/headers/* ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
-    cp ../../api/src/api/c/* ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
-    cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
-    cp ../../archX86_64/src/archX86_64/headers/tgt_mem.h ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
-    cp ../../archX86_64/src/archX86_64/headers/tgt_io.h ../src/newlib-2.5.0/newlib/libc/sys/tinker;\
-    CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../x86_64-elf --target=x86_64-elf --enable-newlib-io-long-long --disable-newlib-fvwrite-in-streamio --disable-newlib-wide-orient --enable-multilib --disable-newlib-atexit-dynamic-alloc'
+    cp ../../api/src/api/headers/* ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../api/src/api/c/* ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../base/src/base/headers/tgt_types.h ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../archArm/src/archArm/headers/tgt_mem.h ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    cp ../../archArm/src/archArm/headers/arm5/tgt_io.h ../src/newlib-2.5.0/newlib/libc/sys/arm/;\
+    CFLAGS_FOR_TARGET=\'-Wno-implicit-int -Wno-implicit-function-declaration -w -Os\' ../src/newlib-2.5.0/configure --prefix=' + getProjectDir().getAbsolutePath().replace("\\","/") + '/../aarch64-elf --target=aarch64-elf --disable-multilib --disable-newlib-atexit-dynamic-alloc --disable-werror'
 }
 
-configureNewlibX86_64.dependsOn setupNewlibX86_64
+configureNewlibAArch64.dependsOn setupNewlibAArch64
 
-task makeNewlibX86_64 (type:Exec) {
-    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+task makeNewlibAArch64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf"
     commandLine 'bash',
         '-c',
-        'CFLAGS_FOR_TARGET=\'-Os -g0 -fomit-frame-pointer\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
+        'CFLAGS_FOR_TARGET=\'-Wno-implicit-int -Wno-implicit-function-declaration -w -Os\' ' + project.getProperties().get("MAKE") + ' -' + project.getProperties().get("CONBUILDS")
 }
 
-makeNewlibX86_64.dependsOn configureNewlibX86_64
+makeNewlibAArch64.dependsOn configureNewlibAArch64
 
-task makeInstallNewlibX86_64 (type:Exec) {
-    workingDir getProjectDir().getAbsolutePath() + "//build-x86_64-elf"
+task makeInstallNewlibAArch64 (type:Exec) {
+    workingDir getProjectDir().getAbsolutePath() + "//build-aarch64-elf"
     commandLine 'bash',
         '-c',
         'make install'
 }
 
-makeInstallNewlibX86_64.dependsOn makeNewlibX86_64
+makeInstallNewlibAArch64.dependsOn makeNewlibAArch64
 
 /* -------------------------------- clean --------------------------- */
 

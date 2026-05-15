@@ -4,10 +4,11 @@ model {
     components {
         libelf(NativeLibrarySpec) {
             targetPlatform "tinkerArm4Soft"
-            targetPlatform "tinkerArm4HardVfp"
-            targetPlatform "tinkerArm7Soft"
             targetPlatform "tinkerArm7HardVfp"
             targetPlatform "tinkerLocal"
+            binaries.withType(SharedLibraryBinarySpec) {
+                buildable = false
+            }
             binaries {
                 all {
                     cCompiler.args "-Wno-error",

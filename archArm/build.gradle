@@ -4,9 +4,11 @@ model {
 	components {
             archArm(NativeLibrarySpec) {
 	        targetPlatform "tinkerArm4Soft"
-	        targetPlatform "tinkerArm4HardVfp"
-	        targetPlatform "tinkerArm7Soft"
 	        targetPlatform "tinkerArm7HardVfp"
+                targetPlatform "tinkerArm8aHardVfp"
+                binaries.withType(SharedLibraryBinarySpec) {
+                    buildable = false
+                }
 	        sources {
 		        c {
 		            lib project: ':base', library: 'base', linkage: 'static'

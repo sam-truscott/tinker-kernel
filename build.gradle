@@ -30,6 +30,9 @@ allprojects {
 	    }
 	    /* compiler and linker options for all toolchains */
 	    binaries {
+                withType(SharedLibraryBinarySpec) {
+                    buildable = false
+                }
 	        all {
 	            /* https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html */
 		    cCompiler.args "-pedantic",   /* always be pedantic - see below */
@@ -53,16 +56,15 @@ allprojects {
 		        "-Wswitch-enum",
 		        "-Wformat=2",
 		        "-Winit-self",
-		        //"-ffunction-sections",
-		        //"-fdata-sections",
+		        "-fdata-sections",
 		        "-c",
 		        "-fmessage-length=0",
-		        "-std=gnu2x",             /* for now use the default */
+		        "-UUNIT_TESTS",        /* disable unit tests */
+		        "-std=gnu23",             /* for now use the default */
 		        "-DBUILDING_KERNEL",      /* used for apis - building kernel */
                         "-DDEBUG_KERNEL_ONLY",    /* debug the kernel only */
 		        "-DKERNEL_DEBUGGING",     /* enable debugging */
-                        //"-DDEBUG_VALUE=0x0"
-                        "-DDEBUG_VALUE=0x00000000"
+                        "-DDEBUG_VALUE=0x0"
                         //"-DDEBUG_VALUE=0xFFFFFFFFu"
 		    linker.args  "-static"        /* always static - no linking */
 		    if (buildType == buildTypes.debug) {
@@ -71,16 +73,16 @@ allprojects {
 		            "-g3",                /* lots of debugging */
 		            "-fverbose-asm",
 		            "-DKERNEL_SHELL",     /* enable internal shell */
-                            "-DKERNEL_SHELL_DEBUG",/* enable shell debugging */
-		            "-UUNIT_TESTS"        /* disable unit tests */
+                            "-DKERNEL_SHELL_DEBUG" /* enable shell debugging */
 		        linker.args  "-fno-lto"   /* for now, disable lto */
 		    } else if (buildType == buildTypes.release) {
-		        cCompiler.args "-Os",     /* default optimisation level */
+		        cCompiler.args "-Oz",     /* aggressively optimize for size */
+		        	"-s",				  /* strip */
 		            "-g0",                /* no debugging */
 		            "-UKERNEL_DEBUGGING", /* no debugging */
 		            "-DKERNEL_SHELL",     /* enable shell */
 		            "-UKERNEL_SHELL_DEBUG" /* no shell debugging */
-                        linker.args  "-fno-lto"   /* for now, disable lto */
+                        linker.args  "-flto"   /* enable lto */
 		    }
 	        }
 	    }
@@ -116,34 +118,34 @@ allprojects {
                         args << "-fno-use-cxa-atexit"
                     }
 	            }
-	            /* gcc for arm (generic) */
-	            target("tinkerArm") {
-	                File srcDir = new File("src")
-	                cppCompiler.executable = "arm-eabi-gcc"
-	                cCompiler.executable = "arm-eabi-gcc"
-	                assembler.executable = "arm-eabi-gcc"
-	                linker.executable = "arm-eabi-gcc"
-	                staticLibArchiver.executable = "arm-eabi-ar"
-	                assembler.withArguments { args ->
-	                    args << "-marm"
+		    /* gcc for arm (generic) for apps */
+                   target("tinkerArm") {
+                       File srcDir = new File("src")
+                       cppCompiler.executable = "arm-eabi-gcc"
+                       cCompiler.executable = "arm-eabi-gcc"
+                       assembler.executable = "arm-eabi-gcc"
+                       linker.executable = "arm-eabi-gcc"
+                       staticLibArchiver.executable = "arm-eabi-ar"
+                       assembler.withArguments { args ->
+                           args << "-marm"
                             args << "-march=armv5te"
                             args << "-mfloat-abi=soft"
-	                }
-	                cCompiler.withArguments { args ->
-	                    args << "-marm"
+                       }
+                       cCompiler.withArguments { args ->
+                           args << "-marm"
                             args << "-march=armv5te"
                             args << "-mfloat-abi=soft"
                             //args << "-fno-use-cxa-atexit"
                             //args << "--specs=nano.specs"
                             args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
-	                }
+                       }
                     linker.withArguments { args ->
                         args << "-mfloat-abi=soft"
                         args << "-march=armv5te"
                         args << "-fno-use-cxa-atexit"
                         //args << "--specs=nano.specs"
-                    }
-	            }
+                   }
+                   }
 	            /* gcc for arm v4 - softfp */
 	            target("tinkerArm4Soft") {
 	                File srcDir = new File("src")
@@ -172,73 +174,6 @@ allprojects {
 	                linker.withArguments { args ->
                             args << "-mfloat-abi=soft"
                             args << "-march=armv5te"
-	                    args << "-nostartfiles"
-			    args << "-nodefaultlibs"
-			    args << "-nostdlib"
-	                }
-	            }
-	            /* gcc for arm v4 - hardfp */
-	            target("tinkerArm4HardVfp") {
-	                File srcDir = new File("src")
-	                cppCompiler.executable = "arm-eabi-gcc"
-	                cCompiler.executable = "arm-eabi-gcc"
-	                assembler.executable = "arm-eabi-gcc"
-	                linker.executable = "arm-eabi-gcc"
-	                staticLibArchiver.executable = "arm-eabi-ar"
-	                assembler.withArguments { args ->
-	                    args << "-marm"
-                        args << "-march=armv5te"
-                        args << "-mfloat-abi=hard"
-	                }
-	                cCompiler.withArguments { args ->
-	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers"
-	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm5"
-	                    args << "-marm"
-                            args << "-D__arm__"
-	                    args << "-mfpu=vfp"
-	                    args << "-mfloat-abi=hard"
-						args << "-march=armv5te"
-	                    args << "-fpic"
-	                    args << "-fno-builtin"
-		            args << "-ffreestanding"
-		            args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
-	                }
-	                linker.withArguments { args ->
-	                    args << "-mfpu=vfp"
-	                    args << "-mfloat-abi=hard"
-                            args << "-march=armv5te"
-	                    args << "-fpic"
-	                    args << "-nostartfiles"
-			    args << "-nodefaultlibs"
-			    args << "-nostdlib"
-	                }
-	            }
-	            /* gcc for arm v7 - softfp */
-		    target("tinkerArm7Soft") {
-	                File srcDir = new File("src")
-	                cppCompiler.executable = "arm-eabi-gcc"
-	                cCompiler.executable = "arm-eabi-gcc"
-	                assembler.executable = "arm-eabi-gcc"
-	                linker.executable = "arm-eabi-gcc"
-	                staticLibArchiver.executable = "arm-eabi-ar"
-	                assembler.withArguments { args ->
-	                    args << "-marm"
-                            args << "-march=armv7-a"
-                            args << "-mfloat-abi=soft"
-	                }
-	                cCompiler.withArguments { args ->
-	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers"
-	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm7"
-                            args << "-D__arm__"
-			    args << "-march=armv7-a"
-                            args << "-mfloat-abi=soft"
-	                    args << "-fpic"
-	                    args << "-fno-builtin"
-		            args << "-ffreestanding"
-		            args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
-	                }
-	                linker.withArguments { args ->
-                            args << "-mfloat-abi=soft"
 	                    args << "-nostartfiles"
 			    args << "-nodefaultlibs"
 			    args << "-nostdlib"
@@ -279,6 +214,36 @@ allprojects {
 			    args << "-nostdlib"
 	                }
 	            }
+	            /* gcc for arm v8-a - hardfp */
+	            target("tinkerArm8aHardVfp") {
+	                File srcDir = new File("src")
+	                cppCompiler.executable = "aarch64-elf-gcc"
+	                cCompiler.executable = "aarch64-elf-gcc"
+	                assembler.executable = "aarch64-elf-gcc"
+	                linker.executable = "aarch64-elf-gcc"
+	                staticLibArchiver.executable = "aarch64-elf-ar"
+	                assembler.withArguments { args ->
+	                    args << "-marm"
+                        args << "-march=armv8-a"
+	                }
+	                cCompiler.withArguments { args ->
+	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers"
+	                    args << "-I" + projectDir + "/../archArm/src/archArm/headers/arm7"
+                            args << "-D__arm__"
+		            args << "-march=armv8-a"
+	                    args << "-fpic"
+	                    args << "-fno-builtin"
+		            args << "-ffreestanding"
+		            args << "-fanalyzer" /* https://gcc.gnu.org/onlinedocs/gcc-10.1.0/gcc/Static-Analyzer-Options.html */
+	                }
+	                linker.withArguments { args ->
+			    args << "-march=armv8-a"
+	                    args << "-fpic"
+	                    args << "-nostartfiles"
+			    args << "-nodefaultlibs"
+			    args << "-nostdlib"
+	                }
+	            }
 	        }
 	    }
 	    /* platforms and their architecture */
@@ -289,15 +254,12 @@ allprojects {
 	        tinkerArm {
 	            architecture "arm"
 	        }
-	        tinkerArm4HardVfp {
-	            architecture "arm"
-	        }
-		tinkerArm7Soft {
-	            architecture "arm"
-	        }
 	        tinkerArm7HardVfp {
 	            architecture "arm"
 	        }
+                tinkerArm8aHardVfp {
+                    architecture "arm"
+                }
                 tinkerLocal {
                 }
 	    }

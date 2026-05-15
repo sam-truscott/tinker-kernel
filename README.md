@@ -88,6 +88,9 @@ Then execute:
     PATH=$PATH:~/git/tinker-kernel/arm-eabi/bin
     ./gradlew makeInstallBintutilsArm makeInstallGccStage1Arm makeInstallNewlibArm makeInstallGccStage3Arm weaveApiArm makeInstallGdbArm
 
+    PATH=$PATH:~/git/tinker-kernel/aarch64-elf/bin/
+    ./gradlew makeInstallBintutilsAArch64 makeInstallGccStage1Aarch64 makeInstallNewlibArm makeInstallGccStage3Arm weaveApiAarch64 makeInstallGdbArm
+
 You should then have a toolchain in 'arm-eabi'.
 
 # Loading / Packaging
@@ -188,7 +191,7 @@ or
     qemu-system-arm -kernel bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2 -gdb tcp::1234 -no-reboot -no-shutdown -machine raspi2b -serial stdio -display none
 
     # Start a debugger
-    arm-eabi-gdb build/binaries/armRaspPiExecutable/debug/armRaspPi2
+    arm-eabi-gdb bspRaspberryPi/build/exe/armRaspPi2/debug/armRaspPi2
     # Connect to the debugger
     target remote localhost:1234
     # Set a breakpoint at the start

@@ -133,6 +133,9 @@ void kernel_initialise(void)
 
 	debug_prints(INITIALISATION, "Kernel: Initialising Kernel Process...\n");
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-undefined-behavior-ptrdiff"
+
 	extern char * __text;
 	extern char * __text_end;
 	extern char * __data_end;
@@ -151,6 +154,7 @@ void kernel_initialise(void)
 		.access = MEM_READ_WRITE,
 		.next = NULL
 	};
+
 	util_strcpy(data.name, "KERNEL (DATA)", 32);
 	tinker_mempart_t code =
 	{
@@ -163,6 +167,9 @@ void kernel_initialise(void)
 		.access = MEM_READ_ONLY,
 		.next = &data
 	};
+
+#pragma GCC diagnostic pop
+
 	util_strcpy(code.name, "KERNEL (CODE)", 32);
 	tinker_meminfo_t meminfo =
 	{

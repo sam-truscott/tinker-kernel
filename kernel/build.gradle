@@ -4,9 +4,8 @@ model {
 	components {
 	    kernel(NativeLibrarySpec) {
 	        targetPlatform "tinkerArm4Soft"
-	        targetPlatform "tinkerArm4HardVfp"
-	        targetPlatform "tinkerArm7Soft"
 	        targetPlatform "tinkerArm7HardVfp"
+                targetPlatform "tinkerArm8aHardVfp"
 	        targetPlatform "tinkerLocal"
 	        sources {
 		    c {
@@ -14,12 +13,14 @@ model {
 		        lib project: ':libelf', library: 'libelf', linkage: 'static'
 		    }
 	        }
+                binaries.withType(SharedLibraryBinarySpec) {
+                    buildable = false
+                }
 	    }
 	    kernelTests(NativeLibrarySpec) {
 	        targetPlatform "tinkerArm4Soft"
-	        targetPlatform "tinkerArm4HardVfp"
-	        targetPlatform "tinkerArm7Soft"
 	        targetPlatform "tinkerArm7HardVfp"
+                targetPlatform "tinkerArm8aHardVfp"
 	        targetPlatform "tinkerLocal"
 	        sources {
                     c {
@@ -27,6 +28,9 @@ model {
 		        lib project: ':kernel', library: 'kernel', linkage: 'static'
 		    }
 	        }
+                binaries.withType(SharedLibraryBinarySpec) {
+                    buildable = false
+                }
 	    }
 	}
 }

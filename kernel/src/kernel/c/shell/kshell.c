@@ -51,58 +51,58 @@ static void kshell_memory_info(void);
 
 static const char ksh_thread_states[10][8] =
 {
-		"ERROR  \0",
-		"NCREATE\0",
-		"IDLE   \0",
-		"READY  \0",
-		"RUNNING\0",
-		"SYSTEM \0",
-		"PAUSED \0",
-		"WAITING\0",
-		"TERMATE\0",
-		"DEAD   \0"
+		"ERROR  ",
+		"NCREATE",
+		"IDLE   ",
+		"READY  ",
+		"RUNNING",
+		"SYSTEM ",
+		"PAUSED ",
+		"WAITING",
+		"TERMATE",
+		"DEAD   "
 };
 
 static const char ksh_object_types[9][8] =
 {
-		"UNKNOWN\0",
-		"OBJECT \0",
-		"PROCESS\0",
-		"THREAD \0",
-		"PIPE   \0",
-		"SEMAPHR\0",
-		"SHRMEM \0",
-		"CLOCK  \0",
-		"TIMER  \0"
+		"UNKNOWN",
+		"OBJECT ",
+		"PROCESS",
+		"THREAD ",
+		"PIPE   ",
+		"SEMAPHR",
+		"SHRMEM ",
+		"CLOCK  ",
+		"TIMER  "
 };
 
 static const char ksh_pipe_dir[4][13] =
 {
-		"UNKN\0",
-		"BOTH\0",
-		"TX  \0",
-		"RX  \0"
+		"UNKN",
+		"BOTH",
+		"TX  ",
+		"RX  "
 };
 
 static const char ksh_mem_type[2][4] =
 {
-		"DEV\0",
-		"MEM\0"
+		"DEV",
+		"MEM"
 };
 
 static const char ksh_mem_priv[4][5] =
 {
-		"NONE\0",
-		"USER\0",
-		"KERN\0",
-		"ALL \0"
+		"NONE",
+		"USER",
+		"KERN",
+		"ALL "
 };
 
 static const char ksh_mem_acc[3][4] =
 {
-		"N/A\0",
-		"RO \0",
-		"RW \0"
+		"N/A",
+		"RO ",
+		"RW "
 };
 
 void kshell_setup(

@@ -79,11 +79,6 @@ return_t tinker_send_message(
 				(uint32_t)message,
 				(uint32_t)message_size,
 				block);
-		if (result == BLOCKED_RETRY)
-		{
-			int i = 0;
-			i++;
-		}
 	}
 	return result;
 }
